@@ -1,0 +1,592 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": -230.71040892870934,
+        "y": -84.95898074033302
+      },
+      "data": {
+        "label": "Ingress & API Layer"
+      },
+      "style": {
+        "width": 653,
+        "height": 260
+      },
+      "width": 653,
+      "height": 260,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -230.71040892870934,
+        "y": -84.95898074033302
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-compute",
+      "type": "groupNode",
+      "position": {
+        "x": 626.9989145000384,
+        "y": -101.90682122735355
+      },
+      "data": {
+        "label": "Microservices Compute"
+      },
+      "style": {
+        "width": 971,
+        "height": 450
+      },
+      "width": 971,
+      "height": 450,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 626.9989145000384,
+        "y": -101.90682122735355
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-integration-data",
+      "type": "groupNode",
+      "position": {
+        "x": 565.9866887467649,
+        "y": 453.57049814289024
+      },
+      "data": {
+        "label": "Integration & Data"
+      },
+      "style": {
+        "width": 771,
+        "height": 620
+      },
+      "width": 771,
+      "height": 620,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 565.9866887467649,
+        "y": 453.57049814289024
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-security-observability",
+      "type": "groupNode",
+      "position": {
+        "x": -213.76256844168893,
+        "y": 275.09209327268525
+      },
+      "data": {
+        "label": "Security & Observability"
+      },
+      "style": {
+        "width": 760,
+        "height": 698
+      },
+      "width": 760,
+      "height": 698,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": -213.76256844168893,
+        "y": 275.09209327268525
+      },
+      "resizing": false
+    },
+    {
+      "id": "svc-frontdoor",
+      "type": "azureNode",
+      "position": {
+        "x": -187.48954512351764,
+        "y": -17.049988513056775
+      },
+      "data": {
+        "label": "Azure Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/10073-icon-service-Front-Door-and-CDN-Profiles.svg"
+      },
+      "width": 135,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -187.48954512351764,
+        "y": -17.049988513056775
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 118.4305873570712,
+        "y": 32.6636769155368
+      },
+      "data": {
+        "label": "Azure API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 118.4305873570712,
+        "y": 32.6636769155368
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-containerapps-env",
+      "type": "azureNode",
+      "position": {
+        "x": 1313.107860779542,
+        "y": 186.32409733118942
+      },
+      "data": {
+        "label": "Azure Container Apps Environment",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1313.107860779542,
+        "y": 186.32409733118942
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-svc-a",
+      "type": "azureNode",
+      "position": {
+        "x": 790.8435214610615,
+        "y": -45.29638932475761
+      },
+      "data": {
+        "label": "Container App - Service A",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 790.8435214610615,
+        "y": -45.29638932475761
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-svc-b",
+      "type": "azureNode",
+      "position": {
+        "x": 1056.088836772801,
+        "y": 138.87014396753193
+      },
+      "data": {
+        "label": "Container App - Service B",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1056.088836772801,
+        "y": 138.87014396753193
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 1160.5772963963573,
+        "y": -43.931272733901295
+      },
+      "data": {
+        "label": "Azure Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1160.5772963963573,
+        "y": -43.931272733901295
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 590,
+        "y": 558.2464008117009
+      },
+      "data": {
+        "label": "Azure Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10042-icon-service-API-Management-Services.svg"
+      },
+      "width": 141,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 590,
+        "y": 558.2464008117009
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-redis",
+      "type": "azureNode",
+      "position": {
+        "x": 955.8025022013946,
+        "y": 810.2042960520724
+      },
+      "data": {
+        "label": "Azure Cache for Redis",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 955.8025022013946,
+        "y": 810.2042960520724
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": -108.39962285075524,
+        "y": 354.29964582464163
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 127,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -108.39962285075524,
+        "y": 354.29964582464163
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-managed-identity",
+      "type": "azureNode",
+      "position": {
+        "x": 181.70252517528104,
+        "y": 366.72806218179
+      },
+      "data": {
+        "label": "Managed Identity",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10227-icon-service-Entra-Managed-Identities.svg"
+      },
+      "width": 137,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 181.70252517528104,
+        "y": 366.72806218179
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 383.67590266881064,
+        "y": 773.4762338702825
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 383.67590266881064,
+        "y": 773.4762338702825
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": -51.90682122735353,
+        "y": 542.0910077727237
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -51.90682122735353,
+        "y": 542.0910077727237
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 56.28850557132921,
+        "y": 731.9068212273535
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00438-icon-service-Azure-Monitors-for-SAP-Solutions.svg"
+      },
+      "width": 120,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 56.28850557132921,
+        "y": 731.9068212273535
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-frontdoor",
+      "target": "svc-apim",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Route HTTPS requests to API gateway",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-apim",
+      "target": "svc-svc-a",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Forward REST/HTTP API calls",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-apim",
+      "target": "svc-svc-b",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Forward REST/HTTP API calls",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-svc-a",
+      "target": "svc-redis",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Read/write cached data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-svc-b",
+      "target": "svc-redis",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Read/write cached data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-svc-a",
+      "target": "svc-servicebus",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Publish messages for async processing",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-servicebus",
+      "target": "svc-svc-b",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Consume messages for background work",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-acr",
+      "target": "svc-containerapps-env",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Pull container images for deployments",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-managed-identity",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Access secrets/certificates without credentials",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-svc-a",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send traces and dependencies",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-svc-b",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send traces and dependencies",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-apim",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Gateway telemetry and request tracing",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Centralize logs and analytics",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-monitor",
+      "target": "svc-loganalytics",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Query logs and drive alerting",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "selected": false
+    }
+  ],
+  "viewport": {
+    "x": 255.35489786385028,
+    "y": 129.67752434376496,
+    "zoom": 0.8850685142740005
+  }
+}

@@ -1,0 +1,81 @@
+.alignment-toolbar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1000;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toolbar-label {
+  font-size: 0.75rem;
+  color: #666;
+  margin-right: 0.5rem;
+  font-weight: 500;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #333;
+}
+
+.toolbar-btn:hover {
+  background: #f5f5f5;
+  border-color: #0078d4;
+  color: #0078d4;
+  transform: translateY(-2px);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0);
+  background: #e8f4fd;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 32px;
+  background: #e0e0e0;
+}
+
+.toolbar-info {
+  font-size: 0.75rem;
+  color: #0078d4;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  padding-left: 1rem;
+  border-left: 1px solid #e0e0e0;
+}

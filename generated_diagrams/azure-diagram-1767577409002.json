@@ -1,0 +1,336 @@
+{
+  "nodes": [
+    {
+      "id": "group-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": 138.73370577281196,
+        "y": 150.9683426443203
+      },
+      "data": {
+        "label": "Ingestion"
+      },
+      "style": {
+        "width": 300,
+        "height": 250
+      },
+      "width": 300,
+      "height": 250,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 138.73370577281196,
+        "y": 150.9683426443203
+      }
+    },
+    {
+      "id": "group-ai",
+      "type": "groupNode",
+      "position": {
+        "x": 646.5735567970205,
+        "y": 115.49348230912477
+      },
+      "data": {
+        "label": "AI Analysis"
+      },
+      "style": {
+        "width": 350,
+        "height": 300
+      },
+      "width": 350,
+      "height": 300,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 646.5735567970205,
+        "y": 115.49348230912477
+      }
+    },
+    {
+      "id": "group-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 629.2178770949716,
+        "y": 478.2495344506518
+      },
+      "data": {
+        "label": "Storage"
+      },
+      "style": {
+        "width": 250,
+        "height": 220
+      },
+      "width": 250,
+      "height": 220,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 629.2178770949716,
+        "y": 478.2495344506518
+      }
+    },
+    {
+      "id": "group-chat",
+      "type": "groupNode",
+      "position": {
+        "x": 1197.4487895716948,
+        "y": 344.6554934823091
+      },
+      "data": {
+        "label": "Chat Interface"
+      },
+      "style": {
+        "width": 250,
+        "height": 150
+      },
+      "width": 250,
+      "height": 150,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1197.4487895716948,
+        "y": 344.6554934823091
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-webapi",
+      "type": "azureNode",
+      "position": {
+        "x": 150,
+        "y": 210
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 133,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 210
+      }
+    },
+    {
+      "id": "service-function",
+      "type": "azureNode",
+      "position": {
+        "x": 300,
+        "y": 210
+      },
+      "data": {
+        "label": "Azure Function",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 122,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 300,
+        "y": 210
+      }
+    },
+    {
+      "id": "service-cognitiveservices",
+      "type": "azureNode",
+      "position": {
+        "x": 663.6499068901305,
+        "y": 177.43016759776535
+      },
+      "data": {
+        "label": "Cognitive Services",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 143,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 663.6499068901305,
+        "y": 177.43016759776535
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-openai",
+      "type": "azureNode",
+      "position": {
+        "x": 852.3836126629424,
+        "y": 178.39851024208565
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/02749-icon-service-Azure-Applied-AI-Services.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 852.3836126629424,
+        "y": 178.39851024208565
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-blobstorage",
+      "type": "azureNode",
+      "position": {
+        "x": 652.1042830540036,
+        "y": 527.5977653631285
+      },
+      "data": {
+        "label": "Blob Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 652.1042830540036,
+        "y": 527.5977653631285
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-cosmosdb",
+      "type": "azureNode",
+      "position": {
+        "x": 862.1415270018622,
+        "y": -87.29981378026073
+      },
+      "data": {
+        "label": "Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 862.1415270018622,
+        "y": -87.29981378026073
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-webchat",
+      "type": "azureNode",
+      "position": {
+        "x": 1262.9422718808194,
+        "y": 390.13035381750467
+      },
+      "data": {
+        "label": "Web App (Chat UI)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 143,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1262.9422718808194,
+        "y": 390.13035381750467
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "service-webapi",
+      "target": "service-function",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Document submission triggers",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "service-function",
+      "target": "service-cognitiveservices",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Invoke AI analysis",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "service-cognitiveservices",
+      "target": "service-blobstorage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Store analyzed documents",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "service-cognitiveservices",
+      "target": "service-cosmosdb",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Save extracted metadata",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "service-cosmosdb",
+      "target": "service-openai",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Provide context for chat",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "service-webchat",
+      "target": "service-openai",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "User chat queries",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "selected": false
+    }
+  ],
+  "viewport": {
+    "x": -8.065162639801997,
+    "y": 205.1392043029113,
+    "zoom": 1.02581533339025
+  }
+}

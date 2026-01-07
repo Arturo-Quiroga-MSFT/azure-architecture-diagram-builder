@@ -1,0 +1,138 @@
+.title-block {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 320px;
+}
+
+.title-block-display {
+  cursor: pointer;
+}
+
+.title-block-header {
+  background: #333;
+  color: white;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+  border-bottom: 2px solid #333;
+}
+
+.title-block-label {
+  display: block;
+}
+
+.title-block-content {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title-block-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.title-block-field {
+  font-weight: 600;
+  color: #555;
+  min-width: 60px;
+}
+
+.title-block-value {
+  flex: 1;
+  color: #333;
+  font-weight: 400;
+}
+
+.title-block-hint {
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  background: #f8f8f8;
+  border-top: 1px solid #ddd;
+}
+
+/* Edit mode */
+.title-block-edit {
+  padding: 12px;
+}
+
+.title-block-edit .title-block-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.title-block-edit label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.title-block-edit input {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.title-block-edit input:focus {
+  outline: none;
+  border-color: #0078d4;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+.title-block-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+}
+
+.title-block-actions button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-save {
+  background: #0078d4;
+  color: white;
+}
+
+.btn-save:hover {
+  background: #005a9e;
+}
+
+.btn-cancel {
+  background: #f3f3f3;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}

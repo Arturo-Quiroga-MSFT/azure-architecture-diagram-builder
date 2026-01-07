@@ -1,0 +1,208 @@
+{
+  "nodes": [
+    {
+      "id": "web-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 95.32067039106147,
+        "y": 89.86145251396647
+      },
+      "data": {
+        "label": "Web Tier"
+      },
+      "style": {
+        "width": 300,
+        "height": 200
+      },
+      "width": 300,
+      "height": 200,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 95.32067039106147,
+        "y": 89.86145251396647
+      }
+    },
+    {
+      "id": "api-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 425.8234636871508,
+        "y": 95.3206703910615
+      },
+      "data": {
+        "label": "API Layer"
+      },
+      "style": {
+        "width": 274,
+        "height": 246
+      },
+      "width": 274,
+      "height": 246,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 425.8234636871508,
+        "y": 95.3206703910615
+      }
+    },
+    {
+      "id": "data-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 789.4446235597065,
+        "y": 96.10055865921785
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 430,
+        "height": 241
+      },
+      "width": 430,
+      "height": 241,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 789.4446235597065,
+        "y": 96.10055865921785
+      }
+    },
+    {
+      "id": "static-web-app",
+      "type": "azureNode",
+      "position": {
+        "x": 127.3832402234637,
+        "y": 157.6603351955307
+      },
+      "data": {
+        "label": "Azure Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 127.3832402234637,
+        "y": 157.6603351955307
+      },
+      "dragging": false
+    },
+    {
+      "id": "app-service-api",
+      "type": "azureNode",
+      "position": {
+        "x": 500,
+        "y": 160
+      },
+      "data": {
+        "label": "App Service (Node.js API)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "positionAbsolute": {
+        "x": 500,
+        "y": 160
+      }
+    },
+    {
+      "id": "postgres-db",
+      "type": "azureNode",
+      "position": {
+        "x": 843.7608938547487,
+        "y": 209.13296089385472
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 843.7608938547487,
+        "y": 209.13296089385472
+      },
+      "dragging": false
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 1021.83687150838,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure Blob Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 147,
+      "height": 107,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 1021.83687150838,
+        "y": 160
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "static-web-app",
+      "target": "app-service-api",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "API requests from frontend",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "app-service-api",
+      "target": "postgres-db",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Read/write relational data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "app-service-api",
+      "target": "blob-storage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Store/retrieve images",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": -38.4390230457559,
+    "y": 270.05300859598844,
+    "zoom": 1.2822349570200575
+  }
+}

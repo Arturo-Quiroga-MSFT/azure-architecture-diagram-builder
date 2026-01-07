@@ -1,0 +1,658 @@
+{
+  "nodes": [
+    {
+      "id": "grp-web-tier",
+      "type": "groupNode",
+      "position": {
+        "x": -317.35713480357254,
+        "y": -69.15321428481428
+      },
+      "data": {
+        "label": "Web Tier (Azure Container Apps)"
+      },
+      "style": {
+        "width": 1192,
+        "height": 795
+      },
+      "width": 1192,
+      "height": 795,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -317.35713480357254,
+        "y": -69.15321428481428
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-platform",
+      "type": "groupNode",
+      "position": {
+        "x": -422.4641544113475,
+        "y": 822.7839360413304
+      },
+      "data": {
+        "label": "Platform / Hosting"
+      },
+      "style": {
+        "width": 1087,
+        "height": 240
+      },
+      "width": 1087,
+      "height": 240,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": -422.4641544113475,
+        "y": 822.7839360413304
+      }
+    },
+    {
+      "id": "grp-ci-cd",
+      "type": "groupNode",
+      "position": {
+        "x": 1381.20630297802,
+        "y": 116.28086790066067
+      },
+      "data": {
+        "label": "Container Images (CI/CD)"
+      },
+      "style": {
+        "width": 520,
+        "height": 300
+      },
+      "width": 520,
+      "height": 300,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1381.20630297802,
+        "y": 116.28086790066067
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-observability",
+      "type": "groupNode",
+      "position": {
+        "x": 1385.5985119792126,
+        "y": 626.3920670633408
+      },
+      "data": {
+        "label": "Observability"
+      },
+      "style": {
+        "width": 371,
+        "height": 360
+      },
+      "width": 371,
+      "height": 360,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1385.5985119792126,
+        "y": 626.3920670633408
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-external",
+      "type": "groupNode",
+      "position": {
+        "x": -206.70143730912216,
+        "y": 1274.3305891848865
+      },
+      "data": {
+        "label": "External Dependencies (Referenced)"
+      },
+      "style": {
+        "width": 893,
+        "height": 240
+      },
+      "width": 893,
+      "height": 240,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": -206.70143730912216,
+        "y": 1274.3305891848865
+      },
+      "resizing": false
+    },
+    {
+      "id": "svc-aca-env-indsolse-dev-env",
+      "type": "azureNode",
+      "position": {
+        "x": -243.29955311763285,
+        "y": 893.4024784475423
+      },
+      "data": {
+        "label": "indsolse-dev-env",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/03331-icon-service-Azure-Red-Hat-OpenShift.svg"
+      },
+      "width": 169,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -243.29955311763285,
+        "y": 893.4024784475423
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aca-customer-frontend",
+      "type": "azureNode",
+      "position": {
+        "x": -182.99018287185146,
+        "y": 74.226673428222
+      },
+      "data": {
+        "label": "isd-chat-customer-frontend",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/03331-icon-service-Azure-Red-Hat-OpenShift.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -182.99018287185146,
+        "y": 74.226673428222
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aca-customer-backend",
+      "type": "azureNode",
+      "position": {
+        "x": 585.2581056661777,
+        "y": 525.8768461577404
+      },
+      "data": {
+        "label": "isd-chat-customer-backend",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/03331-icon-service-Azure-Red-Hat-OpenShift.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 585.2581056661777,
+        "y": 525.8768461577404
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aca-seller-frontend",
+      "type": "azureNode",
+      "position": {
+        "x": 109.79315891342605,
+        "y": -32.98998478650047
+      },
+      "data": {
+        "label": "isd-chat-seller-frontend",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/03331-icon-service-Azure-Red-Hat-OpenShift.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 109.79315891342605,
+        "y": -32.98998478650047
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aca-seller-backend",
+      "type": "azureNode",
+      "position": {
+        "x": 437.52622654585485,
+        "y": 216.7008430530692
+      },
+      "data": {
+        "label": "isd-chat-seller-backend",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/03331-icon-service-Azure-Red-Hat-OpenShift.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 437.52622654585485,
+        "y": 216.7008430530692
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr-indsolsedevacr",
+      "type": "azureNode",
+      "position": {
+        "x": 1566.392922932278,
+        "y": 222.89454094795764
+      },
+      "data": {
+        "label": "indsolsedevacr",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 151,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1566.392922932278,
+        "y": 222.89454094795764
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-law-indsolse-dev-logs",
+      "type": "azureNode",
+      "position": {
+        "x": 1500.207039171925,
+        "y": 723.8147740232331
+      },
+      "data": {
+        "label": "indsolse-dev-logs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1500.207039171925,
+        "y": 723.8147740232331
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ext-sql-mssoldir-prd",
+      "type": "azureNode",
+      "position": {
+        "x": -46.528461386781075,
+        "y": 1358.2165162768706
+      },
+      "data": {
+        "label": "mssoldir-prd (SQL Database)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10122-icon-service-Azure-Database-MySQL-Server.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -46.528461386781075,
+        "y": 1358.2165162768706
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ext-openai-r2d2-foundry-001",
+      "type": "azureNode",
+      "position": {
+        "x": 365.3196843404878,
+        "y": 1338.7079771411984
+      },
+      "data": {
+        "label": "r2d2-foundry-001 (Azure OpenAI endpoint)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03438-icon-service-Azure-OpenAI.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 365.3196843404878,
+        "y": 1338.7079771411984
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-aca-customer-frontend",
+      "target": "svc-aca-env-indsolse-dev-env",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "deploy to environment",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-aca-customer-backend",
+      "target": "svc-aca-env-indsolse-dev-env",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "deploy to environment",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-aca-seller-frontend",
+      "target": "svc-aca-env-indsolse-dev-env",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "deploy to environment",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-aca-seller-backend",
+      "target": "svc-aca-env-indsolse-dev-env",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "deploy to environment",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-aca-env-indsolse-dev-env",
+      "target": "svc-law-indsolse-dev-logs",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "logs/metrics to Log Analytics",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-aca-customer-frontend",
+      "target": "svc-acr-indsolsedevacr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "pull container image",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-aca-customer-backend",
+      "target": "svc-acr-indsolsedevacr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "pull container image",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-aca-seller-frontend",
+      "target": "svc-acr-indsolsedevacr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "pull container image",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-aca-seller-backend",
+      "target": "svc-acr-indsolsedevacr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "pull container image",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-aca-customer-frontend",
+      "target": "svc-aca-customer-backend",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "HTTPS API calls",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-aca-seller-frontend",
+      "target": "svc-aca-seller-backend",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "HTTPS API calls",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-aca-customer-backend",
+      "target": "svc-ext-sql-mssoldir-prd",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "SQL (TDS 1433)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-aca-seller-backend",
+      "target": "svc-ext-sql-mssoldir-prd",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "SQL (TDS 1433)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-aca-customer-backend",
+      "target": "svc-ext-openai-r2d2-foundry-001",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "OpenAI REST API",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-aca-seller-backend",
+      "target": "svc-ext-openai-r2d2-foundry-001",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "OpenAI REST API",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 562.7367465903432,
+    "y": 114.69779860272286,
+    "zoom": 0.5041626138417329
+  }
+}

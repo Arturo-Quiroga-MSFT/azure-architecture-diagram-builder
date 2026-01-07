@@ -1,0 +1,417 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": 624.1897397613441,
+        "y": 103.20794040033883
+      },
+      "data": {
+        "label": "Ingestion"
+      },
+      "style": {
+        "width": 541,
+        "height": 520
+      },
+      "width": 541,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 624.1897397613441,
+        "y": 103.20794040033883
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 1220,
+        "y": 100
+      },
+      "data": {
+        "label": "Processing"
+      },
+      "style": {
+        "width": 530,
+        "height": 520
+      },
+      "width": 530,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1800,
+        "y": 100
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 417,
+        "height": 520
+      },
+      "width": 417,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1800,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-analytics",
+      "type": "groupNode",
+      "position": {
+        "x": 2273.601659693576,
+        "y": 110.69313466779616
+      },
+      "data": {
+        "label": "Analytics & Visualization"
+      },
+      "style": {
+        "width": 303,
+        "height": 520
+      },
+      "width": 303,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 2273.601659693576,
+        "y": 110.69313466779616
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 898.6729535945785,
+        "y": 677.2866842589862
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 800,
+        "height": 439
+      },
+      "width": 800,
+      "height": 439,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 898.6729535945785,
+        "y": 677.2866842589862
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-devices",
+      "type": "azureNode",
+      "position": {
+        "x": 640.8741041820134,
+        "y": 165.0296114650854
+      },
+      "data": {
+        "label": "IoT Devices",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "width": 123,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 640.8741041820134,
+        "y": 165.0296114650854
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-iothub",
+      "type": "azureNode",
+      "position": {
+        "x": 895.4090909877738,
+        "y": 354.29809508507714
+      },
+      "data": {
+        "label": "Azure IoT Hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "width": 143,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 895.4090909877738,
+        "y": 354.29809508507714
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 1409.9638792996861,
+        "y": 311.0855008164657
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 159,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1409.9638792996861,
+        "y": 311.0855008164657
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 1899.5795949756475,
+        "y": 284.081004870546
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1899.5795949756475,
+        "y": 284.081004870546
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-powerbi",
+      "type": "azureNode",
+      "position": {
+        "x": 2386.4870402676866,
+        "y": 269.57215676218175
+      },
+      "data": {
+        "label": "Power BI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/03332-icon-service-Power-BI-Embedded.svg"
+      },
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2386.4870402676866,
+        "y": 269.57215676218175
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1043.901075068135,
+        "y": 761.5639381261047
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1043.901075068135,
+        "y": 761.5639381261047
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 1390.4309884166228,
+        "y": 935.4905932913114
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1390.4309884166228,
+        "y": 935.4905932913114
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-devices",
+      "target": "svc-iothub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Device telemetry (MQTT/AMQP/HTTPS)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-iothub",
+      "target": "svc-functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Event trigger / message routing",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-functions",
+      "target": "svc-cosmos",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Write processed telemetry",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-cosmos",
+      "target": "svc-powerbi",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Query dataset for dashboards",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-functions",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "App metrics, traces, and dependencies",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Export/centralize logs for querying & alerts",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    }
+  ],
+  "viewport": {
+    "x": -141.6564416027927,
+    "y": 5.898250545384826,
+    "zoom": 0.9351794689462195
+  }
+}

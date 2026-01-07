@@ -1,0 +1,162 @@
+[
+  {
+    "id": "web-app-sql",
+    "name": "Basic Web Application",
+    "description": "A web application with React frontend, Node.js backend API, Azure SQL Database for relational data, and Blob Storage for static assets and images. Uses App Service for hosting, Application Insights for monitoring, and Key Vault for secrets management.",
+    "services": ["App Service", "Azure SQL Database", "Blob Storage", "Application Insights", "Key Vault"],
+    "pattern": "web-application",
+    "url": "https://learn.microsoft.com/azure/architecture/reference-architectures/app-service-web-app/basic-web-app"
+  },
+  {
+    "id": "ml-training-inference",
+    "name": "Machine Learning Training and Inference",
+    "description": "A machine learning pipeline with Azure Machine Learning for model training, Container Registry for model images, Event Hubs for data ingestion, Data Lake Storage for training data, Azure ML endpoints for model serving, API Management for inference API, Application Insights and Key Vault for monitoring and security.",
+    "services": ["Azure Machine Learning", "Container Registry", "Event Hubs", "Data Lake Storage", "API Management", "Application Insights", "Key Vault"],
+    "pattern": "machine-learning",
+    "url": "https://learn.microsoft.com/azure/architecture/ai-ml/idea/mlops-python"
+  },
+  {
+    "id": "iot-analytics",
+    "name": "IoT Data Analytics",
+    "description": "An IoT solution that collects data from devices using IoT Hub, processes it with Azure Functions or Stream Analytics, stores in Cosmos DB for real-time queries and Data Lake for analytics, visualizes with Power BI, and monitors with Application Insights.",
+    "services": ["IoT Hub", "Azure Functions", "Stream Analytics", "Cosmos DB", "Data Lake Storage", "Power BI", "Application Insights"],
+    "pattern": "iot-analytics",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/iot-analytics"
+  },
+  {
+    "id": "microservices-aks",
+    "name": "Microservices with AKS",
+    "description": "A microservices architecture with container apps deployed to Azure Kubernetes Service (AKS), API Management as API gateway, Service Bus for message queue, Redis Cache for caching, Azure SQL or Cosmos DB for data persistence, Container Registry for images, and Azure Monitor for observability.",
+    "services": ["Azure Kubernetes Service", "API Management", "Service Bus", "Redis Cache", "Cosmos DB", "Container Registry", "Azure Monitor", "Key Vault"],
+    "pattern": "microservices",
+    "url": "https://learn.microsoft.com/azure/architecture/reference-architectures/containers/aks-microservices/aks-microservices"
+  },
+  {
+    "id": "event-driven",
+    "name": "Event-Driven Architecture",
+    "description": "An event-driven system using Event Grid for event routing, Azure Functions for serverless processing, Service Bus for reliable messaging, Cosmos DB for event store, Logic Apps for workflow orchestration, and Application Insights for monitoring.",
+    "services": ["Event Grid", "Azure Functions", "Service Bus", "Cosmos DB", "Logic Apps", "Application Insights"],
+    "pattern": "event-driven",
+    "url": "https://learn.microsoft.com/azure/architecture/guide/architecture-styles/event-driven"
+  },
+  {
+    "id": "data-warehouse",
+    "name": "Enterprise Data Warehouse",
+    "description": "A data warehouse solution with Data Factory for ETL pipelines, Data Lake Storage for raw data, Synapse Analytics for data warehousing, Power BI for visualization, and Azure Purview for data governance and cataloging.",
+    "services": ["Data Factory", "Data Lake Storage", "Synapse Analytics", "Power BI", "Azure Purview"],
+    "pattern": "data-warehouse",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/enterprise-data-warehouse"
+  },
+  {
+    "id": "serverless-web-app",
+    "name": "Serverless Web Application",
+    "description": "A serverless web application with Static Web Apps for frontend hosting, Azure Functions for backend API, Cosmos DB for NoSQL data, Blob Storage for files, CDN for content delivery, and API Management for API gateway.",
+    "services": ["Static Web Apps", "Azure Functions", "Cosmos DB", "Blob Storage", "CDN", "API Management"],
+    "pattern": "serverless",
+    "url": "https://learn.microsoft.com/azure/architecture/serverless-quest/reference-architectures"
+  },
+  {
+    "id": "batch-processing",
+    "name": "Batch Processing Pipeline",
+    "description": "A batch processing pipeline using Azure Batch for compute jobs, Blob Storage for input/output data, Data Factory for orchestration, Azure SQL for metadata, and Azure Monitor for job monitoring and alerting.",
+    "services": ["Azure Batch", "Blob Storage", "Data Factory", "Azure SQL Database", "Azure Monitor"],
+    "pattern": "batch-processing",
+    "url": "https://learn.microsoft.com/azure/architecture/data-guide/technology-choices/batch-processing"
+  },
+  {
+    "id": "api-backend",
+    "name": "Scalable API Backend",
+    "description": "A scalable API backend with App Service or Container Apps for hosting, API Management for gateway and rate limiting, Redis Cache for response caching, Azure SQL or Cosmos DB for data, Service Bus for async operations, and Application Insights for monitoring.",
+    "services": ["App Service", "API Management", "Redis Cache", "Azure SQL Database", "Service Bus", "Application Insights", "Key Vault"],
+    "pattern": "api-backend",
+    "url": "https://learn.microsoft.com/azure/architecture/reference-architectures/app-service-web-app/scalable-web-app"
+  },
+  {
+    "id": "real-time-analytics",
+    "name": "Real-time Analytics",
+    "description": "A real-time analytics solution with Event Hubs for data ingestion, Stream Analytics for real-time processing, Cosmos DB for hot path storage, Data Lake for cold path storage, Power BI for real-time dashboards, and Azure Monitor for system monitoring.",
+    "services": ["Event Hubs", "Stream Analytics", "Cosmos DB", "Data Lake Storage", "Power BI", "Azure Monitor"],
+    "pattern": "real-time-analytics",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/real-time-analytics"
+  },
+  {
+    "id": "cognitive-search",
+    "name": "Intelligent Search Application",
+    "description": "An AI-powered search application using Cognitive Search for indexing and search, Blob Storage for documents, Cognitive Services for content enrichment (OCR, entity extraction), App Service for web frontend, and Application Insights for monitoring.",
+    "services": ["Cognitive Search", "Blob Storage", "Cognitive Services", "App Service", "Application Insights"],
+    "pattern": "ai-search",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/cognitive-search-with-skillsets"
+  },
+  {
+    "id": "chat-bot",
+    "name": "Conversational AI Chatbot",
+    "description": "A chatbot solution using Bot Service for bot framework, Azure OpenAI or Cognitive Services for natural language processing, Cosmos DB for conversation history, App Service for web channel, and Application Insights for bot analytics.",
+    "services": ["Bot Service", "Azure OpenAI Service", "Cosmos DB", "App Service", "Application Insights"],
+    "pattern": "conversational-ai",
+    "url": "https://learn.microsoft.com/azure/architecture/ai-ml/idea/conversational-bot"
+  },
+  {
+    "id": "gaming-backend",
+    "name": "Multiplayer Gaming Backend",
+    "description": "A gaming backend with PlayFab or custom game servers on AKS for multiplayer sessions, SignalR Service for real-time player communication, Cosmos DB for player profiles and game state, Redis Cache for leaderboards and matchmaking, Blob Storage for game assets, CDN for asset delivery, and Azure Monitor for performance tracking.",
+    "services": ["Azure Kubernetes Service", "SignalR Service", "Cosmos DB", "Redis Cache", "Blob Storage", "CDN", "Azure Monitor"],
+    "pattern": "gaming",
+    "url": "https://learn.microsoft.com/gaming/azure/reference-architectures/multiplayer"
+  },
+  {
+    "id": "media-streaming",
+    "name": "Video Streaming Platform",
+    "description": "A media streaming solution with Media Services for video encoding and streaming, CDN for content delivery, Blob Storage for video files, Cosmos DB for video metadata and user preferences, Cognitive Services for content moderation and video indexing, Azure Monitor for streaming analytics.",
+    "services": ["Media Services", "CDN", "Blob Storage", "Cosmos DB", "Cognitive Services", "Azure Monitor"],
+    "pattern": "media-streaming",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/digital-media-video"
+  },
+  {
+    "id": "e-commerce",
+    "name": "E-commerce Platform",
+    "description": "An e-commerce platform with App Service or Container Apps for web frontend, API Management for API gateway, Cosmos DB for product catalog and shopping cart, Azure SQL for order management and inventory, Service Bus for order processing workflow, Redis Cache for session state, Blob Storage for product images, CDN for static content delivery, Payment Gateway integration, and Application Insights for monitoring.",
+    "services": ["App Service", "API Management", "Cosmos DB", "Azure SQL Database", "Service Bus", "Redis Cache", "Blob Storage", "CDN", "Application Insights"],
+    "pattern": "e-commerce",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/scalable-ecommerce-web-app"
+  },
+  {
+    "id": "devops-cicd",
+    "name": "CI/CD DevOps Pipeline",
+    "description": "A complete DevOps solution with Azure DevOps or GitHub Actions for CI/CD pipelines, Container Registry for Docker images, AKS or App Service for deployment targets, Key Vault for secrets management, Azure Repos or GitHub for source control, Azure Artifacts for package management, Azure Test Plans for testing, and Azure Monitor for deployment monitoring.",
+    "services": ["Azure DevOps", "Container Registry", "Azure Kubernetes Service", "Key Vault", "Azure Monitor", "Azure Repos"],
+    "pattern": "devops",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/azure-devops-continuous-integration-and-continuous-deployment"
+  },
+  {
+    "id": "disaster-recovery",
+    "name": "Business Continuity and Disaster Recovery",
+    "description": "A disaster recovery solution with Site Recovery for VM replication, Backup for automated backups, Azure SQL with geo-replication, Traffic Manager for failover routing, Blob Storage with geo-redundant storage, Recovery Services Vault for backup storage, and Azure Monitor for health monitoring.",
+    "services": ["Site Recovery", "Azure Backup", "Azure SQL Database", "Traffic Manager", "Blob Storage", "Recovery Services Vault", "Azure Monitor"],
+    "pattern": "disaster-recovery",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/disaster-recovery-enterprise-scale-dr"
+  },
+  {
+    "id": "multi-tenant-saas",
+    "name": "Multi-tenant SaaS Application",
+    "description": "A multi-tenant SaaS platform with App Service or AKS for hosting, Azure SQL or Cosmos DB with tenant isolation, Azure AD B2C for customer identity management, API Management for tenant-level API throttling, Redis Cache for tenant-specific caching, Blob Storage with tenant containers, Key Vault for per-tenant secrets, and Application Insights for tenant-level monitoring.",
+    "services": ["App Service", "Azure SQL Database", "Azure AD B2C", "API Management", "Redis Cache", "Blob Storage", "Key Vault", "Application Insights"],
+    "pattern": "multi-tenant-saas",
+    "url": "https://learn.microsoft.com/azure/architecture/guide/multitenant/overview"
+  },
+  {
+    "id": "healthcare-fhir",
+    "name": "Healthcare Data Platform",
+    "description": "A healthcare solution with Azure Health Data Services FHIR API for healthcare data storage, API Management for secure API access, Azure AD for authentication, Blob Storage for medical imaging, Cognitive Services for medical text analytics, Synapse Analytics for health analytics, and Azure Monitor with HIPAA compliance logging.",
+    "services": ["Azure Health Data Services", "API Management", "Azure AD", "Blob Storage", "Cognitive Services", "Synapse Analytics", "Azure Monitor"],
+    "pattern": "healthcare",
+    "url": "https://learn.microsoft.com/azure/architecture/example-scenario/mch-health/medical-data-insights"
+  },
+  {
+    "id": "blockchain-ledger",
+    "name": "Blockchain Ledger Application",
+    "description": "A blockchain solution using Azure Confidential Ledger or Blockchain Service for immutable ledger, Cosmos DB for off-chain data, Azure Functions for smart contract execution, API Management for API gateway, Blob Storage for documents, Event Grid for ledger notifications, and Azure Monitor for audit logging.",
+    "services": ["Azure Confidential Ledger", "Cosmos DB", "Azure Functions", "API Management", "Blob Storage", "Event Grid", "Azure Monitor"],
+    "pattern": "blockchain",
+    "url": "https://learn.microsoft.com/azure/architecture/solution-ideas/articles/blockchain-workflow-application"
+  }
+]

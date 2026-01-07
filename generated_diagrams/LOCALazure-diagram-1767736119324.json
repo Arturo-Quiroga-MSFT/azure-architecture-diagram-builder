@@ -1,0 +1,613 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion-api",
+      "type": "groupNode",
+      "position": {
+        "x": -80,
+        "y": 100
+      },
+      "data": {
+        "label": "Ingestion & API Layer"
+      },
+      "style": {
+        "width": 1030,
+        "height": 890
+      },
+      "width": 1030,
+      "height": 890,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": -80,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-processing-ai",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": -80
+      },
+      "data": {
+        "label": "Processing & AI Enrichment"
+      },
+      "style": {
+        "width": 1140,
+        "height": 780
+      },
+      "width": 1140,
+      "height": 780,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": -80
+      }
+    },
+    {
+      "id": "grp-data-security",
+      "type": "groupNode",
+      "position": {
+        "x": 2200,
+        "y": 100
+      },
+      "data": {
+        "label": "Data & Security"
+      },
+      "style": {
+        "width": 530,
+        "height": 550
+      },
+      "width": 530,
+      "height": 550,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 2200,
+        "y": 100
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 750
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 850,
+        "height": 500
+      },
+      "width": 850,
+      "height": 500,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 750
+      }
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 160,
+        "y": 600
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 166,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 160,
+        "y": 600
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-func",
+      "type": "azureNode",
+      "position": {
+        "x": 640,
+        "y": 340
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 160,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 640,
+        "y": 340
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-eventgrid",
+      "type": "azureNode",
+      "position": {
+        "x": 100,
+        "y": 220
+      },
+      "data": {
+        "label": "Event Grid",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg"
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 220
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-computervision",
+      "type": "azureNode",
+      "position": {
+        "x": 1740,
+        "y": 0
+      },
+      "data": {
+        "label": "Azure AI Vision (Computer Vision)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1740,
+        "y": 0
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-docintel",
+      "type": "azureNode",
+      "position": {
+        "x": 1840,
+        "y": 520
+      },
+      "data": {
+        "label": "Azure AI Document Intelligence",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1840,
+        "y": 520
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-speech",
+      "type": "azureNode",
+      "position": {
+        "x": 1300,
+        "y": -20
+      },
+      "data": {
+        "label": "Azure AI Speech",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 162,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": -20
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-textanalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 1220,
+        "y": 540
+      },
+      "data": {
+        "label": "Azure AI Language (Text Analytics)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 540
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 2480,
+        "y": 420
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 156,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2480,
+        "y": 420
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmosdb",
+      "type": "azureNode",
+      "position": {
+        "x": 2300,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2300,
+        "y": 180
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1060,
+        "y": 880
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1060,
+        "y": 880
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 1560,
+        "y": 1040
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1560,
+        "y": 1040
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-apim",
+      "target": "svc-func",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Inbound API calls (submit document, query results)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-func",
+      "target": "svc-keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve API keys/secrets",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-eventgrid",
+      "target": "svc-func",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Trigger processing pipeline",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-func",
+      "target": "svc-computervision",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Analyze images (OCR/tagging)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-func",
+      "target": "svc-docintel",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Extract form fields/layout",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-func",
+      "target": "svc-speech",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Transcribe audio",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-func",
+      "target": "svc-textanalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Sentiment/entity analysis on text",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-func",
+      "target": "svc-cosmosdb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Persist results and processing metadata",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-apim",
+      "target": "svc-cosmosdb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Results retrieval via backend API (through Functions)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional"
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-apim",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "API telemetry",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-func",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Function logs, traces, dependency calls",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Export/centralize logs for queries and alerts",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 253.38279610168684,
+    "y": 236.73410569318744,
+    "zoom": 0.5816471935869996
+  }
+}

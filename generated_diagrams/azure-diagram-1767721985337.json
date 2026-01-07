@@ -1,0 +1,901 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ai-ml",
+      "type": "groupNode",
+      "position": {
+        "x": -200,
+        "y": 60
+      },
+      "data": {
+        "label": "AI + Machine Learning"
+      },
+      "style": {
+        "width": 1160,
+        "height": 520
+      },
+      "width": 1160,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": -200,
+        "y": 60
+      }
+    },
+    {
+      "id": "grp-containers",
+      "type": "groupNode",
+      "position": {
+        "x": -200,
+        "y": 620
+      },
+      "data": {
+        "label": "Containers"
+      },
+      "style": {
+        "width": 1160,
+        "height": 260
+      },
+      "width": 1160,
+      "height": 260,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": -200,
+        "y": 620
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 60
+      },
+      "data": {
+        "label": "Storage"
+      },
+      "style": {
+        "width": 1060,
+        "height": 520
+      },
+      "width": 1060,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 60
+      }
+    },
+    {
+      "id": "grp-identity-security",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 620
+      },
+      "data": {
+        "label": "Identity & Secrets"
+      },
+      "style": {
+        "width": 820,
+        "height": 260
+      },
+      "width": 820,
+      "height": 260,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 620
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 60,
+        "y": 900
+      },
+      "data": {
+        "label": "Monitoring & Alerting"
+      },
+      "style": {
+        "width": 1760,
+        "height": 740
+      },
+      "width": 1760,
+      "height": 740,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 60,
+        "y": 900
+      }
+    },
+    {
+      "id": "svc-ai-cog-r2d2foundry001",
+      "type": "azureNode",
+      "position": {
+        "x": -180,
+        "y": 420
+      },
+      "data": {
+        "label": "r2d2-foundry-001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -180,
+        "y": 420
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ai-ml-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 720,
+        "y": 120
+      },
+      "data": {
+        "label": "aq-main-hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10166-icon-service-Machine-Learning.svg"
+      },
+      "width": 137,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 720,
+        "y": 120
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ai-ml-project",
+      "type": "azureNode",
+      "position": {
+        "x": 720,
+        "y": 440
+      },
+      "data": {
+        "label": "aq-hub-project",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10166-icon-service-Machine-Learning.svg"
+      },
+      "width": 153,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 720,
+        "y": 440
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ai-ml-workspace",
+      "type": "azureNode",
+      "position": {
+        "x": -40,
+        "y": 260
+      },
+      "data": {
+        "label": "AQ-ML-WORK-001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10166-icon-service-Machine-Learning.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -40,
+        "y": 260
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 140,
+        "y": 680
+      },
+      "data": {
+        "label": "ad520cd9e08f429685a9d6623618d73d",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 140,
+        "y": 680
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr-mlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 680,
+        "y": 720
+      },
+      "data": {
+        "label": "aqr2d2acr001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 144,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 680,
+        "y": 720
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-stg-mlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 1400,
+        "y": 360
+      },
+      "data": {
+        "label": "aqmlwork0018580440867",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1400,
+        "y": 360
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-stg-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 1400,
+        "y": 160
+      },
+      "data": {
+        "label": "staqmainhub339573983327",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1400,
+        "y": 160
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-eg-topic-mlwork-stg",
+      "type": "azureNode",
+      "position": {
+        "x": 1740,
+        "y": 120
+      },
+      "data": {
+        "label": "aqmlwork0018580440867-a88f9885-e7c9-48a7-937f-fbb938605b05",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg"
+      },
+      "width": 171,
+      "height": 196,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1740,
+        "y": 120
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-eg-topic-hub-stg",
+      "type": "azureNode",
+      "position": {
+        "x": 1740,
+        "y": 340
+      },
+      "data": {
+        "label": "staqmainhub339573983327-4f52da61-5852-42fb-a260-46cd0df48dc9",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg"
+      },
+      "width": 171,
+      "height": 196,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1740,
+        "y": 340
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-kv-mlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 1060,
+        "y": 680
+      },
+      "data": {
+        "label": "aqmlwork0017720873297",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1060,
+        "y": 680
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-kv-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 1600,
+        "y": 700
+      },
+      "data": {
+        "label": "kv-aqmainhu339573983327",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 700
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-la-workspace",
+      "type": "azureNode",
+      "position": {
+        "x": 1360,
+        "y": 1100
+      },
+      "data": {
+        "label": "aqmlwork0019254899053",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1360,
+        "y": 1100
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ai-appinsights-shared",
+      "type": "azureNode",
+      "position": {
+        "x": 100,
+        "y": 1080
+      },
+      "data": {
+        "label": "aq-app-insights-001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 1080
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-ai-appinsights-mlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 960,
+        "y": 1100
+      },
+      "data": {
+        "label": "aqmlwork0017057039775",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 960,
+        "y": 1100
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-monitor-actiongroup",
+      "type": "azureNode",
+      "position": {
+        "x": 520,
+        "y": 1400
+      },
+      "data": {
+        "label": "Application Insights Smart Detection",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00438-icon-service-Azure-Monitors-for-SAP-Solutions.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 520,
+        "y": 1400
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-ai-ml-workspace",
+      "target": "svc-stg-mlwork",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "workspace storage",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-ai-ml-workspace",
+      "target": "svc-kv-mlwork",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "secrets/keys",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-ai-ml-workspace",
+      "target": "svc-acr-mlwork",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "container images",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-ai-ml-workspace",
+      "target": "svc-ai-appinsights-mlwork",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "telemetry",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-ai-appinsights-mlwork",
+      "target": "svc-la-workspace",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "log ingestion (LogAnalytics)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-ai-ml-project",
+      "target": "svc-stg-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "workspace storage",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-ai-ml-project",
+      "target": "svc-kv-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "secrets/keys",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-ai-ml-project",
+      "target": "svc-acr-hub",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "container images",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-ai-ml-hub",
+      "target": "svc-stg-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "workspace storage",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-ai-ml-hub",
+      "target": "svc-kv-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "secrets/keys",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-ai-ml-hub",
+      "target": "svc-acr-hub",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "container images",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-ai-ml-project",
+      "target": "svc-ai-ml-hub",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "hub association",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-ai-ml-hub",
+      "target": "svc-ai-cog-r2d2foundry001",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "AI services connection (API key)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-ai-ml-project",
+      "target": "svc-ai-cog-r2d2foundry001",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "AI services connection (API key)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-ai-cog-r2d2foundry001",
+      "target": "svc-ai-appinsights-shared",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "telemetry integration",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc-eg-topic-mlwork-stg",
+      "target": "svc-stg-mlwork",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "system topic source",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "svc-eg-topic-hub-stg",
+      "target": "svc-stg-hub",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "system topic source",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "svc-ai-appinsights-shared",
+      "target": "svc-monitor-actiongroup",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "smart detection notifications",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "svc-ai-appinsights-mlwork",
+      "target": "svc-monitor-actiongroup",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "smart detection notifications",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 553.0221518987341,
+    "y": 60.73312236286915,
+    "zoom": 0.6197257383966245
+  }
+}

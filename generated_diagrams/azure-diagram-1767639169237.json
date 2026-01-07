@@ -1,0 +1,374 @@
+{
+  "nodes": [
+    {
+      "id": "grp-web-edge",
+      "type": "groupNode",
+      "position": {
+        "x": 600.5278039585297,
+        "y": 126.9745523091423
+      },
+      "data": {
+        "label": "Web & Edge"
+      },
+      "style": {
+        "width": 850,
+        "height": 550
+      },
+      "width": 850,
+      "height": 550,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 600.5278039585297,
+        "y": 126.9745523091423
+      }
+    },
+    {
+      "id": "grp-app-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 1482,
+        "y": 100
+      },
+      "data": {
+        "label": "Application Tier"
+      },
+      "style": {
+        "width": 368,
+        "height": 550
+      },
+      "width": 368,
+      "height": 550,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1482,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-data-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "data": {
+        "label": "Data & Storage"
+      },
+      "style": {
+        "width": 850,
+        "height": 550
+      },
+      "width": 850,
+      "height": 550,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 748.5014137606033
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 850,
+        "height": 801
+      },
+      "width": 850,
+      "height": 801,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 748.5014137606033
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-frontend-swa",
+      "type": "azureNode",
+      "position": {
+        "x": 1137.5966069745523,
+        "y": 407.78510838831295
+      },
+      "data": {
+        "label": "React Frontend",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 148,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1137.5966069745523,
+        "y": 407.78510838831295
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cdn",
+      "type": "azureNode",
+      "position": {
+        "x": 762.1394910461829,
+        "y": 269.9151743638077
+      },
+      "data": {
+        "label": "Azure CDN",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/10073-icon-service-Front-Door-and-CDN-Profiles.svg"
+      },
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 762.1394910461829,
+        "y": 269.9151743638077
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-api-appservice",
+      "type": "azureNode",
+      "position": {
+        "x": 1556.5504241281808,
+        "y": 281.9038642789821
+      },
+      "data": {
+        "label": "Node.js Backend API",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 166,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1556.5504241281808,
+        "y": 281.9038642789821
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-postgres",
+      "type": "azureNode",
+      "position": {
+        "x": 2531.4797360980206,
+        "y": 425.76814326107444
+      },
+      "data": {
+        "label": "PostgreSQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10131-icon-service-Azure-Database-PostgreSQL-Server.svg"
+      },
+      "width": 166,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2531.4797360980206,
+        "y": 425.76814326107444
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-blob",
+      "type": "azureNode",
+      "position": {
+        "x": 2180,
+        "y": 180
+      },
+      "data": {
+        "label": "Image Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 142,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2180,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 1032.0452403393026,
+        "y": 1024.8162111215834
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 150,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1032.0452403393026,
+        "y": 1024.8162111215834
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1587.2101790763431,
+        "y": 1366.493873704053
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 166,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1587.2101790763431,
+        "y": 1366.493873704053
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-cdn",
+      "target": "svc-frontend-swa",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Caches/serves static assets for SPA",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-frontend-swa",
+      "target": "svc-api-appservice",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Calls REST API (HTTPS)",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-api-appservice",
+      "target": "svc-postgres",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Reads/writes application data",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-api-appservice",
+      "target": "svc-blob",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Uploads/downloads images",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-api-appservice",
+      "target": "svc-keyvault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Retrieves secrets via managed identity",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-api-appservice",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Sends application telemetry",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-frontend-swa",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Sends client-side telemetry",
+      "labelStyle": {
+        "fontSize": 12,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 110.10377358490575,
+    "y": 190.89308176100633,
+    "zoom": 0.6672955974842767
+  }
+}

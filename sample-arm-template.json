@@ -1,0 +1,171 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webAppName": {
+      "type": "string",
+      "defaultValue": "myWebApp"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[concat(parameters('webAppName'), '-plan')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('webAppName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', concat(parameters('webAppName'), '-plan'))]",
+        "[resourceId('Microsoft.Sql/servers/databases', concat(parameters('webAppName'), '-sql'), 'myDatabase')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', concat(parameters('webAppName'), 'storage'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('webAppName'), '-plan'))]",
+        "siteConfig": {
+          "connectionStrings": [
+            {
+              "name": "DefaultConnection",
+              "connectionString": "[concat('Server=tcp:', reference(resourceId('Microsoft.Sql/servers', concat(parameters('webAppName'), '-sql'))).fullyQualifiedDomainName)]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('webAppName'), '-sql')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "administratorLogin": "sqladmin",
+        "administratorLoginPassword": "[newGuid()]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('webAppName'), '-sql', '/myDatabase')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', concat(parameters('webAppName'), '-sql'))]"
+      ],
+      "sku": {
+        "name": "S0",
+        "tier": "Standard"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[concat(parameters('webAppName'), 'storage')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[concat(parameters('webAppName'), '-insights')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2022-07-01",
+      "name": "[concat(parameters('webAppName'), '-kv')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "accessPolicies": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "apiVersion": "2022-07-01",
+      "name": "[concat(parameters('webAppName'), '-appgw')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(parameters('webAppName'), '-pip'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', concat(parameters('webAppName'), '-vnet'))]"
+      ],
+      "properties": {
+        "sku": {
+          "name": "WAF_v2",
+          "tier": "WAF_v2"
+        },
+        "gatewayIPConfigurations": [],
+        "frontendIPConfigurations": [],
+        "backendAddressPools": [],
+        "httpListeners": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-07-01",
+      "name": "[concat(parameters('webAppName'), '-pip')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2022-07-01",
+      "name": "[concat(parameters('webAppName'), '-vnet')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": ["10.0.0.0/16"]
+        },
+        "subnets": [
+          {
+            "name": "appgw-subnet",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24"
+            }
+          },
+          {
+            "name": "app-subnet",
+            "properties": {
+              "addressPrefix": "10.0.2.0/24"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "webAppUrl": {
+      "type": "string",
+      "value": "[concat('https://', reference(resourceId('Microsoft.Web/sites', parameters('webAppName'))).defaultHostName)]"
+    }
+  }
+}

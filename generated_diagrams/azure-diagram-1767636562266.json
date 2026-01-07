@@ -1,0 +1,725 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": 80,
+        "y": 80
+      },
+      "data": {
+        "label": "Ingestion & Collaboration"
+      },
+      "style": {
+        "width": 460,
+        "height": 360
+      },
+      "width": 460,
+      "height": 360,
+      "positionAbsolute": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 580,
+        "y": 80
+      },
+      "data": {
+        "label": "Processing & Orchestration"
+      },
+      "style": {
+        "width": 520,
+        "height": 360
+      },
+      "width": 520,
+      "height": 360,
+      "positionAbsolute": {
+        "x": 580,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 580,
+        "y": 480
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 520,
+        "height": 300
+      },
+      "width": 520,
+      "height": 300,
+      "positionAbsolute": {
+        "x": 580,
+        "y": 480
+      }
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 80,
+        "y": 480
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 460,
+        "height": 300
+      },
+      "width": 460,
+      "height": 300,
+      "positionAbsolute": {
+        "x": 80,
+        "y": 480
+      }
+    },
+    {
+      "id": "svc-teams",
+      "type": "azureNode",
+      "position": {
+        "x": 130,
+        "y": 140
+      },
+      "data": {
+        "label": "Microsoft Teams Channel",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10048-icon-service-API-Connections.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 130,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-api-mgmt",
+      "type": "azureNode",
+      "position": {
+        "x": 280,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 280,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-storage-audio",
+      "type": "azureNode",
+      "position": {
+        "x": 430,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Storage Account (Audio Blob)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 146,
+      "height": 137,
+      "positionAbsolute": {
+        "x": 430,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-event-grid",
+      "type": "azureNode",
+      "position": {
+        "x": 130,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure Event Grid",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg"
+      },
+      "width": 131,
+      "height": 106,
+      "positionAbsolute": {
+        "x": 130,
+        "y": 260
+      }
+    },
+    {
+      "id": "svc-func-orchestrator",
+      "type": "azureNode",
+      "position": {
+        "x": 630,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Functions (Orchestrator)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 630,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-service-bus",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Service Bus (Work Queue)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10042-icon-service-API-Management-Services.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 780,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-func-workers",
+      "type": "azureNode",
+      "position": {
+        "x": 930,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Functions (Chunk Workers)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 930,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-openai",
+      "type": "azureNode",
+      "position": {
+        "x": 630,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure OpenAI Service (gpt-4o-transcribe-diarize)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg"
+      },
+      "width": 146,
+      "height": 137,
+      "positionAbsolute": {
+        "x": 630,
+        "y": 260
+      }
+    },
+    {
+      "id": "svc-speech",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure AI Speech",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 129,
+      "height": 106,
+      "positionAbsolute": {
+        "x": 780,
+        "y": 260
+      }
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 630,
+        "y": 540
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 138,
+      "height": 106,
+      "positionAbsolute": {
+        "x": 630,
+        "y": 540
+      }
+    },
+    {
+      "id": "svc-storage-results",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 540
+      },
+      "data": {
+        "label": "Azure Storage Account (Results Blob)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 146,
+      "height": 137,
+      "positionAbsolute": {
+        "x": 780,
+        "y": 540
+      }
+    },
+    {
+      "id": "svc-logic-apps",
+      "type": "azureNode",
+      "position": {
+        "x": 930,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure Logic Apps (Teams Posting)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 930,
+        "y": 260
+      }
+    },
+    {
+      "id": "svc-key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 130,
+        "y": 540
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 125,
+      "height": 106,
+      "positionAbsolute": {
+        "x": 130,
+        "y": 540
+      }
+    },
+    {
+      "id": "svc-managed-identity",
+      "type": "azureNode",
+      "position": {
+        "x": 280,
+        "y": 540
+      },
+      "data": {
+        "label": "Managed Identity",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10227-icon-service-Entra-Managed-Identities.svg"
+      },
+      "width": 135,
+      "height": 106,
+      "positionAbsolute": {
+        "x": 280,
+        "y": 540
+      }
+    },
+    {
+      "id": "svc-app-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 430,
+        "y": 540
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 430,
+        "y": 540
+      }
+    },
+    {
+      "id": "svc-log-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 130,
+        "y": 660
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 130,
+        "y": 660
+      }
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 280,
+        "y": 660
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00438-icon-service-Azure-Monitors-for-SAP-Solutions.svg"
+      },
+      "width": 120,
+      "height": 106,
+      "positionAbsolute": {
+        "x": 280,
+        "y": 660
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-api-mgmt",
+      "target": "svc-storage-audio",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Upload audio / create job",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-storage-audio",
+      "target": "svc-event-grid",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Blob created event",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-event-grid",
+      "target": "svc-func-orchestrator",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Trigger transcription workflow",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-func-orchestrator",
+      "target": "svc-service-bus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Enqueue chunk jobs (parallel)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-service-bus",
+      "target": "svc-func-workers",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Dispatch chunk jobs",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-func-workers",
+      "target": "svc-openai",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Transcribe+diarize chunk (gpt-4o-transcribe-diarize)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-func-workers",
+      "target": "svc-speech",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Optional complement/fallback STT & diarization",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-func-workers",
+      "target": "svc-cosmos",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Write chunk transcript, speakers, timestamps",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-func-orchestrator",
+      "target": "svc-cosmos",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Update job status & merged indices",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-func-orchestrator",
+      "target": "svc-storage-results",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Store merged transcript artifacts",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-func-orchestrator",
+      "target": "svc-logic-apps",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Notify completion / send summary payload",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-logic-apps",
+      "target": "svc-teams",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Post transcript to Teams channel",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-managed-identity",
+      "target": "svc-key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Access secrets/keys securely",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-func-orchestrator",
+      "target": "svc-app-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Telemetry",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-func-workers",
+      "target": "svc-app-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Telemetry",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc-logic-apps",
+      "target": "svc-log-analytics",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Diagnostics logs",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "svc-app-insights",
+      "target": "svc-monitor",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Alerts and dashboards",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "svc-log-analytics",
+      "target": "svc-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Queries, alerts and dashboards",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 137.98525915359005,
+    "y": -15.487874465050027,
+    "zoom": 1.5644317641464576
+  }
+}

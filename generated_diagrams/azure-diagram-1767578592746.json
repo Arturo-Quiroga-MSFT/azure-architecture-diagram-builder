@@ -1,0 +1,394 @@
+{
+  "nodes": [
+    {
+      "id": "input-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 33.81378026070769,
+        "y": -105.68640595903165
+      },
+      "data": {
+        "label": "User Input"
+      },
+      "style": {
+        "width": 300,
+        "height": 220
+      },
+      "width": 300,
+      "height": 220,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 33.81378026070769,
+        "y": -105.68640595903165
+      },
+      "dragging": false
+    },
+    {
+      "id": "ai-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 170.99962756052162,
+        "y": 159.05847299813783
+      },
+      "data": {
+        "label": "AI Processing"
+      },
+      "style": {
+        "width": 670,
+        "height": 510
+      },
+      "width": 670,
+      "height": 510,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 170.99962756052162,
+        "y": 159.05847299813783
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "db-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 858.6934823091246,
+        "y": -115.90875232774673
+      },
+      "data": {
+        "label": "Database Layer"
+      },
+      "style": {
+        "width": 270,
+        "height": 712
+      },
+      "width": 270,
+      "height": 712,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 858.6934823091246,
+        "y": -115.90875232774673
+      }
+    },
+    {
+      "id": "visualization",
+      "type": "groupNode",
+      "position": {
+        "x": 1145.4562383612663,
+        "y": 130.54748603351956
+      },
+      "data": {
+        "label": "Visualization & Output"
+      },
+      "style": {
+        "width": 462,
+        "height": 200
+      },
+      "width": 462,
+      "height": 200,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1145.4562383612663,
+        "y": 130.54748603351956
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "web-app",
+      "type": "azureNode",
+      "position": {
+        "x": 107.23351955307265,
+        "y": -35.503910614525125
+      },
+      "data": {
+        "label": "Azure Web App",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 124,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 107.23351955307265,
+        "y": -35.503910614525125
+      },
+      "dragging": false
+    },
+    {
+      "id": "intent-ml",
+      "type": "azureNode",
+      "position": {
+        "x": 214.89013035381754,
+        "y": 456.3106145251396
+      },
+      "data": {
+        "label": "Azure Cognitive Services",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 214.89013035381754,
+        "y": 456.3106145251396
+      },
+      "dragging": false
+    },
+    {
+      "id": "schema-fn",
+      "type": "azureNode",
+      "position": {
+        "x": 483.00707635009303,
+        "y": 244.51471135940412
+      },
+      "data": {
+        "label": "Azure Function (Get DB Schema)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 483.00707635009303,
+        "y": 244.51471135940412
+      },
+      "dragging": false
+    },
+    {
+      "id": "gpt-ml",
+      "type": "azureNode",
+      "position": {
+        "x": 627.9158286778397,
+        "y": 489.91284916201124
+      },
+      "data": {
+        "label": "Azure OpenAI Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 627.9158286778397,
+        "y": 489.91284916201124
+      },
+      "dragging": false
+    },
+    {
+      "id": "sql-db",
+      "type": "azureNode",
+      "position": {
+        "x": 874.0729981378024,
+        "y": -44.66815642458103
+      },
+      "data": {
+        "label": "Azure SQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10122-icon-service-Azure-Database-MySQL-Server.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 874.0729981378024,
+        "y": -44.66815642458103
+      },
+      "dragging": false
+    },
+    {
+      "id": "exec-fn",
+      "type": "azureNode",
+      "position": {
+        "x": 922.2480446927375,
+        "y": 378.92364990689015
+      },
+      "data": {
+        "label": "Azure Function (Execute SQL)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 922.2480446927375,
+        "y": 378.92364990689015
+      },
+      "dragging": false
+    },
+    {
+      "id": "power-bi",
+      "type": "azureNode",
+      "position": {
+        "x": 1213.784729981378,
+        "y": 199.71173184357542
+      },
+      "data": {
+        "label": "Power BI Embedded",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/03332-icon-service-Power-BI-Embedded.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1213.784729981378,
+        "y": 199.71173184357542
+      },
+      "dragging": false
+    },
+    {
+      "id": "web-app-output",
+      "type": "azureNode",
+      "position": {
+        "x": 1437.0986964618248,
+        "y": 185.4562383612663
+      },
+      "data": {
+        "label": "Azure Web App (Output)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1437.0986964618248,
+        "y": 185.4562383612663
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "web-app",
+      "target": "intent-ml",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send NL query for intent detection",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "intent-ml",
+      "target": "schema-fn",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Determine DB schema requirements",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "schema-fn",
+      "target": "gpt-ml",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Provide schema & intent for SQL generation",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "gpt-ml",
+      "target": "exec-fn",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send generated SQL query",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "exec-fn",
+      "target": "sql-db",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Execute SQL query",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "sql-db",
+      "target": "exec-fn",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Return query results",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "exec-fn",
+      "target": "power-bi",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send results for visualization",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "power-bi",
+      "target": "web-app-output",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Display tables or charts to user",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 36.042245793708844,
+    "y": 273.9806144842721,
+    "zoom": 0.9820775420629115
+  }
+}

@@ -1,0 +1,68 @@
+.group-node {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed;
+  border-radius: 8px;
+  min-width: 200px;
+  min-height: 150px;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+  pointer-events: all;
+}
+
+.group-node.selected {
+  border-color: #0078d4 !important;
+  border-width: 3px;
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.2);
+}
+
+.group-node-header {
+  background: rgba(0, 0, 0, 0.03);
+  padding: 8px 12px;
+  border-bottom: 1px dashed;
+  border-radius: 6px 6px 0 0;
+}
+
+.group-label {
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: text;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.15s;
+}
+
+.group-label:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.group-label-input {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  border: 1px solid #000000;
+  border-radius: 3px;
+  padding: 2px 4px;
+  outline: none;
+  background: white;
+  width: 100%;
+}
+
+.group-node-content {
+  flex: 1;
+  padding: 12px;
+  position: relative;
+  z-index: 1;
+}
+/* Make group nodes appear behind regular nodes */
+.react-flow__node-groupNode {
+  z-index: -1 !important;
+}
+
+/* Ensure regular nodes appear on top */
+.react-flow__node-azureNode {
+  z-index: 10 !important;
+}

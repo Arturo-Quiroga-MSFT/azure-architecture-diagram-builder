@@ -1,0 +1,215 @@
+{
+  "nodes": [
+    {
+      "id": "ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Device Ingestion"
+      },
+      "style": {
+        "width": 350,
+        "height": 220
+      },
+      "width": 350,
+      "height": 220,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "processing",
+      "type": "groupNode",
+      "position": {
+        "x": 500,
+        "y": 100
+      },
+      "data": {
+        "label": "Processing"
+      },
+      "style": {
+        "width": 350,
+        "height": 220
+      },
+      "width": 350,
+      "height": 220,
+      "positionAbsolute": {
+        "x": 500,
+        "y": 100
+      }
+    },
+    {
+      "id": "data",
+      "type": "groupNode",
+      "position": {
+        "x": 900,
+        "y": 100
+      },
+      "data": {
+        "label": "Data Storage"
+      },
+      "style": {
+        "width": 350,
+        "height": 220
+      },
+      "width": 350,
+      "height": 220,
+      "positionAbsolute": {
+        "x": 900,
+        "y": 100
+      }
+    },
+    {
+      "id": "analytics",
+      "type": "groupNode",
+      "position": {
+        "x": 1300,
+        "y": 100
+      },
+      "data": {
+        "label": "Visualization"
+      },
+      "style": {
+        "width": 350,
+        "height": 220
+      },
+      "width": 350,
+      "height": 220,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": 100
+      }
+    },
+    {
+      "id": "iot-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 150,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure IoT Hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 160
+      }
+    },
+    {
+      "id": "azure-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 550,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 129,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 550,
+        "y": 160
+      }
+    },
+    {
+      "id": "cosmosdb",
+      "type": "azureNode",
+      "position": {
+        "x": 950,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 139,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 950,
+        "y": 160
+      }
+    },
+    {
+      "id": "powerbi",
+      "type": "azureNode",
+      "position": {
+        "x": 1350,
+        "y": 160
+      },
+      "data": {
+        "label": "Power BI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/03332-icon-service-Power-BI-Embedded.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 1350,
+        "y": 160
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "iot-hub",
+      "target": "azure-functions",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Event-driven data ingestion",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "azure-functions",
+      "target": "cosmosdb",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Processed data storage",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "cosmosdb",
+      "target": "powerbi",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Data visualization",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": -65.85211347349173,
+    "y": 269.19494600627513,
+    "zoom": 0.9900273131631684
+  }
+}

@@ -1,0 +1,361 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -5,
+        "y": 80
+      },
+      "data": {
+        "label": "Ingestion"
+      },
+      "style": {
+        "width": 445,
+        "height": 570
+      },
+      "width": 445,
+      "height": 570,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": -5,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 480,
+        "y": 80
+      },
+      "data": {
+        "label": "Processing"
+      },
+      "style": {
+        "width": 360,
+        "height": 220
+      },
+      "width": 360,
+      "height": 220,
+      "positionAbsolute": {
+        "x": 480,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 880,
+        "y": 80
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 360,
+        "height": 220
+      },
+      "width": 360,
+      "height": 220,
+      "positionAbsolute": {
+        "x": 880,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-analytics",
+      "type": "groupNode",
+      "position": {
+        "x": 1051.1021276595745,
+        "y": 345.45425531914896
+      },
+      "data": {
+        "label": "Analytics & Visualization"
+      },
+      "style": {
+        "width": 239,
+        "height": 220
+      },
+      "width": 239,
+      "height": 220,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 1051.1021276595745,
+        "y": 345.45425531914896
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 467.4127659574468,
+        "y": 338.5191489361702
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 551,
+        "height": 306
+      },
+      "width": 551,
+      "height": 306,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 467.4127659574468,
+        "y": 338.5191489361702
+      }
+    },
+    {
+      "id": "svc-devices",
+      "type": "azureNode",
+      "position": {
+        "x": 28.178723404255322,
+        "y": 500.74042553191487
+      },
+      "data": {
+        "label": "IoT Devices",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 120,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 28.178723404255322,
+        "y": 500.74042553191487
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-iothub",
+      "type": "azureNode",
+      "position": {
+        "x": 246.2468085106384,
+        "y": 213.30212765957447
+      },
+      "data": {
+        "label": "Azure IoT Hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "width": 120,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 246.2468085106384,
+        "y": 213.30212765957447
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 532.2212765957446,
+        "y": 164.4340425531915
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 130,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 532.2212765957446,
+        "y": 164.4340425531915
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 937.4042553191489,
+        "y": 172.57872340425533
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 140,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 937.4042553191489,
+        "y": 172.57872340425533
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-powerbi",
+      "type": "azureNode",
+      "position": {
+        "x": 1117.5382978723405,
+        "y": 409.1914893617021
+      },
+      "data": {
+        "label": "Power BI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/03332-icon-service-Power-BI-Embedded.svg"
+      },
+      "width": 120,
+      "height": 108,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1117.5382978723405,
+        "y": 409.1914893617021
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 501.6851063829787,
+        "y": 437.8382978723404
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 501.6851063829787,
+        "y": 437.8382978723404
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 819.8382978723403,
+        "y": 494.0531914893617
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 819.8382978723403,
+        "y": 494.0531914893617
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-devices",
+      "target": "svc-iothub",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Telemetry ingestion (MQTT/AMQP/HTTPS)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-iothub",
+      "target": "svc-functions",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Event trigger (built-in endpoint / Event Hub-compatible)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-functions",
+      "target": "svc-cosmos",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Write processed telemetry",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-cosmos",
+      "target": "svc-powerbi",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Query for dashboards and reports",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-functions",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "App traces, metrics, dependency telemetry",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Export/ingest logs for centralized analysis",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 162.95850066934395,
+    "y": 129.69611780455148,
+    "zoom": 1.2583668005354753
+  }
+}

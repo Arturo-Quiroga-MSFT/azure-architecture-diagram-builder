@@ -1,0 +1,147 @@
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+  color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 100%;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: white;
+  color: #0078d4;
+}
+
+.btn-primary:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.canvas-container {
+  flex: 1;
+  height: 100%;
+  background-color: #ffffff;
+}
+
+.react-flow__node {
+  cursor: grab;
+}
+
+.react-flow__node.selected {
+  box-shadow: 0 0 0 2px #0078d4;
+}
+
+.react-flow__edge-path {
+  stroke: #0078d4;
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #005a9e;
+  stroke-width: 3;
+}
+
+.react-flow__controls {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.react-flow__minimap {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.info-panel {
+  background: white;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.info-text {
+  font-size: 0.75rem;
+  color: #666;
+  max-width: 250px;
+}
+
+.prompt-banner {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #0078d4;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.2);
+  max-width: 600px;
+  user-select: none;
+  transition: box-shadow 0.2s;
+}
+
+.prompt-banner.draggable:hover {
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+}
+
+.prompt-banner.draggable:active {
+  box-shadow: 0 6px 16px rgba(0, 120, 212, 0.4);
+}
+
+.prompt-text {
+  font-size: 0.875rem;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.prompt-text strong {
+  color: #0078d4;
+  font-weight: 600;
+}
