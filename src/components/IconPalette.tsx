@@ -66,7 +66,14 @@ const IconPalette: React.FC = () => {
         onClick={() => setIsCollapsed(!isCollapsed)}
         title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
       >
-        {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        {isCollapsed ? (
+          <>
+            <ChevronRight size={20} />
+            <span className="collapse-label">Azure Services</span>
+          </>
+        ) : (
+          <ChevronLeft size={20} />
+        )}
       </button>
       {!isCollapsed && (
         <>
