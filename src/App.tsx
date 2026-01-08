@@ -14,8 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import gifshot from 'gifshot';
-import { Download, Save, Upload, Film } from 'lucide-react';
+import { Download, Save, Upload } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -205,72 +204,69 @@ function App() {
     }, 300);
   }, [reactFlowInstance]);
 
-  const exportAsGif = useCallback(async () => {
-    if (!reactFlowWrapper.current || !reactFlowInstance) {
+  const exportAsSvg = useCallback(() => {
+    if (!reactFlowInstance) {
       return;
     }
 
     // Fit all nodes into view
     reactFlowInstance.fitView({ padding: 0.2, duration: 200 });
 
-    // Wait for fitView animation to complete
-    setTimeout(async () => {
+    setTimeout(() => {
       try {
-        // Capture 30 frames over 3 seconds to show the animation
-        const frames: string[] = [];
-        const frameCount = 30;
-        const animationDuration = 3000; // 3 seconds
-        
-        alert('Creating animated GIF... This will take a few seconds. Please wait.');
-        
-        for (let i = 0; i < frameCount; i++) {
-          // Create a canvas for each frame
-          const canvas = await html2canvas(reactFlowWrapper.current as HTMLElement, {
-            backgroundColor: '#ffffff',
-            scale: 1.5,
-            useCORS: true,
-            logging: false,
-            ignoreElements: (element) => {
-              // Exclude controls, minimap, and panels
-              return (
-                element.classList?.contains('react-flow__minimap') ||
-                element.classList?.contains('react-flow__controls') ||
-                element.classList?.contains('react-flow__attribution') ||
-                element.classList?.contains('info-panel')
-              );
-            },
-          });
-
-          // Convert canvas to data URL
-          frames.push(canvas.toDataURL('image/png'));
-          
-          // Wait a bit to let the animation progress
-          await new Promise(resolve => setTimeout(resolve, animationDuration / frameCount));
+        const svgElement = document.querySelector('.react-flow__viewport');
+        if (!svgElement) {
+          alert('Failed to find diagram content');
+          return;
         }
 
-        // Create GIF from frames
-        gifshot.createGIF({
-          images: frames,
-          gifWidth: frames[0] ? 800 : 600,
-          gifHeight: frames[0] ? 600 : 450,
-          interval: animationDuration / frameCount / 1000, // Convert to seconds
-          numFrames: frameCount,
-          frameDuration: 1,
-          sampleInterval: 10,
-        }, (obj: any) => {
-          if (!obj.error) {
-            const link = document.createElement('a');
-            link.download = `azure-diagram-animated-${Date.now()}.gif`;
-            link.href = obj.image;
-            link.click();
-          } else {
-            console.error('Error creating GIF:', obj.error);
-            alert('Failed to create animated GIF. Please try again.');
-          }
+        // Get viewport bounds
+        const nodes = reactFlowInstance.getNodes();
+        const edges = reactFlowInstance.getEdges();
+        
+        if (nodes.length === 0) {
+          alert('No nodes to export');
+          return;
+        }
+
+        // Calculate bounds
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        nodes.forEach(node => {
+          const x = node.position.x;
+          const y = node.position.y;
+          const width = node.width || 150;
+          const height = node.height || 100;
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x + width);
+          maxY = Math.max(maxY, y + height);
         });
+
+        const padding = 50;
+        const width = maxX - minX + padding * 2;
+        const height = maxY - minY + padding * 2;
+
+        // Create SVG
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${minX - padding} ${minY - padding} ${width} ${height}">
+            <rect width="100%" height="100%" fill="#f8fafc"/>
+            <g class="react-flow__viewport">
+              ${svgElement.innerHTML}
+            </g>
+          </svg>
+        `;
+
+        // Create blob and download
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `azure-diagram-${Date.now()}.svg`;
+        link.click();
+        URL.revokeObjectURL(url);
       } catch (err) {
-        console.error('Error exporting animated GIF:', err);
-        alert('Failed to export animated GIF. Please try again.');
+        console.error('Error exporting SVG:', err);
+        alert('Failed to export SVG. Please try again.');
       }
     }, 300);
   }, [reactFlowInstance]);
@@ -655,9 +651,9 @@ function App() {
               <Download size={18} />
               Export PNG
             </button>
-            <button onClick={exportAsGif} className="btn btn-primary" title="Export as animated GIF">
-              <Film size={18} />
-              Export GIF
+            <button onClick={exportAsSvg} className="btn btn-primary" title="Export as SVG (vector format)">
+              <Download size={18} />
+              Export SVG
             </button>
             <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
               <Save size={18} />
