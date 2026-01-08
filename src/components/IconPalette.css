@@ -17,9 +17,9 @@
 .collapse-toggle {
   position: absolute;
   top: 50%;
-  right: -15px;
+  right: -18px;
   transform: translateY(-50%);
-  width: 30px;
+  width: 36px;
   height: 60px;
   background: #0078d4;
   border: none;
@@ -38,7 +38,8 @@
 
 .icon-palette.collapsed .collapse-toggle {
   height: 150px;
-  padding: 1rem 0.5rem;
+  padding: 1rem 0.6rem;
+  width: 40px;
 }
 
 .collapse-toggle:hover {
