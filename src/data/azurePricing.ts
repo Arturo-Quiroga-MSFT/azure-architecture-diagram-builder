@@ -11,6 +11,10 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // App Services (handle both singular and plural)
   'App Service': 'Azure App Service',
   'App Services': 'Azure App Service',
+  'Static Web Apps': 'Static Web Apps',
+  'Azure Static Web Apps': 'Static Web Apps',
+  'Azure Static Web App': 'Static Web Apps',
+  'Static Web App': 'Static Web Apps',
   'Function App': 'Azure Functions',
   'Function Apps': 'Azure Functions',
   'Logic Apps': 'Logic Apps',
@@ -43,6 +47,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Azure Cosmos Db': 'Azure Cosmos DB',  // From icon: Azure-Cosmos-DB.svg (title-cased)
   'MySQL': 'Azure Database for MySQL',
   'PostgreSQL': 'Azure Database for PostgreSQL',
+  'Azure Database for PostgreSQL': 'Azure Database for PostgreSQL',
   'Redis': 'Azure Cache for Redis',
   'Redis Cache': 'Redis Cache',
   'Azure Cache for Redis': 'Azure Cache for Redis',
@@ -65,10 +70,13 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Load Balancer': 'Azure Load Balancer',
   'Load Balancers': 'Azure Load Balancer',
   'VPN Gateway': 'VPN Gateway',
-  'Front Door': 'Azure Front Door',
-  'Azure Front Door': 'Azure Front Door',
-  'CDN': 'Azure Content Delivery Network',
-  'Azure CDN': 'Azure Content Delivery Network',
+  'Front Door': 'Azure Front Door Service',
+  'Azure Front Door': 'Azure Front Door Service',
+  'Azure Front Door Service': 'Azure Front Door Service',
+  'CDN': 'Content Delivery Network',
+  'Azure CDN': 'Content Delivery Network',
+  'Azure Content Delivery Network': 'Content Delivery Network',
+  'Content Delivery Network': 'Content Delivery Network',
   'Traffic Manager': 'Azure Traffic Manager',
   
   // Analytics
@@ -87,12 +95,13 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   
   // Identity & Security
   'Active Directory': 'Azure Active Directory',
-  'Key Vault': 'Azure Key Vault',
-  'Azure Key Vault': 'Azure Key Vault',
+  'Key Vault': 'Key Vault',
+  'Azure Key Vault': 'Key Vault',
   
   // Monitoring
   'Application Insights': 'Application Insights',
   'Log Analytics': 'Azure Monitor',
+  'Log Analytics Workspace': 'Log Analytics',
   'Azure Monitor': 'Azure Monitor',
   
   // IoT
@@ -112,14 +121,32 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
  */
 export const DEFAULT_TIERS: Record<string, string> = {
   'App Service': 'S1',
+  'App Services': 'S1',
+  'Static Web Apps': 'Standard',
+  'Azure Static Web Apps': 'Standard',
+  'Azure Static Web App': 'Standard',
   'Function Apps': 'Premium',
   'SQL Database': 'S1',
   'Cosmos DB': 'Standard',
-  'Storage': 'Standard_LRS',
+  'Storage': 'Hot LRS',
+  'Storage Account': 'Hot LRS',
+  'Storage Accounts': 'Hot LRS',
+  'Storage Accounts (Classic)': 'Hot LRS',
+  'Blob Storage': 'Hot LRS',
+  'Azure Blob Storage': 'Hot LRS',
+  'PostgreSQL': 'GP_Gen5_2',
+  'Azure Database for PostgreSQL': 'GP_Gen5_2',
+  'Log Analytics': 'PerGB2018',
+  'Log Analytics Workspace': 'PerGB2018',
   'Virtual Machines': 'D2s_v3',
   'AKS': 'Standard',
   'Application Gateway': 'Standard_v2',
   'Azure Cache for Redis': 'C1',
+  'API Management': 'Developer',
+  'Azure API Management': 'Developer',
+  'CDN': 'Standard_Microsoft',
+  'Azure CDN': 'Standard_Microsoft',
+  'Content Delivery Network': 'Standard_Microsoft',
 };
 
 /**
@@ -168,6 +195,36 @@ export const FALLBACK_PRICING: Record<string, {
     premium: 0.15, // per GB (Premium)
     unit: 'per GB/month'
   },
+  'Storage Account': {
+    basic: 14.60, // ~1TB
+    standard: 14.60, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
+  'Storage Accounts': {
+    basic: 14.60, // ~1TB
+    standard: 14.60, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
+  'Storage Accounts (Classic)': {
+    basic: 14.60, // ~1TB
+    standard: 14.60, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
+  'Blob Storage': {
+    basic: 14.60, // ~1TB
+    standard: 14.60, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
+  'Azure Blob Storage': {
+    basic: 14.60, // ~1TB
+    standard: 14.60, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
   'AKS': {
     basic: 0, // Free tier
     standard: 73.00,
@@ -178,6 +235,90 @@ export const FALLBACK_PRICING: Record<string, {
     basic: 16.06, // C1
     standard: 64.24, // C2
     premium: 256.96, // C4
+    unit: 'per instance/month'
+  },
+  'PostgreSQL': {
+    basic: 28.47, // B_Gen5_1
+    standard: 109.86, // GP_Gen5_2
+    premium: 438.36, // GP_Gen5_8
+    unit: 'per server/month'
+  },
+  'Azure Database for PostgreSQL': {
+    basic: 28.47, // B_Gen5_1
+    standard: 109.86, // GP_Gen5_2
+    premium: 438.36, // GP_Gen5_8
+    unit: 'per server/month'
+  },
+  'Static Web Apps': {
+    basic: 0, // Free tier
+    standard: 9.00, // Standard tier
+    premium: 9.00, // Standard tier
+    unit: 'per app/month'
+  },
+  'Azure Static Web Apps': {
+    basic: 0, // Free tier
+    standard: 9.00, // Standard tier
+    premium: 9.00, // Standard tier
+    unit: 'per app/month'
+  },
+  'Azure Static Web App': {
+    basic: 0, // Free tier
+    standard: 9.00, // Standard tier
+    premium: 9.00, // Standard tier
+    unit: 'per app/month'
+  },
+  'Log Analytics': {
+    basic: 2.30, // Per GB ingested
+    standard: 2.30, // Per GB ingested
+    premium: 2.30, // Per GB ingested
+    unit: 'per GB/month'
+  },
+  'Log Analytics Workspace': {
+    basic: 2.30, // Per GB ingested
+    standard: 2.30, // Per GB ingested
+    premium: 2.30, // Per GB ingested
+    unit: 'per GB/month'
+  },
+  'API Management': {
+    basic: 0, // Consumption (pay per call)
+    standard: 50.26, // Developer tier
+    premium: 696.55, // Standard tier
+    unit: 'per instance/month'
+  },
+  'Azure API Management': {
+    basic: 0, // Consumption (pay per call)
+    standard: 50.26, // Developer tier
+    premium: 696.55, // Standard tier
+    unit: 'per instance/month'
+  },
+  'CDN': {
+    basic: 0.087, // Per GB (first 10TB)
+    standard: 0.087, // Per GB
+    premium: 0.25, // Per GB (Premium)
+    unit: 'per GB/month'
+  },
+  'Azure CDN': {
+    basic: 0.087, // Per GB (first 10TB)
+    standard: 0.087, // Per GB
+    premium: 0.25, // Per GB (Premium)
+    unit: 'per GB/month'
+  },
+  'Content Delivery Network': {
+    basic: 8.70, // ~100GB
+    standard: 8.70, // ~100GB
+    premium: 25.00, // ~100GB Premium
+    unit: 'per account/month'
+  },
+  'Azure Front Door': {
+    basic: 35.00, // Standard tier
+    standard: 35.00, // Standard tier
+    premium: 330.00, // Premium tier
+    unit: 'per instance/month'
+  },
+  'Azure Front Door Service': {
+    basic: 35.00, // Standard tier
+    standard: 35.00, // Standard tier
+    premium: 330.00, // Premium tier
     unit: 'per instance/month'
   },
   'Application Gateway': {

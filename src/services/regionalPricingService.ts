@@ -119,15 +119,19 @@ function filterPricingItems(
   serviceName: string,
   consumptionOnly: boolean = true
 ): AzureRetailPrice[] {
-  return items.filter(item => {
+  const filtered = items.filter(item => {
     // Match service name (case insensitive)
-    if (item.serviceName.toLowerCase() !== serviceName.toLowerCase()) return false;
+    const matches = item.serviceName.toLowerCase() === serviceName.toLowerCase();
+    if (!matches) return false;
     
     // Only consumption pricing (not reservations or spot)
     if (consumptionOnly && item.type !== 'Consumption') return false;
     
     return true;
   });
+  
+  console.log(`🔍 Filtered ${filtered.length} items for ${serviceName} from ${items.length} total`);
+  return filtered;
 }
 
 /**
@@ -157,8 +161,9 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
     }
   });
   
-  // Sort by price
-  return Array.from(tierMap.values()).sort((a, b) => a.monthlyPrice - b.monthlyPrice);
+  const tiers = Array.from(tierMap.values()).sort((a, b) => a.monthlyPrice - b.monthlyPrice);
+  console.log(`📊 Parsed ${tiers.length} pricing tiers. First few:`, tiers.slice(0, 3).map(t => ({ name: t.name, monthly: t.monthlyPrice })));
+  return tiers;
 }
 
 /**
@@ -204,10 +209,13 @@ export async function getRegionalServicePricing(
   console.log(`✅ Found ${tiers.length} tiers for ${serviceName} in ${targetRegion}`);
   
   const pricing: ServicePricing = {
+    serviceType: serviceName,
     serviceName,
+    defaultTier: tiers[0]?.name || 'Standard',
     region: targetRegion,
     currency: data.BillingCurrency || 'USD',
     tiers,
+    calculationType: 'hourly',
     lastUpdated: new Date().toISOString(),
   };
   

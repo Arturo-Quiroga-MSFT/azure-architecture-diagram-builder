@@ -17,11 +17,16 @@ SERVICES=(
   "Container Instances"
   "Application Gateway"
   "Azure Machine Learning"
+  "Azure Front Door Service"
+  "Azure Database for PostgreSQL"
+  "Key Vault"
+  "Application Insights"
+  "API Management"
+  "Content Delivery Network"
 )
 
-# Output directory
-OUTPUT_DIR="pricing_data_$(date +%Y%m%d_%H%M%S)"
-mkdir -p "$OUTPUT_DIR"
+# Output directory - use project structure
+OUTPUT_DIR="../src/data/pricing/regions"
 
 echo "🌍 Fetching Azure pricing for ${#REGIONS[@]} regions..."
 echo "📦 Services: ${#SERVICES[@]}"

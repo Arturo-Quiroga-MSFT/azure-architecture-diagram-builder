@@ -26,9 +26,10 @@ import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
 import { loadIconsFromCategory } from './utils/iconLoader';
-import { initializeNodePricing } from './services/costEstimationService';
+import { initializeNodePricing, calculateCostBreakdown } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
-import { AzureRegion } from './services/regionalPricingService';
+import { preloadCommonServices, setActiveRegion, getActiveRegion, AzureRegion } from './services/regionalPricingService';
+import { formatMonthlyCost } from './utils/pricingHelpers';
 import './App.css';
 
 const nodeTypes = {
@@ -51,6 +52,7 @@ function App() {
   const [workflow, setWorkflow] = useState<any[]>([]);
   // const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
+  const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -76,46 +78,40 @@ function App() {
   }, [setNodes]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
-  // Prefetch common service pricing on mount
+  // Preload pricing data on mount
   useEffect(() => {
-    prefetchCommonServices().catch(err => 
-      console.warn('Failed to prefetch pricing:', err)
+    preloadCommonServices().catch(err => 
+      console.warn('Failed to preload regional pricing:', err)
+    );
+    prefetchCommonServices('eastus2').catch(err => 
+      console.warn('Failed to prefetch API pricing:', err)
     );
   }, []);
 
+  // Recalculate total cost whenever nodes change
+  useEffect(() => {
+    const breakdown = calculateCostBreakdown(nodes);
+    setTotalMonthlyCost(breakdown.totalMonthlyCost);
+  }, [nodes]);
+
   // Handle region change
   const handleRegionChange = useCallback(async (region: AzureRegion) => {
-    console.log(`🌍 Region changed to: ${region}, preloading pricing...`);
+    console.log(`🌍 Region changed to ${region}, updating all node pricing...`);
     
-    // Preload pricing for new region
-    await prefetchCommonServices(region);
-    
-    // Re-calculate pricing for all existing nodes in new region
-    const nodesToUpdate = nodes.filter(n => n.type === 'azureNode' && n.data.pricing);
-    
-    for (const node of nodesToUpdate) {
-      try {
-        const updatedPricing = await initializeNodePricing(
-          node.data.label,
-          node.data.service?.split(' ').pop() || '', // Extract service type
-          region
-        );
-        
-        if (updatedPricing) {
-          setNodes((nds) =>
-            nds.map((n) =>
-              n.id === node.id
-                ? { ...n, data: { ...n.data, pricing: updatedPricing } }
-                : n
-            )
-          );
+    // Update all nodes with new regional pricing
+    const updatedNodes = await Promise.all(
+      nodes.map(async (node) => {
+        if (node.type === 'azureNode' && node.data.label) {
+          const newPricing = await initializeNodePricing(node.data.label, region);
+          if (newPricing) {
+            return { ...node, data: { ...node.data, pricing: newPricing } };
+          }
         }
-      } catch (error) {
-        console.warn(`Failed to update pricing for ${node.data.label}:`, error);
-      }
-    }
+        return node;
+      })
+    );
     
-    console.log(`✅ Updated pricing for ${nodesToUpdate.length} nodes in ${region}`);
+    setNodes(updatedNodes);
   }, [nodes, setNodes]);
 
   useEffect(() => {
@@ -175,7 +171,7 @@ function App() {
   }, []);
 
   const onDrop = useCallback(
-    async (event: React.DragEvent) => {
+    (event: React.DragEvent) => {
       event.preventDefault();
 
       if (!reactFlowInstance) return;
@@ -183,7 +179,6 @@ function App() {
       const type = event.dataTransfer.getData('application/reactflow');
       const iconPath = event.dataTransfer.getData('iconPath');
       const iconName = event.dataTransfer.getData('iconName');
-      const iconCategory = event.dataTransfer.getData('iconCategory');
 
       if (typeof type === 'undefined' || !type) {
         return;
@@ -194,36 +189,31 @@ function App() {
         y: event.clientY,
       });
 
-      const nodeId = `${Date.now()}`;
       const newNode: Node = {
-        id: nodeId,
+        id: `${Date.now()}`,
         type,
         position,
         data: { 
           label: iconName,
           iconPath: iconPath,
-          category: iconCategory,
         },
       };
 
-      // Add node first
       setNodes((nds) => nds.concat(newNode));
 
-      // Initialize pricing asynchronously using the service name
-      try {
-        const pricing = await initializeNodePricing(iconName, 'eastus');
+      // Initialize pricing asynchronously with current region
+      const currentRegion = getActiveRegion();
+      initializeNodePricing(iconName, currentRegion).then(pricing => {
         if (pricing) {
           setNodes((nds) => 
             nds.map(n => 
-              n.id === nodeId
+              n.id === newNode.id 
                 ? { ...n, data: { ...n.data, pricing } }
                 : n
             )
           );
         }
-      } catch (err) {
-        console.warn('Failed to initialize pricing for', iconName, ':', err);
-      }
+      }).catch(err => console.warn('Failed to initialize pricing:', err));
     },
     [reactFlowInstance, setNodes]
   );
@@ -467,7 +457,6 @@ function App() {
         data: {
           label: service.name,
           iconPath: icon?.path || '',
-          category: service.category,
         },
       };
 
@@ -563,10 +552,10 @@ function App() {
     setNodes(newNodes);
     setEdges(newEdges);
 
-    // Initialize pricing for all service nodes asynchronously
+    // Initialize pricing for all service nodes asynchronously (uses active region)
     Promise.all(
       services.map(async (service: any) => {
-        const pricing = await initializeNodePricing(service.type, 'eastus');
+        const pricing = await initializeNodePricing(service.type);
         return { id: service.id, pricing };
       })
     ).then(pricingResults => {
@@ -724,6 +713,12 @@ function App() {
         <div className="header-content">
           <h1>Azure Architecture Diagram Builder</h1>
           <div className="header-actions">
+            <RegionSelector onRegionChange={handleRegionChange} />
+            {totalMonthlyCost > 0 && (
+              <div className="cost-indicator" title="Total estimated monthly cost for all services">
+                💰 {formatMonthlyCost(totalMonthlyCost)}
+              </div>
+            )}
             <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
@@ -731,7 +726,6 @@ function App() {
               Add Group
             </button>
             <AIArchitectureGenerator onGenerate={handleAIGenerate} />
-            <RegionSelector onRegionChange={handleRegionChange} />
             <label className="btn btn-secondary" title="Upload ARM template to generate diagram">
               <Upload size={18} />
               {isUploadingARM ? 'Parsing...' : 'Import ARM'}

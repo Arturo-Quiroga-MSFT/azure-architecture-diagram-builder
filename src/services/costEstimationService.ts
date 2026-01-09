@@ -14,6 +14,11 @@ import {
   calculateMonthlyCost 
 } from './azurePricingService';
 import { 
+  getRegionalServicePricing,
+  getActiveRegion,
+  AzureRegion
+} from './regionalPricingService';
+import { 
   getAzureServiceName, 
   getDefaultTier, 
   getFallbackPricing,
@@ -23,15 +28,17 @@ import {
   applyRegionalPricing, 
   getDefaultRegion 
 } from '../utils/pricingHelpers';
+import { getActiveRegion } from './regionalPricingService';
 
 /**
  * Initialize pricing for a new node
  */
 export async function initializeNodePricing(
   serviceType: string,
-  region: string = 'eastus'
+  region?: string
 ): Promise<NodePricingConfig | null> {
-  console.log('🔍 Initializing pricing for:', serviceType, 'in region:', region);
+  const targetRegion = region || getActiveRegion();
+  console.log('🔍 Initializing pricing for:', serviceType, 'in region:', targetRegion);
   
   // Check if this service has pricing data
   if (!hasPricingData(serviceType)) {
@@ -46,19 +53,37 @@ export async function initializeNodePricing(
     console.log('  → Mapped to Azure service:', serviceName, 'Default tier:', defaultTier);
     
     // Try to fetch from API
-    const pricing = await getServicePricing(serviceType, serviceName, region);
+    const pricing = await getServicePricing(serviceType, serviceName, targetRegion);
     
     if (pricing && pricing.tiers.length > 0) {
       // Use API data
       const tier = pricing.tiers.find(t => t.name === defaultTier) || pricing.tiers[0];
-      console.log('  ✅ Got pricing from API:', tier.monthlyPrice, '/mo');
+      console.log('  ✅ Found tier:', tier.name, 'Price:', tier.monthlyPrice, '/mo (hourly:', tier.hourlyPrice, ')');
+      
+      // If pricing is $0 (usage-based services like Storage), use fallback pricing
+      if (tier.monthlyPrice === 0) {
+        console.log('  💡 Usage-based pricing ($0 base), using fallback estimate');
+        const fallbackPrice = getFallbackPricing(serviceType, 'standard');
+        const basePrice = applyRegionalPricing(fallbackPrice, targetRegion);
+        
+        return {
+          estimatedCost: basePrice,
+          tier: tier.name,
+          skuName: tier.skuName,
+          quantity: 1,
+          region: targetRegion,
+          unit: tier.unit,
+          lastUpdated: new Date().toISOString(),
+          isCustom: false
+        };
+      }
       
       return {
         estimatedCost: tier.monthlyPrice,
         tier: tier.name,
         skuName: tier.skuName,
         quantity: 1,
-        region: region,
+        region: targetRegion,
         unit: tier.unit,
         lastUpdated: new Date().toISOString(),
         isCustom: false
@@ -66,7 +91,7 @@ export async function initializeNodePricing(
     } else {
       // Fallback to static data
       const fallbackPrice = getFallbackPricing(serviceType, 'standard');
-      const basePrice = applyRegionalPricing(fallbackPrice, region);
+      const basePrice = applyRegionalPricing(fallbackPrice, targetRegion);
       console.log('  💾 Using fallback pricing:', basePrice, '/mo');
       
       return {
@@ -74,7 +99,7 @@ export async function initializeNodePricing(
         tier: 'Standard',
         skuName: 'Standard',
         quantity: 1,
-        region: region,
+        region: targetRegion,
         unit: 'per instance/month',
         lastUpdated: new Date().toISOString(),
         isCustom: false
@@ -85,14 +110,14 @@ export async function initializeNodePricing(
     
     // Final fallback
     const fallbackPrice = getFallbackPricing(serviceType, 'standard');
-    const basePrice = applyRegionalPricing(fallbackPrice, region);
+    const basePrice = applyRegionalPricing(fallbackPrice, targetRegion);
     
     return {
       estimatedCost: basePrice,
       tier: 'Standard',
       skuName: 'Standard',
       quantity: 1,
-      region: region,
+      region: targetRegion,
       unit: 'per instance/month',
       lastUpdated: new Date().toISOString(),
       isCustom: false
@@ -174,8 +199,9 @@ export function setCustomPricing(
  */
 export function calculateCostBreakdown(
   nodes: Node[],
-  region: string = 'eastus'
+  region?: string
 ): CostBreakdown {
+  const targetRegion = region || getActiveRegion();
   // Initialize breakdown
   const breakdown: CostBreakdown = {
     totalMonthlyCost: 0,

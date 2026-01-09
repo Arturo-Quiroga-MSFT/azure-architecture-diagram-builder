@@ -38,8 +38,9 @@ function sleep(ms: number): Promise<void> {
 /**
  * Generate cache key from query parameters
  */
-function getCacheKey(serviceName: string, region: string = 'eastus'): string {
-  return `${serviceName}_${region}`.toLowerCase();
+function getCacheKey(serviceName: string, region?: string): string {
+  const targetRegion = region || getActiveRegion();
+  return `${serviceName}_${targetRegion}`.toLowerCase();
 }
 
 /**
@@ -95,8 +96,8 @@ function buildServiceFilter(serviceName: string, region?: string): string {
   if (region) {
     filters.push(`armRegionName eq '${region}'`);
   } else {
-    // Default to East US
-    filters.push(`armRegionName eq 'eastus'`);
+    // Default to active region
+    filters.push(`armRegionName eq '${getActiveRegion()}'`);
   }
   
   // Only consumption-based pricing (not reservations or spot)
@@ -206,13 +207,14 @@ export async function getServicePricing(
  */
 export async function getBatchServicePricing(
   services: Array<{ serviceType: string; serviceName: string }>,
-  region: string = 'eastus'
+  region?: string
 ): Promise<Map<string, ServicePricing | null>> {
+  const targetRegion = region || getActiveRegion();
   const results = new Map<string, ServicePricing | null>();
   
   // Process sequentially to avoid rate limiting
   for (const service of services) {
-    const pricing = await getServicePricing(service.serviceType, service.serviceName, region);
+    const pricing = await getServicePricing(service.serviceType, service.serviceName, targetRegion);
     results.set(service.serviceType, pricing);
   }
   
