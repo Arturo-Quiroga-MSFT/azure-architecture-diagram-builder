@@ -1,0 +1,357 @@
+{
+  "nodes": [
+    {
+      "id": "grp-web-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Web Tier"
+      },
+      "style": {
+        "width": 850,
+        "height": 520
+      },
+      "width": 850,
+      "height": 520,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-app-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 100
+      },
+      "data": {
+        "label": "Application Tier"
+      },
+      "style": {
+        "width": 850,
+        "height": 520
+      },
+      "width": 850,
+      "height": 520,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-data-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 850,
+        "height": 520
+      },
+      "width": 850,
+      "height": 520,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 750
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 850,
+        "height": 540
+      },
+      "width": 850,
+      "height": 540,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 750
+      }
+    },
+    {
+      "id": "svc-frontend-swa",
+      "type": "azureNode",
+      "position": {
+        "x": 520,
+        "y": 280
+      },
+      "data": {
+        "label": "Azure Static Web Apps (React Frontend)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 520,
+        "y": 280
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-api-appservice",
+      "type": "azureNode",
+      "position": {
+        "x": 1220,
+        "y": 380
+      },
+      "data": {
+        "label": "Azure App Service (Node.js API)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 380
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-postgres",
+      "type": "azureNode",
+      "position": {
+        "x": 1980,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10131-icon-service-Azure-Database-PostgreSQL-Server.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1980,
+        "y": 160
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-blob",
+      "type": "azureNode",
+      "position": {
+        "x": 2360,
+        "y": 400
+      },
+      "data": {
+        "label": "Azure Blob Storage (Images)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2360,
+        "y": 400
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 1140,
+        "y": 1120
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 156,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1140,
+        "y": 1120
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1600,
+        "y": 900
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 900
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-frontend-swa",
+      "target": "svc-api-appservice",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "HTTPS calls to backend API",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-api-appservice",
+      "target": "svc-postgres",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "SQL queries over TLS (5432)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-api-appservice",
+      "target": "svc-blob",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Upload/download images (SDK/REST) using SAS or managed identity",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-api-appservice",
+      "target": "svc-keyvault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Fetch secrets/configuration at startup/rotation",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-api-appservice",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Send API logs, metrics, and traces",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-frontend-swa",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Client-side telemetry (page views, JS errors)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 95.9905660377359,
+    "y": 183.17610062893084,
+    "zoom": 0.5817610062893082
+  }
+}

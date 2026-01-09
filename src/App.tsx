@@ -24,7 +24,11 @@ import Legend from './components/Legend';
 import EditableEdge from './components/EditableEdge';
 import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
+import RegionSelector from './components/RegionSelector';
 import { loadIconsFromCategory } from './utils/iconLoader';
+import { initializeNodePricing } from './services/costEstimationService';
+import { prefetchCommonServices } from './services/azurePricingService';
+import { AzureRegion } from './services/regionalPricingService';
 import './App.css';
 
 const nodeTypes = {
@@ -45,7 +49,7 @@ function App() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isUploadingARM, setIsUploadingARM] = useState(false);
   const [workflow, setWorkflow] = useState<any[]>([]);
-  const [showWorkflow, setShowWorkflow] = useState(false);
+  // const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
@@ -71,6 +75,48 @@ function App() {
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+
+  // Prefetch common service pricing on mount
+  useEffect(() => {
+    prefetchCommonServices().catch(err => 
+      console.warn('Failed to prefetch pricing:', err)
+    );
+  }, []);
+
+  // Handle region change
+  const handleRegionChange = useCallback(async (region: AzureRegion) => {
+    console.log(`🌍 Region changed to: ${region}, preloading pricing...`);
+    
+    // Preload pricing for new region
+    await prefetchCommonServices(region);
+    
+    // Re-calculate pricing for all existing nodes in new region
+    const nodesToUpdate = nodes.filter(n => n.type === 'azureNode' && n.data.pricing);
+    
+    for (const node of nodesToUpdate) {
+      try {
+        const updatedPricing = await initializeNodePricing(
+          node.data.label,
+          node.data.service?.split(' ').pop() || '', // Extract service type
+          region
+        );
+        
+        if (updatedPricing) {
+          setNodes((nds) =>
+            nds.map((n) =>
+              n.id === node.id
+                ? { ...n, data: { ...n.data, pricing: updatedPricing } }
+                : n
+            )
+          );
+        }
+      } catch (error) {
+        console.warn(`Failed to update pricing for ${node.data.label}:`, error);
+      }
+    }
+    
+    console.log(`✅ Updated pricing for ${nodesToUpdate.length} nodes in ${region}`);
+  }, [nodes, setNodes]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -129,7 +175,7 @@ function App() {
   }, []);
 
   const onDrop = useCallback(
-    (event: React.DragEvent) => {
+    async (event: React.DragEvent) => {
       event.preventDefault();
 
       if (!reactFlowInstance) return;
@@ -137,6 +183,7 @@ function App() {
       const type = event.dataTransfer.getData('application/reactflow');
       const iconPath = event.dataTransfer.getData('iconPath');
       const iconName = event.dataTransfer.getData('iconName');
+      const iconCategory = event.dataTransfer.getData('iconCategory');
 
       if (typeof type === 'undefined' || !type) {
         return;
@@ -147,17 +194,36 @@ function App() {
         y: event.clientY,
       });
 
+      const nodeId = `${Date.now()}`;
       const newNode: Node = {
-        id: `${Date.now()}`,
+        id: nodeId,
         type,
         position,
         data: { 
           label: iconName,
           iconPath: iconPath,
+          category: iconCategory,
         },
       };
 
+      // Add node first
       setNodes((nds) => nds.concat(newNode));
+
+      // Initialize pricing asynchronously using the service name
+      try {
+        const pricing = await initializeNodePricing(iconName, 'eastus');
+        if (pricing) {
+          setNodes((nds) => 
+            nds.map(n => 
+              n.id === nodeId
+                ? { ...n, data: { ...n.data, pricing } }
+                : n
+            )
+          );
+        }
+      } catch (err) {
+        console.warn('Failed to initialize pricing for', iconName, ':', err);
+      }
     },
     [reactFlowInstance, setNodes]
   );
@@ -313,13 +379,13 @@ function App() {
       setEdges([]);
       setArchitecturePrompt('');
       setWorkflow([]);
-      setShowWorkflow(false);
+      // setShowWorkflow(false);
 
       // Store the prompt and workflow for display
       setArchitecturePrompt(prompt);
       if (workflowSteps && workflowSteps.length > 0) {
         setWorkflow(workflowSteps);
-        setShowWorkflow(true); // Automatically show workflow panel for new generations
+        // setShowWorkflow(true); // Automatically show workflow panel for new generations
       } else {
         setWorkflow([]);
       }
@@ -401,6 +467,7 @@ function App() {
         data: {
           label: service.name,
           iconPath: icon?.path || '',
+          category: service.category,
         },
       };
 
@@ -495,6 +562,24 @@ function App() {
     console.log(`Setting ${newNodes.length} nodes and ${newEdges.length} edges`);
     setNodes(newNodes);
     setEdges(newEdges);
+
+    // Initialize pricing for all service nodes asynchronously
+    Promise.all(
+      services.map(async (service: any) => {
+        const pricing = await initializeNodePricing(service.type, 'eastus');
+        return { id: service.id, pricing };
+      })
+    ).then(pricingResults => {
+      setNodes((nds) => 
+        nds.map(node => {
+          const result = pricingResults.find(r => r.id === node.id);
+          if (result?.pricing) {
+            return { ...node, data: { ...node.data, pricing: result.pricing } };
+          }
+          return node;
+        })
+      );
+    }).catch(err => console.warn('Failed to initialize pricing for AI nodes:', err));
 
     // Fit view after a short delay to allow nodes to render
     setTimeout(() => {
@@ -646,6 +731,7 @@ function App() {
               Add Group
             </button>
             <AIArchitectureGenerator onGenerate={handleAIGenerate} />
+            <RegionSelector onRegionChange={handleRegionChange} />
             <label className="btn btn-secondary" title="Upload ARM template to generate diagram">
               <Upload size={18} />
               {isUploadingARM ? 'Parsing...' : 'Import ARM'}

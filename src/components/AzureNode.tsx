@@ -1,6 +1,8 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { loadIcon } from '../utils/iconLoader';
+import { NodePricingConfig } from '../types/pricing';
+import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
 import './AzureNode.css';
 
 // Map categories to colors
@@ -32,6 +34,11 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
   const [iconUrl, setIconUrl] = useState<string>('');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [label, setLabel] = useState(data.label || 'Azure Service');
+
+  // Extract pricing data
+  const pricing = data.pricing as NodePricingConfig | undefined;
+  const hasPricing = !!pricing && pricing.estimatedCost > 0;
+  const totalCost = pricing ? pricing.estimatedCost * pricing.quantity : 0;
 
   useEffect(() => {
     if (data.iconPath) {
@@ -86,9 +93,16 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
       />
       
       <div className="node-content">
-        {data.estimatedCost && (
-          <div className="cost-badge" title="Estimated monthly cost">
-            ${data.estimatedCost}/mo
+        {hasPricing && (
+          <div 
+            className="cost-badge" 
+            title={`Estimated monthly cost\nTier: ${pricing.tier}\nQuantity: ${pricing.quantity}\nRegion: ${pricing.region}\n${pricing.isCustom ? 'Custom pricing' : 'Auto-calculated'}`}
+            style={{ 
+              background: `linear-gradient(135deg, ${getCostColor(totalCost)} 0%, ${getCostColor(totalCost)}dd 100%)` 
+            }}
+          >
+            {formatMonthlyCost(totalCost)}
+            {pricing.quantity > 1 && <span className="cost-quantity"> x{pricing.quantity}</span>}
           </div>
         )}
         {iconUrl ? (
