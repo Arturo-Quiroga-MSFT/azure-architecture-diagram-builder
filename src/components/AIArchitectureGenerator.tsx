@@ -39,6 +39,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
 
     setIsGenerating(true);
     setError('');
+    setSimilarArchitectures([]); // Clear previous results
 
     try {
       // Call Azure OpenAI to generate architecture
@@ -51,6 +52,12 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
       
       onGenerate(result, description);
       setDescription('');
+      
+      // Close modal after successful generation
+      setTimeout(() => {
+        setIsOpen(false);
+        setSimilarArchitectures([]);
+      }, 10000); // Give user 10 seconds to see the success message and links
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
     } finally {
@@ -68,6 +75,9 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         className="btn btn-ai"
         onClick={() => {
           setIsOpen(true);
+          // Reset state when opening modal
+          setSimilarArchitectures([]);
+          setError('');
           // Initialize embeddings in background
           initializeReferenceArchitectures().catch(console.error);
         }}

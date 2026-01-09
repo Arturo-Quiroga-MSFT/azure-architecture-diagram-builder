@@ -45,6 +45,7 @@ function App() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isUploadingARM, setIsUploadingARM] = useState(false);
   const [workflow, setWorkflow] = useState<any[]>([]);
+  const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
@@ -166,10 +167,10 @@ function App() {
       return;
     }
 
-    // Fit all nodes into view
-    reactFlowInstance.fitView({ padding: 0.2, duration: 200 });
+    // Fit all nodes into view with no animation for immediate rendering
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    // Wait for fitView animation to complete
+    // Wait longer for complete rendering including edges
     setTimeout(async () => {
       try {
         const canvas = await html2canvas(reactFlowWrapper.current as HTMLElement, {
@@ -177,6 +178,8 @@ function App() {
           scale: 2,
           useCORS: true,
           logging: false,
+          allowTaint: true,
+          foreignObjectRendering: false,
           ignoreElements: (element) => {
             // Only exclude controls and minimap, KEEP title block and legend
             return (
@@ -201,63 +204,53 @@ function App() {
         console.error('Error exporting diagram:', err);
         alert('Failed to export diagram. Please try again.');
       }
-    }, 300);
+    }, 800);
   }, [reactFlowInstance]);
 
-  const exportAsSvg = useCallback(() => {
-    if (!reactFlowInstance) {
+  const exportAsSvg = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
       return;
     }
 
-    // Fit all nodes into view
-    reactFlowInstance.fitView({ padding: 0.2, duration: 200 });
+    // Fit all nodes into view with no animation for immediate rendering
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    setTimeout(() => {
+    // Wait longer for complete rendering including edges
+    setTimeout(async () => {
       try {
-        const svgElement = document.querySelector('.react-flow__viewport');
-        if (!svgElement) {
-          alert('Failed to find diagram content');
-          return;
-        }
-
-        // Get viewport bounds
-        const nodes = reactFlowInstance.getNodes();
-        const edges = reactFlowInstance.getEdges();
-        
-        if (nodes.length === 0) {
-          alert('No nodes to export');
-          return;
-        }
-
-        // Calculate bounds
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        nodes.forEach(node => {
-          const x = node.position.x;
-          const y = node.position.y;
-          const width = node.width || 150;
-          const height = node.height || 100;
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x + width);
-          maxY = Math.max(maxY, y + height);
+        // Use html2canvas to capture the diagram as an image first
+        const canvas = await html2canvas(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: '#f8fafc',
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+          foreignObjectRendering: false,
+          ignoreElements: (element) => {
+            // Exclude controls, minimap, and panels
+            return (
+              element.classList?.contains('react-flow__minimap') ||
+              element.classList?.contains('react-flow__controls') ||
+              element.classList?.contains('react-flow__attribution') ||
+              element.classList?.contains('info-panel') ||
+              element.classList?.contains('workflow-panel') ||
+              element.classList?.contains('alignment-toolbar') ||
+              element.classList?.contains('icon-palette')
+            );
+          },
         });
 
-        const padding = 50;
-        const width = maxX - minX + padding * 2;
-        const height = maxY - minY + padding * 2;
-
-        // Create SVG
-        const svg = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${minX - padding} ${minY - padding} ${width} ${height}">
-            <rect width="100%" height="100%" fill="#f8fafc"/>
-            <g class="react-flow__viewport">
-              ${svgElement.innerHTML}
-            </g>
-          </svg>
-        `;
+        // Convert canvas to data URL
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Create SVG with embedded image
+        const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">
+  <image width="${canvas.width}" height="${canvas.height}" xlink:href="${imgData}"/>
+</svg>`;
 
         // Create blob and download
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -268,7 +261,7 @@ function App() {
         console.error('Error exporting SVG:', err);
         alert('Failed to export SVG. Please try again.');
       }
-    }, 300);
+    }, 800);
   }, [reactFlowInstance]);
 
   const saveDiagram = useCallback(() => {
@@ -304,23 +297,35 @@ function App() {
   }, [setNodes, setEdges, reactFlowInstance]);
 
   const handleAIGenerate = useCallback(async (architecture: any, prompt: string) => {
-    const { services, connections, groups, workflow: workflowSteps } = architecture;
-    
-    if (!services || services.length === 0) {
-      alert('No services were identified in your description. Please try a more detailed description.');
-      return;
-    }
+    try {
+      console.log('Generating architecture from:', architecture);
+      const { services, connections, groups, workflow: workflowSteps } = architecture;
+      
+      if (!services || services.length === 0) {
+        alert('No services were identified in your description. Please try a more detailed description.');
+        return;
+      }
 
-    // Store the prompt and workflow for display
-    setArchitecturePrompt(prompt);
-    if (workflowSteps && workflowSteps.length > 0) {
-      setWorkflow(workflowSteps);
-    } else {
+      console.log(`Processing ${services.length} services, ${connections?.length || 0} connections, ${groups?.length || 0} groups`);
+
+      // Clear existing diagram when generating new architecture
+      setNodes([]);
+      setEdges([]);
+      setArchitecturePrompt('');
       setWorkflow([]);
-    }
+      setShowWorkflow(false);
 
-    const newNodes: Node[] = [];
-    const serviceMap = new Map();
+      // Store the prompt and workflow for display
+      setArchitecturePrompt(prompt);
+      if (workflowSteps && workflowSteps.length > 0) {
+        setWorkflow(workflowSteps);
+        setShowWorkflow(true); // Automatically show workflow panel for new generations
+      } else {
+        setWorkflow([]);
+      }
+
+      const newNodes: Node[] = [];
+      const serviceMap = new Map();
 
     // Load all required icons first
     const iconCache = new Map();
@@ -487,6 +492,7 @@ function App() {
     });
 
     // Add the new nodes and edges
+    console.log(`Setting ${newNodes.length} nodes and ${newEdges.length} edges`);
     setNodes(newNodes);
     setEdges(newEdges);
 
@@ -496,6 +502,10 @@ function App() {
         reactFlowInstance.fitView({ padding: 0.2 });
       }
     }, 100);
+    } catch (error) {
+      console.error('Error in handleAIGenerate:', error);
+      alert('Failed to generate diagram. Check console for details.');
+    }
   }, [setNodes, setEdges, reactFlowInstance]);
 
   const uploadARMTemplate = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
