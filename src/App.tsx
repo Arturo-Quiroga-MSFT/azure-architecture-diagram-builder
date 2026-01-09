@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload } from 'lucide-react';
+import { Download, Save, Upload, DollarSign } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -26,7 +26,7 @@ import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
 import { loadIconsFromCategory } from './utils/iconLoader';
-import { initializeNodePricing, calculateCostBreakdown } from './services/costEstimationService';
+import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, setActiveRegion, getActiveRegion, AzureRegion } from './services/regionalPricingService';
 import { formatMonthlyCost } from './utils/pricingHelpers';
@@ -330,6 +330,27 @@ function App() {
     link.setAttribute('download', `azure-diagram-${Date.now()}.json`);
     link.click();
   }, [reactFlowInstance]);
+
+  const exportCostBreakdown = useCallback(() => {
+    // Calculate the cost breakdown
+    const breakdown = calculateCostBreakdown(nodes);
+    
+    // Check if there's any cost data
+    if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
+      alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
+      return;
+    }
+
+    // Export as CSV
+    const csvData = exportCostBreakdownCSV(breakdown);
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `azure-cost-breakdown-${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [nodes]);
 
   const loadDiagram = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -748,6 +769,10 @@ function App() {
             <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
               <Save size={18} />
               Save
+            </button>
+            <button onClick={exportCostBreakdown} className="btn btn-primary" title="Export cost breakdown" disabled={totalMonthlyCost === 0}>
+              <DollarSign size={18} />
+              Export Costs
             </button>
             <label className="btn btn-secondary" title="Load diagram">
               <Upload size={18} />

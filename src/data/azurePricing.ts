@@ -357,12 +357,6 @@ export const FALLBACK_PRICING: Record<string, {
     premium: 329.85, // Premium tier
     unit: 'per profile/month'
   },
-  'CDN': {
-    basic: 0, // Usage based
-    standard: 0.081, // per GB
-    premium: 0.147, // per GB
-    unit: 'per GB/month'
-  },
 };
 
 /**

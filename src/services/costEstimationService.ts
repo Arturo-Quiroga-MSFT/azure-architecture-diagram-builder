@@ -208,7 +208,7 @@ export function calculateCostBreakdown(
     byService: [],
     byGroup: [],
     byCategory: [],
-    region,
+    region: targetRegion,
     currency: 'USD',
     lastCalculated: new Date().toISOString()
   };
