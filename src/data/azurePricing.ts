@@ -11,6 +11,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // App Services (handle both singular and plural)
   'App Service': 'Azure App Service',
   'App Services': 'Azure App Service',
+  'App Service Certificates': 'Azure Functions',
   'Static Web Apps': 'Static Web Apps',
   'Azure Static Web Apps': 'Static Web Apps',
   'Azure Static Web App': 'Static Web Apps',
@@ -20,6 +21,9 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Logic Apps': 'Logic Apps',
   'Logic App': 'Logic Apps',
   'API Management': 'API Management',
+  'API Management Services': 'API Management',
+  'Api Management Services': 'API Management',
+  'Azure API Management': 'API Management',
   
   // Compute
   'Virtual Machine': 'Virtual Machines',
@@ -49,7 +53,8 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'PostgreSQL': 'Azure Database for PostgreSQL',
   'Azure Database for PostgreSQL': 'Azure Database for PostgreSQL',
   'Redis': 'Azure Cache for Redis',
-  'Redis Cache': 'Redis Cache',
+  'Redis Cache': 'Azure Cache for Redis',
+  'Cache Redis': 'Azure Cache for Redis',
   'Azure Cache for Redis': 'Azure Cache for Redis',
   
   // Storage
@@ -122,6 +127,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
 export const DEFAULT_TIERS: Record<string, string> = {
   'App Service': 'S1',
   'App Services': 'S1',
+  'App Service Certificates': 'Premium',
   'Static Web Apps': 'Standard',
   'Azure Static Web Apps': 'Standard',
   'Azure Static Web App': 'Standard',
@@ -142,7 +148,10 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'AKS': 'Standard',
   'Application Gateway': 'Standard_v2',
   'Azure Cache for Redis': 'C1',
+  'Cache Redis': 'C1',
   'API Management': 'Developer',
+  'API Management Services': 'Developer',
+  'Api Management Services': 'Developer',
   'Azure API Management': 'Developer',
   'CDN': 'Standard_Microsoft',
   'Azure CDN': 'Standard_Microsoft',
@@ -163,6 +172,12 @@ export const FALLBACK_PRICING: Record<string, {
     basic: 13.14,
     standard: 69.35,
     premium: 146.00,
+    unit: 'per instance/month'
+  },
+  'App Service Certificates': {
+    basic: 0, // Consumption plan
+    standard: 159.35, // Premium EP1
+    premium: 318.70, // Premium EP2
     unit: 'per instance/month'
   },
   'Function Apps': {
@@ -289,6 +304,24 @@ export const FALLBACK_PRICING: Record<string, {
     basic: 0, // Consumption (pay per call)
     standard: 50.26, // Developer tier
     premium: 696.55, // Standard tier
+    unit: 'per instance/month'
+  },
+  'API Management Services': {
+    basic: 0, // Consumption (pay per call)
+    standard: 50.26, // Developer tier
+    premium: 696.55, // Standard tier
+    unit: 'per instance/month'
+  },
+  'Api Management Services': {
+    basic: 0, // Consumption (pay per call)
+    standard: 50.26, // Developer tier
+    premium: 696.55, // Standard tier
+    unit: 'per instance/month'
+  },
+  'Cache Redis': {
+    basic: 16.06, // C1
+    standard: 64.24, // C2
+    premium: 256.96, // C4
     unit: 'per instance/month'
   },
   'CDN': {

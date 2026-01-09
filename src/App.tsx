@@ -160,6 +160,8 @@ function App() {
       animated: true, 
       type: 'editableEdge',
       label: '',
+      labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
+      labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
       data: { onLabelChange: handleEdgeLabelChange },
     }, eds)),
     [setEdges, handleEdgeLabelChange]
@@ -409,10 +411,46 @@ function App() {
     for (const service of services) {
       const icons = await loadIconsFromCategory(service.category);
       if (icons.length > 0) {
-        // Try to find the best matching icon
-        const icon = icons.find(i => 
-          i.name.toLowerCase().includes(service.type.toLowerCase().split(' ')[0])
-        ) || icons[0]; // Fallback to first icon in category
+        // Try to find the best matching icon with improved matching logic
+        let icon = null;
+        
+        // First: Try exact match on full service type
+        icon = icons.find(i => 
+          i.name.toLowerCase() === service.type.toLowerCase()
+        );
+        
+        // Second: Try to match all significant words (skip common words like "Azure", "Service")
+        if (!icon) {
+          const serviceWords = service.type.toLowerCase()
+            .split(/[\s-]+/)
+            .filter((w: string) => !['azure', 'service', 'microsoft'].includes(w));
+          
+          icon = icons.find(i => {
+            const iconWords = i.name.toLowerCase().split(/[\s-]+/);
+            return serviceWords.every((word: string) => 
+              iconWords.some((iw: string) => iw.includes(word) || word.includes(iw))
+            );
+          });
+        }
+        
+        // Third: Try matching just the primary word (first meaningful word)
+        if (!icon) {
+          const primaryWord = service.type.toLowerCase()
+            .split(/[\s-]+/)
+            .find((w: string) => !['azure', 'microsoft', 'service'].includes(w));
+          
+          if (primaryWord) {
+            icon = icons.find(i => 
+              i.name.toLowerCase().includes(primaryWord)
+            );
+          }
+        }
+        
+        // Fourth: Fallback to first icon in category
+        if (!icon) {
+          icon = icons[0];
+        }
+        
         iconCache.set(service.id, icon);
       }
     }
@@ -561,8 +599,8 @@ function App() {
         animated,
         type: 'editableEdge',
         label: conn.label || '',
-        labelStyle: { fontSize: 14, fill: '#666', fontWeight: 'bold' },
-        labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
+        labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
+        labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
         style: edgeStyle,
         data: { connectionType, onLabelChange: handleEdgeLabelChange },
       };

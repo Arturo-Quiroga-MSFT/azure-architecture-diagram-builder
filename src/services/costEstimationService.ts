@@ -61,21 +61,23 @@ export async function initializeNodePricing(
       console.log('  ✅ Found tier:', tier.name, 'Price:', tier.monthlyPrice, '/mo (hourly:', tier.hourlyPrice, ')');
       
       // If pricing is $0 (usage-based services like Storage), use fallback pricing
-      if (tier.monthlyPrice === 0) {
+      if (tier.monthlyPrice === 0 || tier.monthlyPrice === null || tier.monthlyPrice === undefined) {
         console.log('  💡 Usage-based pricing ($0 base), using fallback estimate');
         const fallbackPrice = getFallbackPricing(serviceType, 'standard');
-        const basePrice = applyRegionalPricing(fallbackPrice, targetRegion);
-        
-        return {
-          estimatedCost: basePrice,
-          tier: tier.name,
-          skuName: tier.skuName,
-          quantity: 1,
-          region: targetRegion,
-          unit: tier.unit,
-          lastUpdated: new Date().toISOString(),
-          isCustom: false
-        };
+        if (fallbackPrice > 0) {
+          const basePrice = applyRegionalPricing(fallbackPrice, targetRegion);
+          
+          return {
+            estimatedCost: basePrice,
+            tier: tier.name,
+            skuName: tier.skuName,
+            quantity: 1,
+            region: targetRegion,
+            unit: tier.unit,
+            lastUpdated: new Date().toISOString(),
+            isCustom: false
+          };
+        }
       }
       
       return {

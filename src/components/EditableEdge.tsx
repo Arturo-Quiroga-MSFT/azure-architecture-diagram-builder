@@ -90,13 +90,13 @@ const EditableEdge: React.FC<EdgeProps> = ({
               onDoubleClick={handleLabelDoubleClick}
               style={{
                 padding: '4px 8px',
-                backgroundColor: 'white',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: '3px',
-                border: '1px solid #ddd',
+                border: '2px solid #000',
                 cursor: 'text',
                 minWidth: '40px',
                 textAlign: 'center',
-                color: '#666',
+                color: '#333',
               }}
               title="Double-click to edit label"
             >
