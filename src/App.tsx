@@ -408,8 +408,26 @@ function App() {
 
     // Load all required icons first
     const iconCache = new Map();
+    
+    // Category correction map - AI categorizes services differently than icon folders
+    const correctCategory = (serviceType: string, aiCategory: string): string => {
+      const corrections: Record<string, string> = {
+        'Function Apps': 'compute',
+        'Azure Functions': 'compute',
+        'Logic Apps': 'integration',
+        'Azure Logic Apps': 'integration',
+        'API Management': 'integration',
+        'Azure API Management': 'integration',
+      };
+      return corrections[serviceType] || aiCategory;
+    };
+    
     for (const service of services) {
-      const icons = await loadIconsFromCategory(service.category);
+      const correctedCategory = correctCategory(service.type, service.category);
+      const icons = await loadIconsFromCategory(correctedCategory);
+      console.log(`🎨 Loading icons for service: ${service.name} (type: ${service.type}, AI category: ${service.category}, corrected: ${correctedCategory})`);
+      console.log(`  Found ${icons.length} icons in category`);
+      
       if (icons.length > 0) {
         // Try to find the best matching icon with improved matching logic
         let icon = null;
@@ -418,6 +436,7 @@ function App() {
         icon = icons.find(i => 
           i.name.toLowerCase() === service.type.toLowerCase()
         );
+        if (icon) console.log(`  ✅ Exact match: ${icon.name}`);
         
         // Second: Try to match all significant words (skip common words like "Azure", "Service")
         if (!icon) {
@@ -431,6 +450,7 @@ function App() {
               iconWords.some((iw: string) => iw.includes(word) || word.includes(iw))
             );
           });
+          if (icon) console.log(`  ✅ Multi-word match: ${icon.name} (words: ${serviceWords.join(', ')})`);
         }
         
         // Third: Try matching just the primary word (first meaningful word)
@@ -443,15 +463,19 @@ function App() {
             icon = icons.find(i => 
               i.name.toLowerCase().includes(primaryWord)
             );
+            if (icon) console.log(`  ✅ Primary word match: ${icon.name} (word: ${primaryWord})`);
           }
         }
         
         // Fourth: Fallback to first icon in category
         if (!icon) {
           icon = icons[0];
+          console.log(`  ⚠️ Using fallback (first icon): ${icon.name}`);
         }
         
         iconCache.set(service.id, icon);
+      } else {
+        console.warn(`  ❌ No icons found in category: ${service.category}`);
       }
     }
 
@@ -525,11 +549,15 @@ function App() {
 
     // Helper function to determine best connection positions based on node positions
     const getConnectionPositions = (sourceId: string, targetId: string, conn: any) => {
-      // If AI specified positions, use them
+      // If AI specified positions, use them (but validate they're valid)
       if (conn.sourcePosition && conn.targetPosition) {
+        const validSourcePositions = ['right', 'bottom'];
+        const validTargetPositions = ['left', 'top'];
+        const sourcePos = validSourcePositions.includes(conn.sourcePosition) ? conn.sourcePosition : 'right';
+        const targetPos = validTargetPositions.includes(conn.targetPosition) ? conn.targetPosition : 'left';
         return {
-          sourceHandle: conn.sourcePosition,
-          targetHandle: conn.targetPosition,
+          sourceHandle: sourcePos,
+          targetHandle: targetPos,
         };
       }
 
@@ -545,20 +573,14 @@ function App() {
       const dy = targetNode.position.y - sourceNode.position.y;
       
       // Determine primary direction based on larger delta
+      // Source handles can only be 'right' or 'bottom'
+      // Target handles can only be 'left' or 'top'
       if (Math.abs(dx) > Math.abs(dy)) {
-        // Horizontal flow is dominant
-        if (dx > 0) {
-          return { sourceHandle: 'right', targetHandle: 'left' };
-        } else {
-          return { sourceHandle: 'left', targetHandle: 'right' };
-        }
+        // Horizontal flow is dominant - use left/right
+        return { sourceHandle: 'right', targetHandle: 'left' };
       } else {
-        // Vertical flow is dominant
-        if (dy > 0) {
-          return { sourceHandle: 'bottom', targetHandle: 'top' };
-        } else {
-          return { sourceHandle: 'top', targetHandle: 'bottom' };
-        }
+        // Vertical flow is dominant - use top/bottom
+        return { sourceHandle: 'bottom', targetHandle: 'top' };
       }
     };
 
