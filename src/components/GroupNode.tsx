@@ -1,6 +1,21 @@
 import React, { memo, useState } from 'react';
 import { NodeProps, NodeResizer } from 'reactflow';
+import { Palette } from 'lucide-react';
 import './GroupNode.css';
+
+// Predefined color palette for groups
+const COLOR_PALETTE = [
+  { name: 'Gray', bg: 'rgba(107, 114, 128, 0.08)', border: '#6b7280', header: '#6b7280' },
+  { name: 'Blue', bg: 'rgba(0, 120, 212, 0.08)', border: '#0078d4', header: '#0078d4' },
+  { name: 'Green', bg: 'rgba(16, 185, 129, 0.08)', border: '#10b981', header: '#10b981' },
+  { name: 'Orange', bg: 'rgba(245, 158, 11, 0.08)', border: '#f59e0b', header: '#f59e0b' },
+  { name: 'Red', bg: 'rgba(239, 68, 68, 0.08)', border: '#ef4444', header: '#ef4444' },
+  { name: 'Purple', bg: 'rgba(139, 92, 246, 0.08)', border: '#8b5cf6', header: '#8b5cf6' },
+  { name: 'Cyan', bg: 'rgba(6, 182, 212, 0.08)', border: '#06b6d4', header: '#06b6d4' },
+  { name: 'Pink', bg: 'rgba(236, 72, 153, 0.08)', border: '#ec4899', header: '#ec4899' },
+  { name: 'Yellow', bg: 'rgba(234, 179, 8, 0.08)', border: '#eab308', header: '#eab308' },
+  { name: 'Teal', bg: 'rgba(20, 184, 166, 0.08)', border: '#14b8a6', header: '#14b8a6' },
+];
 
 // Detect group category from label and return appropriate colors
 const getGroupColors = (label: string): { bg: string; border: string; header: string } => {

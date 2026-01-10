@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
+import { Zap } from 'lucide-react';
 import { loadIcon } from '../utils/iconLoader';
 import { NodePricingConfig } from '../types/pricing';
 import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
@@ -96,12 +97,19 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
         {hasPricing && (
           <div 
             className="cost-badge" 
-            title={`Estimated monthly cost\nTier: ${pricing.tier}\nQuantity: ${pricing.quantity}\nRegion: ${pricing.region}\n${pricing.isCustom ? 'Custom pricing' : 'Auto-calculated'}`}
+            title={
+              pricing.isUsageBased
+                ? `Usage-based pricing estimate\n~${formatMonthlyCost(totalCost)}/month\nBased on typical usage patterns\nActual cost varies with consumption\n\nTier: ${pricing.tier}\nRegion: ${pricing.region}`
+                : `Estimated monthly cost\nTier: ${pricing.tier}\nQuantity: ${pricing.quantity}\nRegion: ${pricing.region}\n${pricing.isCustom ? 'Custom pricing' : 'Auto-calculated'}`
+            }
             style={{ 
-              background: `linear-gradient(135deg, ${getCostColor(totalCost)} 0%, ${getCostColor(totalCost)}dd 100%)` 
+              background: pricing.isUsageBased
+                ? `linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)`
+                : `linear-gradient(135deg, ${getCostColor(totalCost)} 0%, ${getCostColor(totalCost)}dd 100%)` 
             }}
           >
-            {formatMonthlyCost(totalCost)}
+            {pricing.isUsageBased && <Zap size={12} style={{ marginRight: '2px', display: 'inline-block', verticalAlign: 'middle' }} />}
+            {pricing.isUsageBased && '~'}{formatMonthlyCost(totalCost)}
             {pricing.quantity > 1 && <span className="cost-quantity"> x{pricing.quantity}</span>}
           </div>
         )}

@@ -11,6 +11,7 @@ import ReactFlow, {
   Node,
   BackgroundVariant,
   Panel,
+  MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
@@ -52,6 +53,7 @@ function App() {
   const [workflow, setWorkflow] = useState<any[]>([]);
   // const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
+  const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
   const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
@@ -160,12 +162,53 @@ function App() {
       animated: true, 
       type: 'editableEdge',
       label: '',
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
       labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
       labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
-      data: { onLabelChange: handleEdgeLabelChange },
+      data: { onLabelChange: handleEdgeLabelChange, direction: 'forward' },
     }, eds)),
     [setEdges, handleEdgeLabelChange]
   );
+
+  const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.preventDefault();
+    setEdgeContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      edgeId: edge.id,
+    });
+  }, []);
+
+  const closeEdgeContextMenu = useCallback(() => {
+    setEdgeContextMenu(null);
+  }, []);
+
+  const setEdgeDirection = useCallback((edgeId: string, direction: 'forward' | 'reverse' | 'bidirectional') => {
+    setEdges((eds) => eds.map((edge) => {
+      if (edge.id === edgeId) {
+        const updatedEdge = { ...edge, data: { ...edge.data, direction } };
+        
+        switch (direction) {
+          case 'forward':
+            updatedEdge.markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            updatedEdge.markerStart = undefined;
+            break;
+          case 'reverse':
+            updatedEdge.markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            updatedEdge.markerEnd = undefined;
+            break;
+          case 'bidirectional':
+            updatedEdge.markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            updatedEdge.markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            break;
+        }
+        
+        return updatedEdge;
+      }
+      return edge;
+    }));
+    closeEdgeContextMenu();
+  }, [setEdges, closeEdgeContextMenu]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -344,7 +387,7 @@ function App() {
     }
 
     // Export as CSV
-    const csvData = exportCostBreakdownCSV(breakdown);
+    const csvData = exportCostBreakdownCSV(breakdown, nodes);
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -422,62 +465,95 @@ function App() {
       return corrections[serviceType] || aiCategory;
     };
     
-    for (const service of services) {
-      const correctedCategory = correctCategory(service.type, service.category);
-      const icons = await loadIconsFromCategory(correctedCategory);
-      console.log(`🎨 Loading icons for service: ${service.name} (type: ${service.type}, AI category: ${service.category}, corrected: ${correctedCategory})`);
-      console.log(`  Found ${icons.length} icons in category`);
-      
-      if (icons.length > 0) {
-        // Try to find the best matching icon with improved matching logic
-        let icon = null;
+    // Load icons in parallel with timeout protection
+    console.log(`⏳ Loading icons for ${services.length} services...`);
+    const iconLoadingPromises = services.map(async (service: any) => {
+      try {
+        const correctedCategory = correctCategory(service.type, service.category);
+        const icons = await Promise.race([
+          loadIconsFromCategory(correctedCategory),
+          new Promise<any[]>((_, reject) => 
+            setTimeout(() => reject(new Error('Icon loading timeout')), 5000)
+          )
+        ]);
         
-        // First: Try exact match on full service type
-        icon = icons.find(i => 
-          i.name.toLowerCase() === service.type.toLowerCase()
-        );
-        if (icon) console.log(`  ✅ Exact match: ${icon.name}`);
+        console.log(`🎨 Loaded ${icons.length} icons for: ${service.name} (${correctedCategory})`);
         
-        // Second: Try to match all significant words (skip common words like "Azure", "Service")
-        if (!icon) {
-          const serviceWords = service.type.toLowerCase()
-            .split(/[\s-]+/)
-            .filter((w: string) => !['azure', 'service', 'microsoft'].includes(w));
+        if (icons.length > 0) {
+          // Try to find the best matching icon with improved matching logic
+          let icon = null;
           
-          icon = icons.find(i => {
-            const iconWords = i.name.toLowerCase().split(/[\s-]+/);
-            return serviceWords.every((word: string) => 
-              iconWords.some((iw: string) => iw.includes(word) || word.includes(iw))
-            );
-          });
-          if (icon) console.log(`  ✅ Multi-word match: ${icon.name} (words: ${serviceWords.join(', ')})`);
-        }
-        
-        // Third: Try matching just the primary word (first meaningful word)
-        if (!icon) {
-          const primaryWord = service.type.toLowerCase()
-            .split(/[\s-]+/)
-            .find((w: string) => !['azure', 'microsoft', 'service'].includes(w));
+          // First: Try exact match on full service type
+          icon = icons.find(i => 
+            i.name.toLowerCase() === service.type.toLowerCase()
+          );
+          if (icon) console.log(`  ✅ Exact match: ${icon.name}`);
           
-          if (primaryWord) {
-            icon = icons.find(i => 
-              i.name.toLowerCase().includes(primaryWord)
-            );
-            if (icon) console.log(`  ✅ Primary word match: ${icon.name} (word: ${primaryWord})`);
+          // Second: Try to match all significant words (skip common words like "Azure", "Service")
+          if (!icon) {
+            const serviceWords = service.type.toLowerCase()
+              .split(/[\s-]+/)
+              .filter((w: string) => !['azure', 'service', 'microsoft'].includes(w));
+            
+            icon = icons.find(i => {
+              const iconWords = i.name.toLowerCase().split(/[\s-]+/);
+              return serviceWords.every((word: string) => 
+                iconWords.some((iw: string) => iw.includes(word) || word.includes(iw))
+              );
+            });
+            if (icon) console.log(`  ✅ Multi-word match: ${icon.name}`);
           }
+          
+          // Third: Try matching just the primary word (first meaningful word)
+          if (!icon) {
+            const primaryWord = service.type.toLowerCase()
+              .split(/[\s-]+/)
+              .find((w: string) => !['azure', 'microsoft', 'service'].includes(w));
+            
+            if (primaryWord) {
+              icon = icons.find(i => 
+                i.name.toLowerCase().includes(primaryWord)
+              );
+              if (icon) console.log(`  ✅ Primary word match: ${icon.name}`);
+            }
+          }
+          
+          // Fourth: Fallback to first icon in category
+          if (!icon) {
+            icon = icons[0];
+            console.log(`  ⚠️ Using fallback: ${icon.name}`);
+          }
+          
+          return { serviceId: service.id, icon };
+        } else {
+          console.warn(`  ❌ No icons found for: ${service.name}`);
+          return { serviceId: service.id, icon: null };
         }
-        
-        // Fourth: Fallback to first icon in category
-        if (!icon) {
-          icon = icons[0];
-          console.log(`  ⚠️ Using fallback (first icon): ${icon.name}`);
-        }
-        
-        iconCache.set(service.id, icon);
-      } else {
-        console.warn(`  ❌ No icons found in category: ${service.category}`);
+      } catch (error) {
+        console.error(`  ❌ Error loading icon for ${service.name}:`, error);
+        return { serviceId: service.id, icon: null };
       }
-    }
+    });
+    
+    // Wait for all icon loading with overall timeout
+    const iconResults = await Promise.race([
+      Promise.all(iconLoadingPromises),
+      new Promise<any[]>((_, reject) => 
+        setTimeout(() => reject(new Error('Overall icon loading timeout')), 15000)
+      )
+    ]).catch(error => {
+      console.error('Icon loading failed:', error);
+      return services.map((s: any) => ({ serviceId: s.id, icon: null }));
+    });
+    
+    // Build icon cache from results
+    iconResults.forEach((result: any) => {
+      if (result.icon) {
+        iconCache.set(result.serviceId, result.icon);
+      }
+    });
+    
+    console.log(`✅ Icon loading complete. Loaded ${iconCache.size}/${services.length} icons`);
 
     // Create group nodes first if they exist
     if (groups && groups.length > 0) {
@@ -584,9 +660,48 @@ function App() {
       }
     };
 
+    // Function to determine arrow direction based on edge label
+    const determineEdgeDirection = (label: string): { direction: 'forward' | 'reverse' | 'bidirectional', markerEnd?: any, markerStart?: any } => {
+      const lowerLabel = label.toLowerCase();
+      
+      // Keywords that indicate reverse flow
+      const reverseKeywords = ['response', 'callback', 'return', 'acknowledge', 'ack', 'reply'];
+      
+      // Keywords that indicate bidirectional flow
+      const bidirectionalKeywords = ['sync', 'bidirectional', 'two-way', 'exchange', 'communicate'];
+      
+      // Check for bidirectional
+      if (bidirectionalKeywords.some(keyword => lowerLabel.includes(keyword))) {
+        return {
+          direction: 'bidirectional',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+          markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' }
+        };
+      }
+      
+      // Check for reverse
+      if (reverseKeywords.some(keyword => lowerLabel.includes(keyword))) {
+        return {
+          direction: 'reverse',
+          markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+          markerEnd: undefined
+        };
+      }
+      
+      // Default to forward
+      return {
+        direction: 'forward',
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+        markerStart: undefined
+      };
+    };
+
     // Create edges from connections
     const newEdges: Edge[] = connections.map((conn: any, index: number) => {
       const positions = getConnectionPositions(conn.from, conn.to, conn);
+      
+      // Determine edge direction based on label
+      const edgeDirection = determineEdgeDirection(conn.label || '');
       
       // Determine edge style based on connection type
       const connectionType = conn.type || 'sync';
@@ -621,10 +736,12 @@ function App() {
         animated,
         type: 'editableEdge',
         label: conn.label || '',
+        markerEnd: edgeDirection.markerEnd,
+        markerStart: edgeDirection.markerStart,
         labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
         labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
         style: edgeStyle,
-        data: { connectionType, onLabelChange: handleEdgeLabelChange },
+        data: { connectionType, direction: edgeDirection.direction, onLabelChange: handleEdgeLabelChange },
       };
     });
 
@@ -858,6 +975,7 @@ function App() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onEdgeContextMenu={onEdgeContextMenu}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
@@ -951,6 +1069,48 @@ function App() {
             onServiceHover={(serviceIds) => setHighlightedServices(serviceIds)}
             onServiceLeave={() => setHighlightedServices([])}
           />
+        )}
+        
+        {/* Edge Context Menu */}
+        {edgeContextMenu && (
+          <>
+            <div 
+              className="edge-context-menu-overlay"
+              onClick={closeEdgeContextMenu}
+            />
+            <div 
+              className="edge-context-menu"
+              style={{
+                position: 'fixed',
+                top: edgeContextMenu.y,
+                left: edgeContextMenu.x,
+                zIndex: 10000,
+              }}
+            >
+              <div className="context-menu-header">Edge Direction</div>
+              <button
+                className="context-menu-item"
+                onClick={() => setEdgeDirection(edgeContextMenu.edgeId, 'forward')}
+              >
+                <span className="menu-icon">→</span>
+                <span>One-way (Forward)</span>
+              </button>
+              <button
+                className="context-menu-item"
+                onClick={() => setEdgeDirection(edgeContextMenu.edgeId, 'reverse')}
+              >
+                <span className="menu-icon">←</span>
+                <span>One-way (Reverse)</span>
+              </button>
+              <button
+                className="context-menu-item"
+                onClick={() => setEdgeDirection(edgeContextMenu.edgeId, 'bidirectional')}
+              >
+                <span className="menu-icon">↔</span>
+                <span>Bidirectional</span>
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

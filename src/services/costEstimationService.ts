@@ -22,7 +22,8 @@ import {
   getAzureServiceName, 
   getDefaultTier, 
   getFallbackPricing,
-  hasPricingData 
+  hasPricingData,
+  USAGE_BASED_SERVICES 
 } from '../data/azurePricing';
 import { 
   applyRegionalPricing, 
@@ -52,6 +53,9 @@ export async function initializeNodePricing(
     const defaultTier = getDefaultTier(serviceType);
     console.log('  → Mapped to Azure service:', serviceName, 'Default tier:', defaultTier);
     
+    // Check if this is a usage-based service (need this for all code paths)
+    const isUsageBased = USAGE_BASED_SERVICES.includes(serviceType);
+    
     // Try to fetch from API
     const pricing = await getServicePricing(serviceType, serviceName, targetRegion);
     
@@ -75,7 +79,8 @@ export async function initializeNodePricing(
             region: targetRegion,
             unit: tier.unit,
             lastUpdated: new Date().toISOString(),
-            isCustom: false
+            isCustom: false,
+            isUsageBased: true
           };
         }
       }
@@ -88,7 +93,8 @@ export async function initializeNodePricing(
         region: targetRegion,
         unit: tier.unit,
         lastUpdated: new Date().toISOString(),
-        isCustom: false
+        isCustom: false,
+        isUsageBased: isUsageBased
       };
     } else {
       // Fallback to static data
@@ -104,7 +110,8 @@ export async function initializeNodePricing(
         region: targetRegion,
         unit: 'per instance/month',
         lastUpdated: new Date().toISOString(),
-        isCustom: false
+        isCustom: false,
+        isUsageBased: isUsageBased
       };
     }
   } catch (error) {
@@ -113,6 +120,7 @@ export async function initializeNodePricing(
     // Final fallback
     const fallbackPrice = getFallbackPricing(serviceType, 'standard');
     const basePrice = applyRegionalPricing(fallbackPrice, targetRegion);
+    const isUsageBased = USAGE_BASED_SERVICES.includes(serviceType);
     
     return {
       estimatedCost: basePrice,
@@ -122,7 +130,8 @@ export async function initializeNodePricing(
       region: targetRegion,
       unit: 'per instance/month',
       lastUpdated: new Date().toISOString(),
-      isCustom: false
+      isCustom: false,
+      isUsageBased: isUsageBased
     };
   }
 }
@@ -351,7 +360,7 @@ export function getCostSummaryText(breakdown: CostBreakdown): string {
 /**
  * Export cost breakdown as CSV
  */
-export function exportCostBreakdownCSV(breakdown: CostBreakdown): string {
+export function exportCostBreakdownCSV(breakdown: CostBreakdown, nodes?: Node[]): string {
   const lines: string[] = [];
   
   // Header
@@ -362,9 +371,14 @@ export function exportCostBreakdownCSV(breakdown: CostBreakdown): string {
   lines.push('');
   
   // By Service
-  lines.push('Service Name,Service Type,Tier,Quantity,Monthly Cost');
+  lines.push('Service Name,Service Type,Tier,Quantity,Monthly Cost,Pricing Type');
   breakdown.byService.forEach(svc => {
-    lines.push(`"${svc.serviceName}",${svc.serviceType},${svc.tier},${svc.quantity},$${svc.cost.toFixed(2)}`);
+    // Check if this service is usage-based
+    const node = nodes?.find(n => n.id === svc.nodeId);
+    const pricing = node?.data?.pricing as NodePricingConfig | undefined;
+    const pricingType = pricing?.isUsageBased ? 'Usage-based (estimate)' : 'Fixed';
+    
+    lines.push(`"${svc.serviceName}",${svc.serviceType},${svc.tier},${svc.quantity},$${svc.cost.toFixed(2)},${pricingType}`);
   });
   lines.push('');
   

@@ -17,12 +17,25 @@ SERVICES=(
   "Container Instances"
   "Application Gateway"
   "Azure Machine Learning"
-  "Azure Front Door Service"
   "Azure Database for PostgreSQL"
   "Key Vault"
   "Application Insights"
   "API Management"
+  "Functions"
+  "Logic Apps"
+  "Service Bus"
+  "Redis Cache"
+  "Azure Data Factory"
+  "Event Hubs"
+  "Container Registry"
+)
+
+# Global services (no region-specific pricing)
+GLOBAL_SERVICES=(
+  "Azure Front Door Service"
   "Content Delivery Network"
+  "CDN"
+  "Static Web Apps"
 )
 
 # Output directory - use project structure
@@ -61,6 +74,32 @@ fetch_pricing() {
   fi
 }
 
+# Function to fetch global service pricing (no region filter)
+fetch_global_pricing() {
+  local service="$1"
+  local output_file="$2"
+  
+  echo "  Fetching: $service (global)..."
+  
+  # Build filter without region
+  local filter="serviceName eq '$service' and priceType eq 'Consumption'"
+  
+  # Fetch with pagination
+  curl -s -G "https://prices.azure.com/api/retail/prices" \
+    --data-urlencode "api-version=2023-01-01-preview" \
+    --data-urlencode "\$filter=$filter" \
+    --data-urlencode "\$top=100" \
+    -o "$output_file"
+  
+  # Check if successful
+  if [ -s "$output_file" ]; then
+    local item_count=$(jq '.Items | length' "$output_file" 2>/dev/null)
+    echo "    ✓ Downloaded $item_count items (global)"
+  else
+    echo "    ✗ Failed to download"
+  fi
+}
+
 # Iterate through regions and services
 for region in "${REGIONS[@]}"; do
   echo ""
@@ -80,6 +119,26 @@ for region in "${REGIONS[@]}"; do
     sleep 0.5
   done
 done
+
+# Fetch global services (only once, not per-region)
+if [ ${#GLOBAL_SERVICES[@]} -gt 0 ]; then
+  echo ""
+  echo "=== Global Services ==="
+  
+  # Save to first region folder for now (they're global anyway)
+  global_dir="$OUTPUT_DIR/${REGIONS[0]}"
+  
+  for service in "${GLOBAL_SERVICES[@]}"; do
+    # Create safe filename
+    safe_name=$(echo "$service" | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
+    output_file="$global_dir/${safe_name}.json"
+    
+    fetch_global_pricing "$service" "$output_file"
+    
+    # Small delay to avoid rate limiting
+    sleep 0.5
+  done
+fi
 
 echo ""
 echo "✅ Download complete!"

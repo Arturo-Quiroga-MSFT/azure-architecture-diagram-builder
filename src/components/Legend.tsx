@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Zap, DollarSign } from 'lucide-react';
 import './Legend.css';
 
 const Legend: React.FC = () => {
@@ -103,6 +104,32 @@ const Legend: React.FC = () => {
               <div className="legend-color-box" style={{ backgroundColor: '#06b6d4' }}></div>
               <div className="legend-description">
                 <strong>Networking & Integration</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="legend-section">
+            <div className="legend-section-title">Pricing Types</div>
+            
+            <div className="legend-item">
+              <div className="legend-badge fixed-pricing">
+                <DollarSign size={12} />
+                $XX
+              </div>
+              <div className="legend-description">
+                <strong>Fixed Pricing</strong>
+                <span>Predictable monthly cost</span>
+              </div>
+            </div>
+            
+            <div className="legend-item">
+              <div className="legend-badge usage-pricing">
+                <Zap size={12} />
+                ~$XX
+              </div>
+              <div className="legend-description">
+                <strong>Usage-Based</strong>
+                <span>Varies with consumption</span>
               </div>
             </div>
           </div>

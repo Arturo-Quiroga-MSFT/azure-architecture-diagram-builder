@@ -14,6 +14,15 @@ const SERVICES = [
   { name: 'Azure Database for PostgreSQL', filename: 'azure_database_for_postgresql' },
   { name: 'Azure Key Vault', filename: 'azure_key_vault' },
   { name: 'Application Insights', filename: 'application_insights' },
+  { name: 'Azure Data Factory', filename: 'azure_data_factory' },
+  { name: 'Azure Event Hubs', filename: 'azure_event_hubs' },
+  { name: 'Container Registry', filename: 'container_registry' },
+  { name: 'Azure Data Lake Storage', filename: 'azure_data_lake_storage' },
+  { name: 'Azure Functions', filename: 'azure_functions' },
+  { name: 'Logic Apps', filename: 'logic_apps' },
+  { name: 'Azure Service Bus', filename: 'azure_service_bus' },
+  { name: 'Azure Cache for Redis', filename: 'azure_cache_for_redis' },
+  { name: 'Azure CDN', filename: 'azure_cdn' },
 ];
 
 // Regions to download for

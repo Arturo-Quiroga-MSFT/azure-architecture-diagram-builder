@@ -80,6 +80,7 @@ export interface NodePricingConfig {
   lastUpdated: string;        // ISO timestamp
   isCustom: boolean;          // Whether user manually set price
   customPrice?: number;       // Custom monthly price if set
+  isUsageBased?: boolean;     // Whether pricing is usage-based (consumption)
   usageEstimate?: {           // For usage-based services
     type: 'light' | 'medium' | 'heavy';
     description: string;

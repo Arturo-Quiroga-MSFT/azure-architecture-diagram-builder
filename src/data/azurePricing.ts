@@ -34,6 +34,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // Containers
   'Container Registry': 'Container Registry',
   'Container Registries': 'Container Registry',
+  'Azure Container Registry': 'Container Registry',
   'Container Instances': 'Container Instances',
   'Container Instance': 'Container Instances',
   'Azure Kubernetes Service': 'Azure Kubernetes Service',
@@ -87,12 +88,18 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // Analytics
   'Stream Analytics': 'Azure Stream Analytics',
   'Data Factory': 'Azure Data Factory',
+  'Azure Data Factory': 'Azure Data Factory',
   'Synapse Analytics': 'Azure Synapse Analytics',
   'Event Hubs': 'Azure Event Hubs',
+  'Azure Event Hubs': 'Azure Event Hubs',
   'Data Lake': 'Azure Data Lake Storage',
+  'Data Lake Storage': 'Azure Data Lake Storage',
+  'Data Lake Storage Gen2': 'Azure Data Lake Storage',
+  'Azure Data Lake Storage Gen2': 'Azure Data Lake Storage',
   
   // AI & Machine Learning
   'Machine Learning': 'Azure Machine Learning',
+  'Azure Machine Learning': 'Azure Machine Learning',
   'Cognitive Services': 'Cognitive Services',
   'OpenAI': 'Azure OpenAI',
   'Azure OpenAI': 'Azure OpenAI',
@@ -120,6 +127,36 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'SignalR': 'Azure SignalR Service',
   'Azure SignalR Service': 'Azure SignalR Service',
 };
+
+/**
+ * Services with usage-based pricing (consumption model)
+ * These show variable costs based on usage rather than fixed monthly fees
+ */
+export const USAGE_BASED_SERVICES = [
+  'Storage',
+  'Storage Account',
+  'Storage Accounts',
+  'Storage Accounts (Classic)',
+  'Blob Storage',
+  'Azure Blob Storage',
+  'CDN',
+  'Azure CDN',
+  'Content Delivery Network',
+  'Function Apps',
+  'Azure Functions',
+  'Static Web Apps',
+  'Azure Static Web Apps',
+  'Data Lake Storage',
+  'Azure Data Lake Storage',
+  'Data Lake Storage Gen2',
+  'Azure Data Lake Storage Gen2',
+  'Event Hubs',
+  'Azure Event Hubs',
+  'Service Bus',
+  'Azure Service Bus',
+  'Cosmos DB',
+  'Azure Cosmos DB',
+];
 
 /**
  * Default tier recommendations for each service
@@ -156,6 +193,16 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'CDN': 'Standard_Microsoft',
   'Azure CDN': 'Standard_Microsoft',
   'Content Delivery Network': 'Standard_Microsoft',
+  'Data Factory': 'Standard',
+  'Azure Data Factory': 'Standard',
+  'Event Hubs': 'Standard',
+  'Azure Event Hubs': 'Standard',
+  'Machine Learning': 'Standard',
+  'Azure Machine Learning': 'Standard',
+  'Container Registry': 'Standard',
+  'Azure Container Registry': 'Standard',
+  'Data Lake Storage Gen2': 'Hot LRS',
+  'Azure Data Lake Storage Gen2': 'Hot LRS',
 };
 
 /**
@@ -389,6 +436,78 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 35.04, // Standard tier
     premium: 329.85, // Premium tier
     unit: 'per profile/month'
+  },
+  'Data Factory': {
+    basic: 0, // Pay per activity
+    standard: 5.00, // Estimated for typical usage
+    premium: 50.00, // High volume
+    unit: 'per pipeline/month'
+  },
+  'Azure Data Factory': {
+    basic: 0, // Pay per activity
+    standard: 5.00, // Estimated for typical usage
+    premium: 50.00, // High volume
+    unit: 'per pipeline/month'
+  },
+  'Event Hubs': {
+    basic: 11.28, // Basic tier
+    standard: 27.60, // Standard tier (1 TU)
+    premium: 330.00, // Premium tier (1 PU)
+    unit: 'per namespace/month'
+  },
+  'Azure Event Hubs': {
+    basic: 11.28, // Basic tier
+    standard: 27.60, // Standard tier (1 TU)
+    premium: 330.00, // Premium tier (1 PU)
+    unit: 'per namespace/month'
+  },
+  'Machine Learning': {
+    basic: 0, // Compute based
+    standard: 50.00, // Estimated workspace cost
+    premium: 200.00, // With compute
+    unit: 'per workspace/month'
+  },
+  'Azure Machine Learning': {
+    basic: 0, // Compute based
+    standard: 50.00, // Estimated workspace cost
+    premium: 200.00, // With compute
+    unit: 'per workspace/month'
+  },
+  'Container Registry': {
+    basic: 5.00, // Basic tier
+    standard: 20.00, // Standard tier
+    premium: 500.00, // Premium tier (with geo-replication)
+    unit: 'per registry/month'
+  },
+  'Azure Container Registry': {
+    basic: 5.00, // Basic tier
+    standard: 20.00, // Standard tier
+    premium: 500.00, // Premium tier (with geo-replication)
+    unit: 'per registry/month'
+  },
+  'Data Lake': {
+    basic: 0.02, // per GB
+    standard: 0.02, // per GB
+    premium: 0.15, // per GB (Premium)
+    unit: 'per GB/month'
+  },
+  'Azure Data Lake Storage': {
+    basic: 18.40, // ~1TB
+    standard: 18.40, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
+  'Data Lake Storage Gen2': {
+    basic: 18.40, // ~1TB
+    standard: 18.40, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
+  },
+  'Azure Data Lake Storage Gen2': {
+    basic: 18.40, // ~1TB
+    standard: 18.40, // ~1TB
+    premium: 109.50, // ~1TB Premium
+    unit: 'per account/month'
   },
 };
 

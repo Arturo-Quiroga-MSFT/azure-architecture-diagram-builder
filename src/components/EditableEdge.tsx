@@ -11,6 +11,7 @@ const EditableEdge: React.FC<EdgeProps> = ({
   targetPosition,
   style = {},
   markerEnd,
+  markerStart,
   data,
   label,
 }) => {
@@ -53,7 +54,7 @@ const EditableEdge: React.FC<EdgeProps> = ({
   };
 
   return (
-    <>
+    <>markerStart={markerStart} 
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
       <EdgeLabelRenderer>
         <div
