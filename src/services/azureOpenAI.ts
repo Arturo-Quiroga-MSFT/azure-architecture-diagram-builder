@@ -125,11 +125,46 @@ Icon categories mapping (MUST use these exact values):
 - "security": Security Center, Sentinel, Key Vault
 - "web": Static Web Apps, CDN, Front Door
 
+CRITICAL ICON MAPPINGS - Use EXACT service names:
+These service names will match icons directly - use these exact names in your response:
+
+AI Services:
+- "Azure OpenAI" - for GPT models, chat completions
+- "Computer Vision" - for image analysis, OCR
+- "Azure Speech" - for speech-to-text, text-to-speech  
+- "Language" - for NLP, sentiment analysis, text analytics
+- "Translator" - for translation services
+- "Document Intelligence" - for form processing, document analysis
+- "Custom Vision" - for custom image classification
+- "Azure Machine Learning" - for custom ML models
+- "Cognitive Services" - only for generic multi-service scenarios
+
+Web & API Services:
+- "Api Management" - for API gateway and management
+- "App Service" - for hosting web apps and APIs
+- "Azure Functions" - for serverless compute
+- "Logic Apps" - for workflow automation
+
+Databases:
+- "Azure Cosmos Db" - for NoSQL database
+- "Sql Database" - for relational database
+
+Compute & Containers:
+- "Virtual Machines" - for VMs
+- "Azure Kubernetes Service" - for container orchestration
+- "Container Instances" - for serverless containers
+- "Container Registry" - for container images
+
 Rules:
 1. Create 2-5 logical groups to organize services
 2. Position groups with ample spacing (at least 800px apart horizontally, 600px vertically) for readability
 3. Assign services to appropriate groups using groupId (max 6 services per group)
-4. Use realistic Azure service names
+4. **CRITICAL**: Use EXACT service names from the "CRITICAL ICON MAPPINGS" section above
+   - For Azure OpenAI, use "Azure OpenAI" (NOT "AI Studio", "OpenAI Service", "GPT Service")
+   - For web APIs, use "App Service" (NOT "Web App", "Web API", "API Service")
+   - For databases, use "Azure Cosmos DB" (NOT just "Cosmos DB" or "CosmosDB")
+   - For NLP, use "Language" (NOT "Text Analytics")
+   - Check the mappings above for the correct name for every service
 5. Create logical connections based on data flow
 6. Make group labels concise and descriptive
 7. Size groups generously: width 700-900px, height 500-600px based on service count
@@ -146,7 +181,32 @@ Rules:
    - Explain what each step does and why
    - Reference the service IDs involved in each step
    - Make it comprehensive but concise (5-10 steps typically)
-   - Follow the data/request flow chronologically`;
+   - Follow the data/request flow chronologically
+
+CORRECT SERVICE NAMING EXAMPLES:
+✅ CORRECT:
+{
+  "name": "Azure OpenAI",
+  "type": "OpenAI GPT Models",
+  "category": "ai + machine learning"
+}
+{
+  "name": "App Service",
+  "type": "Web Application",
+  "category": "app services"
+}
+{
+  "name": "Azure Cosmos DB",
+  "type": "NoSQL Database",
+  "category": "databases"
+}
+
+❌ INCORRECT (will show wrong icon):
+{
+  "name": "AI Studio",  ← WRONG! Use "Azure OpenAI"
+  "name": "Web API",    ← WRONG! Use "App Service"
+  "name": "Cosmos DB",  ← WRONG! Use "Azure Cosmos DB"
+}`;
 
   try {
     const messages = [

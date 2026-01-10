@@ -455,12 +455,9 @@ function App() {
     // Category correction map - AI categorizes services differently than icon folders
     const correctCategory = (serviceType: string, aiCategory: string): string => {
       const corrections: Record<string, string> = {
-        'Function Apps': 'compute',
         'Azure Functions': 'compute',
         'Logic Apps': 'integration',
-        'Azure Logic Apps': 'integration',
         'API Management': 'integration',
-        'Azure API Management': 'integration',
       };
       return corrections[serviceType] || aiCategory;
     };
@@ -480,16 +477,18 @@ function App() {
         console.log(`🎨 Loaded ${icons.length} icons for: ${service.name} (${correctedCategory})`);
         
         if (icons.length > 0) {
-          // Try to find the best matching icon with improved matching logic
+          // Try to find the best matching icon
           let icon = null;
           
-          // First: Try exact match on full service type
+          console.log(`  🔍 Searching for: "${service.type}"`);
+          
+          // First: Try exact match (case-insensitive)
           icon = icons.find(i => 
             i.name.toLowerCase() === service.type.toLowerCase()
           );
           if (icon) console.log(`  ✅ Exact match: ${icon.name}`);
           
-          // Second: Try to match all significant words (skip common words like "Azure", "Service")
+          // Third: Try to match all significant words (skip common words like "Azure", "Service")
           if (!icon) {
             const serviceWords = service.type.toLowerCase()
               .split(/[\s-]+/)
@@ -504,7 +503,7 @@ function App() {
             if (icon) console.log(`  ✅ Multi-word match: ${icon.name}`);
           }
           
-          // Third: Try matching just the primary word (first meaningful word)
+          // Fourth: Try matching just the primary word (first meaningful word)
           if (!icon) {
             const primaryWord = service.type.toLowerCase()
               .split(/[\s-]+/)
@@ -518,7 +517,7 @@ function App() {
             }
           }
           
-          // Fourth: Fallback to first icon in category
+          // Fifth: Fallback to first icon in category
           if (!icon) {
             icon = icons[0];
             console.log(`  ⚠️ Using fallback: ${icon.name}`);
@@ -751,22 +750,35 @@ function App() {
     setEdges(newEdges);
 
     // Initialize pricing for all service nodes asynchronously (uses active region)
-    Promise.all(
-      services.map(async (service: any) => {
-        const pricing = await initializeNodePricing(service.type);
-        return { id: service.id, pricing };
+    const currentRegion = getActiveRegion();
+    console.log(`💰 Initializing pricing for ${services.length} services in region: ${currentRegion}`);
+    
+    const pricingPromises = services.map(async (service: any) => {
+      console.log(`  → Fetching pricing for: ${service.name} (type: ${service.type}, ID: ${service.id})`);
+      const pricing = await initializeNodePricing(service.name, currentRegion);
+      console.log(`  ${pricing ? '✅' : '❌'} Pricing result for ${service.name}:`, pricing ? 'Found' : 'Not found');
+      return { id: service.id, pricing };
+    });
+    
+    Promise.all(pricingPromises)
+      .then(pricingResults => {
+        console.log(`📊 Pricing results ready, updating ${pricingResults.length} nodes`);
+        const resultsWithPricing = pricingResults.filter(r => r.pricing);
+        console.log(`  → ${resultsWithPricing.length}/${pricingResults.length} nodes have pricing data`);
+        
+        setNodes((nds) => 
+          nds.map(node => {
+            const result = pricingResults.find(r => r.id === node.id);
+            if (result?.pricing) {
+              console.log(`  💵 Adding pricing to node ${node.id}:`, result.pricing.estimatedMonthlyCost);
+              return { ...node, data: { ...node.data, pricing: result.pricing } };
+            }
+            return node;
+          })
+        );
+        console.log(`✅ Pricing initialization complete`);
       })
-    ).then(pricingResults => {
-      setNodes((nds) => 
-        nds.map(node => {
-          const result = pricingResults.find(r => r.id === node.id);
-          if (result?.pricing) {
-            return { ...node, data: { ...node.data, pricing: result.pricing } };
-          }
-          return node;
-        })
-      );
-    }).catch(err => console.warn('Failed to initialize pricing for AI nodes:', err));
+      .catch(err => console.error('❌ Failed to initialize pricing for AI nodes:', err));
 
     // Fit view after a short delay to allow nodes to render
     setTimeout(() => {

@@ -20,10 +20,12 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     "An IoT solution that collects data from devices, processes it with Azure Functions, stores in Cosmos DB, and visualizes with Power BI",
     "A microservices architecture with container apps, API gateway, message queue, and Redis cache",
     "A machine learning pipeline with data ingestion, training, and inference endpoints",
+    "An intelligent customer service chatbot using Azure OpenAI for conversations, Language for sentiment analysis, Speech Services for voice input/output, and Translator for multi-language support, with chat history in Cosmos DB and API Management for external access",
+    "A smart document processing platform that uses Computer Vision to analyze uploaded images, Document Intelligence to extract form data, Language to classify and summarize content, all coordinated through Azure Functions with results stored in Cosmos DB and searchable via Cognitive Search",
+    "A content moderation system for social media using Computer Vision to scan images, Language for text analysis and content safety checks, Azure OpenAI for context understanding, with real-time processing via Event Hubs and results stored in SQL Database with API Management exposing moderation APIs",
     "A multiplayer gaming backend with real-time communication, player matchmaking, leaderboards, and game asset delivery via CDN",
     "An e-commerce platform with product catalog, shopping cart, order processing, payment integration, and inventory management",
-    "A healthcare data platform with FHIR API for patient records, medical imaging storage, and health analytics with compliance logging",
-    "An intelligent document processing system using Computer Vision for image analysis, Document Intelligence for form extraction, Speech Services for audio transcription, and Text Analytics for sentiment analysis, with API keys and secrets managed in Key Vault, results stored in Cosmos DB and exposed via API Management"
+    "A healthcare data platform with FHIR API for patient records, medical imaging storage, and health analytics with compliance logging"
   ];
 
   const handleGenerate = async () => {

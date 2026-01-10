@@ -35,6 +35,33 @@ const parsedPricingCache = new Map<string, ServicePricing>();
 let currentRegion: AzureRegion = 'eastus2';
 
 /**
+ * Map AI service display names to Foundry productNames
+ */
+const AI_SERVICE_PRODUCT_MAP: Record<string, { file: string; productName: string; defaultSku?: string }> = {
+  'Azure OpenAI': { file: 'foundry_models', productName: 'Azure OpenAI', defaultSku: 'gpt4omini' },
+  'OpenAI': { file: 'foundry_models', productName: 'Azure OpenAI', defaultSku: 'gpt4omini' },
+  'Document Intelligence': { file: 'foundry_tools', productName: 'Azure Document Intelligence', defaultSku: 'Standard' },
+  'Form Recognizer': { file: 'foundry_tools', productName: 'Form Recognizer', defaultSku: 'Standard' },
+  'Language': { file: 'foundry_tools', productName: 'Azure Language', defaultSku: 'Standard' },
+  'Text Analytics': { file: 'foundry_tools', productName: 'Azure Language', defaultSku: 'Standard' },
+  'Speech': { file: 'foundry_tools', productName: 'Azure Speech', defaultSku: 'Standard' },
+  'Speech Services': { file: 'foundry_tools', productName: 'Azure Speech', defaultSku: 'Standard' },
+  'Vision': { file: 'foundry_tools', productName: 'Azure Vision', defaultSku: 'Standard' },
+  'Computer Vision': { file: 'foundry_tools', productName: 'Azure Vision', defaultSku: 'Standard' },
+  'Face': { file: 'foundry_tools', productName: 'Azure Vision - Face', defaultSku: 'Standard' },
+  'Translator': { file: 'foundry_tools', productName: 'Azure Translator', defaultSku: 'Standard' },
+  'Custom Vision': { file: 'foundry_tools', productName: 'Azure Custom Vision', defaultSku: 'Standard' },
+  'Content Safety': { file: 'foundry_tools', productName: 'Content Safety', defaultSku: 'Standard' },
+};
+
+/**
+ * Check if a service is an AI service that needs Foundry data
+ */
+function isAIService(serviceName: string): boolean {
+  return AI_SERVICE_PRODUCT_MAP.hasOwnProperty(serviceName);
+}
+
+/**
  * Set the active region for pricing queries
  */
 export function setActiveRegion(region: AzureRegion): void {
@@ -71,7 +98,37 @@ async function loadServiceData(region: AzureRegion, serviceName: string): Promis
   }
 
   try {
-    // Convert service name to filename format
+    // Check if this is an AI service that needs Foundry data
+    if (isAIService(serviceName)) {
+      const aiMapping = AI_SERVICE_PRODUCT_MAP[serviceName];
+      console.log(`🤖 AI Service detected: ${serviceName} → Loading from ${aiMapping.file}, filtering by productName: ${aiMapping.productName}`);
+      
+      // Load the Foundry file
+      const path = `/src/data/pricing/regions/${region}/${aiMapping.file}.json`;
+      const module = await import(/* @vite-ignore */ path);
+      const fullData = module.default as RegionalPricingData;
+      
+      // Filter items by productName
+      const filteredItems = fullData.Items.filter(item => 
+        (item as any).productName === aiMapping.productName
+      );
+      
+      const filteredData: RegionalPricingData = {
+        BillingCurrency: fullData.BillingCurrency,
+        Items: filteredItems
+      };
+      
+      // Cache the filtered data
+      if (!regionalDataCache.has(region)) {
+        regionalDataCache.set(region, new Map());
+      }
+      regionalDataCache.get(region)!.set(serviceName, filteredData);
+      
+      console.log(`📦 Loaded AI service ${serviceName} for ${region}: ${filteredItems.length} items (filtered from ${fullData.Items.length})`);
+      return filteredData;
+    }
+    
+    // Regular service - load by filename
     const filename = serviceName.toLowerCase().replace(/\s+/g, '_');
     const path = `/src/data/pricing/regions/${region}/${filename}.json`;
     
@@ -144,9 +201,25 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
     const skuName = item.skuName || item.armSkuName;
     if (!skuName) return;
     
-    // Calculate monthly price from hourly rate (730 hours average per month)
+    // Handle different billing units for AI services
+    const unitOfMeasure = (item as any).unitOfMeasure || '1 Hour';
     const hourlyPrice = item.retailPrice || item.unitPrice;
-    const monthlyPrice = hourlyPrice * 730;
+    let monthlyPrice: number;
+    
+    // Calculate monthly price based on unit of measure
+    if (unitOfMeasure.includes('/Month') || unitOfMeasure.includes('1/Month')) {
+      // Already monthly pricing (commitment tiers)
+      monthlyPrice = hourlyPrice;
+    } else if (unitOfMeasure.includes('/Day') || unitOfMeasure.includes('1/Day')) {
+      // Daily pricing (multiply by 30)
+      monthlyPrice = hourlyPrice * 30;
+    } else if (unitOfMeasure === '1K' || unitOfMeasure.includes('1000')) {
+      // Per-1K pricing (estimate 100K transactions/month for typical usage)
+      monthlyPrice = hourlyPrice * 100;
+    } else {
+      // Default to hourly (730 hours average per month)
+      monthlyPrice = hourlyPrice * 730;
+    }
     
     // Only add if we don't have this SKU yet, or if this is cheaper
     if (!tierMap.has(skuName) || tierMap.get(skuName)!.monthlyPrice > monthlyPrice) {

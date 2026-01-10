@@ -1,0 +1,912 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion-api",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Ingestion & API"
+      },
+      "style": {
+        "width": 850,
+        "height": 560
+      },
+      "width": 850,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-stream-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 100
+      },
+      "data": {
+        "label": "Stream Processing"
+      },
+      "style": {
+        "width": 850,
+        "height": 560
+      },
+      "width": 850,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-ai-moderation",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "data": {
+        "label": "AI Moderation"
+      },
+      "style": {
+        "width": 850,
+        "height": 560
+      },
+      "width": 850,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-data-observability",
+      "type": "groupNode",
+      "position": {
+        "x": 360,
+        "y": 700
+      },
+      "data": {
+        "label": "Data & Observability"
+      },
+      "style": {
+        "width": 1530,
+        "height": 560
+      },
+      "width": 1530,
+      "height": 560,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 360,
+        "y": 700
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-api-management",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg",
+        "pricing": {
+          "estimatedCost": 48.034,
+          "tier": "Developer",
+          "skuName": "Developer",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 166,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-app-service",
+      "type": "azureNode",
+      "position": {
+        "x": 640,
+        "y": 400
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 129,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 640,
+        "y": 400
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-event-hubs",
+      "type": "azureNode",
+      "position": {
+        "x": 1260,
+        "y": 380
+      },
+      "data": {
+        "label": "Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10148-icon-service-Analysis-Services.svg",
+        "pricing": {
+          "estimatedCost": 27.6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 124,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1260,
+        "y": 380
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-azure-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 1480,
+        "y": 200
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 160,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1480,
+        "y": 200
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-computer-vision",
+      "type": "azureNode",
+      "position": {
+        "x": 2000,
+        "y": 420
+      },
+      "data": {
+        "label": "Computer Vision",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 150,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 163,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 420
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-language",
+      "type": "azureNode",
+      "position": {
+        "x": 2200,
+        "y": 300
+      },
+      "data": {
+        "label": "Language",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/00800-icon-service-Translator-Text.svg",
+        "pricing": {
+          "estimatedCost": 25,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2200,
+        "y": 300
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-azure-openai",
+      "type": "azureNode",
+      "position": {
+        "x": 2340,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 142,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2340,
+        "y": 160
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-sql-database",
+      "type": "azureNode",
+      "position": {
+        "x": 840,
+        "y": 1180
+      },
+      "data": {
+        "label": "SQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg",
+        "pricing": {
+          "estimatedCost": 29.031,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1/Day",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 145,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 840,
+        "y": 1180
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-application-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 440,
+        "y": 1020
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 440,
+        "y": 1020
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 1520,
+        "y": 720
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/10244-icon-service-Application-Security-Groups.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "10K",
+          "lastUpdated": "2026-01-10T18:56:23.057Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1520,
+        "y": 720
+      },
+      "dragging": false
+    },
+    {
+      "id": "1768072153312",
+      "type": "azureNode",
+      "position": {
+        "x": 2300,
+        "y": 960
+      },
+      "data": {
+        "label": "Computer Vision",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/00792-icon-service-Computer-Vision.svg",
+        "pricing": {
+          "estimatedCost": 150,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T19:09:13.316Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 163,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2300,
+        "y": 960
+      },
+      "dragging": false
+    },
+    {
+      "id": "1768072157795",
+      "type": "azureNode",
+      "position": {
+        "x": 2540,
+        "y": 820
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03438-icon-service-Azure-OpenAI.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T19:09:17.800Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 142,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 2540,
+        "y": 820
+      }
+    },
+    {
+      "id": "1768074230316",
+      "type": "azureNode",
+      "position": {
+        "x": 2160,
+        "y": 1140
+      },
+      "data": {
+        "label": "API Management Services",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10042-icon-service-API-Management-Services.svg",
+        "pricing": {
+          "estimatedCost": 48.034,
+          "tier": "Developer",
+          "skuName": "Developer",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T19:43:50.320Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 2160,
+        "y": 1140
+      }
+    },
+    {
+      "id": "1768074248421",
+      "type": "azureNode",
+      "position": {
+        "x": 2080,
+        "y": 840
+      },
+      "data": {
+        "label": "App Services",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/10035-icon-service-App-Services.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T19:44:08.425Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 137,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 2080,
+        "y": 840
+      }
+    },
+    {
+      "id": "1768074278688",
+      "type": "azureNode",
+      "position": {
+        "x": 2580,
+        "y": 1000
+      },
+      "data": {
+        "label": "Function Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/10029-icon-service-Function-Apps.svg",
+        "pricing": {
+          "estimatedCost": 159.35,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T19:44:38.700Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 146,
+      "height": 113,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 2580,
+        "y": 1000
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-api-management",
+      "target": "svc-app-service",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Route moderation API calls to backend",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-app-service",
+      "target": "svc-event-hubs",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Publish content submission events for real-time moderation",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-event-hubs",
+      "target": "svc-azure-functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Trigger moderation workflow from event stream",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-azure-functions",
+      "target": "svc-computer-vision",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Analyze images for unsafe content signals",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-azure-functions",
+      "target": "svc-language",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Analyze text for policy violations/toxicity signals",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-azure-functions",
+      "target": "svc-azure-openai",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Contextual reasoning over combined signals and policy prompts",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-azure-functions",
+      "target": "svc-sql-database",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Persist moderation decision, scores, and audit details",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-app-service",
+      "target": "svc-sql-database",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Query moderation status/results for API responses",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-app-service",
+      "target": "svc-application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Send request/dependency telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-azure-functions",
+      "target": "svc-application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Send execution logs, metrics, and traces",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-app-service",
+      "target": "svc-key-vault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets (DB connection, API keys) via managed identity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-azure-functions",
+      "target": "svc-key-vault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets (AI keys, DB connection) via managed identity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 95.9905660377359,
+    "y": 131.85849056603774,
+    "zoom": 0.5817610062893082
+  }
+}

@@ -52,11 +52,29 @@ export async function loadIconsFromCategory(category: string): Promise<AzureIcon
     for (const path in iconModules) {
       if (path.includes(`/${category}/`)) {
         const fileName = path.split('/').pop() || '';
+        // Simplified: convert kebab-case filename to Title Case
+        // Special handling for common acronyms: AI, CDN, SQL, IoT, API, etc.
         const iconName = fileName
           .replace('.svg', '')
-          .replace(/^\d+-icon-service-/, '')
+          .replace(/^\d+-icon-service-/, '')  // Keep for backwards compatibility
           .replace(/-/g, ' ')
-          .replace(/\b\w/g, l => l.toUpperCase());
+          .split(' ')
+          .map(word => {
+            const upper = word.toUpperCase();
+            // Preserve common Azure acronyms
+            if (['AI', 'ML', 'CDN', 'SQL', 'IOT', 'API', 'VM', 'VMS', 'AKS', 'ACR', 'ACI', 'DB'].includes(upper)) {
+              return upper;
+            }
+            // For compound words like "openai", check if it should be "OpenAI"
+            if (word.toLowerCase() === 'openai') return 'OpenAI';
+            if (word.toLowerCase() === 'postgresql') return 'PostgreSQL';
+            if (word.toLowerCase() === 'mysql') return 'MySQL';
+            if (word.toLowerCase() === 'redis') return 'Redis';
+            if (word.toLowerCase() === 'cosmos') return 'Cosmos';
+            // Default: Title Case
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          })
+          .join(' ');
         
         icons.push({
           id: fileName.replace('.svg', ''),

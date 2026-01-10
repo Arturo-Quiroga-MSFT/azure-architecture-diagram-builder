@@ -1,0 +1,627 @@
+{
+  "nodes": [
+    {
+      "id": "grp-web",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Web Tier"
+      },
+      "style": {
+        "width": 850,
+        "height": 520
+      },
+      "width": 850,
+      "height": 520,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-app",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 100
+      },
+      "data": {
+        "label": "API / Compute"
+      },
+      "style": {
+        "width": 850,
+        "height": 520
+      },
+      "width": 850,
+      "height": 520,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 590,
+        "height": 520
+      },
+      "width": 590,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1220,
+        "y": 760
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 850,
+        "height": 560
+      },
+      "width": 850,
+      "height": 560,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 760
+      }
+    },
+    {
+      "id": "svc-cdn",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "CDN",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/03291-icon-service-API-Center.svg",
+        "pricing": {
+          "estimatedCost": 0.087,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1M",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 120,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-app-frontend",
+      "type": "azureNode",
+      "position": {
+        "x": 500,
+        "y": 380
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 129,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 500,
+        "y": 380
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 1080,
+        "y": 180
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg"
+      },
+      "width": 165,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 1080,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-app-api",
+      "type": "azureNode",
+      "position": {
+        "x": 1660,
+        "y": 360
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 129,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1660,
+        "y": 360
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-postgres",
+      "type": "azureNode",
+      "position": {
+        "x": 2060,
+        "y": 160
+      },
+      "data": {
+        "label": "PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "pricing": {
+          "estimatedCost": 109.86,
+          "tier": "Backup LRS",
+          "skuName": "Backup LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GiB/Month",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 128,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2060,
+        "y": 160
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-blob",
+      "type": "azureNode",
+      "position": {
+        "x": 2200,
+        "y": 380
+      },
+      "data": {
+        "label": "Blob Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 135,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2200,
+        "y": 380
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 1840,
+        "y": 980
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1840,
+        "y": 980
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1300,
+        "y": 860
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-10T22:41:51.605Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": 860
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 1540,
+        "y": 1120
+      },
+      "data": {
+        "label": "Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00020-icon-service-Metrics.svg"
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1540,
+        "y": 1120
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-cdn",
+      "target": "svc-app-frontend",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Fetch and cache React static assets (HTML/CSS/JS)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-app-frontend",
+      "target": "svc-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "HTTPS API calls (REST/JSON)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-apim",
+      "target": "svc-app-api",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Forward validated requests to Node.js API",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-app-api",
+      "target": "svc-postgres",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Read/write relational data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-app-api",
+      "target": "svc-blob",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Upload/download image objects",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-app-api",
+      "target": "svc-keyvault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets (DB connection string, storage credentials)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-app-frontend",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Client-side telemetry (page views, errors)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-app-api",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Server-side telemetry (requests, dependencies, exceptions)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-appinsights",
+      "target": "svc-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Alert rules and dashboards from collected telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    }
+  ],
+  "viewport": {
+    "x": -25.356806230606026,
+    "y": 36.979576769641085,
+    "zoom": 0.7676512125999033
+  }
+}
