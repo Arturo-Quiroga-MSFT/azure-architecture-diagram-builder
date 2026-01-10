@@ -59,15 +59,14 @@ export async function generateArchitectureWithAI(description: string) {
 
 Based on the user's description, identify the appropriate Azure services and organize them into logical groups (like Microsoft reference architectures).${contextPrompt}
 
+**IMPORTANT: DO NOT include position, x, y, width, or height in your response. The layout engine will calculate optimal positions automatically using graph algorithms.**
+
 Return ONLY a valid JSON object (no markdown, no explanations) with this exact structure:
 {
   "groups": [
     {
       "id": "unique-group-id",
-      "label": "Group Name (e.g., Ingestion, Processing, Data Layer, Web Tier)",
-      "position": {"x": 100, "y": 100},
-      "width": 700,
-      "height": 500
+      "label": "Group Name (e.g., Ingestion, Processing, Data Layer, Web Tier)"
     }
   ],
   "services": [
@@ -157,30 +156,28 @@ Compute & Containers:
 
 Rules:
 1. Create 2-5 logical groups to organize services
-2. Position groups with ample spacing (at least 800px apart horizontally, 600px vertically) for readability
-3. Assign services to appropriate groups using groupId (max 6 services per group)
-4. **CRITICAL**: Use EXACT service names from the "CRITICAL ICON MAPPINGS" section above
+2. Assign services to appropriate groups using groupId (max 6 services per group)
+3. **CRITICAL**: Use EXACT service names from the "CRITICAL ICON MAPPINGS" section above
    - For Azure OpenAI, use "Azure OpenAI" (NOT "AI Studio", "OpenAI Service", "GPT Service")
    - For web APIs, use "App Service" (NOT "Web App", "Web API", "API Service")
    - For databases, use "Azure Cosmos DB" (NOT just "Cosmos DB" or "CosmosDB")
    - For NLP, use "Language" (NOT "Text Analytics")
    - Check the mappings above for the correct name for every service
-5. **IDENTITY SERVICES**: ALWAYS use "Microsoft Entra ID" for identity and authentication
+4. **IDENTITY SERVICES**: ALWAYS use "Microsoft Entra ID" for identity and authentication
    - NEVER use "Azure Active Directory", "Active Directory", "Azure AD", or "AAD"
    - Microsoft Entra ID is the current name for Azure's identity platform
    - Use for: authentication, authorization, SSO, user management, RBAC
-6. Create logical connections based on data flow
-7. Make group labels concise and descriptive
-8. Size groups generously: width 700-900px, height 500-600px based on service count
-9. Specify sourcePosition and targetPosition for connections to optimize layout:
+5. Create logical connections based on data flow
+6. Make group labels concise and descriptive
+7. Specify sourcePosition and targetPosition for connections to optimize layout:
    - Use "right" and "left" for horizontal data flows
    - Use "bottom" and "top" for vertical data flows
    - Consider the logical flow direction when choosing positions
-10. Specify connection type for each connection:
+8. Specify connection type for each connection:
    - "sync" (solid line) - Synchronous, request-response, real-time communication (HTTP, SQL queries)
    - "async" (dashed line) - Asynchronous, message-based, event-driven (queues, events, pub/sub)
    - "optional" (dotted line) - Optional paths, fallback routes, or conditional flows
-11. Provide a workflow array with numbered steps that explain the logical flow:
+9. Provide a workflow array with numbered steps that explain the logical flow:
    - Write clear, technical descriptions like Azure Architecture Center
    - Explain what each step does and why
    - Reference the service IDs involved in each step

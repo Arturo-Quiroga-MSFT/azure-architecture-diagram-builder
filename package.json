@@ -10,6 +10,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@types/dagre": "^0.7.53",
+    "dagre": "^0.8.5",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",

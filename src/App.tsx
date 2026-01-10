@@ -27,6 +27,7 @@ import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
 import { loadIconsFromCategory } from './utils/iconLoader';
+import { layoutArchitecture } from './utils/layoutEngine';
 import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, setActiveRegion, getActiveRegion, AzureRegion } from './services/regionalPricingService';
@@ -554,68 +555,50 @@ function App() {
     
     console.log(`✅ Icon loading complete. Loaded ${iconCache.size}/${services.length} icons`);
 
-    // Create group nodes first if they exist
-    if (groups && groups.length > 0) {
-      groups.forEach((group: any) => {
+    // ============================================================================
+    // LAYOUT ENGINE: Calculate optimal positions using Dagre algorithm
+    // ============================================================================
+    console.log('📐 Calculating layout with Dagre algorithm...');
+    const { services: positionedServices, groups: positionedGroups } = layoutArchitecture(
+      services,
+      connections,
+      groups || [],
+      { direction: 'LR' } // Left-to-right data flow
+    );
+
+    // Create group nodes with calculated positions and sizes
+    if (positionedGroups && positionedGroups.length > 0) {
+      positionedGroups.forEach((group: any) => {
         const groupNode: Node = {
           id: group.id,
           type: 'groupNode',
-          position: group.position || { x: 100, y: 100 },
+          position: group.position,
           data: {
             label: group.label,
           },
           style: {
-            width: group.width || 400,
-            height: group.height || 300,
+            width: group.width,
+            height: group.height,
           },
         };
         newNodes.push(groupNode);
       });
     }
 
-    // Create service nodes
-    services.forEach((service: any) => {
+    // Create service nodes with calculated positions
+    positionedServices.forEach((service: any) => {
       const icon = iconCache.get(service.id);
-      
-      // If service belongs to a group, position it relative to the group
-      let position = { x: 150, y: 150 };
-      
-      if (service.groupId) {
-        const group = groups?.find((g: any) => g.id === service.groupId);
-        if (group) {
-          // Position service inside the group with more spacing
-          const groupIndex = services.filter((s: any) => s.groupId === service.groupId).indexOf(service);
-          const servicesInGroup = services.filter((s: any) => s.groupId === service.groupId).length;
-          const cols = Math.min(3, servicesInGroup);
-          const row = Math.floor(groupIndex / cols);
-          const col = groupIndex % cols;
-          
-          position = {
-            x: group.position.x + 80 + (col * 200),
-            y: group.position.y + 80 + (row * 180),
-          };
-        }
-      } else {
-        // For services not in a group, use a simple grid with generous spacing
-        const ungroupedServices = services.filter((s: any) => !s.groupId);
-        const index = ungroupedServices.indexOf(service);
-        const cols = Math.ceil(Math.sqrt(ungroupedServices.length));
-        const row = Math.floor(index / cols);
-        const col = index % cols;
-        position = {
-          x: 150 + (col * 250),
-          y: 600 + (row * 200),
-        };
-      }
       
       const node: Node = {
         id: service.id,
         type: 'azureNode',
-        position,
+        position: service.position,  // ✅ Use position from layout engine
         data: {
           label: service.name,
           iconPath: icon?.path || '',
         },
+        parentNode: service.groupId || undefined,  // Link to group if exists
+        extent: service.groupId ? 'parent' : undefined,  // Keep within parent bounds
       };
 
       newNodes.push(node);

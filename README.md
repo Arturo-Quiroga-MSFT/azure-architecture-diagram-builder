@@ -1,10 +1,14 @@
 # Azure Architecture Diagram Builder
 
-A professional web-based tool for creating Azure architecture diagrams using the official Azure icon library.
+A professional web-based tool for creating Azure architecture diagrams using the official Azure icon library with AI-powered generation and real-time cost estimation.
+
+📖 **[View System Architecture Documentation](DOCS/ARCHITECTURE.md)** - Detailed technical architecture, data flows, and implementation details
 
 ## Features
 
 - 🤖 **AI-Powered Generation**: Describe your architecture in plain English and let AI automatically create the diagram
+- 💰 **Real-Time Cost Estimation**: Get pricing estimates for your architecture across multiple Azure regions
+- 🌍 **Multi-Region Pricing**: Compare costs across East US 2, Sweden Central, and West Europe
 - 🎨 **Official Azure Icons**: Complete library of Azure service icons organized by category
 - 🖱️ **Drag & Drop Interface**: Intuitive drag-and-drop functionality for placing services
 - 🔗 **Smart Connections**: Connect services with animated arrows to show data flow
@@ -100,9 +104,16 @@ npm run dev
 
 ## Technologies Used
 
-- **React 18**: UI framework
-- **TypeScript**: Type-safe development
-- **ReactFlow**: Diagram and flowchart library
+- **React 18**:  (GPT-4o)**: Intelligent architecture generation
+- **@azure/openai**: Official Azure OpenAI SDK
+- **Azure Retail Prices API**: Real-time pricing data
+- **html2canvas**: Diagram export functionality
+
+## Documentation
+
+- **[System Architecture](DOCS/ARCHITECTURE.md)** - Complete technical architecture with data flows and component diagrams
+- **[Cost Estimation Implementation](DOCS/REGIONAL_PRICING_IMPLEMENTATION.md)** - Regional pricing system details
+- **[Service Pricing Documentation](DOCS/services_pricing.md)** - Supported services and pricing tiers
 - **Vite**: Fast build tool and dev server
 - **Azure OpenAI**: GPT-4/GPT-4o for intelligent architecture generation
 - **@azure/openai**: Official Azure OpenAI SDK
