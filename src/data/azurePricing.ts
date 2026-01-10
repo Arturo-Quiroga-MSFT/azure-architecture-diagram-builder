@@ -23,6 +23,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'API Management': 'API Management',
   'API Management Services': 'API Management',
   'Api Management Services': 'API Management',
+  'Api Management': 'API Management',  // Handle AI-generated name variations
   'Azure API Management': 'API Management',
   
   // Compute
@@ -134,6 +135,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Log Analytics': 'Azure Monitor',
   'Log Analytics Workspace': 'Log Analytics',
   'Azure Monitor': 'Azure Monitor',
+  'Monitor': 'Azure Monitor',  // Generic "Monitor" maps to Azure Monitor
   
   // IoT
   'IoT Hub': 'Azure IoT Hub',
@@ -477,6 +479,18 @@ export const FALLBACK_PRICING: Record<string, {
   'Application Insights': {
     basic: 0, // First 5GB free
     standard: 2.30, // per GB
+    premium: 2.30, // per GB
+    unit: 'per GB/month'
+  },
+  'Azure Monitor': {
+    basic: 0, // First 5GB free
+    standard: 2.30, // per GB (Log Analytics ingestion)
+    premium: 2.30, // per GB
+    unit: 'per GB/month'
+  },
+  'Monitor': {
+    basic: 0, // First 5GB free
+    standard: 2.30, // per GB (Log Analytics ingestion)
     premium: 2.30, // per GB
     unit: 'per GB/month'
   },

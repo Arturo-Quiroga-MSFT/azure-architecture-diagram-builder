@@ -165,18 +165,22 @@ Rules:
    - For databases, use "Azure Cosmos DB" (NOT just "Cosmos DB" or "CosmosDB")
    - For NLP, use "Language" (NOT "Text Analytics")
    - Check the mappings above for the correct name for every service
-5. Create logical connections based on data flow
-6. Make group labels concise and descriptive
-7. Size groups generously: width 700-900px, height 500-600px based on service count
-8. Specify sourcePosition and targetPosition for connections to optimize layout:
+5. **IDENTITY SERVICES**: ALWAYS use "Microsoft Entra ID" for identity and authentication
+   - NEVER use "Azure Active Directory", "Active Directory", "Azure AD", or "AAD"
+   - Microsoft Entra ID is the current name for Azure's identity platform
+   - Use for: authentication, authorization, SSO, user management, RBAC
+6. Create logical connections based on data flow
+7. Make group labels concise and descriptive
+8. Size groups generously: width 700-900px, height 500-600px based on service count
+9. Specify sourcePosition and targetPosition for connections to optimize layout:
    - Use "right" and "left" for horizontal data flows
    - Use "bottom" and "top" for vertical data flows
    - Consider the logical flow direction when choosing positions
-9. Specify connection type for each connection:
+10. Specify connection type for each connection:
    - "sync" (solid line) - Synchronous, request-response, real-time communication (HTTP, SQL queries)
    - "async" (dashed line) - Asynchronous, message-based, event-driven (queues, events, pub/sub)
    - "optional" (dotted line) - Optional paths, fallback routes, or conditional flows
-10. Provide a workflow array with numbered steps that explain the logical flow:
+11. Provide a workflow array with numbered steps that explain the logical flow:
    - Write clear, technical descriptions like Azure Architecture Center
    - Explain what each step does and why
    - Reference the service IDs involved in each step

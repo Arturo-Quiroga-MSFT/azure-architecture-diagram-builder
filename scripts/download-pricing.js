@@ -14,6 +14,7 @@ const SERVICES = [
   { name: 'Azure Database for PostgreSQL', filename: 'azure_database_for_postgresql' },
   { name: 'Azure Key Vault', filename: 'azure_key_vault' },
   { name: 'Application Insights', filename: 'application_insights' },
+  { name: 'Azure Monitor', filename: 'azure_monitor' },
   { name: 'Azure Data Factory', filename: 'azure_data_factory' },
   { name: 'Azure Event Hubs', filename: 'azure_event_hubs' },
   { name: 'Container Registry', filename: 'container_registry' },

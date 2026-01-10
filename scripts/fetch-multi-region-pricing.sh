@@ -20,6 +20,7 @@ SERVICES=(
   "Azure Database for PostgreSQL"
   "Key Vault"
   "Application Insights"
+  "Azure Monitor"
   "API Management"
   "Functions"
   "Logic Apps"
