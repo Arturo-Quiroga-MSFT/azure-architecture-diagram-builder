@@ -73,6 +73,8 @@ const getGroupColors = (label: string): { bg: string; border: string; header: st
 const GroupNode: React.FC<NodeProps> = memo(({ data, selected }) => {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [label, setLabel] = useState(data.label || 'Group');
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [customColor, setCustomColor] = useState(data.customColor || null);
 
   const handleLabelDoubleClick = () => {
     setIsEditingLabel(true);
@@ -93,7 +95,13 @@ const GroupNode: React.FC<NodeProps> = memo(({ data, selected }) => {
     }
   };
 
-  const colors = getGroupColors(label);
+  const handleColorSelect = (colorScheme: typeof COLOR_PALETTE[0]) => {
+    setCustomColor(colorScheme);
+    data.customColor = colorScheme;
+    setShowColorPicker(false);
+  };
+
+  const colors = customColor || getGroupColors(label);
   const groupStyle = {
     backgroundColor: colors.bg,
     borderColor: colors.border,
@@ -115,24 +123,59 @@ const GroupNode: React.FC<NodeProps> = memo(({ data, selected }) => {
         minHeight={150}
       />
       <div className="group-node-header" style={headerStyle}>
-        {isEditingLabel ? (
-          <input
-            type="text"
-            value={label}
-            onChange={handleLabelChange}
-            onBlur={handleLabelBlur}
-            onKeyDown={handleLabelKeyDown}
-            autoFocus
-            className="group-label-input"
-          />
-        ) : (
-          <div
-            className="group-label"
-            onDoubleClick={handleLabelDoubleClick}
-            title="Double-click to edit"
-            style={labelStyle}
+        <div className="group-header-content">
+          {isEditingLabel ? (
+            <input
+              type="text"
+              value={label}
+              onChange={handleLabelChange}
+              onBlur={handleLabelBlur}
+              onKeyDown={handleLabelKeyDown}
+              autoFocus
+              className="group-label-input"
+            />
+          ) : (
+            <div
+              className="group-label"
+              onDoubleClick={handleLabelDoubleClick}
+              title="Double-click to edit"
+              style={labelStyle}
+            >
+              {label}
+            </div>
+          )}
+          <button
+            className="color-picker-button"
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            title="Change color"
+            style={{ color: colors.header }}
           >
-            {label}
+            <Palette size={18} />
+          </button>
+        </div>
+        
+        {showColorPicker && (
+          <div className="color-picker-panel">
+            <div className="color-picker-title">Choose Color</div>
+            <div className="color-picker-grid">
+              {COLOR_PALETTE.map((colorScheme) => (
+                <button
+                  key={colorScheme.name}
+                  className={`color-option ${customColor?.name === colorScheme.name ? 'active' : ''}`}
+                  onClick={() => handleColorSelect(colorScheme)}
+                  style={{
+                    backgroundColor: colorScheme.bg,
+                    borderColor: colorScheme.border,
+                  }}
+                  title={colorScheme.name}
+                >
+                  <div
+                    className="color-option-inner"
+                    style={{ backgroundColor: colorScheme.border }}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

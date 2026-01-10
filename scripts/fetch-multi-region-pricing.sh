@@ -28,6 +28,8 @@ SERVICES=(
   "Azure Data Factory"
   "Event Hubs"
   "Container Registry"
+  "Foundry Models"
+  "Foundry Tools"
 )
 
 # Global services (no region-specific pricing)
@@ -57,12 +59,12 @@ fetch_pricing() {
   # Build filter and properly encode it
   local filter="serviceName eq '$service' and armRegionName eq '$region' and priceType eq 'Consumption'"
   
-  # Fetch with pagination (limit to 100 items per service/region for testing)
+  # Fetch with pagination (limit to 1000 items per service/region to capture Foundry services)
   # Use --data-urlencode to properly encode the filter parameter
   curl -s -G "https://prices.azure.com/api/retail/prices" \
     --data-urlencode "api-version=2023-01-01-preview" \
     --data-urlencode "\$filter=$filter" \
-    --data-urlencode "\$top=100" \
+    --data-urlencode "\$top=1000" \
     -o "$output_file"
   
   # Check if successful
@@ -88,7 +90,7 @@ fetch_global_pricing() {
   curl -s -G "https://prices.azure.com/api/retail/prices" \
     --data-urlencode "api-version=2023-01-01-preview" \
     --data-urlencode "\$filter=$filter" \
-    --data-urlencode "\$top=100" \
+    --data-urlencode "\$top=1000" \
     -o "$output_file"
   
   # Check if successful

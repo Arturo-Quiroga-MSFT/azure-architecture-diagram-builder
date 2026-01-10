@@ -1,0 +1,22 @@
+{
+  "currencyCode": "USD",
+  "tierMinimumUnits": 0.0,
+  "retailPrice": 0.156,
+  "unitPrice": 0.156,
+  "armRegionName": "eastus2",
+  "location": "US East 2",
+  "effectiveStartDate": "2023-10-01T00:00:00Z",
+  "meterId": "00062872-0b43-592a-92ca-3ab13f1a01c4",
+  "meterName": "D4ads v5 Low Priority",
+  "productId": "DZH318Z08W2Q",
+  "skuId": "DZH318Z08W2Q/0044",
+  "productName": "Dadsv5 Series Cloud Services",
+  "skuName": "Standard_D4ads_v5 Low Priority",
+  "serviceName": "Virtual Machines",
+  "serviceId": "DZH313Z7MMC8",
+  "serviceFamily": "Compute",
+  "unitOfMeasure": "1 Hour",
+  "type": "Consumption",
+  "isPrimaryMeterRegion": true,
+  "armSkuName": "Standard_D4ads_v5"
+}

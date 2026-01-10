@@ -1,0 +1,22 @@
+{
+  "currencyCode": "USD",
+  "tierMinimumUnits": 0.0,
+  "retailPrice": 0.19,
+  "unitPrice": 0.19,
+  "armRegionName": "eastus2",
+  "location": "US East 2",
+  "effectiveStartDate": "2020-11-01T00:00:00Z",
+  "meterId": "0280bb04-b6b7-5a1e-a5ba-415fc4452b6c",
+  "meterName": "D2s",
+  "productId": "DZH318Z0CCGK",
+  "skuId": "DZH318Z0CCGK/00B1",
+  "productName": "Azure Cosmos DB Dedicated Gateway - General Purpose",
+  "skuName": "D2s",
+  "serviceName": "Azure Cosmos DB",
+  "serviceId": "DZH317DL9CC7",
+  "serviceFamily": "Databases",
+  "unitOfMeasure": "1 Hour",
+  "type": "Consumption",
+  "isPrimaryMeterRegion": true,
+  "armSkuName": ""
+}

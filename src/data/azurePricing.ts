@@ -104,6 +104,21 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'OpenAI': 'Azure OpenAI',
   'Azure OpenAI': 'Azure OpenAI',
   'Bot Service': 'Azure Bot Service',
+  'Azure AI Document Intelligence': 'Azure AI Document Intelligence',
+  'Document Intelligence': 'Azure AI Document Intelligence',
+  'Form Recognizer': 'Azure AI Document Intelligence',
+  'Azure AI Language': 'Azure AI Language',
+  'Language': 'Azure AI Language',
+  'Text Analytics': 'Azure AI Language',
+  'Azure AI Speech': 'Azure AI Speech',
+  'Speech': 'Azure AI Speech',
+  'Speech Services': 'Azure AI Speech',
+  'Azure AI Vision': 'Azure AI Vision',
+  'Vision': 'Azure AI Vision',
+  'Computer Vision': 'Azure AI Vision',
+  'Azure AI Translator': 'Azure AI Translator',
+  'Translator': 'Azure AI Translator',
+  'Translator Text': 'Azure AI Translator',
   
   // Identity & Security
   'Active Directory': 'Azure Active Directory',
@@ -156,6 +171,22 @@ export const USAGE_BASED_SERVICES = [
   'Azure Service Bus',
   'Cosmos DB',
   'Azure Cosmos DB',
+  'Cognitive Services',
+  'Azure AI Document Intelligence',
+  'Document Intelligence',
+  'Form Recognizer',
+  'Azure AI Language',
+  'Language',
+  'Text Analytics',
+  'Azure AI Speech',
+  'Speech',
+  'Speech Services',
+  'Azure AI Vision',
+  'Vision',
+  'Computer Vision',
+  'Azure AI Translator',
+  'Translator',
+  'Azure OpenAI',
 ];
 
 /**
@@ -203,6 +234,22 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Azure Container Registry': 'Standard',
   'Data Lake Storage Gen2': 'Hot LRS',
   'Azure Data Lake Storage Gen2': 'Hot LRS',
+  'Cognitive Services': 'S0',
+  'Azure AI Document Intelligence': 'S0',
+  'Document Intelligence': 'S0',
+  'Form Recognizer': 'S0',
+  'Azure AI Language': 'S',
+  'Language': 'S',
+  'Text Analytics': 'S',
+  'Azure AI Speech': 'S0',
+  'Speech': 'S0',
+  'Speech Services': 'S0',
+  'Azure AI Vision': 'S1',
+  'Vision': 'S1',
+  'Computer Vision': 'S1',
+  'Azure AI Translator': 'S1',
+  'Translator': 'S1',
+  'Azure OpenAI': 'Standard',
 };
 
 /**
@@ -508,6 +555,102 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 18.40, // ~1TB
     premium: 109.50, // ~1TB Premium
     unit: 'per account/month'
+  },
+  'Cognitive Services': {
+    basic: 0, // Free tier available
+    standard: 100.00, // S0 tier estimated
+    premium: 500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure AI Document Intelligence': {
+    basic: 0, // Free tier
+    standard: 50.00, // S0 tier (1,000 pages)
+    premium: 500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Document Intelligence': {
+    basic: 0, // Free tier
+    standard: 50.00, // S0 tier
+    premium: 500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Form Recognizer': {
+    basic: 0, // Free tier
+    standard: 50.00, // S0 tier
+    premium: 500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure AI Language': {
+    basic: 0, // Free tier
+    standard: 25.00, // S tier (10K text records)
+    premium: 250.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Language': {
+    basic: 0, // Free tier
+    standard: 25.00, // S tier
+    premium: 250.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Text Analytics': {
+    basic: 0, // Free tier
+    standard: 25.00, // S tier
+    premium: 250.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure AI Speech': {
+    basic: 0, // Free tier
+    standard: 100.00, // S0 tier (~100K transactions)
+    premium: 1000.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Speech': {
+    basic: 0, // Free tier
+    standard: 100.00, // S0 tier
+    premium: 1000.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Speech Services': {
+    basic: 0, // Free tier
+    standard: 100.00, // S0 tier
+    premium: 1000.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure AI Vision': {
+    basic: 0, // Free tier
+    standard: 150.00, // S1 tier (~10K transactions)
+    premium: 1500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Vision': {
+    basic: 0, // Free tier
+    standard: 150.00, // S1 tier
+    premium: 1500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Computer Vision': {
+    basic: 0, // Free tier
+    standard: 150.00, // S1 tier
+    premium: 1500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure AI Translator': {
+    basic: 0, // Free tier
+    standard: 100.00, // S1 tier (~2M chars)
+    premium: 1000.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Translator': {
+    basic: 0, // Free tier
+    standard: 100.00, // S1 tier
+    premium: 1000.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure OpenAI': {
+    basic: 0, // Usage-based
+    standard: 200.00, // Estimated typical usage
+    premium: 2000.00, // High volume
+    unit: 'per resource/month'
   },
 };
 
