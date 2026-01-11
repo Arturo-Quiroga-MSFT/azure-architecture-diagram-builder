@@ -15,7 +15,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -26,12 +26,16 @@ import EditableEdge from './components/EditableEdge';
 import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
+import ValidationModal from './components/ValidationModal';
+import DeploymentGuideModal from './components/DeploymentGuideModal';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { layoutArchitecture } from './utils/layoutEngine';
-import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON } from './services/costEstimationService';
+import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
-import { preloadCommonServices, setActiveRegion, getActiveRegion, AzureRegion } from './services/regionalPricingService';
+import { preloadCommonServices, getActiveRegion, AzureRegion } from './services/regionalPricingService';
 import { formatMonthlyCost } from './utils/pricingHelpers';
+import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
+import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import './App.css';
 
 const nodeTypes = {
@@ -62,6 +66,15 @@ function App() {
     version: '1.0',
     date: new Date().toLocaleDateString(),
   });
+  
+  // Premium Features State
+  const [validationResult, setValidationResult] = useState<ArchitectureValidation | null>(null);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
+  const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
+  const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+  
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   const addGroupBox = useCallback(() => {
@@ -900,6 +913,114 @@ function App() {
     setNodes(updatedNodes);
   }, [nodes, setNodes]);
 
+  // Premium Feature Handlers
+  const handleValidateArchitecture = useCallback(async () => {
+    if (nodes.length === 0) {
+      alert('Please create an architecture diagram first.');
+      return;
+    }
+
+    setIsValidating(true);
+    setIsValidationModalOpen(true);
+
+    try {
+      // Extract services data
+      const services = nodes
+        .filter(n => n.type === 'azureNode')
+        .map(n => ({
+          name: n.data.label || n.data.serviceName || 'Unknown Service',
+          type: n.data.serviceName || n.data.label || 'Unknown',
+          category: n.data.category || 'General',
+        }));
+
+      // Extract connections
+      const connections = edges.map(e => ({
+        from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+        to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+        label: String(e.label || ''),
+      }));
+
+      // Extract groups
+      const groups = nodes
+        .filter(n => n.type === 'groupNode')
+        .map(n => ({
+          name: n.data.label || 'Group',
+          services: nodes
+            .filter(child => child.parentNode === n.id)
+            .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+        }));
+
+      const result = await validateArchitecture(
+        services,
+        connections,
+        groups,
+        architecturePrompt || titleBlockData.architectureName
+      );
+
+      setValidationResult(result);
+    } catch (error: any) {
+      console.error('Validation error:', error);
+      alert(`Failed to validate architecture: ${error.message}`);
+      setIsValidationModalOpen(false);
+    } finally {
+      setIsValidating(false);
+    }
+  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName]);
+
+  const handleGenerateDeploymentGuide = useCallback(async () => {
+    if (nodes.length === 0) {
+      alert('Please create an architecture diagram first.');
+      return;
+    }
+
+    setIsGeneratingGuide(true);
+    setIsDeploymentGuideModalOpen(true);
+
+    try {
+      // Extract services data
+      const services = nodes
+        .filter(n => n.type === 'azureNode')
+        .map(n => ({
+          name: n.data.label || n.data.serviceName || 'Unknown Service',
+          type: n.data.serviceName || n.data.label || 'Unknown',
+          category: n.data.category || 'General',
+        }));
+
+      // Extract connections
+      const connections = edges.map(e => ({
+        from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+        to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+        label: String(e.label || ''),
+      }));
+
+      // Extract groups
+      const groups = nodes
+        .filter(n => n.type === 'groupNode')
+        .map(n => ({
+          name: n.data.label || 'Group',
+          services: nodes
+            .filter(child => child.parentNode === n.id)
+            .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+        }));
+
+      const guide = await generateDeploymentGuide(
+        services,
+        connections,
+        groups,
+        architecturePrompt || titleBlockData.architectureName,
+        totalMonthlyCost
+      );
+
+      setDeploymentGuide(guide);
+    } catch (error: any) {
+      console.error('Guide generation error:', error);
+      alert(`Failed to generate deployment guide: ${error.message}`);
+      setIsDeploymentGuideModalOpen(false);
+    } finally {
+      setIsGeneratingGuide(false);
+    }
+  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, totalMonthlyCost]);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -945,6 +1066,24 @@ function App() {
             <button onClick={exportCostBreakdown} className="btn btn-primary" title="Export cost breakdown" disabled={totalMonthlyCost === 0}>
               <DollarSign size={18} />
               Export Costs
+            </button>
+            <button 
+              onClick={handleValidateArchitecture} 
+              className="btn btn-premium" 
+              title="Validate architecture against Azure Well-Architected Framework"
+              disabled={nodes.length === 0}
+            >
+              <Shield size={18} />
+              Validate Architecture
+            </button>
+            <button 
+              onClick={handleGenerateDeploymentGuide} 
+              className="btn btn-premium" 
+              title="Generate comprehensive deployment guide"
+              disabled={nodes.length === 0}
+            >
+              <FileText size={18} />
+              Deployment Guide
             </button>
             <label className="btn btn-secondary" title="Load diagram">
               <Upload size={18} />
@@ -1108,6 +1247,20 @@ function App() {
           </>
         )}
       </div>
+
+      {/* Premium Feature Modals */}
+      <ValidationModal
+        validation={validationResult}
+        isOpen={isValidationModalOpen}
+        onClose={() => setIsValidationModalOpen(false)}
+        isLoading={isValidating}
+      />
+      <DeploymentGuideModal
+        guide={deploymentGuide}
+        isOpen={isDeploymentGuideModalOpen}
+        onClose={() => setIsDeploymentGuideModalOpen(false)}
+        isLoading={isGeneratingGuide}
+      />
     </div>
   );
 }

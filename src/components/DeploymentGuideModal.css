@@ -1,0 +1,384 @@
+.deployment-modal .modal-content {
+  max-width: 1000px;
+}
+
+.guide-header {
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 24px;
+}
+
+.guide-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.guide-overview {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+.guide-meta {
+  display: flex;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meta-item {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.meta-item strong {
+  font-weight: 600;
+}
+
+/* Guide Sections */
+.guide-section {
+  margin-bottom: 32px;
+}
+
+.guide-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Prerequisites */
+.prerequisites-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.prerequisites-list li {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-left: 3px solid #3b82f6;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.prerequisites-list li:before {
+  content: '✓';
+  color: #10b981;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Steps */
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.step-card:hover {
+  border-color: #d1d5db;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+  user-select: none;
+  background: white;
+}
+
+.step-header:hover {
+  background: #f9fafb;
+}
+
+.step-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.step-method {
+  padding: 4px 10px;
+  background: #eff6ff;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.step-content {
+  padding: 0 16px 16px 16px;
+  background: white;
+}
+
+.step-description {
+  margin: 0 0 16px 0;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Commands */
+.commands-section {
+  margin: 16px 0;
+}
+
+.commands-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 0 8px 0;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.commands-header span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.command-block {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.command-block pre {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.copy-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.step-notes {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #78350f;
+}
+
+/* Configuration Table */
+.configuration-table {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.configuration-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.configuration-table thead {
+  background: #f9fafb;
+}
+
+.configuration-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.configuration-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.configuration-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.configuration-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.config-key {
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+.config-value code {
+  padding: 2px 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.config-description {
+  color: #6b7280;
+}
+
+/* Validation List */
+.validation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.validation-list li {
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.validation-list li:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.validation-list input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.validation-list label {
+  flex: 1;
+  cursor: pointer;
+}
+
+/* Troubleshooting */
+.troubleshooting-section {
+  background: #fef2f2;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+}
+
+.troubleshooting-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.troubleshooting-item {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  border-left: 4px solid #ef4444;
+}
+
+.troubleshooting-problem {
+  margin-bottom: 8px;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.troubleshooting-solution {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Best Practices */
+.best-practices-section {
+  background: #f0fdf4;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.best-practices-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.best-practices-list li {
+  padding: 12px 16px;
+  background: white;
+  border-left: 3px solid #10b981;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #064e3b;
+}
+
+.best-practices-list li:before {
+  content: '💡';
+  margin-right: 8px;
+}
