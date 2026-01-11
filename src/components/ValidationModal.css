@@ -361,6 +361,10 @@
   background: #f9fafb;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .btn-primary,

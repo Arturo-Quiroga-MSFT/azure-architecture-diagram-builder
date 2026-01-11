@@ -59,7 +59,8 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
             <p>Analyzing architecture against Azure Well-Architected Framework...</p>
           </div>
         ) : validation ? (
-          <div className="modal-body">
+          <>
+            <div className="modal-body">
             {/* Overall Score */}
             <div className="validation-score">
               <div 
@@ -142,17 +143,19 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               </div>
             )}
 
-            {/* Actions */}
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={handleDownload}>
-                <Download size={18} />
-                Download Report
-              </button>
-              <button className="btn-primary" onClick={onClose}>
-                Close
-              </button>
-            </div>
           </div>
+
+          {/* Actions - Fixed at bottom */}
+          <div className="modal-actions">
+            <button className="btn-secondary" onClick={handleDownload}>
+              <Download size={18} />
+              Download Report
+            </button>
+            <button className="btn-primary" onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </>
         ) : (
           <div className="modal-empty">
             <p>No validation results available.</p>
