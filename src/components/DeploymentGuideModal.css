@@ -401,3 +401,38 @@
   content: '💡';
   margin-right: 8px;
 }
+
+/* Modal Actions Buttons */
+.deployment-modal .modal-actions .btn-primary,
+.deployment-modal .modal-actions .btn-secondary {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.deployment-modal .modal-actions .btn-primary {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.deployment-modal .modal-actions .btn-primary:hover {
+  background: #2563eb;
+}
+
+.deployment-modal .modal-actions .btn-secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.deployment-modal .modal-actions .btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
