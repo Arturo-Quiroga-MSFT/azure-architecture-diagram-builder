@@ -7,8 +7,9 @@ A professional web-based tool for creating Azure architecture diagrams using the
 ## Features
 
 - 🤖 **AI-Powered Generation**: Describe your architecture in plain English and let AI automatically create the diagram
+- � **WAF-Driven Architecture Improvements** *(NEW - Jan 11, 2026)*: Validate architectures against Azure Well-Architected Framework and automatically apply selected recommendations to regenerate improved designs
 - 💰 **Real-Time Cost Estimation**: Get pricing estimates for your architecture across multiple Azure regions
-- 🌍 **Multi-Region Pricing**: Compare costs across East US 2, Sweden Central, and West Europe
+- 🌍 **Multi-Region Pricing**: Compare costs across 5 regions (East US 2, Canada Central, Brazil South, West Europe, Sweden Central)
 - 🎨 **Official Azure Icons**: Complete library of Azure service icons organized by category
 - 🖱️ **Drag & Drop Interface**: Intuitive drag-and-drop functionality for placing services
 - 🔗 **Smart Connections**: Connect services with animated arrows to show data flow
@@ -17,6 +18,28 @@ A professional web-based tool for creating Azure architecture diagrams using the
 - 📸 **Export**: Export diagrams as PNG images for documentation
 - 🗺️ **Mini Map**: Navigate large diagrams easily with the mini map
 - 🔍 **Search**: Quickly find Azure services across all categories
+
+## What's New - January 11, 2026
+
+### 🔄 Iterative Architecture Improvement Workflow
+
+A powerful new feature that enables continuous improvement of your architectures based on Azure Well-Architected Framework recommendations:
+
+1. **Generate** your architecture using AI
+2. **Validate** against WAF pillars (Security, Reliability, Performance, Cost, Operational Excellence)
+3. **Select** specific recommendations you want to implement (via checkboxes)
+4. **Regenerate** - AI automatically applies your selected improvements and shows what was added
+
+**Key Improvements:**
+- ✅ Checkbox selection for validation findings
+- ✅ One-click architecture regeneration with improvements
+- ✅ Real-time loading feedback during regeneration
+- ✅ Added services listed in banner and success message
+- ✅ Intelligent service grouping (new services placed in appropriate logical groups)
+- ✅ 4 new services with pricing: Azure Synapse Analytics, Stream Analytics, MySQL, Log Analytics
+- ✅ Expanded to 5 Azure regions for pricing comparison
+
+This creates a virtuous cycle: validate → select improvements → regenerate → validate again!
 
 ## Getting Started
 
