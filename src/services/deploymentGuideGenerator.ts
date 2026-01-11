@@ -288,13 +288,13 @@ export function formatDeploymentGuide(guide: DeploymentGuide): string {
 /**
  * Export deployment guide as downloadable file
  */
-export function downloadDeploymentGuide(guide: DeploymentGuide, filename: string = 'deployment-guide.md') {
+export function downloadDeploymentGuide(guide: DeploymentGuide) {
   const markdown = formatDeploymentGuide(guide);
   const blob = new Blob([markdown], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename;
+  link.download = `deployment-guide-${Date.now()}.md`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
