@@ -1,6 +1,6 @@
 /**
  * Architecture Validator Agent
- * Uses GPT-4.1 to validate architecture against Azure Well-Architected Framework
+ * Uses GPT-5-2 to validate architecture against Azure Well-Architected Framework
  * Provides recommendations for reliability, security, performance, cost optimization, and operational excellence
  */
 

@@ -1,6 +1,6 @@
 /**
  * Deployment Guide Generator Agent
- * Uses GPT-4.1 to generate comprehensive deployment documentation
+ * Uses GPT-5-2 to generate comprehensive deployment documentation
  * Includes prerequisites, step-by-step instructions, configuration, and troubleshooting
  */
 

@@ -3,16 +3,30 @@ import { X, AlertTriangle, CheckCircle, Info, Download } from 'lucide-react';
 import { ArchitectureValidation, ValidationFinding, formatValidationReport } from '../services/architectureValidator';
 import './ValidationModal.css';
 
+/**
+ * Props for ValidationModal component
+ */
 interface ValidationModalProps {
-  validation: ArchitectureValidation | null;
-  isOpen: boolean;
-  onClose: () => void;
-  isLoading?: boolean;
+  validation: ArchitectureValidation | null; // Validation results from GPT-5.2 agent
+  isOpen: boolean; // Controls modal visibility
+  onClose: () => void; // Handler for closing modal
+  isLoading?: boolean; // Shows loading state during validation
 }
 
+/**
+ * Modal displaying Azure Well-Architected Framework validation results.
+ * Shows overall score, pillar-specific assessments, findings, and quick wins.
+ * Includes download functionality for markdown report.
+ */
 const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, onClose, isLoading }) => {
   if (!isOpen) return null;
 
+  /**
+   * Returns appropriate icon component for finding severity level
+   */
+  /**
+   * Returns appropriate icon component for finding severity level
+   */
   const getSeverityIcon = (severity: ValidationFinding['severity']) => {
     switch (severity) {
       case 'critical': return <AlertTriangle className="severity-icon critical" />;
@@ -22,6 +36,14 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
     }
   };
 
+  /**
+   * Returns color based on validation score (0-100)
+   * Green: 80+, Yellow: 60-79, Orange: 40-59, Red: <40
+   */
+  /**
+   * Returns color based on validation score (0-100)
+   * Green: 80+, Yellow: 60-79, Orange: 40-59, Red: <40
+   */
   const getScoreColor = (score: number) => {
     if (score >= 80) return '#10b981'; // Green
     if (score >= 60) return '#f59e0b'; // Yellow
@@ -29,6 +51,9 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
     return '#ef4444'; // Red
   };
 
+  /**
+   * Downloads validation results as markdown file with timestamp
+   */
   const handleDownload = () => {
     if (!validation) return;
     const report = formatValidationReport(validation);
@@ -61,7 +86,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
         ) : validation ? (
           <>
             <div className="modal-body">
-            {/* Overall Score */}
+            {/* Overall Score Section - Circular progress indicator with score */}
             <div className="validation-score">
               <div 
                 className="score-circle" 
@@ -80,7 +105,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               </div>
             </div>
 
-            {/* Five Pillars */}
+            {/* Five Pillars Section - Individual assessments for each WAF pillar */}
             <div className="pillars-section">
               <h3>Five Pillars Assessment</h3>
               {validation.pillars.map((pillar, index) => (
@@ -125,7 +150,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               ))}
             </div>
 
-            {/* Quick Wins */}
+            {/* Quick Wins Section - High-priority actionable items */}
             {validation.quickWins.length > 0 && (
               <div className="quickwins-section">
                 <h3>⚡ Quick Wins</h3>
@@ -145,7 +170,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
 
           </div>
 
-          {/* Actions - Fixed at bottom */}
+          {/* Action Buttons - Sticky footer with download and close */}
           <div className="modal-actions">
             <button className="btn-secondary" onClick={handleDownload}>
               <Download size={18} />

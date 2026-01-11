@@ -1,3 +1,12 @@
+/* ==========================================================================
+   Validation Modal Styles
+   Modal displaying Azure Well-Architected Framework validation results
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Modal Base - Overlay and container
+   -------------------------------------------------------------------------- */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -22,6 +31,10 @@
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
+
+/* --------------------------------------------------------------------------
+   Modal Header - Title and close button
+   -------------------------------------------------------------------------- */
 
 .modal-header {
   display: flex;
@@ -55,11 +68,19 @@
   color: #1f2937;
 }
 
+/* --------------------------------------------------------------------------
+   Modal Body - Scrollable content area
+   -------------------------------------------------------------------------- */
+
 .modal-body {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
 }
+
+/* --------------------------------------------------------------------------
+   Loading State - Spinner and loading message
+   -------------------------------------------------------------------------- */
 
 .modal-loading {
   display: flex;
@@ -95,7 +116,10 @@
   color: #6b7280;
 }
 
-/* Validation Score */
+/* --------------------------------------------------------------------------
+   Validation Score - Circular progress indicator with overall score
+   -------------------------------------------------------------------------- */
+
 .validation-score {
   display: flex;
   gap: 24px;
@@ -106,6 +130,7 @@
   align-items: center;
 }
 
+/* Circular score indicator with conic gradient */
 .score-circle {
   width: 120px;
   height: 120px;
@@ -151,7 +176,10 @@
   line-height: 1.6;
 }
 
-/* Pillars Section */
+/* --------------------------------------------------------------------------
+   Pillars Section - Five Azure Well-Architected Framework pillars
+   -------------------------------------------------------------------------- */
+
 .pillars-section h3 {
   margin: 0 0 16px 0;
   color: #1f2937;
@@ -185,7 +213,10 @@
   font-weight: bold;
 }
 
-/* Findings */
+/* --------------------------------------------------------------------------
+   Findings - Individual validation findings per pillar
+   -------------------------------------------------------------------------- */
+
 .findings-list {
   display: flex;
   flex-direction: column;
@@ -296,7 +327,10 @@
   font-style: italic;
 }
 
-/* Quick Wins */
+/* --------------------------------------------------------------------------
+   Quick Wins - High-priority actionable recommendations
+   -------------------------------------------------------------------------- */
+
 .quickwins-section {
   margin-top: 24px;
   padding: 24px;
@@ -351,7 +385,10 @@
   line-height: 1.5;
 }
 
-/* Modal Actions */
+/* --------------------------------------------------------------------------
+   Modal Actions - Sticky footer with download and close buttons
+   -------------------------------------------------------------------------- */
+
 .modal-actions {
   display: flex;
   gap: 12px;
