@@ -16,7 +16,7 @@ import {
  * @deprecated Use getRegionalServicePricing directly for better control
  */
 export async function getLocalServicePricing(
-  serviceType: string,
+  _serviceType: string,
   serviceName: string,
   region?: string
 ): Promise<ServicePricing | null> {

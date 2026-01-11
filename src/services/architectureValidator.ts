@@ -230,7 +230,7 @@ export function formatValidationReport(validation: ArchitectureValidation): stri
       return;
     }
     
-    pillar.findings.forEach((finding, fIndex) => {
+    pillar.findings.forEach((finding) => {
       const emoji = {
         critical: '🔴',
         high: '🟠',

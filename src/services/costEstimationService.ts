@@ -6,17 +6,14 @@
 import { Node } from 'reactflow';
 import { 
   NodePricingConfig, 
-  CostBreakdown, 
-  ServicePricing 
+  CostBreakdown
 } from '../types/pricing';
 import { 
   getServicePricing, 
   calculateMonthlyCost 
 } from './azurePricingService';
 import { 
-  getRegionalServicePricing,
-  getActiveRegion,
-  AzureRegion
+  getActiveRegion
 } from './regionalPricingService';
 import { 
   getAzureServiceName, 
@@ -26,10 +23,8 @@ import {
   USAGE_BASED_SERVICES 
 } from '../data/azurePricing';
 import { 
-  applyRegionalPricing, 
-  getDefaultRegion 
+  applyRegionalPricing
 } from '../utils/pricingHelpers';
-import { getActiveRegion } from './regionalPricingService';
 
 /**
  * Initialize pricing for a new node

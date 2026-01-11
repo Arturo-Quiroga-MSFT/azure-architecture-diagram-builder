@@ -5,11 +5,8 @@
  */
 
 import { 
-  AzureRetailPricesResponse, 
   ServicePricing, 
-  PricingTier,
-  CachedPricing,
-  PricingQueryParams
+  CachedPricing
 } from '../types/pricing';
 import { 
   getRegionalServicePricing, 
@@ -18,22 +15,10 @@ import {
   AzureRegion
 } from './regionalPricingService';
 
-const AZURE_PRICING_API = 'https://prices.azure.com/api/retail/prices';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const REQUEST_DELAY = 100; // Delay between requests to avoid rate limiting
 
 // In-memory cache
 const pricingCache = new Map<string, CachedPricing>();
-
-// Request queue to avoid rate limiting
-let lastRequestTime = 0;
-
-/**
- * Sleep helper for request throttling
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 /**
  * Generate cache key from query parameters
@@ -48,117 +33,6 @@ function getCacheKey(serviceName: string, region?: string): string {
  */
 function isCacheValid(cached: CachedPricing): boolean {
   return Date.now() < cached.expiresAt;
-}
-
-/**
- * Fetch pricing data from Azure Retail Prices API
- */
-async function fetchFromAPI(params: PricingQueryParams): Promise<AzureRetailPricesResponse> {
-  // Throttle requests
-  const timeSinceLastRequest = Date.now() - lastRequestTime;
-  if (timeSinceLastRequest < REQUEST_DELAY) {
-    await sleep(REQUEST_DELAY - timeSinceLastRequest);
-  }
-  lastRequestTime = Date.now();
-
-  // Build query string
-  const queryParams = new URLSearchParams();
-  queryParams.append('currencyCode', params.currencyCode || 'USD');
-  
-  if (params.filter) {
-    queryParams.append('$filter', params.filter);
-  }
-
-  const url = `${AZURE_PRICING_API}?${queryParams.toString()}`;
-  
-  console.log('Fetching Azure pricing:', url);
-
-  const response = await fetch(url);
-  
-  if (!response.ok) {
-    throw new Error(`Azure Pricing API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data: AzureRetailPricesResponse = await response.json();
-  return data;
-}
-
-/**
- * Build OData filter for API query
- */
-function buildServiceFilter(serviceName: string, region?: string): string {
-  const filters: string[] = [];
-  
-  // Service name filter
-  filters.push(`serviceName eq '${serviceName}'`);
-  
-  // Region filter (if specified)
-  if (region) {
-    filters.push(`armRegionName eq '${region}'`);
-  } else {
-    // Default to active region
-    filters.push(`armRegionName eq '${getActiveRegion()}'`);
-  }
-  
-  // Only consumption-based pricing (not reservations or spot)
-  filters.push(`priceType eq 'Consumption'`);
-  
-  return filters.join(' and ');
-}
-
-/**
- * Parse API response into ServicePricing structure
- */
-function parseServicePricing(
-  serviceType: string,
-  apiResponse: AzureRetailPricesResponse
-): ServicePricing | null {
-  if (!apiResponse.Items || apiResponse.Items.length === 0) {
-    console.warn(`No pricing data found for ${serviceType}`);
-    return null;
-  }
-
-  const items = apiResponse.Items;
-  const firstItem = items[0];
-  
-  // Group by SKU and calculate monthly prices
-  const tierMap = new Map<string, PricingTier>();
-  
-  items.forEach(item => {
-    const skuName = item.skuName || item.armSkuName;
-    if (!skuName) return;
-    
-    // Calculate monthly price from hourly rate
-    const hourlyPrice = item.retailPrice;
-    const monthlyPrice = hourlyPrice * 730; // Average hours per month
-    
-    if (!tierMap.has(skuName)) {
-      tierMap.set(skuName, {
-        name: skuName,
-        skuName: skuName,
-        monthlyPrice: monthlyPrice,
-        hourlyPrice: hourlyPrice,
-        unit: item.unitOfMeasure,
-        description: item.meterName
-      });
-    }
-  });
-
-  // Convert map to array and sort by price
-  const tiers = Array.from(tierMap.values())
-    .sort((a, b) => a.monthlyPrice - b.monthlyPrice);
-
-  // Determine default tier (middle tier if available, or first tier)
-  const defaultTier = tiers.length > 1 ? tiers[Math.floor(tiers.length / 2)].name : tiers[0]?.name || 'Standard';
-
-  return {
-    serviceType,
-    serviceName: firstItem.serviceName,
-    defaultTier,
-    tiers,
-    calculationType: 'hourly',
-    lastUpdated: new Date().toISOString()
-  };
 }
 
 /**

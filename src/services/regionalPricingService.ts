@@ -153,7 +153,7 @@ async function loadServiceData(region: AzureRegion, serviceName: string): Promis
 /**
  * Get available services for a region by checking which files exist
  */
-export function getAvailableServices(region: AzureRegion): string[] {
+export function getAvailableServices(_region: AzureRegion): string[] {
   // These are the services we have data for
   return [
     'Azure App Service',
@@ -285,8 +285,6 @@ export async function getRegionalServicePricing(
     serviceType: serviceName,
     serviceName,
     defaultTier: tiers[0]?.name || 'Standard',
-    region: targetRegion,
-    currency: data.BillingCurrency || 'USD',
     tiers,
     calculationType: 'hourly',
     lastUpdated: new Date().toISOString(),
