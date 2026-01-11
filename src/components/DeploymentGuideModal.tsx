@@ -204,17 +204,19 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
               </div>
             )}
 
-            {/* Actions */}
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={handleDownload}>
-                <Download size={18} />
-                Download Guide
-              </button>
-              <button className="btn-primary" onClick={onClose}>
-                Close
-              </button>
-            </div>
           </div>
+
+          {/* Actions - Fixed at bottom */}
+          <div className="modal-actions">
+            <button className="btn-secondary" onClick={handleDownload}>
+              <Download size={18} />
+              Download Guide
+            </button>
+            <button className="btn-primary" onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </>
         ) : (
           <div className="modal-empty">
             <p>No deployment guide available.</p>

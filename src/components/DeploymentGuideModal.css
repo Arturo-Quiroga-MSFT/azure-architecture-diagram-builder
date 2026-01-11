@@ -1,5 +1,24 @@
 .deployment-modal .modal-content {
   max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.deployment-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 0;
+}
+
+.deployment-modal .modal-actions {
+  flex-shrink: 0;
+  margin-top: 0;
+  position: sticky;
+  bottom: 0;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
 }
 
 .guide-header {
