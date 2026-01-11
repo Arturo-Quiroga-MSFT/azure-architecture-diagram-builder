@@ -150,12 +150,14 @@ Provide a comprehensive Well-Architected Framework assessment with actionable re
     console.log('✅ Validation response received:', content.length, 'characters');
 
     // Parse JSON response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Invalid response format from validation agent');
+    let validation: ArchitectureValidation;
+    try {
+      validation = JSON.parse(content);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Response content:', content.substring(0, 500));
+      throw new Error('Invalid response format from validation agent. Please try again.');
     }
-
-    const validation: ArchitectureValidation = JSON.parse(jsonMatch[0]);
     validation.timestamp = new Date().toISOString();
 
     console.log('🎯 Validation complete. Overall score:', validation.overallScore);

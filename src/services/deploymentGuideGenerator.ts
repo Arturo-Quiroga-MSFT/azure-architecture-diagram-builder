@@ -185,12 +185,14 @@ Generate a comprehensive, production-ready deployment guide with Azure CLI comma
     console.log('✅ Deployment guide response received:', content.length, 'characters');
 
     // Parse JSON response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Invalid response format from deployment guide generator');
+    let guide: DeploymentGuide;
+    try {
+      guide = JSON.parse(content);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Response content:', content.substring(0, 500));
+      throw new Error('Invalid response format from deployment guide generator. Please try again.');
     }
-
-    const guide: DeploymentGuide = JSON.parse(jsonMatch[0]);
     guide.timestamp = new Date().toISOString();
 
     console.log('📋 Deployment guide generated');
