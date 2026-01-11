@@ -8,12 +8,14 @@ const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
 
-async function callAzureOpenAI(messages: any[], maxTokens: number = 3000): Promise<string> {
+async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promise<string> {
   if (!endpoint || !apiKey || !deployment) {
     throw new Error('Azure OpenAI credentials not configured');
   }
 
   const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-08-01-preview`;
+
+  console.log('🌐 Calling Azure OpenAI API:', url);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -31,11 +33,20 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 3000): Promi
 
   if (!response.ok) {
     const error = await response.text();
+    console.error('❌ Azure OpenAI API error:', response.status, error);
     throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
   }
 
   const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  console.log('📦 Full API Response:', JSON.stringify(data, null, 2));
+  console.log('📦 Choices array:', data.choices);
+  console.log('📦 First choice:', data.choices?.[0]);
+  console.log('📦 Message:', data.choices?.[0]?.message);
+  console.log('📦 Content:', data.choices?.[0]?.message?.content);
+  
+  const content = data.choices[0]?.message?.content || '';
+  console.log('📦 Final content length:', content.length);
+  return content;
 }
 
 export interface ValidationResult {
@@ -142,22 +153,31 @@ ${groupsList}
 Provide a comprehensive Well-Architected Framework assessment with actionable recommendations.`;
 
   try {
+    console.log('📤 Sending validation request to Azure OpenAI...');
     const content = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
-    ], 3000);
+    ], 8000);
 
     console.log('✅ Validation response received:', content.length, 'characters');
+    console.log('📄 First 200 chars:', content.substring(0, 200));
 
     // Parse JSON response
     let validation: ArchitectureValidation;
     try {
       validation = JSON.parse(content);
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      console.error('Response content:', content.substring(0, 500));
+      console.error('❌ JSON parse error:', parseError);
+      console.error('📄 Full response content:', content);
       throw new Error('Invalid response format from validation agent. Please try again.');
     }
+    
+    // Validate response structure
+    if (!validation.overallScore || !validation.pillars || !validation.summary) {
+      console.error('❌ Invalid response structure:', validation);
+      throw new Error('Response missing required fields');
+    }
+    
     validation.timestamp = new Date().toISOString();
 
     console.log('🎯 Validation complete. Overall score:', validation.overallScore);

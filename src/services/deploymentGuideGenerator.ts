@@ -8,12 +8,14 @@ const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
 
-async function callAzureOpenAI(messages: any[], maxTokens: number = 4000): Promise<string> {
+async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Promise<string> {
   if (!endpoint || !apiKey || !deployment) {
     throw new Error('Azure OpenAI credentials not configured');
   }
 
   const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-08-01-preview`;
+
+  console.log('🌐 Calling Azure OpenAI API:', url);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -31,11 +33,14 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 4000): Promi
 
   if (!response.ok) {
     const error = await response.text();
+    console.error('❌ Azure OpenAI API error:', response.status, error);
     throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
   }
 
   const data = await response.json();
-  return data.choices[0]?.message?.content || '';
+  const content = data.choices[0]?.message?.content || '';
+  console.log('📦 API Response:', data);
+  return content;
 }
 
 export interface DeploymentStep {
@@ -180,7 +185,7 @@ Generate a comprehensive, production-ready deployment guide with Azure CLI comma
     const content = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
-    ], 4000);
+    ], 10000);
 
     console.log('✅ Deployment guide response received:', content.length, 'characters');
 
