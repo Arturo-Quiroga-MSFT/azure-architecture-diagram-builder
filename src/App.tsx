@@ -29,6 +29,7 @@ import RegionSelector from './components/RegionSelector';
 import ValidationModal from './components/ValidationModal';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
 import { loadIconsFromCategory } from './utils/iconLoader';
+import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
 import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
@@ -36,6 +37,7 @@ import { preloadCommonServices, getActiveRegion, AzureRegion } from './services/
 import { formatMonthlyCost } from './utils/pricingHelpers';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
+import { generateArchitectureWithAI } from './services/azureOpenAI';
 import './App.css';
 
 const nodeTypes = {
@@ -55,6 +57,7 @@ function App() {
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isUploadingARM, setIsUploadingARM] = useState(false);
+  const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
   const [workflow, setWorkflow] = useState<any[]>([]);
   // const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
@@ -480,6 +483,22 @@ function App() {
     console.log(`⏳ Loading icons for ${services.length} services...`);
     const iconLoadingPromises = services.map(async (service: any) => {
       try {
+        // FIRST: Try using serviceIconMapping for exact matches
+        const mapping = getServiceIconMapping(service.type);
+        if (mapping) {
+          console.log(`  🎯 Found mapping for "${service.type}": ${mapping.iconFile}`);
+          const iconPath = `/Azure_Public_Service_Icons/Icons/${mapping.category}/${mapping.iconFile}.svg`;
+          return { 
+            serviceId: service.id, 
+            icon: {
+              name: mapping.displayName,
+              path: iconPath,
+              category: mapping.category
+            }
+          };
+        }
+        
+        // SECOND: Fall back to category search if no mapping found
         const correctedCategory = correctCategory(service.type, service.category);
         const icons = await Promise.race([
           loadIconsFromCategory(correctedCategory),
@@ -766,7 +785,7 @@ function App() {
           nds.map(node => {
             const result = pricingResults.find(r => r.id === node.id);
             if (result?.pricing) {
-              console.log(`  💵 Adding pricing to node ${node.id}:`, result.pricing.estimatedMonthlyCost);
+              console.log(`  💵 Adding pricing to node ${node.id}:`, result.pricing.estimatedCost);
               return { ...node, data: { ...node.data, pricing: result.pricing } };
             }
             return node;
@@ -1144,6 +1163,27 @@ function App() {
                 }`
               ).join('\n')}
             </style>
+            {/* Loading banner for applying recommendations */}
+            {isApplyingRecommendations && (
+              <div
+                className="prompt-banner loading-banner"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '10px',
+                  transform: 'translateX(-50%)',
+                  zIndex: 1001,
+                  backgroundColor: '#3b82f6',
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              >
+                <div className="prompt-text">
+                  <strong>⏳ Applying recommendations...</strong> Regenerating architecture with improvements
+                </div>
+              </div>
+            )}
+
+            {/* Architecture generation prompt banner */}
             {architecturePrompt && (
               <div
                 className="prompt-banner draggable"
@@ -1254,6 +1294,101 @@ function App() {
         isOpen={isValidationModalOpen}
         onClose={() => setIsValidationModalOpen(false)}
         isLoading={isValidating}
+        onApplyRecommendations={async (selectedFindings) => {
+          console.log('📝 User selected recommendations to apply:', selectedFindings);
+          
+          // Close validation modal and show loading state
+          setIsValidationModalOpen(false);
+          setIsApplyingRecommendations(true);
+          
+          // Get current architecture state
+          const currentServices = nodes
+            .filter(n => n.type === 'serviceNode')
+            .map(n => ({
+              id: n.id,
+              name: n.data.label,
+              type: n.data.service || n.data.label,
+              category: n.data.category || 'general',
+              description: n.data.description || '',
+            }));
+          
+          const currentConnections = edges.map(e => ({
+            from: e.source,
+            to: e.target,
+            label: e.label || '',
+            type: e.data?.type || 'sync'
+          }));
+          
+          const currentGroups = nodes
+            .filter(n => n.type === 'groupNode')
+            .map(n => ({
+              id: n.id,
+              label: n.data.label,
+            }));
+          
+          // Format recommendations for the prompt
+          const recommendationsText = selectedFindings
+            .map((f, i) => `${i + 1}. [${f.severity.toUpperCase()}] ${f.category}: ${f.recommendation}`)
+            .join('\n');
+          
+          // Build regeneration prompt
+          const regenerationPrompt = `You are regenerating an existing Azure architecture with improvements based on Well-Architected Framework recommendations.
+
+CURRENT ARCHITECTURE:
+Services: ${currentServices.map(s => `${s.name} (${s.type})`).join(', ')}
+Connections: ${currentConnections.length} connections
+Groups: ${currentGroups.map(g => g.label).join(', ')}
+
+SELECTED RECOMMENDATIONS TO APPLY:
+${recommendationsText}
+
+CRITICAL INSTRUCTIONS:
+1. Keep all existing services that are working well and not affected by recommendations
+2. Add new services recommended (e.g., Azure DevOps, Azure Monitor, Application Insights, Azure Front Door, Redis Cache, etc.)
+3. **IMPORTANT**: Place ALL new services into appropriate logical groups:
+   - DevOps/CI/CD services → "DevOps & Deployment" or "CI/CD Pipeline" group
+   - Monitoring services → Add to existing monitoring group or create "Monitoring & Observability" group
+   - Security services → Add to existing security group or create "Security & Compliance" group
+   - Caching services → Add to "Data & Cache" or similar group
+   - Never leave services ungrouped unless they are truly standalone
+4. Update connections to reflect security improvements, monitoring, and best practices
+5. Maintain and extend the logical grouping structure - create new groups as needed for new service categories
+6. Ensure the architecture implements the selected recommendations
+
+Return the IMPROVED architecture in the same JSON format as before with proper group assignments.`;
+
+          console.log('🔄 Regenerating architecture with recommendations...');
+          console.log('📋 Prompt:', regenerationPrompt);
+          
+          // Call Azure OpenAI to regenerate
+          try {
+            const improvedArchitecture = await generateArchitectureWithAI(regenerationPrompt);
+            
+            if (improvedArchitecture) {
+              // Detect newly added services
+              const existingServiceNames = new Set(currentServices.map(s => s.name.toLowerCase()));
+              const newServices = improvedArchitecture.services
+                .filter((s: any) => !existingServiceNames.has(s.name.toLowerCase()))
+                .map((s: any) => s.name);
+              
+              // Build descriptive banner text
+              let bannerText = `Original architecture improved with ${selectedFindings.length} WAF recommendation${selectedFindings.length > 1 ? 's' : ''}`;
+              if (newServices.length > 0) {
+                bannerText += `. Added: ${newServices.join(', ')}`;
+              }
+              
+              // Apply the improved architecture
+              await handleAIGenerate(improvedArchitecture, bannerText);
+              
+              setIsApplyingRecommendations(false);
+              alert(`✅ Architecture regenerated successfully!\n\nApplied ${selectedFindings.length} recommendations.\n${newServices.length > 0 ? `\nAdded ${newServices.length} new services: ${newServices.join(', ')}` : ''}`);
+            }
+          } catch (error) {
+            console.error('❌ Failed to regenerate architecture:', error);
+            setIsApplyingRecommendations(false);
+            alert('Failed to regenerate architecture. Please try again.');
+          }
+        }}
       />
       <DeploymentGuideModal
         guide={deploymentGuide}

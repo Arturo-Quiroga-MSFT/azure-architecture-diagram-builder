@@ -12,7 +12,7 @@ export interface ServiceIconMapping {
   /** Icon filename (without path or extension) */
   iconFile: string;
   /** Category/folder in icon library */
-  category: 'ai + machine learning' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot';
+  category: 'ai + machine learning' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot' | 'monitor';
   /** Whether we have real pricing data for this service */
   hasPricingData: boolean;
   /** Service name used in pricing files (if hasPricingData is true) */
@@ -33,7 +33,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Azure OpenAI': {
     displayName: 'Azure OpenAI',
     aliases: ['OpenAI', 'Azure OpenAI Service', 'GPT', 'ChatGPT'],
-    iconFile: '03438-icon-service-Azure-OpenAI',
+    iconFile: 'azure-openai',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Azure OpenAI',
@@ -44,7 +44,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Cognitive Services': {
     displayName: 'Cognitive Services',
     aliases: ['Azure Cognitive Services', 'Cognitive Service'],
-    iconFile: '10162-icon-service-Cognitive-Services',
+    iconFile: 'cognitive-services',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Cognitive Services',
@@ -55,7 +55,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Computer Vision': {
     displayName: 'Computer Vision',
     aliases: ['Vision', 'Azure Vision', 'Azure AI Vision', 'Image Analysis'],
-    iconFile: '00792-icon-service-Computer-Vision',
+    iconFile: 'computer-vision',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Vision',
@@ -66,7 +66,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Custom Vision': {
     displayName: 'Custom Vision',
     aliases: ['Azure Custom Vision', 'Custom Vision Service'],
-    iconFile: '00793-icon-service-Custom-Vision',
+    iconFile: 'custom-vision',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Custom Vision',
@@ -77,7 +77,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Speech Services': {
     displayName: 'Speech Services',
     aliases: ['Speech', 'Azure Speech', 'Azure AI Speech', 'Speech-to-Text', 'Text-to-Speech'],
-    iconFile: '00797-icon-service-Speech-Services',
+    iconFile: 'azure-speech',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Speech',
@@ -88,7 +88,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Translator': {
     displayName: 'Translator',
     aliases: ['Translator Text', 'Azure Translator', 'Azure AI Translator', 'Translation'],
-    iconFile: '00800-icon-service-Translator-Text',
+    iconFile: 'translator',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Translator',
@@ -99,7 +99,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Language': {
     displayName: 'Language',
     aliases: ['Azure Language', 'Azure AI Language', 'Text Analytics', 'NLP'],
-    iconFile: '02876-icon-service-Language',
+    iconFile: 'language',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Language',
@@ -110,7 +110,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Document Intelligence': {
     displayName: 'Document Intelligence',
     aliases: ['Form Recognizer', 'Azure Document Intelligence', 'Azure AI Document Intelligence', 'Form Processing'],
-    iconFile: '02749-icon-service-Azure-Applied-AI-Services',
+    iconFile: 'document-intelligence',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Document Intelligence',
@@ -121,7 +121,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Azure Machine Learning': {
     displayName: 'Azure Machine Learning',
     aliases: ['Machine Learning', 'ML', 'AML', 'Azure ML'],
-    iconFile: '10166-icon-service-Machine-Learning',
+    iconFile: 'azure-machine-learning',
     category: 'ai + machine learning',
     hasPricingData: true,
     pricingServiceName: 'Azure Machine Learning',
@@ -132,7 +132,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Azure Cognitive Search': {
     displayName: 'Azure Cognitive Search',
     aliases: ['Cognitive Search', 'Azure Search', 'AI Search'],
-    iconFile: '10044-icon-service-Cognitive-Search',
+    iconFile: 'azure-cognitive-search',
     category: 'ai + machine learning',
     hasPricingData: false,
     isUsageBased: false,
@@ -145,7 +145,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Virtual Machines': {
     displayName: 'Virtual Machines',
     aliases: ['VM', 'VMs', 'Virtual Machine', 'Azure VM'],
-    iconFile: '10021-icon-service-Virtual-Machine',
+    iconFile: 'virtual-machines',
     category: 'compute',
     hasPricingData: true,
     pricingServiceName: 'Virtual Machines',
@@ -156,7 +156,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'App Service': {
     displayName: 'App Service',
     aliases: ['Azure App Service', 'Web App', 'App Services'],
-    iconFile: '10035-icon-service-App-Services',
+    iconFile: 'app-service',
     category: 'web',
     hasPricingData: true,
     pricingServiceName: 'Azure App Service',
@@ -167,7 +167,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Functions': {
     displayName: 'Azure Functions',
     aliases: ['Function App', 'Functions', 'Serverless Functions'],
-    iconFile: '10029-icon-service-Function-Apps',
+    iconFile: 'azure-functions',
     category: 'compute',
     hasPricingData: true,
     pricingServiceName: 'Functions',
@@ -178,7 +178,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Container Instances': {
     displayName: 'Container Instances',
     aliases: ['ACI', 'Azure Container Instances', 'Container Instance'],
-    iconFile: '10104-icon-service-Container-Instances',
+    iconFile: 'container-instances',
     category: 'containers',
     hasPricingData: true,
     pricingServiceName: 'Container Instances',
@@ -189,7 +189,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Kubernetes Service': {
     displayName: 'Azure Kubernetes Service',
     aliases: ['AKS', 'Kubernetes', 'K8s'],
-    iconFile: '10023-icon-service-Kubernetes-Services',
+    iconFile: 'azure-kubernetes-service',
     category: 'containers',
     hasPricingData: true,
     pricingServiceName: 'Azure Kubernetes Service',
@@ -200,7 +200,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Container Registry': {
     displayName: 'Container Registry',
     aliases: ['ACR', 'Azure Container Registry'],
-    iconFile: '10105-icon-service-Container-Registries',
+    iconFile: 'container-registry',
     category: 'containers',
     hasPricingData: true,
     pricingServiceName: 'Container Registry',
@@ -214,7 +214,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Azure Cosmos DB': {
     displayName: 'Azure Cosmos DB',
     aliases: ['Cosmos DB', 'CosmosDB', 'Cosmos'],
-    iconFile: '10121-icon-service-Azure-Cosmos-DB',
+    iconFile: 'azure-cosmos-db',
     category: 'databases',
     hasPricingData: true,
     pricingServiceName: 'Azure Cosmos DB',
@@ -225,7 +225,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'SQL Database': {
     displayName: 'SQL Database',
     aliases: ['Azure SQL', 'Azure SQL Database', 'SQL DB'],
-    iconFile: '10132-icon-service-SQL-Database',
+    iconFile: 'sql-database',
     category: 'databases',
     hasPricingData: true,
     pricingServiceName: 'SQL Database',
@@ -236,7 +236,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'PostgreSQL': {
     displayName: 'Azure Database for PostgreSQL',
     aliases: ['PostgreSQL', 'Postgres', 'Azure PostgreSQL'],
-    iconFile: '10130-icon-service-Azure-Database-PostgreSQL-Server',
+    iconFile: 'azure-database-postgresql',
     category: 'databases',
     hasPricingData: true,
     pricingServiceName: 'Azure Database for PostgreSQL',
@@ -244,10 +244,21 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     costRange: '$5-11240/mo'
   },
   
+  'MySQL': {
+    displayName: 'Azure Database for MySQL',
+    aliases: ['MySQL', 'Azure MySQL', 'Azure Database for MySQL'],
+    iconFile: 'azure-database-mysql',
+    category: 'databases',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Database for MySQL',
+    isUsageBased: false,
+    costRange: '$5-9800/mo'
+  },
+  
   'Redis Cache': {
     displayName: 'Azure Cache for Redis',
     aliases: ['Redis', 'Redis Cache', 'Cache'],
-    iconFile: '10059-icon-service-Cache-Redis',
+    iconFile: 'redis-cache',
     category: 'databases',
     hasPricingData: true,
     pricingServiceName: 'Redis Cache',
@@ -261,7 +272,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Storage Account': {
     displayName: 'Storage Account',
     aliases: ['Storage', 'Blob Storage', 'Azure Storage', 'Storage Accounts'],
-    iconFile: '10086-icon-service-Storage-Accounts',
+    iconFile: 'storage-account',
     category: 'storage',
     hasPricingData: true,
     pricingServiceName: 'Storage',
@@ -275,7 +286,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Application Gateway': {
     displayName: 'Application Gateway',
     aliases: ['App Gateway', 'Azure Application Gateway'],
-    iconFile: '10065-icon-service-Application-Gateways',
+    iconFile: 'application-gateway',
     category: 'networking',
     hasPricingData: true,
     pricingServiceName: 'Application Gateway',
@@ -286,7 +297,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Azure Front Door': {
     displayName: 'Azure Front Door',
     aliases: ['Front Door', 'AFD'],
-    iconFile: '10062-icon-service-Front-Doors',
+    iconFile: 'azure-front-door',
     category: 'networking',
     hasPricingData: true,
     pricingServiceName: 'Azure Front Door Service',
@@ -297,7 +308,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'CDN': {
     displayName: 'Content Delivery Network',
     aliases: ['Azure CDN', 'CDN', 'Content Delivery'],
-    iconFile: '10061-icon-service-CDN-Profiles',
+    iconFile: 'cdn-profiles',
     category: 'networking',
     hasPricingData: true,
     pricingServiceName: 'Content Delivery Network',
@@ -311,7 +322,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Data Factory': {
     displayName: 'Azure Data Factory',
     aliases: ['Data Factory', 'ADF'],
-    iconFile: '10260-icon-service-Data-Factory',
+    iconFile: 'data-factory',
     category: 'analytics',
     hasPricingData: true,
     pricingServiceName: 'Azure Data Factory',
@@ -319,10 +330,32 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     costRange: '$0.50-2.50 per 1000 activities'
   },
   
+  'Azure Synapse Analytics': {
+    displayName: 'Azure Synapse Analytics',
+    aliases: ['Synapse', 'Synapse Analytics', 'Azure Synapse'],
+    iconFile: 'azure-synapse-analytics',
+    category: 'analytics',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Synapse Analytics',
+    isUsageBased: true,
+    costRange: '$5-8000/mo + compute'
+  },
+  
+  'Stream Analytics': {
+    displayName: 'Azure Stream Analytics',
+    aliases: ['Stream Analytics', 'ASA'],
+    iconFile: 'stream-analytics',
+    category: 'analytics',
+    hasPricingData: true,
+    pricingServiceName: 'Stream Analytics',
+    isUsageBased: true,
+    costRange: '$0.11 per streaming unit/hour'
+  },
+  
   'Event Hubs': {
     displayName: 'Event Hubs',
     aliases: ['Azure Event Hubs', 'Event Hub'],
-    iconFile: '10209-icon-service-Event-Hubs',
+    iconFile: 'event-hubs',
     category: 'integration',
     hasPricingData: true,
     pricingServiceName: 'Event Hubs',
@@ -336,7 +369,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Service Bus': {
     displayName: 'Service Bus',
     aliases: ['Azure Service Bus', 'Message Queue'],
-    iconFile: '10207-icon-service-Service-Bus',
+    iconFile: 'service-bus',
     category: 'integration',
     hasPricingData: true,
     pricingServiceName: 'Service Bus',
@@ -347,7 +380,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Logic Apps': {
     displayName: 'Logic Apps',
     aliases: ['Azure Logic Apps', 'Logic App'],
-    iconFile: '10218-icon-service-Logic-Apps',
+    iconFile: 'logic-apps',
     category: 'integration',
     hasPricingData: true,
     pricingServiceName: 'Logic Apps',
@@ -361,8 +394,8 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Key Vault': {
     displayName: 'Key Vault',
     aliases: ['Azure Key Vault', 'Secrets Management'],
-    iconFile: '10245-icon-service-Key-Vaults',
-    category: 'identity',
+    iconFile: 'key-vault',
+    category: 'security',
     hasPricingData: true,
     pricingServiceName: 'Key Vault',
     isUsageBased: true,
@@ -372,19 +405,28 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'Application Insights': {
     displayName: 'Application Insights',
     aliases: ['App Insights', 'Azure Application Insights', 'Monitoring'],
-    iconFile: '00012-icon-service-Application-Insights',
-    category: 'management + governance',
+    iconFile: 'application-insights',
+    category: 'monitor',
     hasPricingData: true,
     pricingServiceName: 'Application Insights',
     isUsageBased: true,
     costRange: '$2.30 per GB ingested'
   },
-  
-  'API Management': {
+    'Log Analytics': {
+    displayName: 'Log Analytics',
+    aliases: ['Azure Log Analytics', 'LA', 'Log Analytics Workspace'],
+    iconFile: 'log-analytics',
+    category: 'monitor',
+    hasPricingData: true,
+    pricingServiceName: 'Log Analytics',
+    isUsageBased: true,
+    costRange: '$2.76 per GB ingested'
+  },
+    'API Management': {
     displayName: 'API Management',
     aliases: ['APIM', 'Azure API Management', 'API Gateway'],
-    iconFile: '10042-icon-service-API-Management-Services',
-    category: 'web',
+    iconFile: 'api-management',
+    category: 'integration',
     hasPricingData: true,
     pricingServiceName: 'API Management',
     isUsageBased: false,

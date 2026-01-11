@@ -260,3 +260,19 @@
   min-width: 24px;
   text-align: center;
 }
+
+/* Loading banner animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateX(-50%) scale(1.02);
+  }
+}
+
+.loading-banner {
+  animation: pulse 2s ease-in-out infinite !important;
+}

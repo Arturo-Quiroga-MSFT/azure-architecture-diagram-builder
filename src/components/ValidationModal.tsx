@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, AlertTriangle, CheckCircle, Info, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw } from 'lucide-react';
 import { ArchitectureValidation, ValidationFinding, formatValidationReport } from '../services/architectureValidator';
 import './ValidationModal.css';
 
@@ -11,6 +11,7 @@ interface ValidationModalProps {
   isOpen: boolean; // Controls modal visibility
   onClose: () => void; // Handler for closing modal
   isLoading?: boolean; // Shows loading state during validation
+  onApplyRecommendations?: (selectedFindings: ValidationFinding[]) => void; // Handler for applying selected recommendations
 }
 
 /**
@@ -18,8 +19,67 @@ interface ValidationModalProps {
  * Shows overall score, pillar-specific assessments, findings, and quick wins.
  * Includes download functionality for markdown report.
  */
-const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, onClose, isLoading }) => {
+const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, onClose, isLoading, onApplyRecommendations }) => {
+  // Track selected findings for applying recommendations
+  const [selectedFindings, setSelectedFindings] = useState<Set<string>>(new Set());
+  
   if (!isOpen) return null;
+
+  /**
+   * Toggle selection of a finding
+   */
+  const toggleFinding = (findingKey: string) => {
+    setSelectedFindings(prev => {
+      const next = new Set(prev);
+      if (next.has(findingKey)) {
+        next.delete(findingKey);
+      } else {
+        next.add(findingKey);
+      }
+      return next;
+    });
+  };
+
+  /**
+   * Get all findings as a flat array with unique keys
+   */
+  const getAllFindings = (): Array<ValidationFinding & { key: string }> => {
+    if (!validation) return [];
+    
+    const findings: Array<ValidationFinding & { key: string }> = [];
+    
+    // Add pillar findings
+    validation.pillars.forEach((pillar, pIndex) => {
+      pillar.findings.forEach((finding, fIndex) => {
+        findings.push({
+          ...finding,
+          key: `pillar-${pIndex}-${fIndex}`
+        });
+      });
+    });
+    
+    // Add quick wins
+    validation.quickWins.forEach((win, wIndex) => {
+      findings.push({
+        ...win,
+        key: `quickwin-${wIndex}`
+      });
+    });
+    
+    return findings;
+  };
+
+  /**
+   * Apply selected recommendations
+   */
+  const handleApplyRecommendations = () => {
+    const allFindings = getAllFindings();
+    const selected = allFindings.filter(f => selectedFindings.has(f.key));
+    
+    if (onApplyRecommendations && selected.length > 0) {
+      onApplyRecommendations(selected);
+    }
+  };
 
   /**
    * Returns appropriate icon component for finding severity level
@@ -122,28 +182,39 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
                   
                   {pillar.findings.length > 0 && (
                     <div className="findings-list">
-                      {pillar.findings.map((finding, fIndex) => (
-                        <div key={fIndex} className={`finding-item severity-${finding.severity}`}>
-                          <div className="finding-header">
-                            {getSeverityIcon(finding.severity)}
-                            <span className="finding-category">{finding.category}</span>
-                            <span className={`severity-badge ${finding.severity}`}>
-                              {finding.severity}
-                            </span>
-                          </div>
-                          <div className="finding-content">
-                            <p className="finding-issue"><strong>Issue:</strong> {finding.issue}</p>
-                            <p className="finding-recommendation">
-                              <strong>Recommendation:</strong> {finding.recommendation}
-                            </p>
-                            {finding.resources && finding.resources.length > 0 && (
-                              <p className="finding-resources">
-                                <strong>Affected:</strong> {finding.resources.join(', ')}
+                      {pillar.findings.map((finding, fIndex) => {
+                        const findingKey = `pillar-${index}-${fIndex}`;
+                        const isSelected = selectedFindings.has(findingKey);
+                        
+                        return (
+                          <div key={fIndex} className={`finding-item severity-${finding.severity} ${isSelected ? 'selected' : ''}`}>
+                            <div className="finding-header">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleFinding(findingKey)}
+                                className="finding-checkbox"
+                              />
+                              {getSeverityIcon(finding.severity)}
+                              <span className="finding-category">{finding.category}</span>
+                              <span className={`severity-badge ${finding.severity}`}>
+                                {finding.severity}
+                              </span>
+                            </div>
+                            <div className="finding-content">
+                              <p className="finding-issue"><strong>Issue:</strong> {finding.issue}</p>
+                              <p className="finding-recommendation">
+                                <strong>Recommendation:</strong> {finding.recommendation}
                               </p>
-                            )}
+                              {finding.resources && finding.resources.length > 0 && (
+                                <p className="finding-resources">
+                                  <strong>Affected:</strong> {finding.resources.join(', ')}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -176,6 +247,12 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               <Download size={18} />
               Download Report
             </button>
+            {selectedFindings.size > 0 && onApplyRecommendations && (
+              <button className="btn-success" onClick={handleApplyRecommendations}>
+                <RefreshCw size={18} />
+                Apply {selectedFindings.size} Recommendation{selectedFindings.size > 1 ? 's' : ''}
+              </button>
+            )}
             <button className="btn-primary" onClick={onClose}>
               Close
             </button>
