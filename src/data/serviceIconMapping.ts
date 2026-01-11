@@ -12,7 +12,7 @@ export interface ServiceIconMapping {
   /** Icon filename (without path or extension) */
   iconFile: string;
   /** Category/folder in icon library */
-  category: 'ai + machine learning' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot' | 'monitor';
+  category: 'ai + machine learning' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot' | 'monitor' | 'security';
   /** Whether we have real pricing data for this service */
   hasPricingData: boolean;
   /** Service name used in pricing files (if hasPricingData is true) */
