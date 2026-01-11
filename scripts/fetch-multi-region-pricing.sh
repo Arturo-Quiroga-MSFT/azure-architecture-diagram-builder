@@ -4,7 +4,7 @@
 # Downloads pricing data for specified services across 3 regions
 
 # Target regions
-REGIONS=("eastus2" "swedencentral" "westeurope")
+REGIONS=("eastus2" "swedencentral" "westeurope" "canadacentral" "brazilsouth")
 
 # Services to fetch (you can expand this list)
 SERVICES=(

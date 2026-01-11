@@ -104,6 +104,39 @@
   font-size: 14px;
   font-weight: 600;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.region-type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.region-type-hero {
+  background-color: #ffd700;
+  color: #333;
+}
+
+.region-type-hub {
+  background-color: #0078d4;
+  color: white;
+}
+
+.region-type-satellite {
+  background-color: #868686;
+  color: white;
+}
+
+.region-type-micro {
+  background-color: #50e6ff;
+  color: #333;
 }
 
 .region-location {

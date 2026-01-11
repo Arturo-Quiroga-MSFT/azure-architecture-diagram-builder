@@ -46,7 +46,7 @@ export function getAvailableServices(): string[] {
  * Get available regions
  */
 export function getAvailableRegions(): string[] {
-  return ['eastus2', 'swedencentral', 'westeurope'];
+  return ['eastus2', 'canadacentral', 'brazilsouth', 'westeurope', 'swedencentral'];
 }
 
 /**

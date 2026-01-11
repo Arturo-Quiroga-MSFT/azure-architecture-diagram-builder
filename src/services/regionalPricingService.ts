@@ -5,19 +5,25 @@
 
 import { AzureRetailPrice, ServicePricing, PricingTier } from '../types/pricing';
 
-export type AzureRegion = 'eastus2' | 'swedencentral' | 'westeurope';
+export type AzureRegion = 'eastus2' | 'swedencentral' | 'westeurope' | 'canadacentral' | 'brazilsouth';
+
+export type RegionType = 'HERO' | 'HUB' | 'SATELLITE' | 'MICRO';
 
 export interface RegionInfo {
   id: AzureRegion;
   displayName: string;
   location: string;
   flag: string;
+  regionType: RegionType;
+  geography: string;
 }
 
 export const AVAILABLE_REGIONS: RegionInfo[] = [
-  { id: 'eastus2', displayName: 'East US 2', location: 'Virginia, USA', flag: '🇺🇸' },
-  { id: 'swedencentral', displayName: 'Sweden Central', location: 'Gävle, Sweden', flag: '🇸🇪' },
-  { id: 'westeurope', displayName: 'West Europe', location: 'Netherlands', flag: '🇳🇱' },
+  { id: 'eastus2', displayName: 'East US 2', location: 'Virginia', flag: '🇺🇸', regionType: 'HERO', geography: 'United States' },
+  { id: 'canadacentral', displayName: 'Canada Central', location: 'Toronto', flag: '🇨🇦', regionType: 'HUB', geography: 'Canada' },
+  { id: 'brazilsouth', displayName: 'Brazil South', location: 'São Paulo', flag: '🇧🇷', regionType: 'HUB', geography: 'Brazil' },
+  { id: 'westeurope', displayName: 'West Europe', location: 'Netherlands', flag: '🇳🇱', regionType: 'HUB', geography: 'Europe' },
+  { id: 'swedencentral', displayName: 'Sweden Central', location: 'Gävle', flag: '🇸🇪', regionType: 'HUB', geography: 'Europe' },
 ];
 
 interface RegionalPricingData {

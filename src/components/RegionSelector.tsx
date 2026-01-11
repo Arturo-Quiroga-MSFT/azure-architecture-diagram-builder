@@ -44,8 +44,13 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onRegionChange }) => {
             >
               <span className="region-flag">{region.flag}</span>
               <div className="region-info">
-                <div className="region-display-name">{region.displayName}</div>
-                <div className="region-location">{region.location}</div>
+                <div className="region-display-name">
+                  {region.displayName}
+                  <span className={`region-type-badge region-type-${region.regionType.toLowerCase()}`}>
+                    {region.regionType}
+                  </span>
+                </div>
+                <div className="region-location">{region.location}, {region.geography}</div>
               </div>
               {selectedRegion === region.id && <span className="checkmark">✓</span>}
             </button>
