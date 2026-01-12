@@ -5,7 +5,7 @@ import './IconPalette.css';
 
 const IconPalette: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['app services']));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['ai + machine learning']));
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryIcons, setCategoryIcons] = useState<Map<string, AzureIcon[]>>(new Map());
   const [iconUrls, setIconUrls] = useState<Map<string, string>>(new Map());
@@ -35,7 +35,7 @@ const IconPalette: React.FC = () => {
   // Load initial category
   useEffect(() => {
     const loadInitialCategory = async () => {
-      const category = 'app services';
+      const category = 'ai + machine learning';
       const icons = await loadIconsFromCategory(category);
       setCategoryIcons(new Map().set(category, icons));
       

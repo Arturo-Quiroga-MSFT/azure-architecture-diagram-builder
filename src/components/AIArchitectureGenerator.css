@@ -2,11 +2,34 @@
   background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
   color: white;
   border: none;
+  box-shadow:
+    0 0 0 rgba(139, 92, 246, 0),
+    0 0 0 rgba(236, 72, 153, 0);
+  animation: ai-button-glow 1.6s ease-in-out infinite;
 }
 
 .btn-ai:hover {
   background: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
   transform: translateY(-1px);
+}
+
+@keyframes ai-button-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 rgba(139, 92, 246, 0),
+      0 0 0 rgba(236, 72, 153, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 12px rgba(139, 92, 246, 0.65),
+      0 0 22px rgba(236, 72, 153, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-ai {
+    animation: none;
+  }
 }
 
 .modal-overlay {

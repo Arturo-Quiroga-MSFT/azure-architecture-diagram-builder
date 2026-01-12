@@ -86,7 +86,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         title="Generate architecture with AI"
       >
         <Sparkles size={18} />
-        AI Generate
+        Generate with AI
       </button>
 
       {isOpen && (

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { EdgeProps, getBezierPath, EdgeLabelRenderer, BaseEdge } from 'reactflow';
+import {
+  EdgeProps,
+  getBezierPath,
+  getStraightPath,
+  getSmoothStepPath,
+  EdgeLabelRenderer,
+  BaseEdge,
+} from 'reactflow';
 
 const EditableEdge: React.FC<EdgeProps> = ({
   id,
@@ -18,14 +25,23 @@ const EditableEdge: React.FC<EdgeProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(label?.toString() || '');
 
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const pathStyle = (data as any)?.pathStyle as 'straight' | 'smooth' | 'orthogonal' | undefined;
+
+  const pathFn =
+    pathStyle === 'straight'
+      ? getStraightPath
+      : pathStyle === 'orthogonal'
+        ? getSmoothStepPath
+        : getBezierPath;
+
+  const [edgePath, labelX, labelY] = pathFn({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
-  });
+  } as any);
 
   const handleLabelDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -53,9 +69,41 @@ const EditableEdge: React.FC<EdgeProps> = ({
     }
   };
 
+  const direction = (data?.direction ?? 'forward') as 'forward' | 'reverse' | 'bidirectional';
+  const flowMode = (data?.flowMode ?? (direction === 'bidirectional' ? 'pulse' : 'directional')) as
+    | 'directional'
+    | 'pulse';
+
+  const flowAnimated = Boolean(data?.flowAnimated);
+  const shouldDirectionalFlow = flowAnimated && flowMode === 'directional' && (direction === 'forward' || direction === 'reverse');
+  const shouldPulseFlow = flowAnimated && flowMode === 'pulse' && direction === 'bidirectional';
+  const dashArray = (style as any)?.strokeDasharray;
+
   return (
-    <>markerStart={markerStart} 
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+    <>
+      <BaseEdge
+        path={edgePath}
+        markerEnd={markerEnd}
+        markerStart={markerStart}
+        style={{
+          ...style,
+          ...(shouldPulseFlow
+            ? {
+                animation: 'edge-pulse 1.4s ease-in-out infinite',
+              }
+            : shouldDirectionalFlow
+              ? {
+                  strokeDasharray: dashArray ?? '6 6',
+                  animation:
+                    direction === 'reverse'
+                      ? 'edge-dash-reverse 1s linear infinite'
+                      : 'edge-dash-forward 1s linear infinite',
+                }
+              : {
+                  animation: undefined,
+                }),
+        }}
+      />
       <EdgeLabelRenderer>
         <div
           style={{

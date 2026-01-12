@@ -15,7 +15,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -38,6 +38,12 @@ import { formatMonthlyCost } from './utils/pricingHelpers';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
+import {
+  applyLayoutPreset,
+  type LayoutPreset,
+  type LayoutSpacing,
+  type LayoutEdgeStyle,
+} from './utils/layoutPresets';
 import './App.css';
 
 const nodeTypes = {
@@ -83,8 +89,60 @@ function App() {
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  const layoutMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>('flow-lr');
+  const [layoutSpacing, setLayoutSpacing] = useState<LayoutSpacing>('comfortable');
+  const [layoutEdgeStyle, setLayoutEdgeStyle] = useState<LayoutEdgeStyle>('smooth');
+  const [layoutEmphasizePrimaryPath, setLayoutEmphasizePrimaryPath] = useState(false);
   
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handlePointerDown = (e: PointerEvent) => {
+      if (!isExportMenuOpen && !isLayoutMenuOpen) return;
+      const target = e.target as unknown as globalThis.Node | null;
+      if (!target) return;
+
+      if (isExportMenuOpen && exportMenuRef.current && !exportMenuRef.current.contains(target)) {
+        setIsExportMenuOpen(false);
+      }
+
+      if (isLayoutMenuOpen && layoutMenuRef.current && !layoutMenuRef.current.contains(target)) {
+        setIsLayoutMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isExportMenuOpen && !isLayoutMenuOpen) return;
+      if (e.key === 'Escape') {
+        setIsExportMenuOpen(false);
+        setIsLayoutMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isExportMenuOpen, isLayoutMenuOpen]);
+
+  // Keep edge rendering style in sync even without re-layout.
+  useEffect(() => {
+    setEdges((eds) =>
+      eds.map((e) => ({
+        ...e,
+        data: { ...(e.data ?? {}), pathStyle: layoutEdgeStyle },
+      }))
+    );
+  }, [layoutEdgeStyle, setEdges]);
 
   const addGroupBox = useCallback(() => {
     const newNode: Node = {
@@ -202,16 +260,62 @@ function App() {
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge({ 
       ...params, 
-      animated: true, 
+      animated: false,
       type: 'editableEdge',
       label: '',
       markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
       labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
       labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
-      data: { onLabelChange: handleEdgeLabelChange, direction: 'forward' },
+      data: {
+        onLabelChange: handleEdgeLabelChange,
+        connectionType: 'sync',
+        direction: 'forward',
+        baseFlowAnimated: true,
+        flowAnimated: true,
+        flowMode: 'directional',
+        pathStyle: layoutEdgeStyle,
+      },
     }, eds)),
-    [setEdges, handleEdgeLabelChange]
+    [setEdges, handleEdgeLabelChange, layoutEdgeStyle]
   );
+
+  const applyLayout = useCallback(() => {
+    const selectedAzureNodeId = nodes.find((n) => n.type === 'azureNode' && (n as any).selected)?.id;
+    const shouldEmphasize =
+      layoutEmphasizePrimaryPath && (layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb');
+
+    const result = applyLayoutPreset(nodes as any, edges as any, {
+      preset: layoutPreset,
+      spacing: layoutSpacing,
+      edgeStyle: layoutEdgeStyle,
+      emphasizePrimaryPath: shouldEmphasize,
+      selectedNodeId: selectedAzureNodeId,
+    });
+
+    setNodes(result.nodes as any);
+    setEdges(result.edges as any);
+
+    requestAnimationFrame(() => {
+      reactFlowInstance?.fitView?.({ padding: 0.2, duration: 250 });
+    });
+  }, [
+    nodes,
+    edges,
+    layoutPreset,
+    layoutSpacing,
+    layoutEdgeStyle,
+    layoutEmphasizePrimaryPath,
+    reactFlowInstance,
+    setNodes,
+    setEdges,
+  ]);
+
+  const layoutPresetLabel: Record<LayoutPreset, string> = {
+    'flow-lr': 'Flow (L→R)',
+    'flow-tb': 'Flow (Top→Bottom)',
+    swimlanes: 'Swimlanes by Group',
+    radial: 'Radial',
+  };
 
   const onReconnect = useCallback(
     (oldEdge: Edge, newConnection: Connection) => {
@@ -220,10 +324,11 @@ function App() {
         const filtered = eds.filter(e => e.id !== oldEdge.id);
         return addEdge({
           ...newConnection,
-          animated: oldEdge.animated,
+          animated: false,
           type: oldEdge.type,
           label: oldEdge.label,
           markerEnd: oldEdge.markerEnd,
+          markerStart: (oldEdge as any).markerStart,
           labelStyle: oldEdge.labelStyle,
           labelBgStyle: oldEdge.labelBgStyle,
           data: oldEdge.data,
@@ -249,24 +354,32 @@ function App() {
   const setEdgeDirection = useCallback((edgeId: string, direction: 'forward' | 'reverse' | 'bidirectional') => {
     setEdges((eds) => eds.map((edge) => {
       if (edge.id === edgeId) {
-        const updatedEdge = { ...edge, data: { ...edge.data, direction } };
+        let markerEnd: any = undefined;
+        let markerStart: any = undefined;
+        const baseFlowAnimated = Boolean(edge.data?.baseFlowAnimated ?? edge.data?.flowAnimated ?? true);
+        const flowAnimated = baseFlowAnimated;
+        const flowMode = direction === 'bidirectional' ? 'pulse' : 'directional';
         
         switch (direction) {
           case 'forward':
-            updatedEdge.markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
-            updatedEdge.markerStart = undefined;
+            markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
             break;
           case 'reverse':
-            updatedEdge.markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
-            updatedEdge.markerEnd = undefined;
+            markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
             break;
           case 'bidirectional':
-            updatedEdge.markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
-            updatedEdge.markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
             break;
         }
         
-        return updatedEdge;
+        return {
+          ...edge,
+          markerEnd,
+          markerStart,
+          animated: false,
+          data: { ...edge.data, direction, baseFlowAnimated, flowAnimated, flowMode }
+        };
       }
       return edge;
     }));
@@ -752,7 +865,7 @@ function App() {
     };
 
     // Function to determine arrow direction based on edge label
-    const determineEdgeDirection = (label: string): { direction: 'forward' | 'reverse' | 'bidirectional', markerEnd?: any, markerStart?: any } => {
+    const determineEdgeDirection = (label: string): { direction: 'forward' | 'reverse' | 'bidirectional', markerEnd?: any, markerStart?: any, flowMode: 'directional' | 'pulse' } => {
       const lowerLabel = label.toLowerCase();
       
       // Keywords that indicate reverse flow
@@ -766,7 +879,8 @@ function App() {
         return {
           direction: 'bidirectional',
           markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
-          markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' }
+          markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+          flowMode: 'pulse',
         };
       }
       
@@ -775,7 +889,8 @@ function App() {
         return {
           direction: 'reverse',
           markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' },
-          markerEnd: undefined
+          markerEnd: undefined,
+          flowMode: 'directional',
         };
       }
       
@@ -783,7 +898,8 @@ function App() {
       return {
         direction: 'forward',
         markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
-        markerStart: undefined
+        markerStart: undefined,
+        flowMode: 'directional',
       };
     };
 
@@ -797,26 +913,28 @@ function App() {
       // Determine edge style based on connection type
       const connectionType = conn.type || 'sync';
       let edgeStyle = {};
-      let animated = true;
+      let baseFlowAnimated = true;
       
       switch (connectionType) {
         case 'async':
           // Dashed line for asynchronous
           edgeStyle = { strokeDasharray: '5, 5' };
-          animated = true;
+          baseFlowAnimated = true;
           break;
         case 'optional':
           // Dotted line for optional
           edgeStyle = { strokeDasharray: '2, 4', opacity: 0.6 };
-          animated = false;
+          baseFlowAnimated = false;
           break;
         case 'sync':
         default:
           // Solid line for synchronous (default)
           edgeStyle = {};
-          animated = true;
+          baseFlowAnimated = true;
           break;
       }
+
+      const flowAnimated = baseFlowAnimated;
       
       return {
         id: `edge-${index}`,
@@ -824,7 +942,7 @@ function App() {
         target: conn.to,
         sourceHandle: positions.sourceHandle,
         targetHandle: positions.targetHandle,
-        animated,
+        animated: false,
         type: 'editableEdge',
         label: conn.label || '',
         markerEnd: edgeDirection.markerEnd,
@@ -832,7 +950,14 @@ function App() {
         labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
         labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
         style: edgeStyle,
-        data: { connectionType, direction: edgeDirection.direction, onLabelChange: handleEdgeLabelChange },
+        data: {
+          connectionType,
+          direction: edgeDirection.direction,
+          baseFlowAnimated,
+          flowAnimated,
+          flowMode: edgeDirection.flowMode,
+          onLabelChange: handleEdgeLabelChange,
+        },
       };
     });
 
@@ -1123,82 +1248,258 @@ function App() {
         <div className="header-content">
           <h1>Azure Architecture Diagram Builder</h1>
           <div className="header-actions">
-            <RegionSelector onRegionChange={handleRegionChange} />
-            {totalMonthlyCost > 0 && (
-              <div className="cost-indicator" title="Total estimated monthly cost for all services">
-                💰 {formatMonthlyCost(totalMonthlyCost)}
+            <div className="toolbar-group">
+              <RegionSelector onRegionChange={handleRegionChange} />
+              {totalMonthlyCost > 0 && (
+                <div className="cost-indicator" title="Total estimated monthly cost for all services">
+                  💰 {formatMonthlyCost(totalMonthlyCost)}
+                </div>
+              )}
+            </div>
+
+            <div className="toolbar-group">
+              <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
+                </svg>
+                Add Group
+              </button>
+              <AIArchitectureGenerator onGenerate={handleAIGenerate} />
+              <label className="btn btn-secondary" title="Upload ARM template to generate diagram">
+                <Upload size={18} />
+                {isUploadingARM ? 'Parsing...' : 'Import ARM'}
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={uploadARMTemplate}
+                  style={{ display: 'none' }}
+                  disabled={isUploadingARM}
+                />
+              </label>
+            </div>
+
+            <div className="toolbar-group">
+              <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
+                <Save size={18} />
+                Save
+              </button>
+              <label className="btn btn-secondary" title="Load diagram">
+                <Upload size={18} />
+                Load
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={loadDiagram}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
+
+            <div className="toolbar-group">
+              <div className="toolbar-dropdown" ref={layoutMenuRef}>
+                <button
+                  onClick={() => setIsLayoutMenuOpen((v) => !v)}
+                  className="btn btn-secondary"
+                  title="Layout presets"
+                  aria-haspopup="menu"
+                  aria-expanded={isLayoutMenuOpen}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 4h7v7H4z" />
+                    <path d="M13 4h7v7h-7z" />
+                    <path d="M4 13h7v7H4z" />
+                    <path d="M13 13h7v7h-7z" />
+                  </svg>
+                  Layout
+                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                </button>
+
+                {isLayoutMenuOpen && (
+                  <div className="toolbar-dropdown-menu toolbar-dropdown-menu--layout" role="menu" aria-label="Layout options">
+                    <div className="toolbar-dropdown-heading">Preset</div>
+                    <select
+                      className="toolbar-dropdown-select"
+                      value={layoutPreset}
+                      onChange={(e) => setLayoutPreset(e.target.value as LayoutPreset)}
+                      aria-label="Layout preset"
+                    >
+                      <option value="flow-lr">Flow (L→R)</option>
+                      <option value="flow-tb">Flow (Top→Bottom)</option>
+                      <option value="swimlanes">Swimlanes by Group</option>
+                      <option value="radial">Radial</option>
+                    </select>
+
+                    <div className="toolbar-dropdown-separator" role="separator" />
+
+                    <div className="toolbar-dropdown-row">
+                      <label className="toolbar-dropdown-label" htmlFor="layoutSpacing">
+                        Spacing
+                      </label>
+                      <select
+                        id="layoutSpacing"
+                        className="toolbar-dropdown-select"
+                        value={layoutSpacing}
+                        onChange={(e) => setLayoutSpacing(e.target.value as LayoutSpacing)}
+                      >
+                        <option value="compact">Compact</option>
+                        <option value="comfortable">Comfortable</option>
+                      </select>
+                    </div>
+
+                    <div className="toolbar-dropdown-row">
+                      <label className="toolbar-dropdown-label" htmlFor="edgeStyle">
+                        Edge style
+                      </label>
+                      <select
+                        id="edgeStyle"
+                        className="toolbar-dropdown-select"
+                        value={layoutEdgeStyle}
+                        onChange={(e) => setLayoutEdgeStyle(e.target.value as LayoutEdgeStyle)}
+                      >
+                        <option value="straight">Straight</option>
+                        <option value="smooth">Smooth</option>
+                        <option value="orthogonal">Orthogonal</option>
+                      </select>
+                    </div>
+
+                    <label className="toolbar-dropdown-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={layoutEmphasizePrimaryPath}
+                        onChange={(e) => setLayoutEmphasizePrimaryPath(e.target.checked)}
+                        disabled={!(layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb')}
+                      />
+                      Emphasize primary path
+                    </label>
+
+                    <div className="toolbar-dropdown-hint">
+                      Current: {layoutPresetLabel[layoutPreset]}
+                      {layoutPreset === 'radial' ? ' (centers on selected node when possible)' : ''}
+                    </div>
+
+                    <div className="toolbar-dropdown-separator" role="separator" />
+
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      disabled={nodes.length === 0}
+                      onClick={() => {
+                        setIsLayoutMenuOpen(false);
+                        applyLayout();
+                      }}
+                      title={nodes.length === 0 ? 'Add services first' : 'Apply selected layout preset'}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 12a9 9 0 1 1-9-9" />
+                        <path d="M21 3v9h-9" />
+                      </svg>
+                      Apply Layout
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-            <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
-              </svg>
-              Add Group
-            </button>
-            <AIArchitectureGenerator onGenerate={handleAIGenerate} />
-            <label className="btn btn-secondary" title="Upload ARM template to generate diagram">
-              <Upload size={18} />
-              {isUploadingARM ? 'Parsing...' : 'Import ARM'}
-              <input
-                type="file"
-                accept=".json"
-                onChange={uploadARMTemplate}
-                style={{ display: 'none' }}
-                disabled={isUploadingARM}
-              />
-            </label>
-            <button onClick={exportDiagram} className="btn btn-primary" title="Export as PNG">
-              <Download size={18} />
-              Export PNG
-            </button>
-            <button onClick={exportAsSvg} className="btn btn-primary" title="Export as SVG (vector format)">
-              <Download size={18} />
-              Export SVG
-            </button>
-            <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
-              <Save size={18} />
-              Save
-            </button>
-            <button onClick={exportCostBreakdown} className="btn btn-primary" title="Export cost breakdown" disabled={totalMonthlyCost === 0}>
-              <DollarSign size={18} />
-              Export Costs
-            </button>
-            <button 
-              onClick={handleValidateArchitecture} 
-              className="btn btn-premium" 
-              title="Validate architecture against Azure Well-Architected Framework"
-              disabled={nodes.length === 0}
-            >
-              <Shield size={18} />
-              Validate Architecture
-            </button>
-            <button 
-              onClick={handleGenerateDeploymentGuide} 
-              className="btn btn-premium" 
-              title="Generate comprehensive deployment guide"
-              disabled={nodes.length === 0}
-            >
-              <FileText size={18} />
-              Deployment Guide
-            </button>
-            <label className="btn btn-secondary" title="Load diagram">
-              <Upload size={18} />
-              Load
-              <input
-                type="file"
-                accept=".json"
-                onChange={loadDiagram}
-                style={{ display: 'none' }}
-              />
-            </label>
-            <button 
-              onClick={() => setIsDarkMode(!isDarkMode)} 
-              className="btn btn-secondary" 
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
-            >
-              {isDarkMode ? '☀️' : '🌙'}
-            </button>
+            </div>
+
+            <div className="toolbar-group">
+              <div className="toolbar-dropdown" ref={exportMenuRef}>
+                <button
+                  onClick={() => setIsExportMenuOpen((v) => !v)}
+                  className="btn btn-primary"
+                  title="Export"
+                  aria-haspopup="menu"
+                  aria-expanded={isExportMenuOpen}
+                >
+                  <Download size={18} />
+                  Export
+                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                </button>
+
+                {isExportMenuOpen && (
+                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Export options">
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportDiagram();
+                      }}
+                      title="Export as PNG"
+                    >
+                      <Download size={18} />
+                      Export PNG
+                    </button>
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportAsSvg();
+                      }}
+                      title="Export as SVG (vector format)"
+                    >
+                      <Download size={18} />
+                      Export SVG
+                    </button>
+                    <div className="toolbar-dropdown-separator" role="separator" />
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      disabled={totalMonthlyCost === 0}
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportCostBreakdown();
+                      }}
+                      title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown'}
+                    >
+                      <DollarSign size={18} />
+                      Export Costs
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="toolbar-group">
+              <button 
+                onClick={handleValidateArchitecture} 
+                className="btn btn-premium" 
+                title="Validate architecture against Azure Well-Architected Framework"
+                disabled={nodes.length === 0}
+              >
+                <Shield size={18} />
+                Validate Architecture
+              </button>
+              {validationResult && (
+                <button
+                  onClick={() => setIsValidationModalOpen(true)}
+                  className="btn btn-secondary"
+                  title="Open last validation results"
+                >
+                  <Shield size={18} />
+                  Validation {validationResult.overallScore}/100
+                </button>
+              )}
+              <button 
+                onClick={handleGenerateDeploymentGuide} 
+                className="btn btn-premium" 
+                title="Generate comprehensive deployment guide"
+                disabled={nodes.length === 0}
+              >
+                <FileText size={18} />
+                Deployment Guide
+              </button>
+            </div>
+
+            <div className="toolbar-group">
+              <button 
+                onClick={() => setIsDarkMode(!isDarkMode)} 
+                className="btn btn-secondary" 
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
+              >
+                {isDarkMode ? '☀️' : '🌙'}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -1390,6 +1691,7 @@ function App() {
         isOpen={isValidationModalOpen}
         onClose={() => setIsValidationModalOpen(false)}
         isLoading={isValidating}
+        onRevalidate={handleValidateArchitecture}
         onApplyRecommendations={async (selectedFindings) => {
           console.log('📝 User selected recommendations to apply:', selectedFindings);
           
@@ -1399,12 +1701,12 @@ function App() {
           
           // Get current architecture state
           const currentServices = nodes
-            .filter(n => n.type === 'serviceNode')
+            .filter(n => n.type === 'azureNode')
             .map(n => ({
               id: n.id,
               name: n.data.label,
-              type: n.data.service || n.data.label,
-              category: n.data.category || 'general',
+              type: n.data.serviceName || n.data.service || n.data.label,
+              category: n.data.category || 'General',
               description: n.data.description || '',
             }));
           

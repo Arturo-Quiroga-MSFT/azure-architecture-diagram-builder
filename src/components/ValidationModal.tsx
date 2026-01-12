@@ -12,6 +12,7 @@ interface ValidationModalProps {
   onClose: () => void; // Handler for closing modal
   isLoading?: boolean; // Shows loading state during validation
   onApplyRecommendations?: (selectedFindings: ValidationFinding[]) => void; // Handler for applying selected recommendations
+  onRevalidate?: () => void; // Optional handler to rerun validation
 }
 
 /**
@@ -19,7 +20,7 @@ interface ValidationModalProps {
  * Shows overall score, pillar-specific assessments, findings, and quick wins.
  * Includes download functionality for markdown report.
  */
-const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, onClose, isLoading, onApplyRecommendations }) => {
+const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, onClose, isLoading, onApplyRecommendations, onRevalidate }) => {
   // Track selected findings for applying recommendations
   const [selectedFindings, setSelectedFindings] = useState<Set<string>>(new Set());
   
@@ -133,7 +134,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
       <div className="modal-content validation-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>🔍 Architecture Validation</h2>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-close" onClick={onClose} title="Hide">
             <X size={24} />
           </button>
         </div>
@@ -247,6 +248,12 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               <Download size={18} />
               Download Report
             </button>
+            {onRevalidate && (
+              <button className="btn-secondary" onClick={onRevalidate} disabled={!!isLoading} title="Run validation again">
+                <RefreshCw size={18} />
+                Revalidate
+              </button>
+            )}
             {selectedFindings.size > 0 && onApplyRecommendations && (
               <button className="btn-success" onClick={handleApplyRecommendations}>
                 <RefreshCw size={18} />
@@ -254,7 +261,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               </button>
             )}
             <button className="btn-primary" onClick={onClose}>
-              Close
+              Hide
             </button>
           </div>
         </>

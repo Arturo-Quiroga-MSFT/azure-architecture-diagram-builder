@@ -32,6 +32,154 @@
   align-items: center;
 }
 
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar-group + .toolbar-group {
+  margin-left: 0.25rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.toolbar-dropdown {
+  position: relative;
+}
+
+.toolbar-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 180px;
+  background: rgba(255, 255, 255, 0.98);
+  color: #111827;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 10px;
+  padding: 0.4rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+
+.toolbar-dropdown-menu--layout {
+  min-width: 260px;
+}
+
+.toolbar-dropdown-heading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.4rem 0.2rem;
+  opacity: 0.9;
+}
+
+.toolbar-dropdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.3rem 0.4rem;
+}
+
+.toolbar-dropdown-label {
+  font-size: 0.82rem;
+  font-weight: 650;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+.toolbar-dropdown-select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(17, 24, 39, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.45rem 0.55rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.toolbar-dropdown-row .toolbar-dropdown-select {
+  width: 150px;
+}
+
+.toolbar-dropdown-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+  user-select: none;
+}
+
+.toolbar-dropdown-checkbox input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+
+.toolbar-dropdown-hint {
+  padding: 0.1rem 0.4rem 0.35rem;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.toolbar-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: inherit;
+  text-align: left;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.toolbar-dropdown-item:hover:not(:disabled) {
+  background: rgba(17, 24, 39, 0.08);
+}
+
+.toolbar-dropdown-item:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.toolbar-dropdown-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolbar-dropdown-separator {
+  height: 1px;
+  margin: 0.35rem 0.25rem;
+  background: rgba(17, 24, 39, 0.12);
+}
+
+body.dark-mode .toolbar-dropdown-menu {
+  background: rgba(17, 24, 39, 0.92);
+  color: #f9fafb;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+body.dark-mode .toolbar-dropdown-select {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(17, 24, 39, 0.75);
+}
+
+body.dark-mode .toolbar-dropdown-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .toolbar-dropdown-separator {
+  background: rgba(255, 255, 255, 0.14);
+}
+
 .cost-indicator {
   background: rgba(255, 255, 255, 0.25);
   color: white;
@@ -149,6 +297,34 @@
 .react-flow__edge.selected .react-flow__edge-path {
   stroke: #005a9e;
   stroke-width: 3;
+}
+
+/* Edge flow animation (custom, supports reverse) */
+@keyframes edge-dash-forward {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+@keyframes edge-dash-reverse {
+  to {
+    stroke-dashoffset: 16;
+  }
+}
+
+@keyframes edge-pulse {
+  0% {
+    stroke-opacity: 0.65;
+    filter: drop-shadow(0 0 0 rgba(0, 120, 212, 0));
+  }
+  50% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(0, 120, 212, 0.65));
+  }
+  100% {
+    stroke-opacity: 0.65;
+    filter: drop-shadow(0 0 0 rgba(0, 120, 212, 0));
+  }
 }
 
 .react-flow__controls {
