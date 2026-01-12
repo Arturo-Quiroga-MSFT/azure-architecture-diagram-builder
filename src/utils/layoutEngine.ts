@@ -66,8 +66,8 @@ export function layoutArchitecture(
   
   console.log('📐 Calculating layout for', services.length, 'services and', groups.length, 'groups');
   
-  // Create directed graph
-  const g = new dagre.graphlib.Graph();
+  // Create directed graph with compound nodes support
+  const g = new dagre.graphlib.Graph({ compound: true });
   
   // Configure graph
   g.setGraph({
@@ -82,13 +82,27 @@ export function layoutArchitecture(
   // Set default edge label
   g.setDefaultEdgeLabel(() => ({}));
   
-  // Add nodes to graph
+  // Add groups as parent nodes first (if any)
+  groups.forEach(group => {
+    g.setNode(group.id, {
+      label: group.label,
+      clusterLabelPos: 'top',
+      style: 'fill: none',  // Groups are just containers
+    });
+  });
+  
+  // Add service nodes to graph
   services.forEach(service => {
     g.setNode(service.id, {
       label: service.name,
       width: NODE_WIDTH,
       height: NODE_HEIGHT
     });
+    
+    // Link service to its parent group (if any)
+    if (service.groupId) {
+      g.setParent(service.id, service.groupId);
+    }
   });
   
   // Add edges to graph
@@ -114,37 +128,27 @@ export function layoutArchitecture(
   
   console.log('  ✅ Services positioned');
   
-  // Calculate group bounding boxes
+  // Get group bounding boxes from Dagre (it calculated them for compound nodes)
   const positionedGroups: PositionedGroup[] = groups
     .map(group => {
-      const groupServices = positionedServices.filter(
-        s => s.groupId === group.id
-      );
+      const groupNode = g.node(group.id);
       
-      if (groupServices.length === 0) {
-        console.warn(`  ⚠️ Group ${group.id} has no services`);
+      if (!groupNode) {
+        console.warn(`  ⚠️ Group ${group.id} not found in graph`);
         return null;
       }
       
-      // Calculate bounding box
-      const xs = groupServices.map(s => s.position.x);
-      const ys = groupServices.map(s => s.position.y);
-      
-      const minX = Math.min(...xs);
-      const maxX = Math.max(...xs.map(x => x + NODE_WIDTH));
-      const minY = Math.min(...ys);
-      const maxY = Math.max(...ys.map(y => y + NODE_HEIGHT));
-      
+      // Dagre provides x, y (center), width, and height for compound nodes
       const padding = opts.groupPadding;
       
       return {
         ...group,
         position: {
-          x: minX - padding,
-          y: minY - padding
+          x: groupNode.x - (groupNode.width / 2) - padding,
+          y: groupNode.y - (groupNode.height / 2) - padding
         },
-        width: (maxX - minX) + (padding * 2),
-        height: (maxY - minY) + (padding * 2)
+        width: groupNode.width + (padding * 2),
+        height: groupNode.height + (padding * 2)
       };
     })
     .filter((g): g is PositionedGroup => g !== null);
