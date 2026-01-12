@@ -1,7 +1,5 @@
 .title-block {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
   background: white;
   border: 2px solid #333;
   border-radius: 4px;
@@ -9,10 +7,21 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   min-width: 320px;
+  user-select: none;
+  transition: box-shadow 0.2s;
+}
+
+.title-block.dragging {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
 }
 
 .title-block-display {
-  cursor: pointer;
+  cursor: grab;
+}
+
+.title-block-display:active {
+  cursor: grabbing;
 }
 
 .title-block-header {
@@ -135,4 +144,62 @@
 
 .btn-cancel:hover {
   background: #e0e0e0;
+}
+/* Dark Mode Styles */
+body.dark-mode .title-block {
+  background: #2d2d2d;
+  border: 2px solid #505050;
+}
+
+body.dark-mode .title-block-header {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+body.dark-mode .title-block-field {
+  color: #d0d0d0;
+  font-weight: 600;
+}
+
+body.dark-mode .title-block-value {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+body.dark-mode .title-block-hint {
+  background: #1a1a1a;
+  border-top: 1px solid #404040;
+  color: #a0a0a0;
+}
+
+body.dark-mode .title-block-edit {
+  background: #2d2d2d;
+}
+
+body.dark-mode .title-block-edit label {
+  color: #d0d0d0;
+}
+
+body.dark-mode .title-block-edit input {
+  background: #3d3d3d;
+  border: 1px solid #505050;
+  color: #ffffff;
+}
+
+body.dark-mode .title-block-edit input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+body.dark-mode .title-block-actions {
+  border-top: 1px solid #404040;
+}
+
+body.dark-mode .btn-cancel {
+  background: #3d3d3d;
+  color: #e0e0e0;
+}
+
+body.dark-mode .btn-cancel:hover {
+  background: #4d4d4d;
 }

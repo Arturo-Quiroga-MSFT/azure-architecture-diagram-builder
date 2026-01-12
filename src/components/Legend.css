@@ -141,3 +141,42 @@
 .legend-badge.usage-pricing {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
+
+/* Dark Mode Styles */
+body.dark-mode .legend {
+  background: #2d2d2d;
+  border: 2px solid #505050;
+}
+
+body.dark-mode .legend-header {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+body.dark-mode .legend-header:hover {
+  background: #252525;
+}
+
+body.dark-mode .legend-section-title {
+  color: #ffffff;
+  font-weight: 700;
+  border-bottom: 1px solid #505050;
+}
+
+body.dark-mode .legend-item {
+  border-radius: 4px;
+}
+
+body.dark-mode .legend-item:hover {
+  background-color: #3d3d3d;
+}
+
+body.dark-mode .legend-description strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+body.dark-mode .legend-description span {
+  color: #d0d0d0;
+  font-weight: 500;
+}

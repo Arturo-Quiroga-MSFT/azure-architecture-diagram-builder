@@ -70,6 +70,12 @@ function App() {
     date: new Date().toLocaleDateString(),
   });
   
+  // Theme State
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  
   // Premium Features State
   const [validationResult, setValidationResult] = useState<ArchitectureValidation | null>(null);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
@@ -96,6 +102,26 @@ function App() {
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+
+  // Apply dark mode class to body and persist preference
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  // Apply dark mode class to body and persist preference
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
 
   // Preload pricing data on mount
   useEffect(() => {
@@ -187,6 +213,26 @@ function App() {
     [setEdges, handleEdgeLabelChange]
   );
 
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      setEdges((eds) => {
+        // Remove the old edge and add the new connection
+        const filtered = eds.filter(e => e.id !== oldEdge.id);
+        return addEdge({
+          ...newConnection,
+          animated: oldEdge.animated,
+          type: oldEdge.type,
+          label: oldEdge.label,
+          markerEnd: oldEdge.markerEnd,
+          labelStyle: oldEdge.labelStyle,
+          labelBgStyle: oldEdge.labelBgStyle,
+          data: oldEdge.data,
+        }, filtered);
+      });
+    },
+    [setEdges]
+  );
+
   const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.preventDefault();
     setEdgeContextMenu({
@@ -256,12 +302,13 @@ function App() {
       const currentNodes = reactFlowInstance.getNodes();
       
       for (const node of currentNodes) {
-        if (node.type === 'group') {
+        if (node.type === 'groupNode') {
           // Check if position is within group bounds
           const groupX = node.position.x;
           const groupY = node.position.y;
-          const groupWidth = (node.style?.width as number) || (node.width || 400);
-          const groupHeight = (node.style?.height as number) || (node.height || 300);
+          // Get dimensions from style first, then measured width/height, then defaults
+          const groupWidth = (node.style?.width as number) || node.width || 400;
+          const groupHeight = (node.style?.height as number) || node.height || 300;
           
           if (
             position.x >= groupX &&
@@ -1144,6 +1191,14 @@ function App() {
                 style={{ display: 'none' }}
               />
             </label>
+            <button 
+              onClick={() => setIsDarkMode(!isDarkMode)} 
+              className="btn btn-secondary" 
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
+            >
+              {isDarkMode ? '☀️' : '🌙'}
+            </button>
           </div>
         </div>
       </header>
@@ -1158,6 +1213,7 @@ function App() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onReconnect={onReconnect}
             onEdgeContextMenu={onEdgeContextMenu}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
@@ -1169,6 +1225,8 @@ function App() {
             snapGrid={[20, 20]}
             selectionOnDrag={true}
             panOnDrag={[1, 2]}
+            elevateNodesOnSelect={false}
+            reconnectRadius={20}
             attributionPosition="bottom-left"
           >
             <Controls />
@@ -1183,11 +1241,19 @@ function App() {
             <style>
               {highlightedServices.map(id => 
                 `.react-flow__node[data-id="${id}"] {
-                  filter: drop-shadow(0 0 8px rgba(0, 120, 212, 1)) drop-shadow(0 0 16px rgba(0, 120, 212, 0.8)) !important;
+                  filter: drop-shadow(0 0 12px rgba(96, 165, 250, 1)) drop-shadow(0 0 24px rgba(96, 165, 250, 0.9)) drop-shadow(0 0 36px rgba(96, 165, 250, 0.6)) !important;
                   z-index: 1000 !important;
                   animation: pulse-glow 1.5s ease-in-out infinite;
                 }
                 @keyframes pulse-glow {
+                  0%, 100% { filter: drop-shadow(0 0 12px rgba(96, 165, 250, 1)) drop-shadow(0 0 24px rgba(96, 165, 250, 0.9)) drop-shadow(0 0 36px rgba(96, 165, 250, 0.6)); }
+                  50% { filter: drop-shadow(0 0 18px rgba(96, 165, 250, 1)) drop-shadow(0 0 32px rgba(96, 165, 250, 1)) drop-shadow(0 0 48px rgba(96, 165, 250, 0.8)); }
+                }
+                
+                body:not(.dark-mode) .react-flow__node[data-id="${id}"] {
+                  filter: drop-shadow(0 0 8px rgba(0, 120, 212, 1)) drop-shadow(0 0 16px rgba(0, 120, 212, 0.8)) !important;
+                }
+                body:not(.dark-mode) @keyframes pulse-glow {
                   0%, 100% { filter: drop-shadow(0 0 8px rgba(0, 120, 212, 1)) drop-shadow(0 0 16px rgba(0, 120, 212, 0.8)); }
                   50% { filter: drop-shadow(0 0 12px rgba(0, 120, 212, 1)) drop-shadow(0 0 24px rgba(0, 120, 212, 0.9)); }
                 }`

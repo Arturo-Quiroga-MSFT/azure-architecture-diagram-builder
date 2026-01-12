@@ -22,6 +22,9 @@ const TitleBlock: React.FC<TitleBlockProps> = ({
     author,
     version,
   });
+  const [position, setPosition] = useState({ x: window.innerWidth - 350, y: window.innerHeight - 200 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -37,8 +40,54 @@ const TitleBlock: React.FC<TitleBlockProps> = ({
     setEditData({ architectureName, author, version });
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't start dragging if clicking on inputs or buttons
+    if (isEditing || (e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON') {
+      return;
+    }
+    
+    setIsDragging(true);
+    setDragOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    });
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    setPosition({
+      x: e.clientX - dragOffset.x,
+      y: e.clientY - dragOffset.y,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  React.useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragOffset]);
+
   return (
-    <div className="title-block">
+    <div 
+      className={`title-block ${isDragging ? 'dragging' : ''}`}
+      style={{
+        position: 'absolute',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        cursor: isDragging ? 'grabbing' : (isEditing ? 'default' : 'grab'),
+      }}
+      onMouseDown={handleMouseDown}
+    >
       {isEditing ? (
         <div className="title-block-edit">
           <div className="title-block-row">
