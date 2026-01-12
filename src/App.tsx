@@ -251,14 +251,44 @@ function App() {
         y: event.clientY,
       });
 
+      // Check if dropped inside a group
+      let parentGroup: Node | undefined = undefined;
+      const currentNodes = reactFlowInstance.getNodes();
+      
+      for (const node of currentNodes) {
+        if (node.type === 'group') {
+          // Check if position is within group bounds
+          const groupX = node.position.x;
+          const groupY = node.position.y;
+          const groupWidth = (node.style?.width as number) || (node.width || 400);
+          const groupHeight = (node.style?.height as number) || (node.height || 300);
+          
+          if (
+            position.x >= groupX &&
+            position.x <= groupX + groupWidth &&
+            position.y >= groupY &&
+            position.y <= groupY + groupHeight
+          ) {
+            parentGroup = node;
+            break; // Use first matching group
+          }
+        }
+      }
+
       const newNode: Node = {
         id: `${Date.now()}`,
         type,
-        position,
+        position: parentGroup ? {
+          // If inside group, position relative to group
+          x: position.x - parentGroup.position.x,
+          y: position.y - parentGroup.position.y,
+        } : position,
         data: { 
           label: iconName,
           iconPath: iconPath,
         },
+        parentNode: parentGroup?.id,
+        extent: parentGroup ? 'parent' : undefined,
       };
 
       setNodes((nds) => nds.concat(newNode));
