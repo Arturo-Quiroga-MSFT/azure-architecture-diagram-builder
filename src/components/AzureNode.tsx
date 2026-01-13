@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { Zap } from 'lucide-react';
+import { Plus, X, Zap } from 'lucide-react';
 import { loadIcon } from '../utils/iconLoader';
 import { NodePricingConfig } from '../types/pricing';
 import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
@@ -36,6 +36,12 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [label, setLabel] = useState(data.label || 'Azure Service');
 
+  const [badges, setBadges] = useState<string[]>(() => Array.isArray((data as any).badges) ? (data as any).badges : []);
+  const [isAddingBadge, setIsAddingBadge] = useState(false);
+  const [newBadgeText, setNewBadgeText] = useState('');
+  const [editingBadgeIndex, setEditingBadgeIndex] = useState<number | null>(null);
+  const [editingBadgeText, setEditingBadgeText] = useState('');
+
   // Extract pricing data
   const pricing = data.pricing as NodePricingConfig | undefined;
   const hasPricing = !!pricing && pricing.estimatedCost > 0;
@@ -48,6 +54,11 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
       });
     }
   }, [data.iconPath]);
+
+  useEffect(() => {
+    // Keep node data in sync for save/load/export.
+    (data as any).badges = badges;
+  }, [badges, data]);
 
   const handleLabelDoubleClick = () => {
     setIsEditingLabel(true);
@@ -120,6 +131,115 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
             <div className="loading-spinner"></div>
           </div>
         )}
+
+        <div className="node-badges nodrag nopan">
+          {badges.map((b, idx) => {
+            const lower = String(b).toLowerCase();
+            const tone =
+              lower.includes('prod') ? 'danger' :
+              lower.includes('dev') ? 'info' :
+              lower.includes('test') || lower.includes('stage') ? 'warning' :
+              lower.includes('zone') ? 'purple' :
+              lower.includes('rpo') || lower.includes('rto') ? 'teal' :
+              'neutral';
+
+            const isEditing = editingBadgeIndex === idx;
+
+            return (
+              <span
+                key={`${b}-${idx}`}
+                className={`node-badge node-badge--${tone}`}
+                title="Double-click to edit badge"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  setEditingBadgeIndex(idx);
+                  setEditingBadgeText(String(b));
+                }}
+              >
+                {isEditing ? (
+                  <input
+                    className="node-badge-input"
+                    value={editingBadgeText}
+                    autoFocus
+                    onChange={(e) => setEditingBadgeText(e.target.value)}
+                    onBlur={() => {
+                      const next = editingBadgeText.trim();
+                      setEditingBadgeIndex(null);
+
+                      if (!next) {
+                        setBadges((prev) => prev.filter((_, i) => i !== idx));
+                        return;
+                      }
+
+                      setBadges((prev) => prev.map((v, i) => (i === idx ? next : v)));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        (e.currentTarget as HTMLInputElement).blur();
+                      }
+                      if (e.key === 'Escape') {
+                        setEditingBadgeIndex(null);
+                        setEditingBadgeText('');
+                      }
+                    }}
+                  />
+                ) : (
+                  <>
+                    <span className="node-badge-text">{b}</span>
+                    <button
+                      className="node-badge-remove"
+                      title="Remove badge"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBadges((prev) => prev.filter((_, i) => i !== idx));
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                  </>
+                )}
+              </span>
+            );
+          })}
+
+          {isAddingBadge ? (
+            <input
+              className="node-badge-input node-badge-input--add"
+              value={newBadgeText}
+              placeholder="e.g. Prod, Zone 1, RPO 15m"
+              autoFocus
+              onChange={(e) => setNewBadgeText(e.target.value)}
+              onBlur={() => {
+                const next = newBadgeText.trim();
+                setIsAddingBadge(false);
+                setNewBadgeText('');
+                if (!next) return;
+                setBadges((prev) => [...prev, next]);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  (e.currentTarget as HTMLInputElement).blur();
+                }
+                if (e.key === 'Escape') {
+                  setIsAddingBadge(false);
+                  setNewBadgeText('');
+                }
+              }}
+            />
+          ) : (
+            <button
+              className="node-badge-add"
+              title="Add badge"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsAddingBadge(true);
+              }}
+            >
+              <Plus size={14} />
+              Badge
+            </button>
+          )}
+        </div>
         
         {isEditingLabel ? (
           <input
