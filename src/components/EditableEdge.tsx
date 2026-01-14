@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   EdgeProps,
   getBezierPath,
@@ -24,6 +24,8 @@ const EditableEdge: React.FC<EdgeProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(label?.toString() || '');
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
 
   const pathStyle = (data as any)?.pathStyle as 'straight' | 'smooth' | 'orthogonal' | undefined;
 
@@ -43,9 +45,15 @@ const EditableEdge: React.FC<EdgeProps> = ({
     targetPosition,
   } as any);
 
+  // Get stored offset from edge data
+  const offsetX = (data as any)?.labelOffsetX ?? 0;
+  const offsetY = (data as any)?.labelOffsetY ?? 0;
+
   const handleLabelDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsEditing(true);
+    if (!isDragging) {
+      setIsEditing(true);
+    }
   };
 
   const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,6 +76,50 @@ const EditableEdge: React.FC<EdgeProps> = ({
       setIsEditing(false);
     }
   };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isEditing) return;
+    e.stopPropagation();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      offsetX,
+      offsetY,
+    };
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !dragStartRef.current) return;
+    
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    
+    const newOffsetX = dragStartRef.current.offsetX + dx;
+    const newOffsetY = dragStartRef.current.offsetY + dy;
+    
+    // Update edge data with new offset
+    if (data?.onLabelOffsetChange) {
+      data.onLabelOffsetChange(id, newOffsetX, newOffsetY);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    dragStartRef.current = null;
+  };
+
+  // Add/remove global mouse event listeners
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, offsetX, offsetY]);
 
   const direction = (data?.direction ?? 'forward') as 'forward' | 'reverse' | 'bidirectional';
   const flowMode = (data?.flowMode ?? (direction === 'bidirectional' ? 'pulse' : 'directional')) as
@@ -108,7 +160,7 @@ const EditableEdge: React.FC<EdgeProps> = ({
         <div
           style={{
             position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            transform: `translate(-50%, -50%) translate(${labelX + offsetX}px,${labelY + offsetY}px)`,
             fontSize: 14,
             fontWeight: 'bold',
             pointerEvents: 'all',
@@ -137,13 +189,14 @@ const EditableEdge: React.FC<EdgeProps> = ({
             />
           ) : (
             <div
+              onMouseDown={handleMouseDown}
               onDoubleClick={handleLabelDoubleClick}
               style={{
                 padding: '4px 8px',
                 backgroundColor: '#ffe4a3',
                 borderRadius: '3px',
                 border: '2px solid #000',
-                cursor: 'text',
+                cursor: isDragging ? 'grabbing' : 'grab',
                 minWidth: '40px',
                 maxWidth: '180px',
                 textAlign: 'center',
@@ -156,8 +209,9 @@ const EditableEdge: React.FC<EdgeProps> = ({
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                userSelect: 'none',
               }}
-              title={editLabel || 'Double-click to edit label'}
+              title={`${editLabel || 'Double-click to edit label'}\n(Drag to reposition)`}
             >
               {editLabel || '(click to add label)'}
             </div>

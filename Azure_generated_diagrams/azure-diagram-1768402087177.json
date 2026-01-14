@@ -1,0 +1,754 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": -480,
+        "y": 960
+      },
+      "data": {
+        "label": "Ingress & API"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -480,
+        "y": 960
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-compute",
+      "type": "groupNode",
+      "position": {
+        "x": -400,
+        "y": -80
+      },
+      "data": {
+        "label": "Microservices Compute"
+      },
+      "style": {
+        "width": 1020,
+        "height": 1010
+      },
+      "width": 1020,
+      "height": 1010,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -400,
+        "y": -80
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-integration",
+      "type": "groupNode",
+      "position": {
+        "x": 700,
+        "y": 0
+      },
+      "data": {
+        "label": "Integration"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 700,
+        "y": 0
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 760,
+        "y": 480
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 760,
+        "y": 480
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-observability",
+      "type": "groupNode",
+      "position": {
+        "x": 1700,
+        "y": 400
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 540,
+        "height": 1335
+      },
+      "width": 540,
+      "height": 1335,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": 400
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "pricing": {
+          "estimatedCost": 99.99978,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-01-14T14:44:22.138Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-ingress",
+      "extent": "parent",
+      "width": 165,
+      "height": 113,
+      "positionAbsolute": {
+        "x": -300,
+        "y": 1140
+      }
+    },
+    {
+      "id": "svc-aks",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 705
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 73,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-14T14:44:22.132Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 154,
+      "positionAbsolute": {
+        "x": 260,
+        "y": 625
+      }
+    },
+    {
+      "id": "svc-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-01-14T14:44:22.134Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": -220,
+        "y": 100
+      }
+    },
+    {
+      "id": "svc-servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 0,
+        "y": 150
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/service-bus.svg",
+        "pricing": {
+          "estimatedCost": 9.81,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T14:44:22.137Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-integration",
+      "extent": "parent",
+      "width": 127,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 700,
+        "y": 150
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-redis",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Redis Cache",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10139-icon-service-Instance-Pools.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T14:44:22.132Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 132,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 940,
+        "y": 660
+      }
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 200,
+        "y": 380
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Azure-SQL-Server-Stretch-Databases.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-14T14:44:22.095Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 960,
+        "y": 860
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 300,
+        "y": 580
+      },
+      "data": {
+        "label": "Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00020-icon-service-Metrics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-01-14T14:44:22.144Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-observability",
+      "extent": "parent",
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 980
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 1140
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-14T14:44:22.132Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-observability",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1780,
+        "y": 1540
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-apim",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route client API calls to microservices",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-aks",
+      "target": "svc-servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish commands/events for asynchronous processing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "bidirectional",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-servicebus",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Consume messages to execute background workflows",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-acr",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Pull container images for deployments",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-aks",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Distributed traces, dependency calls, and app metrics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "source": "svc-aks",
+      "sourceHandle": "bottom",
+      "target": "svc-cosmos",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Persist and query operational data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-aksbottom-svc-cosmosleft"
+    },
+    {
+      "source": "svc-aks",
+      "sourceHandle": "bottom",
+      "target": "svc-redis",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write cache for low-latency data and sessions",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-aksbottom-svc-redisleft"
+    },
+    {
+      "source": "svc-redis",
+      "sourceHandle": "right",
+      "target": "svc-monitor",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Cache metrics and diagnostics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-redisright-svc-monitortop"
+    },
+    {
+      "source": "svc-cosmos",
+      "sourceHandle": "right",
+      "target": "svc-monitor",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Database metrics and diagnostics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-cosmosright-svc-monitortop"
+    },
+    {
+      "source": "svc-servicebus",
+      "sourceHandle": "right",
+      "target": "svc-monitor",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Queue/topic metrics and diagnostics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-servicebusright-svc-monitortop"
+    },
+    {
+      "source": "svc-apim",
+      "sourceHandle": "right",
+      "target": "svc-appinsights",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "API telemetry and request logs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-apimright-svc-appinsightstop"
+    }
+  ],
+  "viewport": {
+    "x": 327.5271649682435,
+    "y": 74.65188127097895,
+    "zoom": 0.5257686401032914
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-01-14",
+    "savedAt": "2026-01-14T14:48:07.177Z"
+  }
+}

@@ -1,0 +1,1609 @@
+{
+  "nodes": [
+    {
+      "id": "grp-edge-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 1345
+      },
+      "data": {
+        "label": "Edge & Ingress"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 1345
+      }
+    },
+    {
+      "id": "grp-network-security",
+      "type": "groupNode",
+      "position": {
+        "x": 520,
+        "y": 200
+      },
+      "data": {
+        "label": "Network Security"
+      },
+      "style": {
+        "width": 2180,
+        "height": 1090
+      },
+      "width": 2180,
+      "height": 1090,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 520,
+        "y": 200
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-ingress-api",
+      "type": "groupNode",
+      "position": {
+        "x": 560,
+        "y": 1120
+      },
+      "data": {
+        "label": "Ingress & API"
+      },
+      "style": {
+        "width": 1020,
+        "height": 1160
+      },
+      "width": 1020,
+      "height": 1160,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 560,
+        "y": 1120
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-compute",
+      "type": "groupNode",
+      "position": {
+        "x": 1600,
+        "y": 1720
+      },
+      "data": {
+        "label": "Microservices Compute"
+      },
+      "style": {
+        "width": 1260,
+        "height": 795
+      },
+      "width": 1260,
+      "height": 795,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 1720
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-integration",
+      "type": "groupNode",
+      "position": {
+        "x": 3040,
+        "y": 360
+      },
+      "data": {
+        "label": "Integration"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3040,
+        "y": 360
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-data-cache",
+      "type": "groupNode",
+      "position": {
+        "x": 3360,
+        "y": 1320
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3360,
+        "y": 1320
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 2460
+      },
+      "data": {
+        "label": "Monitoring & Observability"
+      },
+      "style": {
+        "width": 760,
+        "height": 560
+      },
+      "width": 760,
+      "height": 560,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 2460
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-identity",
+      "type": "groupNode",
+      "position": {
+        "x": 4260,
+        "y": 480
+      },
+      "data": {
+        "label": "Identity & Secrets"
+      },
+      "style": {
+        "width": 540,
+        "height": 835
+      },
+      "width": 540,
+      "height": 835,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 4260,
+        "y": 480
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-devops",
+      "type": "groupNode",
+      "position": {
+        "x": 340,
+        "y": 1860
+      },
+      "data": {
+        "label": "DevOps & Deployment"
+      },
+      "style": {
+        "width": 540,
+        "height": 760
+      },
+      "width": 540,
+      "height": 760,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 340,
+        "y": 1860
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-frontdoor",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/03291-icon-service-API-Center.svg",
+        "pricing": {
+          "estimatedCost": 35.04,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-edge-ingress",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 1525
+      }
+    },
+    {
+      "id": "s-vnet",
+      "type": "azureNode",
+      "position": {
+        "x": 1820,
+        "y": 180
+      },
+      "data": {
+        "label": "Virtual Network",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10077-icon-service-Local-Network-Gateways.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T15:38:37.740Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 154,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2340,
+        "y": 380
+      }
+    },
+    {
+      "id": "s-ddos",
+      "type": "azureNode",
+      "position": {
+        "x": 800,
+        "y": 280
+      },
+      "data": {
+        "label": "DDoS Protection Plan",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10072-icon-service-DDoS-Protection-Plans.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1320,
+        "y": 480
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-appgw",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 405
+      },
+      "data": {
+        "label": "Application Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg",
+        "pricing": {
+          "estimatedCost": 162,
+          "tier": "Large",
+          "skuName": "Large",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ingress-api",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 740,
+        "y": 1525
+      }
+    },
+    {
+      "id": "s-afw",
+      "type": "azureNode",
+      "position": {
+        "x": 1620,
+        "y": 900
+      },
+      "data": {
+        "label": "Azure Firewall",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 142,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2140,
+        "y": 1100
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-natgw",
+      "type": "azureNode",
+      "position": {
+        "x": 2020,
+        "y": 760
+      },
+      "data": {
+        "label": "NAT Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2540,
+        "y": 960
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-nsg",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 555
+      },
+      "data": {
+        "label": "Network Security Group",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1180,
+        "y": 755
+      }
+    },
+    {
+      "id": "s-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 405
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "pricing": {
+          "estimatedCost": 99.99978,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-ingress-api",
+      "extent": "parent",
+      "width": 164,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 1525
+      }
+    },
+    {
+      "id": "s-aks",
+      "type": "azureNode",
+      "position": {
+        "x": 140,
+        "y": 80
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10035-icon-service-App-Services.svg",
+        "pricing": {
+          "estimatedCost": 73,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1740,
+        "y": 1800
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 1000,
+        "y": 560
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2600,
+        "y": 2280
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-sb",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10213-icon-service-Software-as-a-Service.svg",
+        "pricing": {
+          "estimatedCost": 9.81,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T15:38:37.709Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-integration",
+      "extent": "parent",
+      "width": 126,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 3220,
+        "y": 540
+      }
+    },
+    {
+      "id": "s-redis",
+      "type": "azureNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Redis Cache",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10139-icon-service-Instance-Pools.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T15:38:37.709Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-data-cache",
+      "extent": "parent",
+      "width": 131,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3460,
+        "y": 1420
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 280,
+        "y": 520
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Azure-SQL-Server-Stretch-Databases.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data-cache",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3640,
+        "y": 1840
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 100,
+        "y": 260
+      },
+      "data": {
+        "label": "Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-monitoring",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1100,
+        "y": 2720
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 440,
+        "y": 60
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-14T15:38:34.015Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1440,
+        "y": 2520
+      },
+      "dragging": false
+    },
+    {
+      "id": "s-pe-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 555
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 160,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 700,
+        "y": 755
+      }
+    },
+    {
+      "id": "s-pe-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 1240,
+        "y": 930
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 160,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1760,
+        "y": 1130
+      }
+    },
+    {
+      "id": "s-pe-sb",
+      "type": "azureNode",
+      "position": {
+        "x": 1240,
+        "y": 430
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 160,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1760,
+        "y": 630
+      }
+    },
+    {
+      "id": "s-pe-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 1240,
+        "y": 680
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "grp-network-security",
+      "extent": "parent",
+      "width": 160,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1760,
+        "y": 880
+      }
+    },
+    {
+      "id": "s-entra",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10231-icon-service-Entra-ID-Protection.svg"
+      },
+      "parentNode": "grp-identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 4440,
+        "y": 660
+      }
+    },
+    {
+      "id": "s-kv",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-01-14T15:38:37.763Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-identity",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 4440,
+        "y": 910
+      }
+    },
+    {
+      "id": "s-devops",
+      "type": "azureNode",
+      "position": {
+        "x": 260,
+        "y": 440
+      },
+      "data": {
+        "label": "DevOps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/devops/10048-icon-service-API-Connections.svg"
+      },
+      "parentNode": "grp-devops",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 600,
+        "y": 2300
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "s-appgw",
+      "target": "s-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "L7 routing to API gateway (WAF not duplicated)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "s-apim",
+      "target": "s-entra",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "OAuth2/OIDC authentication and token validation",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "s-apim",
+      "target": "s-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Backend API calls to microservices",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "s-aks",
+      "target": "s-redis",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write cache for hot data and sessions",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "s-aks",
+      "target": "s-sb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish/consume messages for async processing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "bidirectional",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "s-aks",
+      "target": "s-afw",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Egress requiring inspection (central policy; no east-west hairpinning)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "s-aks",
+      "target": "s-natgw",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Cost-optimized outbound SNAT for allowed destinations (when firewall not required)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "s-nsg",
+      "target": "s-aks",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Subnet-level traffic filtering (least privilege)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "s-ddos",
+      "target": "s-vnet",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "DDoS protection applied to VNet public resources",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "s-aks",
+      "target": "s-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Application telemetry and distributed traces",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "s-apim",
+      "target": "s-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "API gateway request logs and dependency telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "s-monitor",
+      "target": "s-appinsights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Correlate metrics/logs with APM signals and alerting",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "s-devops",
+      "target": "s-acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Build and push container images",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "s-aks",
+      "target": "s-acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Pull container images (private access preferred)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "s-devops",
+      "target": "s-kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve deployment secrets and certificates securely",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "s-apim",
+      "target": "s-kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Fetch certificates/secrets (managed identity recommended)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "s-pe-cosmos",
+      "target": "s-cosmos",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private Link connectivity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-20",
+      "source": "s-pe-sb",
+      "target": "s-sb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private Link connectivity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-21",
+      "source": "s-pe-acr",
+      "target": "s-acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private Link connectivity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "id": "edge-22",
+      "source": "s-pe-apim",
+      "target": "s-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private Link connectivity (as applicable to APIM mode)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      }
+    },
+    {
+      "source": "s-devops",
+      "sourceHandle": "right",
+      "target": "s-aks",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy releases to AKS (GitOps/helm/kubectl)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-s-devopsright-s-aksleft"
+    },
+    {
+      "source": "s-aks",
+      "sourceHandle": "right",
+      "target": "s-cosmos",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private data access (via Private Endpoint)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-s-aksright-s-cosmosleft"
+    },
+    {
+      "source": "s-frontdoor",
+      "sourceHandle": "right",
+      "target": "s-appgw",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "HTTPS ingress (WAF at Front Door; route to regional ingress)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-s-frontdoorright-s-appgwleft"
+    }
+  ],
+  "viewport": {
+    "x": 82.04040670393078,
+    "y": -50.5892705901465,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-01-14",
+    "savedAt": "2026-01-14T15:43:21.601Z"
+  }
+}

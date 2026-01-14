@@ -1,0 +1,18 @@
+Azure Architecture Cost Breakdown
+Total Monthly Cost,$285.16
+Region,swedencentral
+Date,2026-01-14
+
+Service Name,Service Type,Tier,Quantity,Monthly Cost,Pricing Type
+"PostgreSQL",Other,Backup LRS,1,$109.86,Usage-based (estimate)
+"App Service",Other,S1,1,$69.35,Fixed
+"App Service",Other,S1,1,$69.35,Fixed
+"Key Vault",Other,Standard,1,$21.90,Fixed
+"Blob Storage",Other,Hot LRS,1,$14.60,Usage-based (estimate)
+"Application Insights",Other,Basic,1,$0.10,Fixed
+
+Group Name,Service Count,Monthly Cost
+"Ungrouped",6,$285.16
+
+Category,Monthly Cost,Percentage
+Other,$285.16,100.0%

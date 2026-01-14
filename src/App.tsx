@@ -408,6 +408,26 @@ function App() {
     );
   }, [setEdges]);
 
+  const handleEdgeLabelOffsetChange = useCallback((edgeId: string, offsetX: number, offsetY: number) => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return {
+            ...edge,
+            data: { 
+              ...edge.data, 
+              labelOffsetX: offsetX, 
+              labelOffsetY: offsetY,
+              onLabelChange: handleEdgeLabelChange,
+              onLabelOffsetChange: handleEdgeLabelOffsetChange,
+            },
+          };
+        }
+        return edge;
+      })
+    );
+  }, [setEdges, handleEdgeLabelChange]);
+
   const onConnect = useCallback(
     (params: Connection | Edge) => setEdges((eds) => addEdge({ 
       ...params, 
@@ -419,15 +439,18 @@ function App() {
       labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
       data: {
         onLabelChange: handleEdgeLabelChange,
+        onLabelOffsetChange: handleEdgeLabelOffsetChange,
         connectionType: 'sync',
         direction: 'forward',
         baseFlowAnimated: true,
         flowAnimated: true,
         flowMode: 'directional',
         pathStyle: layoutEdgeStyle,
+        labelOffsetX: 0,
+        labelOffsetY: 0,
       },
     }, eds)),
-    [setEdges, handleEdgeLabelChange, layoutEdgeStyle]
+    [setEdges, handleEdgeLabelChange, handleEdgeLabelOffsetChange, layoutEdgeStyle]
   );
 
   // Bulk select operations
@@ -618,7 +641,15 @@ function App() {
           markerEnd,
           markerStart,
           animated: false,
-          data: { ...edge.data, direction, baseFlowAnimated, flowAnimated, flowMode }
+          data: { 
+            ...edge.data, 
+            direction, 
+            baseFlowAnimated, 
+            flowAnimated, 
+            flowMode,
+            onLabelChange: handleEdgeLabelChange,
+            onLabelOffsetChange: handleEdgeLabelOffsetChange,
+          }
         };
       }
       return edge;
@@ -824,6 +855,8 @@ function App() {
         ...titleBlockData,
         savedAt: new Date().toISOString(),
       },
+      workflow: workflow.length > 0 ? workflow : undefined,
+      architecturePrompt: architecturePrompt || undefined,
     };
     const dataStr = JSON.stringify(diagramData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
@@ -834,7 +867,7 @@ function App() {
     link.setAttribute('download', fileName);
     link.click();
     recordExport('json', fileName);
-  }, [reactFlowInstance, recordExport, titleBlockData]);
+  }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt]);
 
   const exportCostBreakdown = useCallback(() => {
     // Calculate the cost breakdown
@@ -880,6 +913,18 @@ function App() {
           version: flow.metadata.version || '1.0',
           date: flow.metadata.date || new Date().toLocaleDateString(),
         });
+      }
+
+      // Restore workflow if present
+      if (flow.workflow && Array.isArray(flow.workflow)) {
+        setWorkflow(flow.workflow);
+      } else {
+        setWorkflow([]);
+      }
+
+      // Restore architecture prompt if present
+      if (flow.architecturePrompt) {
+        setArchitecturePrompt(flow.architecturePrompt);
       }
     },
     [setNodes, setEdges, reactFlowInstance]
@@ -927,6 +972,8 @@ function App() {
               ...titleBlockData,
               savedAt: new Date().toISOString(),
             },
+            workflow: workflow.length > 0 ? workflow : undefined,
+            architecturePrompt: architecturePrompt || undefined,
           },
           title: titleBlockData.architectureName,
         }),
@@ -961,7 +1008,7 @@ function App() {
     } finally {
       setIsSharingDiagram(false);
     }
-  }, [reactFlowInstance, titleBlockData.architectureName]);
+  }, [reactFlowInstance, titleBlockData, workflow, architecturePrompt]);
 
   const loadDiagram = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1312,6 +1359,9 @@ function App() {
           flowAnimated,
           flowMode: edgeDirection.flowMode,
           onLabelChange: handleEdgeLabelChange,
+          onLabelOffsetChange: handleEdgeLabelOffsetChange,
+          labelOffsetX: 0,
+          labelOffsetY: 0,
         },
       };
     });
@@ -1765,83 +1815,6 @@ function App() {
             </div>
 
             <div className="toolbar-group">
-              <div className="toolbar-dropdown" ref={exportMenuRef}>
-                <button
-                  onClick={() => setIsExportMenuOpen((v) => !v)}
-                  className="btn btn-primary"
-                  title="Export"
-                  aria-haspopup="menu"
-                  aria-expanded={isExportMenuOpen}
-                >
-                  <Download size={18} />
-                  Export
-                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
-                </button>
-
-                {isExportMenuOpen && (
-                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Export options">
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportDiagram();
-                      }}
-                      title="Export as PNG"
-                    >
-                      <Download size={18} />
-                      Export PNG
-                    </button>
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportAsSvg();
-                      }}
-                      title="Export as SVG (vector format)"
-                    >
-                      <Download size={18} />
-                      Export SVG
-                    </button>
-                    <div className="toolbar-dropdown-separator" role="separator" />
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      disabled={totalMonthlyCost === 0}
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportCostBreakdown();
-                      }}
-                      title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown'}
-                    >
-                      <DollarSign size={18} />
-                      Export Costs
-                    </button>
-
-                    <div className="toolbar-dropdown-separator" role="separator" />
-
-                    <div className="toolbar-dropdown-heading">Recent exports</div>
-                    {exportHistory.length === 0 ? (
-                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
-                    ) : (
-                      <div className="toolbar-dropdown-history">
-                        {exportHistory.slice(0, 6).map((item) => (
-                          <div key={item.id} className="toolbar-dropdown-history-item">
-                            <div className="toolbar-dropdown-history-file">{item.fileName}</div>
-                            <div className="toolbar-dropdown-history-meta">
-                              {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="toolbar-group">
               <div className="toolbar-dropdown" ref={bulkSelectMenuRef}>
                 <button
                   onClick={() => setIsBulkSelectMenuOpen((v) => !v)}
@@ -1971,6 +1944,80 @@ function App() {
             </div>
 
             <div className="toolbar-group">
+              <div className="toolbar-dropdown" ref={exportMenuRef}>
+                <button
+                  onClick={() => setIsExportMenuOpen((v) => !v)}
+                  className="btn btn-primary"
+                  title="Export"
+                  aria-haspopup="menu"
+                  aria-expanded={isExportMenuOpen}
+                >
+                  <Download size={18} />
+                  Export
+                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                </button>
+
+                {isExportMenuOpen && (
+                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Export options">
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportDiagram();
+                      }}
+                      title="Export as PNG"
+                    >
+                      <Download size={18} />
+                      Export PNG
+                    </button>
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportAsSvg();
+                      }}
+                      title="Export as SVG (vector format)"
+                    >
+                      <Download size={18} />
+                      Export SVG
+                    </button>
+                    <div className="toolbar-dropdown-separator" role="separator" />
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      disabled={totalMonthlyCost === 0}
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportCostBreakdown();
+                      }}
+                      title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown'}
+                    >
+                      <DollarSign size={18} />
+                      Export Costs
+                    </button>
+
+                    <div className="toolbar-dropdown-separator" role="separator" />
+
+                    <div className="toolbar-dropdown-heading">Recent exports</div>
+                    {exportHistory.length === 0 ? (
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
+                    ) : (
+                      <div className="toolbar-dropdown-history">
+                        {exportHistory.slice(0, 6).map((item) => (
+                          <div key={item.id} className="toolbar-dropdown-history-item">
+                            <div className="toolbar-dropdown-history-file">{item.fileName}</div>
+                            <div className="toolbar-dropdown-history-meta">
+                              {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <button 
                 onClick={handleValidateArchitecture} 
                 className="btn btn-premium" 

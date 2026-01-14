@@ -1,0 +1,1023 @@
+{
+  "nodes": [
+    {
+      "id": "web-tier",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": -30
+      },
+      "data": {
+        "label": "Web Tier"
+      },
+      "style": {
+        "width": 540,
+        "height": 910
+      },
+      "width": 540,
+      "height": 910,
+      "positionAbsolute": {
+        "x": -30,
+        "y": -30
+      }
+    },
+    {
+      "id": "application-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 550,
+        "y": 270
+      },
+      "data": {
+        "label": "Application Tier"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 550,
+        "y": 270
+      }
+    },
+    {
+      "id": "network-private",
+      "type": "groupNode",
+      "position": {
+        "x": 260,
+        "y": 980
+      },
+      "data": {
+        "label": "Network & Private Connectivity"
+      },
+      "style": {
+        "width": 1700,
+        "height": 960
+      },
+      "width": 1700,
+      "height": 960,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 260,
+        "y": 980
+      },
+      "dragging": false
+    },
+    {
+      "id": "data-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 2290,
+        "y": 1145
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "positionAbsolute": {
+        "x": 2290,
+        "y": 1145
+      }
+    },
+    {
+      "id": "security-identity",
+      "type": "groupNode",
+      "position": {
+        "x": 1960,
+        "y": 20
+      },
+      "data": {
+        "label": "Security & Identity"
+      },
+      "style": {
+        "width": 1120,
+        "height": 1035
+      },
+      "width": 1120,
+      "height": 1035,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1960,
+        "y": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": -240
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": -240
+      },
+      "dragging": false
+    },
+    {
+      "id": "swa",
+      "type": "azureNode",
+      "position": {
+        "x": 190,
+        "y": 110
+      },
+      "data": {
+        "label": "Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg",
+        "pricing": {
+          "estimatedCost": 9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T00:32:53.802Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "web-tier",
+      "extent": "parent",
+      "width": 162,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 160,
+        "y": 80
+      },
+      "dragging": false
+    },
+    {
+      "id": "appsvc",
+      "type": "azureNode",
+      "position": {
+        "x": 90,
+        "y": 350
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-14T00:32:47.006Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "application-tier",
+      "extent": "parent",
+      "width": 129,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 640,
+        "y": 620
+      },
+      "dragging": false
+    },
+    {
+      "id": "postgres",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "pricing": {
+          "estimatedCost": 109.86,
+          "tier": "Backup LRS",
+          "skuName": "Backup LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GiB/Month",
+          "lastUpdated": "2026-01-14T00:32:47.006Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-layer",
+      "extent": "parent",
+      "width": 128,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 2470,
+        "y": 1325
+      }
+    },
+    {
+      "id": "blob",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Blob Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-01-14T00:32:47.006Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-layer",
+      "extent": "parent",
+      "width": 135,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 2470,
+        "y": 1575
+      }
+    },
+    {
+      "id": "entra",
+      "type": "azureNode",
+      "position": {
+        "x": 380,
+        "y": 200
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10231-icon-service-Entra-ID-Protection.svg"
+      },
+      "parentNode": "security-identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2340,
+        "y": 220
+      },
+      "dragging": false
+    },
+    {
+      "id": "kv",
+      "type": "azureNode",
+      "position": {
+        "x": 860,
+        "y": 820
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-01-14T00:32:47.006Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-identity",
+      "extent": "parent",
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2820,
+        "y": 840
+      },
+      "dragging": false
+    },
+    {
+      "id": "appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-14T00:32:47.006Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 1180,
+        "y": -60
+      }
+    },
+    {
+      "id": "vnet",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 430
+      },
+      "data": {
+        "label": "Virtual Network",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10077-icon-service-Local-Network-Gateways.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T00:32:53.824Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "network-private",
+      "extent": "parent",
+      "width": 155,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 1020,
+        "y": 1410
+      }
+    },
+    {
+      "id": "dns",
+      "type": "azureNode",
+      "position": {
+        "x": 120,
+        "y": 160
+      },
+      "data": {
+        "label": "DNS",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg"
+      },
+      "parentNode": "network-private",
+      "extent": "parent",
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 1140
+      },
+      "dragging": false
+    },
+    {
+      "id": "pe-postgres",
+      "type": "azureNode",
+      "position": {
+        "x": 1340,
+        "y": 430
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "network-private",
+      "extent": "parent",
+      "width": 161,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 1410
+      }
+    },
+    {
+      "id": "pe-blob",
+      "type": "azureNode",
+      "position": {
+        "x": 1340,
+        "y": 680
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "network-private",
+      "extent": "parent",
+      "width": 161,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 1660
+      }
+    },
+    {
+      "id": "pe-kv",
+      "type": "azureNode",
+      "position": {
+        "x": 1340,
+        "y": 180
+      },
+      "data": {
+        "label": "Private Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/02882-icon-service-DNS-Private-Resolver.svg"
+      },
+      "parentNode": "network-private",
+      "extent": "parent",
+      "width": 161,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 1600,
+        "y": 1160
+      }
+    },
+    {
+      "id": "mi-appsvc",
+      "type": "azureNode",
+      "position": {
+        "x": 360,
+        "y": 600
+      },
+      "data": {
+        "label": "Managed Identity",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "parentNode": "security-identity",
+      "extent": "parent",
+      "width": 169,
+      "height": 113,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 2320,
+        "y": 620
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "swa",
+      "target": "entra",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "User sign-in (OIDC/OAuth2) for SPA authentication",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "swa",
+      "target": "appsvc",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Calls backend API over HTTPS (JWT bearer token)",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "appsvc",
+      "target": "entra",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Validates access tokens / enforces authorization policies",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "appsvc",
+      "target": "vnet",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "VNet integration for private outbound connectivity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "vnet",
+      "target": "pe-postgres",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Routes private traffic to database via Private Link",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "pe-postgres",
+      "target": "postgres",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private access to PostgreSQL (no public exposure)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "vnet",
+      "target": "pe-blob",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Routes private traffic to storage via Private Link",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "pe-blob",
+      "target": "blob",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private access to Blob Storage (no public exposure)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "vnet",
+      "target": "pe-kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Routes private traffic to Key Vault via Private Link",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "pe-kv",
+      "target": "kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private access to Key Vault (no public exposure)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "dns",
+      "target": "vnet",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Private DNS resolution for Private Endpoints",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "appsvc",
+      "target": "mi-appsvc",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses system-assigned managed identity for Azure resource access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "mi-appsvc",
+      "target": "kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Gets secrets/certs using RBAC/access policies (no app secrets in config)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "mi-appsvc",
+      "target": "blob",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Accesses Blob Storage using RBAC (no connection strings)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "swa",
+      "target": "appinsights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Frontend telemetry (page views, AJAX dependencies)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "source": "appsvc",
+      "sourceHandle": "right",
+      "target": "appinsights",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emits traces, metrics, logs, and dependency telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-appsvcright-appinsightsleft"
+    }
+  ],
+  "viewport": {
+    "x": 95,
+    "y": 109.29999999999905,
+    "zoom": 0.5
+  }
+}

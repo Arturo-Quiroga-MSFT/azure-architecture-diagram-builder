@@ -1,0 +1,766 @@
+{
+  "nodes": [
+    {
+      "id": "grp-channel-access",
+      "type": "groupNode",
+      "position": {
+        "x": 340,
+        "y": 840
+      },
+      "data": {
+        "label": "Channels & Access",
+        "customColor": {
+          "name": "Orange",
+          "bg": "rgba(245, 158, 11, 0.08)",
+          "border": "#f59e0b",
+          "header": "#f59e0b"
+        }
+      },
+      "style": {
+        "width": 540,
+        "height": 920
+      },
+      "width": 540,
+      "height": 920,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 340,
+        "y": 840
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-ai-orchestration",
+      "type": "groupNode",
+      "position": {
+        "x": 1040,
+        "y": 340
+      },
+      "data": {
+        "label": "AI & Orchestration"
+      },
+      "style": {
+        "width": 1020,
+        "height": 1210
+      },
+      "width": 1020,
+      "height": 1210,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 1040,
+        "y": 340
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1510,
+        "y": 1420
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": 1510,
+        "y": 1420
+      }
+    },
+    {
+      "id": "grp-security",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": -30
+      },
+      "data": {
+        "label": "Identity & Secrets"
+      },
+      "style": {
+        "width": 2080,
+        "height": 460
+      },
+      "width": 2080,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": -30
+      }
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1160,
+        "y": 1780
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1160,
+        "y": 1780
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 630
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.880Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-channel-access",
+      "extent": "parent",
+      "width": 164,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 520,
+        "y": 1470
+      }
+    },
+    {
+      "id": "svc-appservice",
+      "type": "azureNode",
+      "position": {
+        "x": 90,
+        "y": 580
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 72.124,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.880Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-ai-orchestration",
+      "extent": "parent",
+      "width": 128,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1130,
+        "y": 920
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-openai",
+      "type": "azureNode",
+      "position": {
+        "x": 730,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 208,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.880Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ai-orchestration",
+      "extent": "parent",
+      "width": 140,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1770,
+        "y": 500
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-language",
+      "type": "azureNode",
+      "position": {
+        "x": 750,
+        "y": 420
+      },
+      "data": {
+        "label": "Language",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 26,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.881Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ai-orchestration",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1790,
+        "y": 760
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-speech",
+      "type": "azureNode",
+      "position": {
+        "x": 810,
+        "y": 680
+      },
+      "data": {
+        "label": "Azure Speech",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-speech.svg"
+      },
+      "parentNode": "grp-ai-orchestration",
+      "extent": "parent",
+      "width": 141,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1850,
+        "y": 1020
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-translator",
+      "type": "azureNode",
+      "position": {
+        "x": 730,
+        "y": 940
+      },
+      "data": {
+        "label": "Translator",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 104,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.881Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ai-orchestration",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1770,
+        "y": 1280
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 230,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Azure-SQL-Server-Stretch-Databases.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.880Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1740,
+        "y": 1600
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-entra",
+      "type": "azureNode",
+      "position": {
+        "x": 50,
+        "y": 290
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10231-icon-service-Entra-ID-Protection.svg"
+      },
+      "parentNode": "grp-security",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 20,
+        "y": 260
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 1770,
+        "y": 190
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/10244-icon-service-Application-Security-Groups.svg",
+        "pricing": {
+          "estimatedCost": 1.56,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.881Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-security",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1740,
+        "y": 160
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 2.392,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-13T19:23:12.881Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-monitoring",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1340,
+        "y": 1960
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-entra",
+      "target": "svc-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "OAuth2/OIDC authentication for API access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-apim",
+      "target": "svc-appservice",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route external chat/voice API calls to chatbot backend",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-appservice",
+      "target": "svc-speech",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Speech-to-text for voice input; text-to-speech for responses",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-appservice",
+      "target": "svc-translator",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Translate inbound/outbound messages",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-appservice",
+      "target": "svc-language",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Run sentiment analysis on user utterances",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-appservice",
+      "target": "svc-openai",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send prompt with context/history; receive generated response",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-appservice",
+      "target": "svc-cosmos",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write conversation history and session state",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-apim",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "API request metrics and diagnostics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-appservice",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Application telemetry, dependency tracing, and logs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      }
+    },
+    {
+      "source": "svc-appservice",
+      "sourceHandle": "right",
+      "target": "svc-keyvault",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve secrets/keys using managed identity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional"
+      },
+      "id": "reactflow__edge-svc-appserviceright-svc-keyvaultleft"
+    }
+  ],
+  "viewport": {
+    "x": 332.59471365965305,
+    "y": 46.331612433845066,
+    "zoom": 0.5982648210025973
+  }
+}
