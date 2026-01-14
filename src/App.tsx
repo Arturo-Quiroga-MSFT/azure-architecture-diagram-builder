@@ -15,7 +15,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link, Clock, Camera } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -28,6 +28,8 @@ import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
 import ValidationModal from './components/ValidationModal';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
+import VersionHistoryModal from './components/VersionHistoryModal';
+import SaveSnapshotModal from './components/SaveSnapshotModal';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
@@ -38,6 +40,7 @@ import { formatMonthlyCost } from './utils/pricingHelpers';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
+import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import {
   applyLayoutPreset,
   type LayoutPreset,
@@ -100,6 +103,10 @@ function App() {
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+
+  // Version History State
+  const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
+  const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement | null>(null);
@@ -956,6 +963,26 @@ function App() {
     })();
   }, [sharedDiagramId, reactFlowInstance, applyFlowObject]);
 
+  // Load version from URL hash (for "Open in New Tab" feature)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#version-')) {
+      try {
+        const encodedData = hash.substring(9); // Remove '#version-'
+        const decodedData = atob(encodedData);
+        const diagramData = JSON.parse(decodedData);
+        
+        // Apply the diagram data
+        applyFlowObject(diagramData);
+        
+        // Clear the hash
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (error) {
+        console.error('Failed to load version from URL:', error);
+      }
+    }
+  }, [applyFlowObject]);
+
   const shareDiagram = useCallback(async () => {
     if (!reactFlowInstance) return;
 
@@ -1027,7 +1054,54 @@ function App() {
     reader.readAsText(file);
   }, [applyFlowObject]);
 
-  const handleAIGenerate = useCallback(async (architecture: any, prompt: string) => {
+  // Restore a version from history
+  const restoreVersion = useCallback((version: DiagramVersion) => {
+    try {
+      setNodes(version.nodes);
+      setEdges(version.edges);
+      
+      if (version.titleBlockData) {
+        setTitleBlockData(version.titleBlockData);
+      }
+      
+      if (version.workflow) {
+        setWorkflow(version.workflow);
+      }
+      
+      if (version.architecturePrompt) {
+        setArchitecturePrompt(version.architecturePrompt);
+      }
+      
+      console.log('✅ Version restored successfully');
+    } catch (error) {
+      console.error('Failed to restore version:', error);
+      alert('Failed to restore version');
+    }
+  }, []);
+
+  // Manual snapshot save handler
+  const handleSaveSnapshot = useCallback(async (notes: string) => {
+    try {
+      await createSnapshot(
+        nodes,
+        edges,
+        titleBlockData.architectureName,
+        {
+          architecturePrompt,
+          validationScore: validationResult?.overallScore,
+          notes: notes || 'Manual snapshot',
+          metadata: titleBlockData,
+          workflow,
+        }
+      );
+      console.log('✅ Manual snapshot saved successfully');
+    } catch (error) {
+      console.error('Failed to save manual snapshot:', error);
+      throw error;
+    }
+  }, [nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow]);
+
+  const handleAIGenerate = useCallback(async (architecture: any, prompt: string, autoSnapshot: boolean = true) => {
     try {
       console.log('Generating architecture from:', architecture);
       const { services, connections, groups, workflow: workflowSteps } = architecture;
@@ -1038,6 +1112,31 @@ function App() {
       }
 
       console.log(`Processing ${services.length} services, ${connections?.length || 0} connections, ${groups?.length || 0} groups`);
+
+      // Auto-save snapshot before regenerating (if enabled and there are existing nodes)
+      if (autoSnapshot && nodes.length > 0) {
+        console.log('📸 Auto-saving snapshot before regeneration...');
+        console.log(`Current state: ${nodes.length} nodes, ${edges.length} edges, name: "${titleBlockData.architectureName}"`);
+        try {
+          await createSnapshot(
+            nodes,
+            edges,
+            titleBlockData.architectureName,
+            {
+              architecturePrompt: architecturePrompt || 'Previous version',
+              validationScore: validationResult?.overallScore,
+              notes: 'Auto-saved before AI regeneration',
+              metadata: titleBlockData,
+              workflow,
+            }
+          );
+          console.log('✅ Snapshot saved successfully!');
+        } catch (err) {
+          console.error('❌ Failed to save snapshot:', err);
+        }
+      } else {
+        console.log('ℹ️ No existing nodes to snapshot');
+      }
 
       // Clear existing diagram when generating new architecture
       setNodes([]);
@@ -1412,7 +1511,7 @@ function App() {
       console.error('Error in handleAIGenerate:', error);
       alert('Failed to generate diagram. Check console for details.');
     }
-  }, [setNodes, setEdges, reactFlowInstance]);
+  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow]);
 
   const uploadARMTemplate = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1669,7 +1768,14 @@ function App() {
                 </svg>
                 Add Group
               </button>
-              <AIArchitectureGenerator onGenerate={handleAIGenerate} />
+              <AIArchitectureGenerator 
+                onGenerate={handleAIGenerate}
+                currentArchitecture={{
+                  nodes,
+                  edges,
+                  architectureName: titleBlockData.architectureName
+                }}
+              />
               <label className="btn btn-secondary" title="Upload ARM template to generate diagram">
                 <Upload size={18} />
                 {isUploadingARM ? 'Parsing...' : 'Import ARM'}
@@ -1707,6 +1813,23 @@ function App() {
                   style={{ display: 'none' }}
                 />
               </label>
+              <button 
+                onClick={() => setIsVersionHistoryModalOpen(true)} 
+                className="btn btn-secondary" 
+                title="View version history"
+              >
+                <Clock size={18} />
+                History
+              </button>
+              <button 
+                onClick={() => setIsSaveSnapshotModalOpen(true)} 
+                className="btn btn-secondary" 
+                title="Save current diagram as snapshot"
+                disabled={nodes.length === 0}
+              >
+                <Camera size={18} />
+                Snapshot
+              </button>
             </div>
 
             <div className="toolbar-group">
@@ -2351,6 +2474,19 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         isOpen={isDeploymentGuideModalOpen}
         onClose={() => setIsDeploymentGuideModalOpen(false)}
         isLoading={isGeneratingGuide}
+      />
+      <VersionHistoryModal
+        isOpen={isVersionHistoryModalOpen}
+        onClose={() => setIsVersionHistoryModalOpen(false)}
+        onRestoreVersion={restoreVersion}
+        currentDiagramName={titleBlockData.architectureName}
+      />
+      <SaveSnapshotModal
+        isOpen={isSaveSnapshotModalOpen}
+        onClose={() => setIsSaveSnapshotModalOpen(false)}
+        onSave={handleSaveSnapshot}
+        diagramName={titleBlockData.architectureName}
+        serviceCount={nodes.filter(n => n.type === 'azureNode').length}
       />
     </div>
   );

@@ -142,7 +142,33 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
         {isLoading ? (
           <div className="modal-loading">
             <div className="spinner"></div>
-            <p>Analyzing architecture against Azure Well-Architected Framework...</p>
+            <div className="loading-content">
+              <h3>Analyzing architecture against Azure Well-Architected Framework...</h3>
+              <p className="loading-description">
+                The Azure Well-Architected Framework (WAF) is a set of guiding principles and best practices 
+                that help you build secure, high-performing, resilient, and efficient cloud architectures.
+              </p>
+              <div className="pillars-info">
+                <h4>Five Pillars of Azure Well-Architected Framework:</h4>
+                <ul className="pillars-list">
+                  <li>
+                    <strong>Cost Optimization</strong> - Manage costs to maximize value delivered
+                  </li>
+                  <li>
+                    <strong>Operational Excellence</strong> - Operations processes that keep systems running in production
+                  </li>
+                  <li>
+                    <strong>Performance Efficiency</strong> - Ability to scale and adapt to changes in load
+                  </li>
+                  <li>
+                    <strong>Reliability</strong> - Ability to recover from failures and continue to function
+                  </li>
+                  <li>
+                    <strong>Security</strong> - Protect applications and data from threats
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         ) : validation ? (
           <>

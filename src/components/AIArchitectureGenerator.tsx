@@ -5,15 +5,32 @@ import { initializeReferenceArchitectures } from '../services/referenceArchitect
 import './AIArchitectureGenerator.css';
 
 interface AIArchitectureGeneratorProps {
-  onGenerate: (architecture: any, prompt: string) => void;
+  onGenerate: (architecture: any, prompt: string, autoSnapshot: boolean) => void;
+  currentArchitecture?: {
+    nodes: any[];
+    edges: any[];
+    architectureName: string;
+  };
 }
 
-const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGenerate }) => {
+const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGenerate, currentArchitecture }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [similarArchitectures, setSimilarArchitectures] = useState<any[]>([]);
+  
+  // Auto-snapshot preference (stored in localStorage)
+  const [autoSnapshot, setAutoSnapshot] = useState<boolean>(() => {
+    const saved = localStorage.getItem('aiGenerator.autoSnapshot');
+    return saved === null ? true : JSON.parse(saved); // Default to true
+  });
+
+  // Save preference to localStorage when it changes
+  const handleAutoSnapshotChange = (checked: boolean) => {
+    setAutoSnapshot(checked);
+    localStorage.setItem('aiGenerator.autoSnapshot', JSON.stringify(checked));
+  };
 
   const examplePrompts = [
     "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images",
@@ -44,15 +61,54 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     setSimilarArchitectures([]); // Clear previous results
 
     try {
+      // Build context about existing architecture if present
+      let contextPrompt = description;
+      
+      if (currentArchitecture && currentArchitecture.nodes.length > 0) {
+        const services = currentArchitecture.nodes
+          .filter(n => n.type === 'azureNode')
+          .map(n => ({
+            name: n.data.label,
+            type: n.data.serviceName || n.data.service || n.data.label,
+            group: n.parentNode || 'none'
+          }));
+        
+        const groups = currentArchitecture.nodes
+          .filter(n => n.type === 'groupNode')
+          .map(n => ({
+            name: n.data.label,
+            id: n.id
+          }));
+        
+        const connections = currentArchitecture.edges
+          .map(e => ({
+            from: services.find(s => currentArchitecture.nodes.find(n => n.id === e.source)?.data.label === s.name)?.name || e.source,
+            to: services.find(s => currentArchitecture.nodes.find(n => n.id === e.target)?.data.label === s.name)?.name || e.target,
+            label: e.label || ''
+          }));
+        
+        contextPrompt = `EXISTING ARCHITECTURE: "${currentArchitecture.architectureName}"
+
+Current services:
+${services.map(s => `- ${s.name} (${s.type})${s.group !== 'none' ? ` in group "${s.group}"` : ''}`).join('\n')}
+
+${groups.length > 0 ? `Current groups:\n${groups.map(g => `- ${g.name}`).join('\n')}\n` : ''}
+${connections.length > 0 ? `Current connections:\n${connections.map(c => `- ${c.from} → ${c.to}${c.label ? ` (${c.label})` : ''}`).join('\n')}\n` : ''}
+
+USER REQUEST: ${description}
+
+IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all existing services, groups, and connections unless the user explicitly asks to remove them. Only add, modify, or remove what the user requested.`;
+      }
+      
       // Call Azure OpenAI to generate architecture
-      const result = await generateArchitectureWithAI(description);
+      const result = await generateArchitectureWithAI(contextPrompt);
       
       // Store similar architectures if available
       if (result.similarArchitectures) {
         setSimilarArchitectures(result.similarArchitectures);
       }
       
-      onGenerate(result, description);
+      onGenerate(result, description, autoSnapshot);
       setDescription('');
       
       // Close modal after successful generation
@@ -161,34 +217,52 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
             </div>
 
             <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => {
-                  setIsOpen(false);
-                  setSimilarArchitectures([]);
-                }}
-                disabled={isGenerating}
-              >
-                {similarArchitectures.length > 0 ? 'Close' : 'Cancel'}
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleGenerate}
-                disabled={isGenerating || !description.trim()}
-                style={{ display: similarArchitectures.length > 0 ? 'none' : 'flex' }}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 size={18} className="spinner" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={18} />
-                    Generate Architecture
-                  </>
-                )}
-              </button>
+              {currentArchitecture && currentArchitecture.nodes.length > 0 && (
+                <div className="auto-snapshot-option">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={autoSnapshot}
+                      onChange={(e) => handleAutoSnapshotChange(e.target.checked)}
+                      disabled={isGenerating}
+                    />
+                    <span>Auto-save snapshot before regenerating</span>
+                  </label>
+                  <p className="checkbox-hint">
+                    Automatically saves your current diagram to version history before generating a new one
+                  </p>
+                </div>
+              )}
+              <div className="modal-footer-actions">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setSimilarArchitectures([]);
+                  }}
+                  disabled={isGenerating}
+                >
+                  {similarArchitectures.length > 0 ? 'Close' : 'Cancel'}
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !description.trim()}
+                  style={{ display: similarArchitectures.length > 0 ? 'none' : 'flex' }}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 size={18} className="spinner" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={18} />
+                      Generate Architecture
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

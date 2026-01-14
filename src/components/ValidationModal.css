@@ -105,6 +105,67 @@
   100% { transform: rotate(360deg); }
 }
 
+.loading-content {
+  max-width: 600px;
+  text-align: center;
+}
+
+.loading-content h3 {
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.loading-description {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.pillars-info {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: left;
+}
+
+.pillars-info h4 {
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.pillars-list {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+.pillars-list li {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.8;
+  padding: 6px 0;
+  position: relative;
+}
+
+.pillars-list li::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: bold;
+  position: absolute;
+  left: -20px;
+}
+
+.pillars-list li strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
 .modal-loading p {
   color: #6b7280;
   font-size: 14px;

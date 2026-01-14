@@ -1,0 +1,265 @@
+/* ==========================================================================
+   Version History Modal Styles
+   ========================================================================== */
+
+.version-history-modal {
+  max-width: 800px;
+  max-height: 85vh;
+}
+
+/* --------------------------------------------------------------------------
+   Loading & Empty States
+   -------------------------------------------------------------------------- */
+
+.version-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  gap: 16px;
+}
+
+.version-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.version-empty p {
+  margin: 8px 0 0 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.version-empty-hint {
+  margin-top: 12px !important;
+  font-size: 14px !important;
+  max-width: 400px;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   Version List
+   -------------------------------------------------------------------------- */
+
+.version-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.version-item {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.version-item:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.version-item.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   Version Header
+   -------------------------------------------------------------------------- */
+
+.version-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.version-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.version-title h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.version-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.version-badge.latest {
+  background: #10b981;
+  color: white;
+}
+
+.version-badge.score {
+  background: #3b82f6;
+  color: white;
+}
+
+/* --------------------------------------------------------------------------
+   Version Actions
+   -------------------------------------------------------------------------- */
+
+.version-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.version-action-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.version-action-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #1f2937;
+}
+
+.version-action-btn.delete:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+/* --------------------------------------------------------------------------
+   Version Metadata
+   -------------------------------------------------------------------------- */
+
+.version-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.version-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.version-stat {
+  padding: 2px 8px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+/* --------------------------------------------------------------------------
+   Version Details
+   -------------------------------------------------------------------------- */
+
+.version-prompt,
+.version-notes {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.version-improvements {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.version-improvements strong {
+  color: #1f2937;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.version-improvements ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+  color: #4b5563;
+}
+
+.version-improvements li {
+  margin: 2px 0;
+}
+
+/* --------------------------------------------------------------------------
+   Version Footer
+   -------------------------------------------------------------------------- */
+
+.version-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-restore {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-restore:hover {
+  background: #2563eb;
+}
+
+/* --------------------------------------------------------------------------
+   Modal Footer
+   -------------------------------------------------------------------------- */
+
+.version-history-modal .modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-count {
+  color: #6b7280;
+  font-size: 14px;
+}
