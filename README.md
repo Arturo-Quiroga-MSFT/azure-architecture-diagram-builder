@@ -75,6 +75,35 @@ To get these values:
 npm run dev
 ```
 
+### Optional: Cloud save + share links (backend)
+
+This repo now includes a small API server that can persist diagrams and generate shareable URLs.
+
+- Start the API server (in a second terminal):
+```bash
+npm run dev:api
+```
+
+- The frontend calls the backend via Vite proxy (`/api` → `http://localhost:8787`).
+- Click the **Share** button to save the current diagram and copy a URL like `/?diagram=<id>`.
+
+#### Storage options
+
+By default (no Azure storage configured), the backend stores diagrams on the local filesystem:
+
+- Dev: `.data/diagrams/`
+- Production containers: `/tmp/diagrams`
+
+To store diagrams in **Azure Blob Storage**, set one of these:
+
+- `AZURE_STORAGE_CONNECTION_STRING` (simplest)
+- OR `AZURE_STORAGE_ACCOUNT_URL` (for Managed Identity / DefaultAzureCredential)
+
+Optional:
+
+- `DIAGRAMS_CONTAINER` (defaults to `diagrams`)
+- `LOCAL_DIAGRAM_STORE_DIR` (override local folder)
+
 3. Open your browser and navigate to `http://localhost:3000`
 
 ## Usage

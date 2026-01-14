@@ -129,8 +129,9 @@ const EditableEdge: React.FC<EdgeProps> = ({
                 padding: '4px 8px',
                 border: '1px solid #0078d4',
                 borderRadius: '3px',
-                backgroundColor: 'white',
+                backgroundColor: '#ffe4a3',
                 minWidth: '100px',
+                maxWidth: '300px',
                 textAlign: 'center',
               }}
             />
@@ -139,15 +140,24 @@ const EditableEdge: React.FC<EdgeProps> = ({
               onDoubleClick={handleLabelDoubleClick}
               style={{
                 padding: '4px 8px',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backgroundColor: '#ffe4a3',
                 borderRadius: '3px',
                 border: '2px solid #000',
                 cursor: 'text',
                 minWidth: '40px',
+                maxWidth: '180px',
                 textAlign: 'center',
                 color: '#333',
+                whiteSpace: 'normal',
+                wordWrap: 'break-word',
+                lineHeight: '1.3',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
-              title="Double-click to edit label"
+              title={editLabel || 'Double-click to edit label'}
             >
               {editLabel || '(click to add label)'}
             </div>

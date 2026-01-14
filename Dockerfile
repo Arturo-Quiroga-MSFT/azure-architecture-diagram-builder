@@ -26,15 +26,19 @@ ENV VITE_AZURE_OPENAI_DEPLOYMENT=$VITE_AZURE_OPENAI_DEPLOYMENT
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM node:18-alpine
 
-# Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Expose port 80
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/server ./server
+
+ENV NODE_ENV=production
+ENV PORT=80
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server/index.js"]

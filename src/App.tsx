@@ -15,7 +15,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -54,6 +54,17 @@ const nodeTypes = {
 const edgeTypes = {
   editableEdge: EditableEdge,
 };
+
+type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json';
+
+type ExportHistoryItem = {
+  id: string;
+  kind: ExportHistoryKind;
+  fileName: string;
+  createdAt: number;
+};
+
+const EXPORT_HISTORY_STORAGE_KEY = 'azure-diagram-builder.exportHistory.v1';
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -101,11 +112,70 @@ function App() {
   const [layoutEdgeStyle, setLayoutEdgeStyle] = useState<LayoutEdgeStyle>('smooth');
   const [layoutEmphasizePrimaryPath, setLayoutEmphasizePrimaryPath] = useState(false);
   
+  const [isBulkSelectMenuOpen, setIsBulkSelectMenuOpen] = useState(false);
+  const bulkSelectMenuRef = useRef<HTMLDivElement | null>(null);
+  
+  const [isStylePresetMenuOpen, setIsStylePresetMenuOpen] = useState(false);
+  const stylePresetMenuRef = useRef<HTMLDivElement | null>(null);
+  const [stylePreset, setStylePreset] = useState<'detailed' | 'minimal' | 'presentation'>('detailed');
+
+  const [sharedDiagramId, setSharedDiagramId] = useState<string | null>(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('diagram');
+    } catch {
+      return null;
+    }
+  });
+  const [isSharingDiagram, setIsSharingDiagram] = useState(false);
+  const [isLoadingSharedDiagram, setIsLoadingSharedDiagram] = useState(false);
+  const loadedSharedDiagramIdRef = useRef<string | null>(null);
+
+  const [exportHistory, setExportHistory] = useState<ExportHistoryItem[]>(() => {
+    try {
+      const raw = localStorage.getItem(EXPORT_HISTORY_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter((v) => v && typeof v === 'object')
+        .slice(0, 25) as ExportHistoryItem[];
+    } catch {
+      return [];
+    }
+  });
+  
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    try {
+      localStorage.setItem(EXPORT_HISTORY_STORAGE_KEY, JSON.stringify(exportHistory.slice(0, 25)));
+    } catch {
+      // ignore
+    }
+  }, [exportHistory]);
+
+  const recordExport = useCallback((kind: ExportHistoryKind, fileName: string) => {
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const item: ExportHistoryItem = { id, kind, fileName, createdAt: Date.now() };
+    setExportHistory((prev) => [item, ...prev].slice(0, 25));
+  }, []);
+
+  const formatTimeAgo = useCallback((ts: number) => {
+    const diffMs = Date.now() - ts;
+    const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+    if (diffSec < 10) return 'just now';
+    if (diffSec < 60) return `${diffSec}s ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  }, []);
+
+  useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen) return;
+      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen) return;
       const target = e.target as unknown as globalThis.Node | null;
       if (!target) return;
 
@@ -116,13 +186,23 @@ function App() {
       if (isLayoutMenuOpen && layoutMenuRef.current && !layoutMenuRef.current.contains(target)) {
         setIsLayoutMenuOpen(false);
       }
+
+      if (isBulkSelectMenuOpen && bulkSelectMenuRef.current && !bulkSelectMenuRef.current.contains(target)) {
+        setIsBulkSelectMenuOpen(false);
+      }
+
+      if (isStylePresetMenuOpen && stylePresetMenuRef.current && !stylePresetMenuRef.current.contains(target)) {
+        setIsStylePresetMenuOpen(false);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen) return;
+      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen) return;
       if (e.key === 'Escape') {
         setIsExportMenuOpen(false);
         setIsLayoutMenuOpen(false);
+        setIsBulkSelectMenuOpen(false);
+        setIsStylePresetMenuOpen(false);
       }
     };
 
@@ -132,7 +212,78 @@ function App() {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isExportMenuOpen, isLayoutMenuOpen]);
+  }, [isExportMenuOpen, isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen]);
+
+  // Keyboard shortcuts: Delete and Ctrl+D (duplicate)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      // Delete key - remove selected nodes and edges
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const selectedNodes = nodes.filter(n => n.selected);
+        const selectedEdges = edges.filter(e => e.selected);
+        
+        if (selectedNodes.length > 0 || selectedEdges.length > 0) {
+          e.preventDefault();
+          
+          // Remove selected nodes
+          if (selectedNodes.length > 0) {
+            const nodeIdsToRemove = selectedNodes.map(n => n.id);
+            setNodes(nds => nds.filter(n => !nodeIdsToRemove.includes(n.id)));
+            
+            // Also remove edges connected to deleted nodes
+            setEdges(eds => eds.filter(edge => 
+              !nodeIdsToRemove.includes(edge.source) && !nodeIdsToRemove.includes(edge.target)
+            ));
+          }
+          
+          // Remove selected edges
+          if (selectedEdges.length > 0) {
+            const edgeIdsToRemove = selectedEdges.map(e => e.id);
+            setEdges(eds => eds.filter(e => !edgeIdsToRemove.includes(e.id)));
+          }
+        }
+      }
+
+      // Ctrl+D or Cmd+D - duplicate selected nodes
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        const selectedNodes = nodes.filter(n => n.selected);
+        
+        if (selectedNodes.length > 0) {
+          e.preventDefault();
+          
+          const duplicatedNodes = selectedNodes.map(node => {
+            const newId = `${Date.now()}-${Math.random()}`;
+            return {
+              ...node,
+              id: newId,
+              position: {
+                x: node.position.x + 50, // Offset by 50px
+                y: node.position.y + 50,
+              },
+              selected: true, // Select the new nodes
+            };
+          });
+          
+          // Deselect original nodes
+          setNodes(nds => [
+            ...nds.map(n => ({ ...n, selected: false })),
+            ...duplicatedNodes
+          ]);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [nodes, edges, setNodes, setEdges]);
 
   // Keep edge rendering style in sync even without re-layout.
   useEffect(() => {
@@ -278,6 +429,95 @@ function App() {
     }, eds)),
     [setEdges, handleEdgeLabelChange, layoutEdgeStyle]
   );
+
+  // Bulk select operations
+  const selectAllNodesOfType = useCallback((serviceType: string) => {
+    setNodes((nds) => 
+      nds.map(node => ({
+        ...node,
+        selected: node.type === 'azureNode' && node.data.label === serviceType
+      }))
+    );
+    setIsBulkSelectMenuOpen(false);
+  }, [setNodes]);
+
+  const selectAllNodes = useCallback(() => {
+    setNodes((nds) => nds.map(node => ({ ...node, selected: true })));
+    setIsBulkSelectMenuOpen(false);
+  }, [setNodes]);
+
+  const deselectAll = useCallback(() => {
+    setNodes((nds) => nds.map(node => ({ ...node, selected: false })));
+    setEdges((eds) => eds.map(edge => ({ ...edge, selected: false })));
+    setIsBulkSelectMenuOpen(false);
+  }, [setNodes, setEdges]);
+
+  // Get unique service types from current diagram
+  const getServiceTypes = useCallback(() => {
+    const types = new Set<string>();
+    nodes.forEach((node) => {
+      if (node.type === 'azureNode' && node.data.label) {
+        types.add(node.data.label);
+      }
+    });
+    return Array.from(types).sort();
+  }, [nodes]);
+
+  // Style preset functions
+  const applyStylePreset = useCallback((preset: 'detailed' | 'minimal' | 'presentation') => {
+    setStylePreset(preset);
+
+    // Update nodes with style data
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          stylePreset: preset,
+        },
+      }))
+    );
+
+    // Update edges based on preset (non-destructive: don't wipe labels)
+    setEdges((eds) =>
+      eds.map((edge) => {
+        const nextStyle: any = { ...(edge.style ?? {}) };
+        const nextLabelStyle: any = { ...(edge.labelStyle ?? {}) };
+        const nextLabelBgStyle: any = { ...(edge.labelBgStyle ?? {}) };
+
+        switch (preset) {
+          case 'minimal':
+            nextStyle.strokeWidth = 1;
+            nextLabelStyle.opacity = 0;
+            nextLabelBgStyle.fillOpacity = 0;
+            nextLabelBgStyle.strokeWidth = 0;
+            break;
+          case 'presentation':
+            nextStyle.strokeWidth = 2;
+            nextLabelStyle.opacity = 1;
+            nextLabelBgStyle.fillOpacity = 0.95;
+            nextLabelBgStyle.strokeWidth = 1.5;
+            break;
+          case 'detailed':
+          default:
+            delete nextStyle.strokeWidth;
+            nextLabelStyle.opacity = 1;
+            nextLabelBgStyle.fillOpacity = 0.9;
+            nextLabelBgStyle.strokeWidth = 1.5;
+            break;
+        }
+
+        return {
+          ...edge,
+          style: nextStyle,
+          labelStyle: nextLabelStyle,
+          labelBgStyle: nextLabelBgStyle,
+        };
+      })
+    );
+
+    setIsStylePresetMenuOpen(false);
+  }, [setEdges, setNodes]);
 
   const applyLayout = useCallback(() => {
     const selectedAzureNodeId = nodes.find((n) => n.type === 'azureNode' && (n as any).selected)?.id;
@@ -502,10 +742,12 @@ function App() {
           if (blob) {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.download = `azure-diagram-${Date.now()}.png`;
+            const fileName = `azure-diagram-${Date.now()}.png`;
+            link.download = fileName;
             link.href = url;
             link.click();
             URL.revokeObjectURL(url);
+            recordExport('png', fileName);
           }
         });
       } catch (err) {
@@ -513,7 +755,7 @@ function App() {
         alert('Failed to export diagram. Please try again.');
       }
     }, 800);
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, recordExport]);
 
   const exportAsSvg = useCallback(async () => {
     if (!reactFlowWrapper.current || !reactFlowInstance) {
@@ -562,26 +804,37 @@ function App() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `azure-diagram-${Date.now()}.svg`;
+        const fileName = `azure-diagram-${Date.now()}.svg`;
+        link.download = fileName;
         link.click();
         URL.revokeObjectURL(url);
+        recordExport('svg', fileName);
       } catch (err) {
         console.error('Error exporting SVG:', err);
         alert('Failed to export SVG. Please try again.');
       }
     }, 800);
-  }, [reactFlowInstance]);
+  }, [reactFlowInstance, recordExport]);
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
-    const dataStr = JSON.stringify(flow, null, 2);
+    const diagramData = {
+      ...flow,
+      metadata: {
+        ...titleBlockData,
+        savedAt: new Date().toISOString(),
+      },
+    };
+    const dataStr = JSON.stringify(diagramData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
     
     const link = document.createElement('a');
     link.setAttribute('href', dataUri);
-    link.setAttribute('download', `azure-diagram-${Date.now()}.json`);
+    const fileName = `azure-diagram-${Date.now()}.json`;
+    link.setAttribute('download', fileName);
     link.click();
-  }, [reactFlowInstance]);
+    recordExport('json', fileName);
+  }, [reactFlowInstance, recordExport, titleBlockData]);
 
   const exportCostBreakdown = useCallback(() => {
     // Calculate the cost breakdown
@@ -599,10 +852,116 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `azure-cost-breakdown-${Date.now()}.csv`;
+    const fileName = `azure-cost-breakdown-${Date.now()}.csv`;
+    link.download = fileName;
     link.click();
     URL.revokeObjectURL(url);
-  }, [nodes]);
+    recordExport('costs', fileName);
+  }, [nodes, recordExport]);
+
+  const applyFlowObject = useCallback(
+    (flow: any) => {
+      if (!flow || typeof flow !== 'object') {
+        throw new Error('Invalid diagram payload');
+      }
+
+      if (flow.nodes) setNodes(flow.nodes || []);
+      if (flow.edges) setEdges(flow.edges || []);
+
+      if (flow.viewport && reactFlowInstance?.setViewport) {
+        reactFlowInstance.setViewport(flow.viewport);
+      }
+
+      // Restore metadata if present
+      if (flow.metadata && typeof flow.metadata === 'object') {
+        setTitleBlockData({
+          architectureName: flow.metadata.architectureName || 'Untitled Architecture',
+          author: flow.metadata.author || 'Azure Architect',
+          version: flow.metadata.version || '1.0',
+          date: flow.metadata.date || new Date().toLocaleDateString(),
+        });
+      }
+    },
+    [setNodes, setEdges, reactFlowInstance]
+  );
+
+  useEffect(() => {
+    if (!sharedDiagramId) return;
+    if (!reactFlowInstance) return;
+    if (loadedSharedDiagramIdRef.current === sharedDiagramId) return;
+
+    loadedSharedDiagramIdRef.current = sharedDiagramId;
+    setIsLoadingSharedDiagram(true);
+
+    (async () => {
+      try {
+        const resp = await fetch(`/api/diagrams/${encodeURIComponent(sharedDiagramId)}`);
+        if (!resp.ok) {
+          throw new Error(`Failed to load shared diagram (${resp.status})`);
+        }
+        const doc = await resp.json();
+        const flow = doc?.flow ?? doc;
+        applyFlowObject(flow);
+      } catch (e) {
+        console.error('Failed to load shared diagram:', e);
+        alert('Failed to load shared diagram link.');
+      } finally {
+        setIsLoadingSharedDiagram(false);
+      }
+    })();
+  }, [sharedDiagramId, reactFlowInstance, applyFlowObject]);
+
+  const shareDiagram = useCallback(async () => {
+    if (!reactFlowInstance) return;
+
+    setIsSharingDiagram(true);
+    try {
+      const flow = reactFlowInstance.toObject();
+      const resp = await fetch('/api/diagrams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          flow: {
+            ...flow,
+            metadata: {
+              ...titleBlockData,
+              savedAt: new Date().toISOString(),
+            },
+          },
+          title: titleBlockData.architectureName,
+        }),
+      });
+
+      if (!resp.ok) {
+        throw new Error(`Failed to save (${resp.status})`);
+      }
+
+      const json = await resp.json();
+      const id = String(json?.id || '').trim();
+      if (!id) throw new Error('Missing id from backend');
+
+      // Update URL (without reload) and copy share link.
+      loadedSharedDiagramIdRef.current = id;
+      setSharedDiagramId(id);
+
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set('diagram', id);
+      window.history.replaceState(null, '', nextUrl.toString());
+
+      const shareUrl = `${window.location.origin}${window.location.pathname}?diagram=${encodeURIComponent(id)}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Share link copied to clipboard.');
+      } catch {
+        alert(`Share link:\n${shareUrl}`);
+      }
+    } catch (e) {
+      console.error('Failed to share diagram:', e);
+      alert('Failed to share diagram. Is the backend running?');
+    } finally {
+      setIsSharingDiagram(false);
+    }
+  }, [reactFlowInstance, titleBlockData.architectureName]);
 
   const loadDiagram = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -612,18 +971,14 @@ function App() {
     reader.onload = (e) => {
       try {
         const flow = JSON.parse(e.target?.result as string);
-        if (flow.nodes) setNodes(flow.nodes || []);
-        if (flow.edges) setEdges(flow.edges || []);
-        if (flow.viewport && reactFlowInstance) {
-          reactFlowInstance.setViewport(flow.viewport);
-        }
+        applyFlowObject(flow);
       } catch (error) {
         console.error('Error loading diagram:', error);
         alert('Error loading diagram file');
       }
     };
     reader.readAsText(file);
-  }, [setNodes, setEdges, reactFlowInstance]);
+  }, [applyFlowObject]);
 
   const handleAIGenerate = useCallback(async (architecture: any, prompt: string) => {
     try {
@@ -1283,6 +1638,15 @@ function App() {
                 <Save size={18} />
                 Save
               </button>
+              <button
+                onClick={shareDiagram}
+                className="btn btn-secondary"
+                title={isLoadingSharedDiagram ? 'Loading shared diagram…' : 'Save to cloud and copy shareable URL'}
+                disabled={isSharingDiagram || isLoadingSharedDiagram}
+              >
+                <Link size={18} />
+                {isSharingDiagram ? 'Sharing…' : 'Share'}
+              </button>
               <label className="btn btn-secondary" title="Load diagram">
                 <Upload size={18} />
                 Load
@@ -1454,6 +1818,153 @@ function App() {
                       <DollarSign size={18} />
                       Export Costs
                     </button>
+
+                    <div className="toolbar-dropdown-separator" role="separator" />
+
+                    <div className="toolbar-dropdown-heading">Recent exports</div>
+                    {exportHistory.length === 0 ? (
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
+                    ) : (
+                      <div className="toolbar-dropdown-history">
+                        {exportHistory.slice(0, 6).map((item) => (
+                          <div key={item.id} className="toolbar-dropdown-history-item">
+                            <div className="toolbar-dropdown-history-file">{item.fileName}</div>
+                            <div className="toolbar-dropdown-history-meta">
+                              {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="toolbar-group">
+              <div className="toolbar-dropdown" ref={bulkSelectMenuRef}>
+                <button
+                  onClick={() => setIsBulkSelectMenuOpen((v) => !v)}
+                  className="btn btn-secondary"
+                  title="Bulk select operations"
+                  aria-haspopup="menu"
+                  aria-expanded={isBulkSelectMenuOpen}
+                  disabled={nodes.length === 0}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                  </svg>
+                  Select
+                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                </button>
+
+                {isBulkSelectMenuOpen && (
+                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Bulk select options">
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={selectAllNodes}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                      Select All Nodes
+                    </button>
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={deselectAll}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                      </svg>
+                      Deselect All
+                    </button>
+                    
+                    {getServiceTypes().length > 0 && (
+                      <>
+                        <div className="toolbar-dropdown-separator" role="separator" />
+                        <div className="toolbar-dropdown-heading">Select by Service Type</div>
+                        {getServiceTypes().map(serviceType => (
+                          <button
+                            key={serviceType}
+                            className="toolbar-dropdown-item"
+                            role="menuitem"
+                            onClick={() => selectAllNodesOfType(serviceType)}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" rx="2" />
+                            </svg>
+                            {serviceType}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="toolbar-group">
+              <div className="toolbar-dropdown" ref={stylePresetMenuRef}>
+                <button
+                  onClick={() => setIsStylePresetMenuOpen((v) => !v)}
+                  className="btn btn-secondary"
+                  title="Change diagram style"
+                  aria-haspopup="menu"
+                  aria-expanded={isStylePresetMenuOpen}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                  </svg>
+                  Style
+                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                </button>
+
+                {isStylePresetMenuOpen && (
+                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Style preset options">
+                    <div className="toolbar-dropdown-heading">Visual Style</div>
+                    <button
+                      className={`toolbar-dropdown-item ${stylePreset === 'detailed' ? 'active' : ''}`}
+                      role="menuitem"
+                      onClick={() => applyStylePreset('detailed')}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <path d="M3 9h18M3 15h18M9 3v18" />
+                      </svg>
+                      Detailed (Default)
+                    </button>
+                    <button
+                      className={`toolbar-dropdown-item ${stylePreset === 'minimal' ? 'active' : ''}`}
+                      role="menuitem"
+                      onClick={() => applyStylePreset('minimal')}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                      </svg>
+                      Minimal (Clean)
+                    </button>
+                    <button
+                      className={`toolbar-dropdown-item ${stylePreset === 'presentation' ? 'active' : ''}`}
+                      role="menuitem"
+                      onClick={() => applyStylePreset('presentation')}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <path d="M8 21h8M12 17v4" />
+                      </svg>
+                      Presentation (Professional)
+                    </button>
+                    <div className="toolbar-dropdown-separator" role="separator" />
+                    <div className="toolbar-dropdown-hint">
+                      {stylePreset === 'detailed' && 'Shows all labels, pricing, and details'}
+                      {stylePreset === 'minimal' && 'Hides labels and pricing for cleaner view'}
+                      {stylePreset === 'presentation' && 'Professional look with bold connections'}
+                    </div>
                   </div>
                 )}
               </div>
