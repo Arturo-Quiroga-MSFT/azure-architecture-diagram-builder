@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
-import { Zap } from 'lucide-react';
+import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
+import { Zap, Unlink } from 'lucide-react';
 import { loadIcon } from '../utils/iconLoader';
 import { NodePricingConfig } from '../types/pricing';
 import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
@@ -31,10 +31,16 @@ const getCategoryColor = (category: string): string => {
   return colorMap[normalizedCategory] || '#6b7280'; // Default gray
 };
 
-const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
+const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id, parentNode }) => {
   const [iconUrl, setIconUrl] = useState<string>('');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [label, setLabel] = useState(data.label || 'Azure Service');
+  const { setNodes } = useReactFlow();
+
+  // Debug: Check if parentNode prop is being received
+  useEffect(() => {
+    console.log('AzureNode render:', { id, label, parentNode, selected });
+  }, [id, label, parentNode, selected]);
 
   // Extract pricing data
   const pricing = data.pricing as NodePricingConfig | undefined;
@@ -73,6 +79,40 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
     }
   };
 
+  const handleUngroup = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === id && node.parentNode) {
+        // Find the parent group to get its absolute position
+        const parentGroup = nds.find(n => n.id === node.parentNode);
+        
+        if (parentGroup) {
+          // Convert from parent-relative to absolute canvas coordinates
+          const absolutePosition = {
+            x: parentGroup.position.x + node.position.x,
+            y: parentGroup.position.y + node.position.y,
+          };
+          
+          return {
+            ...node,
+            parentNode: undefined,
+            position: absolutePosition,
+            extent: undefined,
+          };
+        }
+        
+        // Fallback: just remove parent if parent not found
+        return {
+          ...node,
+          parentNode: undefined,
+          extent: undefined,
+        };
+      }
+      return node;
+    }));
+  };
+
   const categoryColor = getCategoryColor(data.category);
   const borderStyle = {
     borderLeft: `6px solid ${categoryColor}`,
@@ -83,6 +123,15 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
 
   return (
     <div className={`azure-node ${selected ? 'selected' : ''}`} style={borderStyle}>
+      {parentNode && selected && (
+        <button
+          className="ungroup-button"
+          onClick={handleUngroup}
+          title="Remove from group (you can then drag into another group)"
+        >
+          <Unlink size={14} />
+        </button>
+      )}
       <Handle
         type="target"
         position={Position.Top}
@@ -166,6 +215,16 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected }) => {
         isConnectable={true}
       />
     </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison for memo - re-render if these props change
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.parentNode === nextProps.parentNode &&
+    prevProps.data.label === nextProps.data.label &&
+    prevProps.data.iconPath === nextProps.data.iconPath &&
+    JSON.stringify(prevProps.data.pricing) === JSON.stringify(nextProps.data.pricing)
   );
 });
 

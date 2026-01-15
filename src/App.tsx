@@ -70,7 +70,7 @@ type ExportHistoryItem = {
 const EXPORT_HISTORY_STORAGE_KEY = 'azure-diagram-builder.exportHistory.v1';
 
 function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [nodes, setNodes, onNodesChangeBase] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [architecturePrompt, setArchitecturePrompt] = useState<string>('');
   const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
@@ -78,6 +78,13 @@ function App() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isUploadingARM, setIsUploadingARM] = useState(false);
   const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  
+  const onNodesChange = useCallback((changes: any[]) => {
+    onNodesChangeBase(changes);
+  }, [onNodesChangeBase]);
+
+  
   const [workflow, setWorkflow] = useState<any[]>([]);
   // const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
@@ -317,7 +324,6 @@ function App() {
     };
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes]);
-  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
   // Apply dark mode class to body and persist preference
   useEffect(() => {
@@ -668,6 +674,76 @@ function App() {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
+
+  // Remove node from its parent group
+  const ungroupNode = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === nodeId && node.parentNode) {
+        // Find the parent group to get its absolute position
+        const parentGroup = nds.find(n => n.id === node.parentNode);
+        
+        if (parentGroup) {
+          // Convert from parent-relative to absolute canvas coordinates
+          const absolutePosition = {
+            x: parentGroup.position.x + node.position.x,
+            y: parentGroup.position.y + node.position.y,
+          };
+          
+          return {
+            ...node,
+            parentNode: undefined,
+            position: absolutePosition,
+            // Remove extent constraint when ungrouping
+            extent: undefined,
+          };
+        }
+        
+        // Fallback: just remove parent if parent not found
+        return {
+          ...node,
+          parentNode: undefined,
+          extent: undefined,
+        };
+      }
+      return node;
+    }));
+  }, []);
+
+  // Handle node deletion - convert child nodes to absolute positions when parent group is deleted
+  const onNodesDelete = useCallback((deleted: any[]) => {
+    const deletedGroupIds = deleted.filter(n => n.type === 'groupNode').map(n => n.id);
+    
+    if (deletedGroupIds.length > 0) {
+      setNodes((nds) => nds.map((node) => {
+        // If this node's parent is being deleted, convert to absolute position
+        if (node.parentNode && deletedGroupIds.includes(node.parentNode)) {
+          const parentGroup = deleted.find(n => n.id === node.parentNode);
+          
+          if (parentGroup) {
+            // Convert from parent-relative to absolute canvas coordinates
+            const absolutePosition = {
+              x: parentGroup.position.x + node.position.x,
+              y: parentGroup.position.y + node.position.y,
+            };
+            
+            return {
+              ...node,
+              parentNode: undefined,
+              position: absolutePosition,
+              extent: undefined,
+            };
+          }
+
+          return {
+            ...node,
+            parentNode: undefined,
+            extent: undefined,
+          };
+        }
+        return node;
+      }));
+    }
+  }, [setNodes]);
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
@@ -1282,12 +1358,14 @@ function App() {
     // LAYOUT ENGINE: Calculate optimal positions using Dagre algorithm
     // ============================================================================
     console.log('📐 Calculating layout with Dagre algorithm...');
+    console.log('📦 Groups before layout:', groups);
     const { services: positionedServices, groups: positionedGroups } = layoutArchitecture(
       services,
       connections,
       groups || [],
       { direction: 'LR' } // Left-to-right data flow
     );
+    console.log('📦 Positioned groups after layout:', positionedGroups);
 
     // Create group nodes with calculated positions and sizes
     if (positionedGroups && positionedGroups.length > 0) {
@@ -1297,7 +1375,7 @@ function App() {
           type: 'groupNode',
           position: group.position,
           data: {
-            label: group.label,
+            label: group.label || group.id || 'Unnamed Group',
           },
           style: {
             width: group.width,
@@ -2194,6 +2272,7 @@ function App() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            onNodesDelete={onNodesDelete}
             onConnect={onConnect}
             onReconnect={onReconnect}
             onEdgeContextMenu={onEdgeContextMenu}
