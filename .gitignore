@@ -31,3 +31,5 @@ dist-ssr
 # Python virtual environment
 .venv
 __pycache__
+SHARE-WITH-TEAM.md
+app-screenshot.png
