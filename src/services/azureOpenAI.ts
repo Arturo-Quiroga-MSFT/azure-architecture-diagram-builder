@@ -9,50 +9,80 @@ async function callAzureOpenAI(messages: any[]): Promise<string> {
     throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
   }
 
-  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-08-01-preview`;
+  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    },
-    body: JSON.stringify({
-      messages,
-      max_completion_tokens: 6000,
-      response_format: { type: 'json_object' },
-    }),
-  });
+  // Add timeout for large requests (5 minutes for regenerations)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000);
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.error('Azure OpenAI API error:', response.status, error);
-    if (response.status === 401) {
-      throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify({
+        messages,
+        max_completion_tokens: 10000,  // Increased for regeneration with recommendations
+        response_format: { type: 'json_object' },
+        // Enable reasoning effort for better architecture design
+        // Chat Completions API uses flat 'reasoning_effort' parameter
+        reasoning_effort: import.meta.env.VITE_REASONING_EFFORT || 'medium'
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Azure OpenAI API error:', response.status, error);
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
+      }
+      if (response.status === 404) {
+        throw new Error('Deployment not found. Please check your model deployment name.');
+      }
+      throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
     }
-    if (response.status === 404) {
-      throw new Error('Deployment not found. Please check your model deployment name.');
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content || '';
+    
+    if (!content || content.trim().length === 0) {
+      throw new Error('Empty response from Azure OpenAI. The request may have been too large or complex. Try reducing recommendations or using lower reasoning effort.');
     }
-    throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
+    
+    console.log('API Response length:', content.length, 'chars');
+    return content;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out after 5 minutes. The request may be too complex. Consider simplifying the architecture or reducing the number of recommendations.');
+    }
+    
+    throw error;
   }
-
-  const data = await response.json();
-  const content = data.choices[0]?.message?.content || '';
-  console.log('API Response length:', content.length, 'chars');
-  return content;
 }
 
-export async function generateArchitectureWithAI(description: string) {
-  // Find similar reference architectures for context
-  const similarArchitectures = await findSimilarArchitectures(description, 3);
-  
+export async function generateArchitectureWithAI(description: string, skipReferenceArchitectures: boolean = false) {
+  // Skip loading reference architectures for regenerations (they already have an architecture)
   let contextPrompt = '';
-  if (similarArchitectures.length > 0) {
-    contextPrompt = `\n\nREFERENCE EXAMPLES (for inspiration and validation):\n${
-      similarArchitectures.map((arch, i) => 
-        `${i + 1}. ${arch.name}: ${arch.description}\n   Services: ${arch.services.join(', ')}`
-      ).join('\n\n')
-    }\n\nUse these examples as inspiration but create a solution specific to the user's requirements.`;
+  let similarArchitectures: any[] = [];
+  
+  if (!skipReferenceArchitectures) {
+    // Find similar reference architectures for context (only for new generations)
+    similarArchitectures = await findSimilarArchitectures(description, 3);
+    
+    if (similarArchitectures.length > 0) {
+      contextPrompt = `\n\nREFERENCE EXAMPLES (for inspiration and validation):\n${
+        similarArchitectures.map((arch, i) => 
+          `${i + 1}. ${arch.name}: ${arch.description}\n   Services: ${arch.services.join(', ')}`
+        ).join('\n\n')
+      }\n\nUse these examples as inspiration but create a solution specific to the user's requirements.`;
+    }
   }
 
   const systemPrompt = `You are an expert Azure cloud architect. Your task is to analyze architecture requirements and return a JSON specification for an Azure architecture diagram with logical groupings.

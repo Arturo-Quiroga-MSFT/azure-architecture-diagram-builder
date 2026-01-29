@@ -2518,9 +2518,9 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           console.log('🔄 Regenerating architecture with recommendations...');
           console.log('📋 Prompt:', regenerationPrompt);
           
-          // Call Azure OpenAI to regenerate
+          // Call Azure OpenAI to regenerate (skip reference architectures for speed)
           try {
-            const improvedArchitecture = await generateArchitectureWithAI(regenerationPrompt);
+            const improvedArchitecture = await generateArchitectureWithAI(regenerationPrompt, true);
             
             if (improvedArchitecture) {
               // Detect newly added services
