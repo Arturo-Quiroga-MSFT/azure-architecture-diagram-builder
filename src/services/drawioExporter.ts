@@ -196,8 +196,8 @@ function createEdgeCell(
   const edgeType = edge.data?.connectionType || edge.type || 'sync';
   const dashStyle = getEdgeStyle(edgeType);
   
-  // Edge style with arrows
-  const style = `edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;`;
+  // Edge style with arrows - using curved=1 for smooth bezier curves (like React Flow)
+  const style = `curved=1;rounded=1;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;`;
   
   const labelAttr = label ? ` value="${escapeXml(String(label))}"` : ' value=""';
   
