@@ -42,7 +42,8 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     "A content moderation system for social media using Computer Vision to scan images, Language for text analysis and content safety checks, Azure OpenAI for context understanding, with real-time processing via Event Hubs and results stored in SQL Database with API Management exposing moderation APIs",
     "A multiplayer gaming backend with real-time communication, player matchmaking, leaderboards, and game asset delivery via CDN",
     "An e-commerce platform with product catalog, shopping cart, order processing, payment integration, and inventory management",
-    "A healthcare data platform with FHIR API for patient records, medical imaging storage, and health analytics with compliance logging"
+    "A healthcare data platform with FHIR API for patient records, medical imaging storage, and health analytics with compliance logging",
+    "An eventing architecture for healthcare imaging with high throughput (50,000-75,000 events/sec), large payloads up to 10MB, strict message ordering, cloud-to-on-prem bridging via VPN Gateway, managed services only (no self-managed Kafka), 99.99% availability SLO, supporting 250M studies, 2.5M daily volume, 5M daily notifications, with Event Hubs for ingestion, Service Bus for routing, Azure Functions for processing, Cosmos DB for metadata, Blob Storage for images, and Log Analytics for monitoring"
   ];
 
   const handleGenerate = async () => {
