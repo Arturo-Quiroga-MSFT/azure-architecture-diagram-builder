@@ -41,6 +41,7 @@ import { validateArchitecture, ArchitectureValidation } from './services/archite
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
+import { exportAndDownloadDrawio } from './services/drawioExporter';
 import {
   applyLayoutPreset,
   type LayoutPreset,
@@ -58,7 +59,7 @@ const edgeTypes = {
   editableEdge: EditableEdge,
 };
 
-type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json';
+type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json' | 'drawio';
 
 type ExportHistoryItem = {
   id: string;
@@ -929,6 +930,17 @@ function App() {
       }
     }, 800);
   }, [reactFlowInstance, recordExport]);
+
+  const exportAsDrawio = useCallback(() => {
+    try {
+      const diagramName = titleBlockData.name || 'Azure Architecture';
+      const fileName = exportAndDownloadDrawio(nodes, edges, diagramName);
+      recordExport('drawio', fileName);
+    } catch (err) {
+      console.error('Error exporting Draw.io:', err);
+      alert('Failed to export Draw.io file. Please try again.');
+    }
+  }, [nodes, edges, titleBlockData.name, recordExport]);
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
@@ -2183,6 +2195,18 @@ function App() {
                     >
                       <Download size={18} />
                       Export SVG
+                    </button>
+                    <button
+                      className="toolbar-dropdown-item"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        exportAsDrawio();
+                      }}
+                      title="Export for Draw.io / diagrams.net (editable format)"
+                    >
+                      <Download size={18} />
+                      Export Draw.io
                     </button>
                     <div className="toolbar-dropdown-separator" role="separator" />
                     <button
