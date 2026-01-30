@@ -201,7 +201,7 @@ function createEdgeCell(
   // - labelBackgroundColor adds a white box behind the label
   // - labelBorderColor adds a border around the label box
   const labelBoxStyle = label 
-    ? 'labelBackgroundColor=#ffffff;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;' 
+    ? 'labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;' 
     : '';
   const style = `edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;${labelBoxStyle}`;
   
