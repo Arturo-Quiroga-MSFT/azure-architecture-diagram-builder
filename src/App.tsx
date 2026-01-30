@@ -676,8 +676,10 @@ function App() {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  // Remove node from its parent group
-  const ungroupNode = useCallback((nodeId: string) => {
+  // Remove node from its parent group (reserved for future context menu feature)
+  // @ts-ignore - Reserved for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _ungroupNode = useCallback((nodeId: string) => {
     setNodes((nds) => nds.map((node) => {
       if (node.id === nodeId && node.parentNode) {
         // Find the parent group to get its absolute position
@@ -933,14 +935,14 @@ function App() {
 
   const exportAsDrawio = useCallback(() => {
     try {
-      const diagramName = titleBlockData.name || 'Azure Architecture';
+      const diagramName = titleBlockData.architectureName || 'Azure Architecture';
       const fileName = exportAndDownloadDrawio(nodes, edges, diagramName);
       recordExport('drawio', fileName);
     } catch (err) {
       console.error('Error exporting Draw.io:', err);
       alert('Failed to export Draw.io file. Please try again.');
     }
-  }, [nodes, edges, titleBlockData.name, recordExport]);
+  }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
