@@ -196,8 +196,14 @@ function createEdgeCell(
   const edgeType = edge.data?.connectionType || edge.type || 'sync';
   const dashStyle = getEdgeStyle(edgeType);
   
-  // Edge style with arrows - using curved=1 for smooth bezier curves (like React Flow)
-  const style = `curved=1;rounded=1;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;`;
+  // Edge style with smooth curves and boxed labels (like React Flow)
+  // - edgeStyle=orthogonalEdgeStyle with curved=1 creates smooth rounded orthogonal paths
+  // - labelBackgroundColor adds a white box behind the label
+  // - labelBorderColor adds a border around the label box
+  const labelBoxStyle = label 
+    ? 'labelBackgroundColor=#ffffff;labelBorderColor=#d1d5db;labelPadding=4;fontSize=11;' 
+    : '';
+  const style = `edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;${labelBoxStyle}`;
   
   const labelAttr = label ? ` value="${escapeXml(String(label))}"` : ' value=""';
   
