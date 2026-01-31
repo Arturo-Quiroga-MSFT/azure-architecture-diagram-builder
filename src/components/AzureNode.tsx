@@ -31,11 +31,14 @@ const getCategoryColor = (category: string): string => {
   return colorMap[normalizedCategory] || '#6b7280'; // Default gray
 };
 
-const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id, parentNode }) => {
+const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   const [iconUrl, setIconUrl] = useState<string>('');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [label, setLabel] = useState(data.label || 'Azure Service');
   const { setNodes } = useReactFlow();
+  
+  // Access parentNode from data (React Flow stores it there)
+  const parentNode = data.parentNode;
 
   // Debug: Check if parentNode prop is being received
   useEffect(() => {
@@ -221,7 +224,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id, parentNode })
   return (
     prevProps.id === nextProps.id &&
     prevProps.selected === nextProps.selected &&
-    prevProps.parentNode === nextProps.parentNode &&
+    prevProps.data.parentNode === nextProps.data.parentNode &&
     prevProps.data.label === nextProps.data.label &&
     prevProps.data.iconPath === nextProps.data.iconPath &&
     JSON.stringify(prevProps.data.pricing) === JSON.stringify(nextProps.data.pricing)

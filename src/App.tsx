@@ -677,7 +677,8 @@ function App() {
   }, []);
 
   // Remove node from its parent group
-  const ungroupNode = useCallback((nodeId: string) => {
+  // @ts-ignore - Reserved for future use in context menu
+  const _ungroupNode = useCallback((nodeId: string) => {
     setNodes((nds) => nds.map((node) => {
       if (node.id === nodeId && node.parentNode) {
         // Find the parent group to get its absolute position
@@ -933,14 +934,14 @@ function App() {
 
   const exportAsDrawio = useCallback(() => {
     try {
-      const diagramName = titleBlockData.name || 'Azure Architecture';
+      const diagramName = titleBlockData.architectureName || 'Azure Architecture';
       const fileName = exportAndDownloadDrawio(nodes, edges, diagramName);
       recordExport('drawio', fileName);
     } catch (err) {
       console.error('Error exporting Draw.io:', err);
       alert('Failed to export Draw.io file. Please try again.');
     }
-  }, [nodes, edges, titleBlockData.name, recordExport]);
+  }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
@@ -1419,40 +1420,11 @@ function App() {
     });
 
     // Helper function to determine best connection positions based on node positions
-    const getConnectionPositions = (sourceId: string, targetId: string, conn: any) => {
-      // If AI specified positions, use them (but validate they're valid)
-      if (conn.sourcePosition && conn.targetPosition) {
-        const validSourcePositions = ['right', 'bottom'];
-        const validTargetPositions = ['left', 'top'];
-        const sourcePos = validSourcePositions.includes(conn.sourcePosition) ? conn.sourcePosition : 'right';
-        const targetPos = validTargetPositions.includes(conn.targetPosition) ? conn.targetPosition : 'left';
-        return {
-          sourceHandle: sourcePos,
-          targetHandle: targetPos,
-        };
-      }
-
-      // Otherwise, intelligently determine based on node positions
-      const sourceNode = serviceMap.get(sourceId);
-      const targetNode = serviceMap.get(targetId);
-      
-      if (!sourceNode || !targetNode) {
-        return { sourceHandle: 'right', targetHandle: 'left' }; // Default
-      }
-
-      const dx = targetNode.position.x - sourceNode.position.x;
-      const dy = targetNode.position.y - sourceNode.position.y;
-      
-      // Determine primary direction based on larger delta
-      // Source handles can only be 'right' or 'bottom'
-      // Target handles can only be 'left' or 'top'
-      if (Math.abs(dx) > Math.abs(dy)) {
-        // Horizontal flow is dominant - use left/right
-        return { sourceHandle: 'right', targetHandle: 'left' };
-      } else {
-        // Vertical flow is dominant - use top/bottom
-        return { sourceHandle: 'bottom', targetHandle: 'top' };
-      }
+    // ALWAYS use horizontal flow (right → left) to avoid messy top/bottom connections
+    const getConnectionPositions = (_sourceId: string, _targetId: string, _conn: any) => {
+      // Always default to horizontal flow: source exits from right, target enters from left
+      // This creates cleaner, more readable diagrams that don't require manual edge adjustments
+      return { sourceHandle: 'right', targetHandle: 'left' };
     };
 
     // Function to determine arrow direction based on edge label

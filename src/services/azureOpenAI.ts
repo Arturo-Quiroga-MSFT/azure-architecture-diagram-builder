@@ -114,9 +114,7 @@ Return ONLY a valid JSON object (no markdown, no explanations) with this exact s
       "from": "service-id",
       "to": "service-id",
       "label": "connection description",
-      "type": "sync|async|optional",
-      "sourcePosition": "right|bottom|left|top (optional)",
-      "targetPosition": "top|left|right|bottom (optional)"
+      "type": "sync|async|optional"
     }
   ],
   "workflow": [
@@ -199,10 +197,7 @@ Rules:
    - Use for: authentication, authorization, SSO, user management, RBAC
 5. Create logical connections based on data flow
 6. Make group labels concise and descriptive
-7. Specify sourcePosition and targetPosition for connections to optimize layout:
-   - Use "right" and "left" for horizontal data flows
-   - Use "bottom" and "top" for vertical data flows
-   - Consider the logical flow direction when choosing positions
+7. Do NOT specify sourcePosition or targetPosition - the layout engine will use horizontal flow (right → left) automatically for cleaner diagrams
 8. Specify connection type for each connection:
    - "sync" (solid line) - Synchronous, request-response, real-time communication (HTTP, SQL queries)
    - "async" (dashed line) - Asynchronous, message-based, event-driven (queues, events, pub/sub)
