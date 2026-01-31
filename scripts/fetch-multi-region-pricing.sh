@@ -1,48 +1,123 @@
 #!/bin/bash
 
 # Fetch Azure pricing for multiple regions
-# Downloads pricing data for specified services across 3 regions
+# Downloads pricing data for specified services across 5 regions
+# Last updated: January 2026
 
-# Target regions
+# Target regions - 5 regions for the Azure Architecture Diagram Builder
 REGIONS=("eastus2" "swedencentral" "westeurope" "canadacentral" "brazilsouth")
 
-# Services to fetch (you can expand this list)
+# =============================================================================
+# COMPREHENSIVE SERVICE LIST - 62+ Services
+# =============================================================================
 SERVICES=(
+  # Compute
   "Azure App Service"
   "Virtual Machines"
-  "Azure Cosmos DB"
-  "Storage"
-  "SQL Database"
   "Azure Kubernetes Service"
   "Container Instances"
-  "Application Gateway"
-  "Azure Machine Learning"
+  "Container Registry"
+  "Functions"
+  "Logic Apps"
+  
+  # Databases
+  "Azure Cosmos DB"
+  "SQL Database"
   "Azure Database for PostgreSQL"
   "Azure Database for MySQL"
-  "Key Vault"
+  "Azure Cache for Redis"
+  "Redis Cache"
+  
+  # Storage
+  "Storage"
+  "Azure Data Lake Storage"
+  
+  # Networking
+  "Application Gateway"
+  "Azure Front Door Service"
+  "Azure Service Bus"
+  "Event Hubs"
+  "Azure Event Hubs"
+  "Service Bus"
+  
+  # Analytics
+  "Azure Data Factory"
+  "Azure Synapse Analytics"
+  "Stream Analytics"
+  "Azure Machine Learning"
+  
+  # AI & Cognitive Services
+  "Cognitive Services"
+  "Azure OpenAI Service"
+  "Azure AI Document Intelligence"
+  "Azure AI Language"
+  "Azure AI Speech"
+  "Azure AI Vision"
+  "Azure AI Translator"
+  "Computer Vision"
+  "Form Recognizer"
+  "Speech Services"
+  "Text Analytics"
+  "Translator"
+  "Foundry Models"
+  "Foundry Tools"
+  
+  # Monitoring & Management
   "Application Insights"
   "Azure Monitor"
   "Log Analytics"
+  "Key Vault"
+  "Azure Key Vault"
   "API Management"
-  "Functions"
-  "Logic Apps"
-  "Service Bus"
-  "Redis Cache"
-  "Azure Data Factory"
-  "Azure Synapse Analytics"
-  "Event Hubs"
-  "Stream Analytics"
-  "Container Registry"
-  "Foundry Models"
-  "Foundry Tools"
+  
+  # CDN & Edge
+  "Content Delivery Network"
+  "Azure CDN"
+  "CDN"
+  "Static Web Apps"
+  
+  # IoT
+  "Azure IoT Hub"
+  "Azure IoT Central"
+  
+  # Security
+  "Microsoft Defender for Cloud"
+  "Azure Sentinel"
+  
+  # Integration
+  "Azure SignalR Service"
+  "Notification Hubs"
+  "Event Grid"
+  "Azure Event Grid"
+  
+  # Backup & Recovery
+  "Backup"
+  "Azure Backup"
+  "Site Recovery"
+  
+  # Developer Tools
+  "Azure DevOps"
+  "Azure Automation"
+  
+  # Networking (Additional)
+  "VPN Gateway"
+  "Virtual Network"
+  "Load Balancer"
+  "Azure Load Balancer"
+  "Traffic Manager"
+  "Azure Traffic Manager"
+  "ExpressRoute"
+  "Network Watcher"
+  "Azure Firewall"
 )
 
-# Global services (no region-specific pricing)
+# Global services (no region-specific pricing - copy to all regions)
 GLOBAL_SERVICES=(
   "Azure Front Door Service"
   "Content Delivery Network"
   "CDN"
   "Static Web Apps"
+  "Azure DevOps"
 )
 
 # Output directory - use project structure
@@ -130,21 +205,30 @@ done
 # Fetch global services (only once, not per-region)
 if [ ${#GLOBAL_SERVICES[@]} -gt 0 ]; then
   echo ""
-  echo "=== Global Services ==="
+  echo "=== Global Services (copying to all regions) ==="
   
-  # Save to first region folder for now (they're global anyway)
-  global_dir="$OUTPUT_DIR/${REGIONS[0]}"
+  # Fetch once to temp file
+  temp_dir=$(mktemp -d)
   
   for service in "${GLOBAL_SERVICES[@]}"; do
     # Create safe filename
     safe_name=$(echo "$service" | tr ' ' '_' | tr '[:upper:]' '[:lower:]')
-    output_file="$global_dir/${safe_name}.json"
+    temp_file="$temp_dir/${safe_name}.json"
     
-    fetch_global_pricing "$service" "$output_file"
+    fetch_global_pricing "$service" "$temp_file"
+    
+    # Copy to all regions
+    for region in "${REGIONS[@]}"; do
+      region_dir="$OUTPUT_DIR/$region"
+      cp "$temp_file" "$region_dir/${safe_name}.json" 2>/dev/null
+    done
     
     # Small delay to avoid rate limiting
     sleep 0.5
   done
+  
+  # Cleanup temp dir
+  rm -rf "$temp_dir"
 fi
 
 echo ""
