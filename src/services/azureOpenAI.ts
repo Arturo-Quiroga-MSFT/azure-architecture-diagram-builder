@@ -1,5 +1,5 @@
 import { findSimilarArchitectures } from './referenceArchitectureService';
-import { getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -19,8 +19,8 @@ interface CallResult {
 }
 
 async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
-  // Get current model settings
-  const settings = getModelSettings();
+  // Get model settings for architecture generation (uses override if set)
+  const settings = getModelSettingsForFeature('architectureGeneration');
   const modelConfig = MODEL_CONFIG[settings.model];
   
   let deployment: string;

@@ -1,6 +1,7 @@
 /**
  * Model Settings Store
  * Manages AI model selection and reasoning effort preferences
+ * Supports per-feature model overrides for optimal results
  * Persists to localStorage for cross-session consistency
  */
 
@@ -9,16 +10,62 @@ import { useState, useEffect, useCallback } from 'react';
 export type ModelType = 'gpt-5.2' | 'gpt-4.1' | 'gpt-4.1-mini';
 export type ReasoningEffort = 'low' | 'medium' | 'high';
 
+/**
+ * Feature types that can have independent model settings
+ */
+export type FeatureType = 'architectureGeneration' | 'validation' | 'deploymentGuide';
+
+/**
+ * Per-feature model override settings
+ * When undefined, the feature uses the default model settings
+ */
+export interface FeatureModelOverride {
+  model: ModelType;
+  reasoningEffort?: ReasoningEffort; // Only used for reasoning models
+}
+
 export interface ModelSettings {
   model: ModelType;
   reasoningEffort: ReasoningEffort;
+  // Per-feature overrides (optional)
+  featureOverrides?: Partial<Record<FeatureType, FeatureModelOverride>>;
 }
 
 const STORAGE_KEY = 'azure-diagrams-model-settings';
 
 const DEFAULT_SETTINGS: ModelSettings = {
   model: 'gpt-5.2',
-  reasoningEffort: 'medium'
+  reasoningEffort: 'medium',
+  featureOverrides: {}
+};
+
+/**
+ * Feature display configuration
+ */
+export const FEATURE_CONFIG: Record<FeatureType, {
+  displayName: string;
+  description: string;
+  recommendedModel: ModelType;
+  recommendedReasoning?: ReasoningEffort;
+}> = {
+  architectureGeneration: {
+    displayName: 'Architecture Generation',
+    description: 'Creating Azure architecture diagrams',
+    recommendedModel: 'gpt-5.2',
+    recommendedReasoning: 'medium'
+  },
+  validation: {
+    displayName: 'Architecture Validation',
+    description: 'WAF validation and security analysis',
+    recommendedModel: 'gpt-5.2',
+    recommendedReasoning: 'low'
+  },
+  deploymentGuide: {
+    displayName: 'Deployment Guide & Bicep',
+    description: 'Generating deployment guides and IaC templates',
+    recommendedModel: 'gpt-5.2',
+    recommendedReasoning: 'medium'
+  }
 };
 
 /**
@@ -85,7 +132,8 @@ function loadSettings(): ModelSettings {
           model: parsed.model as ModelType,
           reasoningEffort: ['low', 'medium', 'high'].includes(parsed.reasoningEffort) 
             ? parsed.reasoningEffort 
-            : DEFAULT_SETTINGS.reasoningEffort
+            : DEFAULT_SETTINGS.reasoningEffort,
+          featureOverrides: parsed.featureOverrides || {}
         };
       }
     }
@@ -119,6 +167,55 @@ function notifyListeners() {
  */
 export function getModelSettings(): ModelSettings {
   return { ...currentSettings };
+}
+
+/**
+ * Get model settings for a specific feature
+ * Returns the feature-specific override if set, otherwise returns default settings
+ */
+export function getModelSettingsForFeature(feature: FeatureType): { model: ModelType; reasoningEffort: ReasoningEffort } {
+  const settings = getModelSettings();
+  const override = settings.featureOverrides?.[feature];
+  
+  if (override) {
+    const config = MODEL_CONFIG[override.model];
+    return {
+      model: override.model,
+      // For reasoning models, use override reasoning or fall back to default
+      // For non-reasoning models, reasoning effort doesn't matter but include it for consistency
+      reasoningEffort: config.isReasoning 
+        ? (override.reasoningEffort || settings.reasoningEffort)
+        : settings.reasoningEffort
+    };
+  }
+  
+  // No override, use default settings
+  return {
+    model: settings.model,
+    reasoningEffort: settings.reasoningEffort
+  };
+}
+
+/**
+ * Update feature-specific model override
+ */
+export function updateFeatureOverride(feature: FeatureType, override: FeatureModelOverride | null): void {
+  const newOverrides = { ...currentSettings.featureOverrides };
+  
+  if (override === null) {
+    delete newOverrides[feature];
+  } else {
+    newOverrides[feature] = override;
+  }
+  
+  updateModelSettings({ featureOverrides: newOverrides });
+}
+
+/**
+ * Check if a feature has a custom override set
+ */
+export function hasFeatureOverride(feature: FeatureType): boolean {
+  return !!currentSettings.featureOverrides?.[feature];
 }
 
 /**

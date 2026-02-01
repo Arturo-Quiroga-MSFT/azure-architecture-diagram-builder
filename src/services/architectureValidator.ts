@@ -4,7 +4,7 @@
  * Provides recommendations for reliability, security, performance, cost optimization, and operational excellence
  */
 
-import { getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -24,8 +24,8 @@ interface CallResult {
 }
 
 async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promise<CallResult> {
-  // Get current model settings
-  const settings = getModelSettings();
+  // Get model settings for validation (uses override if set)
+  const settings = getModelSettingsForFeature('validation');
   const modelConfig = MODEL_CONFIG[settings.model];
   
   let deployment: string;
@@ -137,7 +137,7 @@ export async function validateArchitecture(
     throw new Error('Azure OpenAI configuration missing. Please check your .env file.');
   }
   
-  const settings = getModelSettings();
+  const settings = getModelSettingsForFeature('validation');
   const modelConfig = MODEL_CONFIG[settings.model];
 
   console.log(`🔍 Starting architecture validation with ${modelConfig.displayName}...`);
