@@ -13,7 +13,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
     throw new Error('Azure OpenAI credentials not configured');
   }
 
-  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-08-01-preview`;
+  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
 
   console.log('🌐 Calling Azure OpenAI API:', url);
 
@@ -26,8 +26,8 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
     body: JSON.stringify({
       messages,
       max_completion_tokens: maxTokens,
-      temperature: 0.3,
       response_format: { type: 'json_object' },
+      reasoning_effort: import.meta.env.VITE_REASONING_EFFORT || 'medium'
     }),
   });
 

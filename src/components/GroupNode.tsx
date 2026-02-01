@@ -5,16 +5,16 @@ import './GroupNode.css';
 
 // Predefined color palette for groups
 const COLOR_PALETTE = [
-  { name: 'Gray', bg: 'rgba(107, 114, 128, 0.08)', border: '#6b7280', header: '#6b7280' },
-  { name: 'Blue', bg: 'rgba(0, 120, 212, 0.08)', border: '#0078d4', header: '#0078d4' },
-  { name: 'Green', bg: 'rgba(16, 185, 129, 0.08)', border: '#10b981', header: '#10b981' },
-  { name: 'Orange', bg: 'rgba(245, 158, 11, 0.08)', border: '#f59e0b', header: '#f59e0b' },
-  { name: 'Red', bg: 'rgba(239, 68, 68, 0.08)', border: '#ef4444', header: '#ef4444' },
-  { name: 'Purple', bg: 'rgba(139, 92, 246, 0.08)', border: '#8b5cf6', header: '#8b5cf6' },
-  { name: 'Cyan', bg: 'rgba(6, 182, 212, 0.08)', border: '#06b6d4', header: '#06b6d4' },
-  { name: 'Pink', bg: 'rgba(236, 72, 153, 0.08)', border: '#ec4899', header: '#ec4899' },
-  { name: 'Yellow', bg: 'rgba(234, 179, 8, 0.08)', border: '#eab308', header: '#eab308' },
-  { name: 'Teal', bg: 'rgba(20, 184, 166, 0.08)', border: '#14b8a6', header: '#14b8a6' },
+  { name: 'Gray', bg: 'rgba(107, 114, 128, 0.25)', border: '#6b7280', header: '#6b7280' },
+  { name: 'Blue', bg: 'rgba(0, 120, 212, 0.25)', border: '#0078d4', header: '#0078d4' },
+  { name: 'Green', bg: 'rgba(16, 185, 129, 0.25)', border: '#10b981', header: '#10b981' },
+  { name: 'Orange', bg: 'rgba(245, 158, 11, 0.25)', border: '#f59e0b', header: '#f59e0b' },
+  { name: 'Red', bg: 'rgba(239, 68, 68, 0.25)', border: '#ef4444', header: '#ef4444' },
+  { name: 'Purple', bg: 'rgba(139, 92, 246, 0.25)', border: '#8b5cf6', header: '#8b5cf6' },
+  { name: 'Cyan', bg: 'rgba(6, 182, 212, 0.25)', border: '#06b6d4', header: '#06b6d4' },
+  { name: 'Pink', bg: 'rgba(236, 72, 153, 0.25)', border: '#ec4899', header: '#ec4899' },
+  { name: 'Yellow', bg: 'rgba(234, 179, 8, 0.25)', border: '#eab308', header: '#eab308' },
+  { name: 'Teal', bg: 'rgba(20, 184, 166, 0.25)', border: '#14b8a6', header: '#14b8a6' },
 ];
 
 // Detect group category from label and return appropriate colors
@@ -23,51 +23,51 @@ const getGroupColors = (label: string): { bg: string; border: string; header: st
   
   // Web/Frontend
   if (lowerLabel.includes('web') || lowerLabel.includes('frontend') || lowerLabel.includes('ingress') || lowerLabel.includes('edge')) {
-    return { bg: 'rgba(107, 114, 128, 0.08)', border: '#6b7280', header: '#6b7280' }; // Gray
+    return { bg: 'rgba(107, 114, 128, 0.25)', border: '#6b7280', header: '#6b7280' }; // Gray
   }
   
   // Compute/Processing
   if (lowerLabel.includes('compute') || lowerLabel.includes('processing') || lowerLabel.includes('microservices') || lowerLabel.includes('api')) {
-    return { bg: 'rgba(0, 120, 212, 0.08)', border: '#0078d4', header: '#0078d4' }; // Azure blue
+    return { bg: 'rgba(0, 120, 212, 0.25)', border: '#0078d4', header: '#0078d4' }; // Azure blue
   }
   
   // Data/Storage/Database
   if (lowerLabel.includes('data') || lowerLabel.includes('storage') || lowerLabel.includes('database') || lowerLabel.includes('persistence')) {
-    return { bg: 'rgba(16, 185, 129, 0.08)', border: '#10b981', header: '#10b981' }; // Green
+    return { bg: 'rgba(16, 185, 129, 0.25)', border: '#10b981', header: '#10b981' }; // Green
   }
   
   // AI/ML/Intelligence - check before compute to prioritize AI keywords
   if (lowerLabel.includes('ai') || lowerLabel.includes('intelligence') || lowerLabel.includes('analytics') || lowerLabel.includes('ml') || lowerLabel.includes('cognitive')) {
-    return { bg: 'rgba(245, 158, 11, 0.08)', border: '#f59e0b', header: '#f59e0b' }; // Orange
+    return { bg: 'rgba(245, 158, 11, 0.25)', border: '#f59e0b', header: '#f59e0b' }; // Orange
   }
   
   // IoT/Devices
   if (lowerLabel.includes('iot') || lowerLabel.includes('device') || lowerLabel.includes('telemetry')) {
-    return { bg: 'rgba(249, 115, 22, 0.08)', border: '#f97316', header: '#f97316' }; // Orange-red
+    return { bg: 'rgba(249, 115, 22, 0.25)', border: '#f97316', header: '#f97316' }; // Orange-red
   }
   
   // Security/Identity
   if (lowerLabel.includes('security') || lowerLabel.includes('auth') || lowerLabel.includes('identity') || lowerLabel.includes('vault')) {
-    return { bg: 'rgba(239, 68, 68, 0.08)', border: '#ef4444', header: '#ef4444' }; // Red
+    return { bg: 'rgba(239, 68, 68, 0.25)', border: '#ef4444', header: '#ef4444' }; // Red
   }
   
   // Monitoring/Ops
   if (lowerLabel.includes('monitor') || lowerLabel.includes('ops') || lowerLabel.includes('observability') || lowerLabel.includes('logging')) {
-    return { bg: 'rgba(139, 92, 246, 0.08)', border: '#8b5cf6', header: '#8b5cf6' }; // Purple
+    return { bg: 'rgba(139, 92, 246, 0.25)', border: '#8b5cf6', header: '#8b5cf6' }; // Purple
   }
   
   // Networking/Integration
   if (lowerLabel.includes('network') || lowerLabel.includes('integration') || lowerLabel.includes('messaging') || lowerLabel.includes('event') || lowerLabel.includes('ingestion')) {
-    return { bg: 'rgba(6, 182, 212, 0.08)', border: '#06b6d4', header: '#06b6d4' }; // Cyan
+    return { bg: 'rgba(6, 182, 212, 0.25)', border: '#06b6d4', header: '#06b6d4' }; // Cyan
   }
   
   // Container/Registry
   if (lowerLabel.includes('container') || lowerLabel.includes('registry') || lowerLabel.includes('runtime')) {
-    return { bg: 'rgba(0, 120, 212, 0.08)', border: '#0078d4', header: '#0078d4' }; // Azure blue
+    return { bg: 'rgba(0, 120, 212, 0.25)', border: '#0078d4', header: '#0078d4' }; // Azure blue
   }
   
   // Default gray
-  return { bg: 'rgba(107, 114, 128, 0.05)', border: '#6b7280', header: '#6b7280' };
+  return { bg: 'rgba(107, 114, 128, 0.20)', border: '#6b7280', header: '#6b7280' };
 };
 
 const GroupNode: React.FC<NodeProps> = memo(({ data, selected }) => {

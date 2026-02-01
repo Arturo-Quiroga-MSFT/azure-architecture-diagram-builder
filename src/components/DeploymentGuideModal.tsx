@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Download, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
-import { DeploymentGuide, downloadDeploymentGuide } from '../services/deploymentGuideGenerator';
+import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package } from 'lucide-react';
+import { DeploymentGuide, downloadDeploymentGuide, downloadBicepTemplate, downloadAllBicepTemplates, BicepModule } from '../services/deploymentGuideGenerator';
 import './DeploymentGuideModal.css';
 
 interface DeploymentGuideModalProps {
@@ -13,6 +13,7 @@ interface DeploymentGuideModalProps {
 const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOpen, onClose, isLoading }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
+  const [expandedBicep, setExpandedBicep] = useState<Set<number>>(new Set([0]));
 
   if (!isOpen) return null;
 
@@ -27,6 +28,15 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
     downloadDeploymentGuide(guide);
   };
 
+  const handleDownloadBicep = (template: BicepModule) => {
+    downloadBicepTemplate(template);
+  };
+
+  const handleDownloadAllBicep = () => {
+    if (!guide) return;
+    downloadAllBicepTemplates(guide);
+  };
+
   const toggleSection = (index: number) => {
     const newExpanded = new Set(expandedSections);
     if (newExpanded.has(index)) {
@@ -35,6 +45,16 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
       newExpanded.add(index);
     }
     setExpandedSections(newExpanded);
+  };
+
+  const toggleBicep = (index: number) => {
+    const newExpanded = new Set(expandedBicep);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedBicep(newExpanded);
   };
 
   return (
@@ -183,6 +203,85 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Bicep Templates - Infrastructure as Code */}
+            {guide.bicepTemplates && guide.bicepTemplates.length > 0 && (
+              <div className="guide-section bicep-section">
+                <div className="bicep-header">
+                  <h4><FileCode size={20} /> Infrastructure as Code (Bicep)</h4>
+                  <button 
+                    className="btn-download-all-bicep"
+                    onClick={handleDownloadAllBicep}
+                    title="Download all Bicep templates"
+                  >
+                    <Package size={16} />
+                    Download All Templates
+                  </button>
+                </div>
+                <p className="bicep-description">
+                  Production-ready Bicep templates for automated infrastructure deployment. 
+                  Deploy with: <code>az deployment group create --resource-group &lt;rg-name&gt; --template-file main.bicep</code>
+                </p>
+                <div className="bicep-templates-list">
+                  {guide.bicepTemplates.map((template, index) => (
+                    <div key={index} className="bicep-template-card">
+                      <div 
+                        className="bicep-template-header"
+                        onClick={() => toggleBicep(index)}
+                      >
+                        <div className="bicep-template-info">
+                          <FileCode size={18} className="bicep-icon" />
+                          <div className="bicep-template-meta">
+                            <span className="bicep-template-name">{template.name}</span>
+                            <span className="bicep-template-filename">{template.filename}</span>
+                          </div>
+                        </div>
+                        <div className="bicep-template-actions">
+                          <button
+                            className="btn-download-bicep"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadBicep(template);
+                            }}
+                            title={`Download ${template.filename}`}
+                          >
+                            <Download size={14} />
+                          </button>
+                          {expandedBicep.has(index) ? (
+                            <ChevronUp size={20} />
+                          ) : (
+                            <ChevronDown size={20} />
+                          )}
+                        </div>
+                      </div>
+
+                      {expandedBicep.has(index) && (
+                        <div className="bicep-template-content">
+                          <p className="bicep-template-description">{template.description}</p>
+                          <div className="bicep-code-block">
+                            <div className="bicep-code-header">
+                              <span>{template.filename}</span>
+                              <button
+                                className="copy-button"
+                                onClick={() => handleCopy(template.content, 1000 + index)}
+                                title="Copy to clipboard"
+                              >
+                                {copiedIndex === 1000 + index ? (
+                                  <Check size={14} />
+                                ) : (
+                                  <Copy size={14} />
+                                )}
+                              </button>
+                            </div>
+                            <pre className="bicep-code">{template.content}</pre>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

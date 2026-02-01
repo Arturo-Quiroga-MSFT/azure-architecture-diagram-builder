@@ -10,7 +10,6 @@ import ReactFlow, {
   Edge,
   Node,
   BackgroundVariant,
-  Panel,
   MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -77,6 +76,9 @@ function App() {
   const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [infoBannerPosition, setInfoBannerPosition] = useState({ x: 0, y: 0 });
+  const [isDraggingInfoBanner, setIsDraggingInfoBanner] = useState(false);
+  const [dragOffsetInfo, setDragOffsetInfo] = useState({ x: 0, y: 0 });
   const [isUploadingARM, setIsUploadingARM] = useState(false);
   const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -390,13 +392,20 @@ function App() {
           y: e.clientY - dragOffset.y,
         });
       }
+      if (isDraggingInfoBanner) {
+        setInfoBannerPosition({
+          x: e.clientX - dragOffsetInfo.x,
+          y: e.clientY - dragOffsetInfo.y,
+        });
+      }
     };
 
     const handleMouseUp = () => {
       setIsDraggingBanner(false);
+      setIsDraggingInfoBanner(false);
     };
 
-    if (isDraggingBanner) {
+    if (isDraggingBanner || isDraggingInfoBanner) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -405,7 +414,7 @@ function App() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDraggingBanner, dragOffset]);
+  }, [isDraggingBanner, dragOffset, isDraggingInfoBanner, dragOffsetInfo]);
 
   const handleEdgeLabelChange = useCallback((edgeId: string, newLabel: string) => {
     setEdges((eds) =>
@@ -676,9 +685,8 @@ function App() {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  // Remove node from its parent group (reserved for future context menu feature)
-  // @ts-ignore - Reserved for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// Remove node from its parent group
+  // @ts-ignore - Reserved for future use in context menu
   const _ungroupNode = useCallback((nodeId: string) => {
     setNodes((nds) => nds.map((node) => {
       if (node.id === nodeId && node.parentNode) {
@@ -1421,40 +1429,11 @@ function App() {
     });
 
     // Helper function to determine best connection positions based on node positions
-    const getConnectionPositions = (sourceId: string, targetId: string, conn: any) => {
-      // If AI specified positions, use them (but validate they're valid)
-      if (conn.sourcePosition && conn.targetPosition) {
-        const validSourcePositions = ['right', 'bottom'];
-        const validTargetPositions = ['left', 'top'];
-        const sourcePos = validSourcePositions.includes(conn.sourcePosition) ? conn.sourcePosition : 'right';
-        const targetPos = validTargetPositions.includes(conn.targetPosition) ? conn.targetPosition : 'left';
-        return {
-          sourceHandle: sourcePos,
-          targetHandle: targetPos,
-        };
-      }
-
-      // Otherwise, intelligently determine based on node positions
-      const sourceNode = serviceMap.get(sourceId);
-      const targetNode = serviceMap.get(targetId);
-      
-      if (!sourceNode || !targetNode) {
-        return { sourceHandle: 'right', targetHandle: 'left' }; // Default
-      }
-
-      const dx = targetNode.position.x - sourceNode.position.x;
-      const dy = targetNode.position.y - sourceNode.position.y;
-      
-      // Determine primary direction based on larger delta
-      // Source handles can only be 'right' or 'bottom'
-      // Target handles can only be 'left' or 'top'
-      if (Math.abs(dx) > Math.abs(dy)) {
-        // Horizontal flow is dominant - use left/right
-        return { sourceHandle: 'right', targetHandle: 'left' };
-      } else {
-        // Vertical flow is dominant - use top/bottom
-        return { sourceHandle: 'bottom', targetHandle: 'top' };
-      }
+    // ALWAYS use horizontal flow (right → left) to avoid messy top/bottom connections
+    const getConnectionPositions = (_sourceId: string, _targetId: string, _conn: any) => {
+      // Always default to horizontal flow: source exits from right, target enters from left
+      // This creates cleaner, more readable diagrams that don't require manual edge adjustments
+      return { sourceHandle: 'right', targetHandle: 'left' };
     };
 
     // Function to determine arrow direction based on edge label
@@ -2400,12 +2379,37 @@ function App() {
                 </div>
               </div>
             )}
-            <Panel position="top-right" className="info-panel">
+            {/* Draggable info banner */}
+            <div
+              className="info-banner draggable"
+              style={{
+                position: 'absolute',
+                right: infoBannerPosition.x === 0 ? '10px' : 'auto',
+                left: infoBannerPosition.x !== 0 ? `${infoBannerPosition.x}px` : 'auto',
+                top: infoBannerPosition.y === 0 ? '10px' : `${infoBannerPosition.y}px`,
+                cursor: isDraggingInfoBanner ? 'grabbing' : 'grab',
+                zIndex: 1000,
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const rect = e.currentTarget.getBoundingClientRect();
+                setDragOffsetInfo({
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top,
+                });
+                if (infoBannerPosition.x === 0) {
+                  // First time dragging - calculate initial position from right
+                  const initialX = rect.left;
+                  setInfoBannerPosition({ x: initialX, y: 10 });
+                }
+                setIsDraggingInfoBanner(true);
+              }}
+            >
               <div className="info-text">
                 Drag icons from the left panel onto the canvas. 
                 Connect nodes by dragging from one node to another.
               </div>
-            </Panel>
+            </div>
             <TitleBlock
               architectureName={titleBlockData.architectureName}
               author={titleBlockData.author}

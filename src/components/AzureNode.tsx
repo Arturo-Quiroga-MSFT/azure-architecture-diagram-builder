@@ -37,8 +37,8 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   const [label, setLabel] = useState(data.label || 'Azure Service');
   const { setNodes } = useReactFlow();
   
-  // Get parentNode from data (passed through node.data.parentNode)
-  const parentNode = (data as any).parentNode;
+// Access parentNode from data (React Flow stores it there)
+  const parentNode = data.parentNode;
 
   // Debug: Check if parentNode prop is being received
   useEffect(() => {
@@ -224,7 +224,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   return (
     prevProps.id === nextProps.id &&
     prevProps.selected === nextProps.selected &&
-    (prevProps.data as any).parentNode === (nextProps.data as any).parentNode &&
+prevProps.data.parentNode === nextProps.data.parentNode &&
     prevProps.data.label === nextProps.data.label &&
     prevProps.data.iconPath === nextProps.data.iconPath &&
     JSON.stringify(prevProps.data.pricing) === JSON.stringify(nextProps.data.pricing)
