@@ -4,6 +4,8 @@
  * Includes prerequisites, step-by-step instructions, configuration, and troubleshooting
  */
 
+import JSZip from 'jszip';
+
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
@@ -13,7 +15,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
     throw new Error('Azure OpenAI credentials not configured');
   }
 
-  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-08-01-preview`;
+  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
 
   console.log('🌐 Calling Azure OpenAI API:', url);
 
@@ -26,8 +28,8 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
     body: JSON.stringify({
       messages,
       max_completion_tokens: maxTokens,
-      temperature: 0.3,
       response_format: { type: 'json_object' },
+      reasoning_effort: import.meta.env.VITE_REASONING_EFFORT || 'medium'
     }),
   });
 
@@ -288,36 +290,46 @@ export function downloadBicepTemplate(template: BicepModule) {
 }
 
 /**
- * Download all Bicep templates as a combined file
+ * Download all Bicep templates as a ZIP file
  */
-export function downloadAllBicepTemplates(guide: DeploymentGuide) {
+export async function downloadAllBicepTemplates(guide: DeploymentGuide) {
   if (!guide.bicepTemplates || guide.bicepTemplates.length === 0) {
     console.warn('No Bicep templates available to download');
     return;
   }
 
-  // Create a combined file with all templates and instructions
-  let combined = `# Bicep Templates for ${guide.title}\n`;
-  combined += `# Generated: ${new Date(guide.timestamp).toLocaleString()}\n\n`;
-  combined += `# Instructions:\n`;
-  combined += `# 1. Create the folder structure as indicated by filenames\n`;
-  combined += `# 2. Copy each template section to its respective file\n`;
-  combined += `# 3. Run: az deployment group create --resource-group <rg-name> --template-file main.bicep\n\n`;
-  combined += `${'='.repeat(80)}\n\n`;
+  const zip = new JSZip();
+  
+  // Add README with instructions
+  const readme = `# Bicep Templates for ${guide.title}
+Generated: ${new Date(guide.timestamp).toLocaleString()}
 
+## Deployment Instructions
+
+1. Review and customize parameters in main.bicep
+2. Deploy with Azure CLI:
+   \`\`\`bash
+   az login
+   az group create --name <rg-name> --location <location>
+   az deployment group create --resource-group <rg-name> --template-file main.bicep
+   \`\`\`
+
+## Files Included
+${guide.bicepTemplates.map(t => `- ${t.filename}: ${t.description}`).join('\n')}
+`;
+  zip.file('README.md', readme);
+
+  // Add each Bicep template
   guide.bicepTemplates.forEach((template) => {
-    combined += `# FILE: ${template.filename}\n`;
-    combined += `# ${template.description}\n`;
-    combined += `${'─'.repeat(80)}\n\n`;
-    combined += template.content;
-    combined += `\n\n${'='.repeat(80)}\n\n`;
+    zip.file(template.filename, template.content);
   });
 
-  const blob = new Blob([combined], { type: 'text/plain' });
+  // Generate and download ZIP
+  const blob = await zip.generateAsync({ type: 'blob' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `bicep-templates-${Date.now()}.txt`;
+  link.download = `bicep-templates-${Date.now()}.zip`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
