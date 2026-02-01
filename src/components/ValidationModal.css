@@ -237,6 +237,29 @@
   line-height: 1.6;
 }
 
+/* AI Metrics display in validation */
+.ai-metrics-validation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #0078d4;
+}
+
+.ai-metrics-validation .metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-metrics-validation .metric svg {
+  opacity: 0.8;
+}
+
 /* --------------------------------------------------------------------------
    Pillars Section - Five Azure Well-Architected Framework pillars
    -------------------------------------------------------------------------- */

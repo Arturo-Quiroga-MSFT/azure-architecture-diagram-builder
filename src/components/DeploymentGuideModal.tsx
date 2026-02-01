@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package } from 'lucide-react';
+import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package, Clock, Zap } from 'lucide-react';
 import { DeploymentGuide, downloadDeploymentGuide, downloadBicepTemplate, downloadAllBicepTemplates, BicepModule } from '../services/deploymentGuideGenerator';
 import './DeploymentGuideModal.css';
 
@@ -83,6 +83,14 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
                 <span className="meta-item">
                   ⏱️ Estimated Time: <strong>{guide.estimatedTime}</strong>
                 </span>
+                {guide.metrics && (
+                  <span className="meta-item ai-metrics-inline">
+                    <Clock size={14} />
+                    Generated in {(guide.metrics.elapsedTimeMs / 1000).toFixed(1)}s
+                    <Zap size={14} style={{ marginLeft: '12px' }} />
+                    {guide.metrics.promptTokens.toLocaleString()} in → {guide.metrics.completionTokens.toLocaleString()} out ({guide.metrics.totalTokens.toLocaleString()} tokens)
+                  </span>
+                )}
               </div>
             </div>
 

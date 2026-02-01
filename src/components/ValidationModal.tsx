@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw, Clock, Zap } from 'lucide-react';
 import { ArchitectureValidation, ValidationFinding, formatValidationReport } from '../services/architectureValidator';
 import './ValidationModal.css';
 
@@ -189,6 +189,18 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
               <div className="score-summary">
                 <h3>Overall Assessment</h3>
                 <p>{validation.summary}</p>
+                {validation.metrics && (
+                  <div className="ai-metrics-validation">
+                    <span className="metric">
+                      <Clock size={14} />
+                      {(validation.metrics.elapsedTimeMs / 1000).toFixed(1)}s
+                    </span>
+                    <span className="metric">
+                      <Zap size={14} />
+                      {validation.metrics.promptTokens.toLocaleString()} in → {validation.metrics.completionTokens.toLocaleString()} out ({validation.metrics.totalTokens.toLocaleString()} total)
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

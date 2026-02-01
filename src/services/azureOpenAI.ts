@@ -4,7 +4,21 @@ const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
 
-async function callAzureOpenAI(messages: any[]): Promise<string> {
+// Token usage metrics returned from Azure OpenAI API
+export interface AIMetrics {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  elapsedTimeMs: number;
+  model?: string;
+}
+
+interface CallResult {
+  content: string;
+  metrics: AIMetrics;
+}
+
+async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
   if (!endpoint || !apiKey || !deployment) {
     throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
   }
@@ -14,6 +28,9 @@ async function callAzureOpenAI(messages: any[]): Promise<string> {
   // Add timeout for large requests (5 minutes for regenerations)
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 300000);
+  
+  // Start timing
+  const startTime = performance.now();
 
   try {
     const response = await fetch(url, {
@@ -34,6 +51,9 @@ async function callAzureOpenAI(messages: any[]): Promise<string> {
     });
 
     clearTimeout(timeoutId);
+    
+    // Calculate elapsed time
+    const elapsedTimeMs = Math.round(performance.now() - startTime);
 
     if (!response.ok) {
       const error = await response.text();
@@ -50,12 +70,25 @@ async function callAzureOpenAI(messages: any[]): Promise<string> {
     const data = await response.json();
     const content = data.choices[0]?.message?.content || '';
     
+    // Extract token usage from response
+    const usage = data.usage || {};
+    const metrics: AIMetrics = {
+      promptTokens: usage.prompt_tokens || 0,
+      completionTokens: usage.completion_tokens || 0,
+      totalTokens: usage.total_tokens || 0,
+      elapsedTimeMs,
+      model: data.model
+    };
+    
     if (!content || content.trim().length === 0) {
       throw new Error('Empty response from Azure OpenAI. The request may have been too large or complex. Try reducing recommendations or using lower reasoning effort.');
     }
     
-    console.log('API Response length:', content.length, 'chars');
-    return content;
+    console.log('API Response:', content.length, 'chars |', 
+      `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) |`,
+      `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+    
+    return { content, metrics };
   } catch (error: any) {
     clearTimeout(timeoutId);
     
@@ -240,7 +273,7 @@ CORRECT SERVICE NAMING EXAMPLES:
       { role: 'user', content: description }
     ];
 
-    const content = await callAzureOpenAI(messages);
+    const { content, metrics } = await callAzureOpenAI(messages);
     
     console.log('Azure OpenAI Response:', content);
     
@@ -262,6 +295,9 @@ CORRECT SERVICE NAMING EXAMPLES:
       name: arch.name,
       url: arch.url,
     }));
+    
+    // Add AI metrics to the response
+    architecture.metrics = metrics;
 
     if (!architecture.services || !Array.isArray(architecture.services)) {
       throw new Error('Invalid response format: missing services array');
@@ -412,13 +448,16 @@ ${JSON.stringify(armTemplate, null, 2)}`;
       { role: 'user', content: userMessage }
     ];
 
-    const content = await callAzureOpenAI(messages);
+    const { content, metrics } = await callAzureOpenAI(messages);
     
     if (!content) {
       throw new Error('No response from Azure OpenAI');
     }
 
     const architecture = JSON.parse(content);
+    
+    // Add AI metrics to the response
+    architecture.metrics = metrics;
     
     // Validate response structure
     if (!architecture.services || !Array.isArray(architecture.services)) {

@@ -10,7 +10,21 @@ const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
 
-async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Promise<string> {
+// Token usage metrics returned from Azure OpenAI API
+export interface AIMetrics {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  elapsedTimeMs: number;
+  model?: string;
+}
+
+interface CallResult {
+  content: string;
+  metrics: AIMetrics;
+}
+
+async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Promise<CallResult> {
   if (!endpoint || !apiKey || !deployment) {
     throw new Error('Azure OpenAI credentials not configured');
   }
@@ -18,6 +32,9 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
   const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
 
   console.log('🌐 Calling Azure OpenAI API:', url);
+  
+  // Start timing
+  const startTime = performance.now();
 
   const response = await fetch(url, {
     method: 'POST',
@@ -32,6 +49,9 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
       reasoning_effort: import.meta.env.VITE_REASONING_EFFORT || 'medium'
     }),
   });
+  
+  // Calculate elapsed time
+  const elapsedTimeMs = Math.round(performance.now() - startTime);
 
   if (!response.ok) {
     const error = await response.text();
@@ -41,8 +61,22 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
 
   const data = await response.json();
   const content = data.choices[0]?.message?.content || '';
-  console.log('📦 API Response:', data);
-  return content;
+  
+  // Extract token usage from response
+  const usage = data.usage || {};
+  const metrics: AIMetrics = {
+    promptTokens: usage.prompt_tokens || 0,
+    completionTokens: usage.completion_tokens || 0,
+    totalTokens: usage.total_tokens || 0,
+    elapsedTimeMs,
+    model: data.model
+  };
+  
+  console.log('📦 API Response:', content.length, 'chars |',
+    `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) |`,
+    `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+  
+  return { content, metrics };
 }
 
 export interface DeploymentStep {
@@ -76,6 +110,7 @@ export interface DeploymentGuide {
   estimatedCost: string;
   timestamp: string;
   bicepTemplates?: BicepModule[];
+  metrics?: AIMetrics;
 }
 
 /**
@@ -149,12 +184,10 @@ ${estimatedCost ? `**Est. Monthly Cost:** $${estimatedCost.toFixed(2)}` : ''}
 Generate a deployment guide with Azure CLI commands and Bicep templates for this architecture.`;
 
   try {
-    const content = await callAzureOpenAI([
+    const { content, metrics } = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
     ], 16000);
-
-    console.log('✅ Deployment guide response received:', content.length, 'characters');
 
     // Handle empty response
     if (!content || content.length === 0) {
@@ -171,6 +204,7 @@ Generate a deployment guide with Azure CLI commands and Bicep templates for this
       throw new Error('Invalid response format from deployment guide generator. Please try again.');
     }
     guide.timestamp = new Date().toISOString();
+    guide.metrics = metrics;
 
     console.log('📋 Deployment guide generated');
     console.log('📝 Steps:', guide.deploymentSteps.length);

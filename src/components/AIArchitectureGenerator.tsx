@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, X, Loader2 } from 'lucide-react';
-import { generateArchitectureWithAI, isAzureOpenAIConfigured } from '../services/azureOpenAI';
+import { Sparkles, X, Loader2, Clock, Zap } from 'lucide-react';
+import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics } from '../services/azureOpenAI';
 import { initializeReferenceArchitectures } from '../services/referenceArchitectureService';
 import './AIArchitectureGenerator.css';
 
@@ -19,6 +19,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [similarArchitectures, setSimilarArchitectures] = useState<any[]>([]);
+  const [aiMetrics, setAiMetrics] = useState<AIMetrics | null>(null);
   
   // Auto-snapshot preference (stored in localStorage)
   const [autoSnapshot, setAutoSnapshot] = useState<boolean>(() => {
@@ -60,6 +61,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     setIsGenerating(true);
     setError('');
     setSimilarArchitectures([]); // Clear previous results
+    setAiMetrics(null); // Clear previous metrics
 
     try {
       // Build context about existing architecture if present
@@ -109,6 +111,11 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
         setSimilarArchitectures(result.similarArchitectures);
       }
       
+      // Store AI metrics if available
+      if (result.metrics) {
+        setAiMetrics(result.metrics);
+      }
+      
       onGenerate(result, description, autoSnapshot);
       setDescription('');
       
@@ -116,6 +123,7 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
       setTimeout(() => {
         setIsOpen(false);
         setSimilarArchitectures([]);
+        setAiMetrics(null);
       }, 10000); // Give user 10 seconds to see the success message and links
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
@@ -187,6 +195,18 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
               {similarArchitectures.length > 0 && (
                 <div className="similar-architectures">
                   <h3>✓ Architecture generated successfully!</h3>
+                  {aiMetrics && (
+                    <div className="ai-metrics">
+                      <span className="metric">
+                        <Clock size={14} />
+                        {(aiMetrics.elapsedTimeMs / 1000).toFixed(1)}s
+                      </span>
+                      <span className="metric">
+                        <Zap size={14} />
+                        {aiMetrics.promptTokens.toLocaleString()} in → {aiMetrics.completionTokens.toLocaleString()} out ({aiMetrics.totalTokens.toLocaleString()} total)
+                      </span>
+                    </div>
+                  )}
                   <p>Your architecture is similar to these Microsoft reference architectures. Click to learn more about best practices:</p>
                   <ul>
                     {similarArchitectures.map((arch, i) => (

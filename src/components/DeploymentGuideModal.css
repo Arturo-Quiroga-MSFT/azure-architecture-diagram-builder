@@ -44,7 +44,8 @@
 
 .guide-meta {
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 16px 24px;
   padding-top: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -56,6 +57,17 @@
 
 .meta-item strong {
   font-weight: 600;
+}
+
+.meta-item.ai-metrics-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 4px;
 }
 
 /* Guide Sections */

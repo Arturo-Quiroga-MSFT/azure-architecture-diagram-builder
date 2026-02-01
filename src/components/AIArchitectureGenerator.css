@@ -236,6 +236,29 @@
   line-height: 1.4;
 }
 
+/* AI Metrics display */
+.ai-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(0, 120, 212, 0.08);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #0078d4;
+}
+
+.ai-metrics .metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-metrics .metric svg {
+  opacity: 0.8;
+}
+
 .similar-architectures ul {
   list-style: none;
   padding: 0;
