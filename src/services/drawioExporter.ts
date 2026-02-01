@@ -9,6 +9,7 @@
  */
 
 import { Node, Edge } from 'reactflow';
+import { generateModelFilename } from '../utils/modelNaming';
 
 // Draw.io XML escape helper
 function escapeXml(str: string): string {
@@ -319,8 +320,7 @@ export function exportAndDownloadDrawio(
   diagramName?: string
 ): string {
   const xml = exportToDrawio(nodes, edges, diagramName);
-  const timestamp = Date.now();
-  const fileName = `azure-diagram-${timestamp}.drawio`;
+  const fileName = generateModelFilename('azure-diagram', 'drawio');
   downloadDrawioFile(xml, fileName);
   return fileName;
 }

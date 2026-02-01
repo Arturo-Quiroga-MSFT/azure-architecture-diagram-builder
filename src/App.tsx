@@ -47,6 +47,7 @@ import {
   type LayoutSpacing,
   type LayoutEdgeStyle,
 } from './utils/layoutPresets';
+import { generateModelFilename } from './utils/modelNaming';
 import './App.css';
 
 const nodeTypes = {
@@ -867,7 +868,7 @@ function App() {
           if (blob) {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            const fileName = `azure-diagram-${Date.now()}.png`;
+            const fileName = generateModelFilename('azure-diagram', 'png');
             link.download = fileName;
             link.href = url;
             link.click();
@@ -929,7 +930,7 @@ function App() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        const fileName = `azure-diagram-${Date.now()}.svg`;
+        const fileName = generateModelFilename('azure-diagram', 'svg');
         link.download = fileName;
         link.click();
         URL.revokeObjectURL(url);
@@ -968,7 +969,7 @@ function App() {
     
     const link = document.createElement('a');
     link.setAttribute('href', dataUri);
-    const fileName = `azure-diagram-${Date.now()}.json`;
+    const fileName = generateModelFilename('azure-diagram', 'json');
     link.setAttribute('download', fileName);
     link.click();
     recordExport('json', fileName);
@@ -990,7 +991,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const fileName = `azure-cost-breakdown-${Date.now()}.csv`;
+    const fileName = generateModelFilename('azure-cost-breakdown', 'csv');
     link.download = fileName;
     link.click();
     URL.revokeObjectURL(url);
@@ -2252,6 +2253,16 @@ function App() {
                 <FileText size={18} />
                 Deployment Guide
               </button>
+              {deploymentGuide && (
+                <button
+                  onClick={() => setIsDeploymentGuideModalOpen(true)}
+                  className="btn btn-secondary"
+                  title="Open last deployment guide"
+                >
+                  <FileText size={18} />
+                  View Guide
+                </button>
+              )}
             </div>
 
             <div className="toolbar-group">

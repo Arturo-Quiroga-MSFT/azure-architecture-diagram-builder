@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw, Clock, Zap } from 'lucide-react';
 import { ArchitectureValidation, ValidationFinding, formatValidationReport } from '../services/architectureValidator';
+import { generateModelFilename } from '../utils/modelNaming';
 import './ValidationModal.css';
 
 /**
@@ -122,7 +123,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `architecture-validation-${Date.now()}.md`;
+    link.download = generateModelFilename('architecture-validation', 'md');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

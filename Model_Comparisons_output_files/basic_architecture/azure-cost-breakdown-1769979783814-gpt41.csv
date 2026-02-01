@@ -1,0 +1,21 @@
+Azure Architecture Cost Breakdown
+Total Monthly Cost,$275.60
+Region,eastus2
+Date,2026-02-01
+
+Service Name,Service Type,Tier,Quantity,Monthly Cost,Pricing Type
+"Api Management",Other,Standard,1,$100.00,Fixed
+"Azure Machine Learning",Other,Standard,1,$50.00,Usage-based (estimate)
+"Azure Machine Learning",Other,Standard,1,$50.00,Usage-based (estimate)
+"Event Hubs",Other,Standard,1,$27.60,Usage-based (estimate)
+"Key Vault",Other,Standard,1,$21.90,Fixed
+"Container Registry",Other,Standard,1,$20.00,Usage-based (estimate)
+"Microsoft Entra ID",Other,Standard,1,$6.00,Fixed
+"Application Insights",Other,Basic,1,$0.10,Fixed
+"Data Lake Storage",Other,Standard,1,$0.00,Usage-based (estimate)
+
+Group Name,Service Count,Monthly Cost
+"Ungrouped",9,$275.60
+
+Category,Monthly Cost,Percentage
+Other,$275.60,100.0%

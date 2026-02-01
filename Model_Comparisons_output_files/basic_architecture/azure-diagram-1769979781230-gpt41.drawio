@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-02-01T21:03:01.230Z" agent="Azure Architecture Diagram Builder" version="1.0" type="device">
+  <diagram id="azure-architecture" name="Untitled Architecture">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3110" pageHeight="1480" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      <mxCell id="cell-2" value="Data Ingestion" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="-30" y="45" width="920" height="460" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-3" value="Model Training" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="930" y="-30" width="1020" height="560" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-4" value="Inference and API Layer" style="swimlane;whiteSpace=wrap;html=1;fillColor=#cffafe;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="1410" y="420" width="1020" height="960" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-5" value="Security and Identity" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="2470" y="145" width="540" height="860" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-6" value="Monitoring and Logging" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e0e7ff;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="2470" y="895" width="540" height="485" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-7" value="Event Hubs&#xa;$27.60/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-2">
+        <mxGeometry x="180" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-8" value="Data Lake Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-2">
+        <mxGeometry x="560" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-9" value="Azure Machine Learning&#xa;$50.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-3">
+        <mxGeometry x="180" y="285" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-10" value="Container Registry&#xa;$20.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-3">
+        <mxGeometry x="660" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-11" value="Api Management&#xa;$100.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-4">
+        <mxGeometry x="180" y="535" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-12" value="Azure Machine Learning&#xa;$50.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-4">
+        <mxGeometry x="660" y="260" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-13" value="Key Vault&#xa;$21.90/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="180" y="285" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-14" value="Microsoft Entra ID&#xa;$6.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="180" y="610" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-15" value="Application Insights&#xa;$0.10/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-6">
+        <mxGeometry x="180" y="235" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-16" value="Store ingested data" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-7" target="cell-8">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-17" value="Load training data" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-8" target="cell-9">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-18" value="Publish model container image" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-9" target="cell-10">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-19" value="Deploy container for inference" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-10" target="cell-12">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-20" value="Forward inference requests" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-11" target="cell-12">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-21" value="Retrieve secrets for inference" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-12" target="cell-13">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-22" value="Authenticate API calls" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-11" target="cell-14">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-23" value="Retrieve training secrets" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-9" target="cell-13">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-24" value="Log API usage and metrics" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-11" target="cell-15">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-25" value="Log inference telemetry" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-12" target="cell-15">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

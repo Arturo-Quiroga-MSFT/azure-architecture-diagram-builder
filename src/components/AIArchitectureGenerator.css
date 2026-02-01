@@ -198,11 +198,28 @@
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 1rem;
   padding: 1.5rem;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* Model selector wrapper in footer */
+.model-selector-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.model-selector-wrapper::before {
+  content: 'AI Model:';
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
 }
 
 .spinner {
@@ -321,5 +338,6 @@
 
 .modal-footer-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 12px;
 }

@@ -1,8 +1,8 @@
 import { findSimilarArchitectures } from './referenceArchitectureService';
+import { getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
-const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
 
 // Token usage metrics returned from Azure OpenAI API
 export interface AIMetrics {
@@ -19,7 +19,18 @@ interface CallResult {
 }
 
 async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
-  if (!endpoint || !apiKey || !deployment) {
+  // Get current model settings
+  const settings = getModelSettings();
+  const modelConfig = MODEL_CONFIG[settings.model];
+  
+  let deployment: string;
+  try {
+    deployment = getDeploymentName(settings.model);
+  } catch (e) {
+    throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
+  }
+
+  if (!endpoint || !apiKey) {
     throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
   }
 
@@ -32,6 +43,20 @@ async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
   // Start timing
   const startTime = performance.now();
 
+  // Build request body based on model type
+  const requestBody: any = {
+    messages,
+    max_completion_tokens: modelConfig.maxCompletionTokens,
+    response_format: { type: 'json_object' },
+  };
+  
+  // Add reasoning_effort only for reasoning models (GPT-5.2)
+  if (modelConfig.isReasoning) {
+    requestBody.reasoning_effort = settings.reasoningEffort;
+  }
+  
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens}`);
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -39,14 +64,7 @@ async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
         'Content-Type': 'application/json',
         'api-key': apiKey,
       },
-      body: JSON.stringify({
-        messages,
-        max_completion_tokens: 10000,  // Increased for regeneration with recommendations
-        response_format: { type: 'json_object' },
-        // Enable reasoning effort for better architecture design
-        // Chat Completions API uses flat 'reasoning_effort' parameter
-        reasoning_effort: import.meta.env.VITE_REASONING_EFFORT || 'medium'
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
 
@@ -332,7 +350,16 @@ CORRECT SERVICE NAMING EXAMPLES:
 }
 
 export function isAzureOpenAIConfigured(): boolean {
-  return !!(endpoint && apiKey && deployment);
+  // Check if at least one model is available
+  const hasEndpoint = !!endpoint;
+  const hasApiKey = !!apiKey;
+  
+  // Check for specific model deployments (no longer using legacy default)
+  const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
+  const hasGpt41 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT41;
+  const hasGpt41Mini = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI;
+  
+  return hasEndpoint && hasApiKey && (hasGpt52 || hasGpt41 || hasGpt41Mini);
 }
 
 export async function generateArchitectureFromARM(armTemplate: any) {

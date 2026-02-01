@@ -5,10 +5,11 @@
  */
 
 import JSZip from 'jszip';
+import { generateModelFilename } from '../utils/modelNaming';
+import { getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
-const deployment = import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT;
 
 // Token usage metrics returned from Azure OpenAI API
 export interface AIMetrics {
@@ -25,16 +26,42 @@ interface CallResult {
 }
 
 async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Promise<CallResult> {
-  if (!endpoint || !apiKey || !deployment) {
+  // Get current model settings
+  const settings = getModelSettings();
+  const modelConfig = MODEL_CONFIG[settings.model];
+  
+  let deployment: string;
+  try {
+    deployment = getDeploymentName(settings.model);
+  } catch (e) {
+    throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
+  }
+
+  if (!endpoint || !apiKey) {
     throw new Error('Azure OpenAI credentials not configured');
   }
 
   const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
 
-  console.log('🌐 Calling Azure OpenAI API:', url);
+  console.log(`🌐 Calling Azure OpenAI API with ${modelConfig.displayName}:`, url);
   
   // Start timing
   const startTime = performance.now();
+
+  // Build request body based on model type
+  const effectiveMaxTokens = Math.min(maxTokens, modelConfig.maxCompletionTokens);
+  const requestBody: any = {
+    messages,
+    max_completion_tokens: effectiveMaxTokens,
+    response_format: { type: 'json_object' },
+  };
+  
+  // Add reasoning_effort only for reasoning models (GPT-5.2)
+  if (modelConfig.isReasoning) {
+    requestBody.reasoning_effort = settings.reasoningEffort;
+  }
+  
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens}`);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -42,12 +69,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
       'Content-Type': 'application/json',
       'api-key': apiKey,
     },
-    body: JSON.stringify({
-      messages,
-      max_completion_tokens: maxTokens,
-      response_format: { type: 'json_object' },
-      reasoning_effort: import.meta.env.VITE_REASONING_EFFORT || 'medium'
-    }),
+    body: JSON.stringify(requestBody),
   });
   
   // Calculate elapsed time
@@ -124,11 +146,14 @@ export async function generateDeploymentGuide(
   estimatedCost?: number
 ): Promise<DeploymentGuide> {
   
-  if (!endpoint || !apiKey || !deployment) {
+  if (!endpoint || !apiKey) {
     throw new Error('Azure OpenAI configuration missing. Please check your .env file.');
   }
+  
+  const settings = getModelSettings();
+  const modelConfig = MODEL_CONFIG[settings.model];
 
-  console.log('📋 Generating deployment guide with GPT-4.1...');
+  console.log(`📋 Generating deployment guide with ${modelConfig.displayName}...`);
 
   // Build architecture context (limit to prevent token overflow)
   const servicesList = services.slice(0, 25).map(s => 
@@ -301,7 +326,7 @@ export function downloadDeploymentGuide(guide: DeploymentGuide) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `deployment-guide-${Date.now()}.md`;
+  link.download = generateModelFilename('deployment-guide', 'md');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -363,7 +388,7 @@ ${guide.bicepTemplates.map(t => `- ${t.filename}: ${t.description}`).join('\n')}
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `bicep-templates-${Date.now()}.zip`;
+  link.download = generateModelFilename('bicep-templates', 'zip');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

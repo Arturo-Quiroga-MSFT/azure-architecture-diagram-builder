@@ -1,0 +1,834 @@
+{
+  "nodes": [
+    {
+      "id": "data-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 45
+      },
+      "data": {
+        "label": "Data Ingestion"
+      },
+      "style": {
+        "width": 920,
+        "height": 460
+      },
+      "width": 920,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 45
+      }
+    },
+    {
+      "id": "model-training",
+      "type": "groupNode",
+      "position": {
+        "x": 930,
+        "y": -30
+      },
+      "data": {
+        "label": "Model Training"
+      },
+      "style": {
+        "width": 1020,
+        "height": 560
+      },
+      "width": 1020,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 930,
+        "y": -30
+      }
+    },
+    {
+      "id": "inference-api-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 1410,
+        "y": 420
+      },
+      "data": {
+        "label": "Inference and API Layer"
+      },
+      "style": {
+        "width": 1020,
+        "height": 960
+      },
+      "width": 1020,
+      "height": 960,
+      "positionAbsolute": {
+        "x": 1410,
+        "y": 420
+      }
+    },
+    {
+      "id": "security-identity",
+      "type": "groupNode",
+      "position": {
+        "x": 2470,
+        "y": 145
+      },
+      "data": {
+        "label": "Security and Identity"
+      },
+      "style": {
+        "width": 540,
+        "height": 860
+      },
+      "width": 540,
+      "height": 860,
+      "positionAbsolute": {
+        "x": 2470,
+        "y": 145
+      }
+    },
+    {
+      "id": "monitoring-logging",
+      "type": "groupNode",
+      "position": {
+        "x": 2470,
+        "y": 895
+      },
+      "data": {
+        "label": "Monitoring and Logging"
+      },
+      "style": {
+        "width": 540,
+        "height": 485
+      },
+      "width": 540,
+      "height": 485,
+      "positionAbsolute": {
+        "x": 2470,
+        "y": 895
+      }
+    },
+    {
+      "id": "event-hubs",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/event-hubs.svg",
+        "pricing": {
+          "estimatedCost": 27.6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-01T21:02:18.294Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-ingestion",
+      "extent": "parent",
+      "width": 123,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 225
+      }
+    },
+    {
+      "id": "data-lake-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 180
+      },
+      "data": {
+        "label": "Data Lake Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-01T21:02:18.294Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-ingestion",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 530,
+        "y": 225
+      }
+    },
+    {
+      "id": "azure-ml-training",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 255
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-01T21:02:18.282Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "model-training",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1110,
+        "y": 225
+      }
+    },
+    {
+      "id": "container-registry",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-02-01T21:02:18.282Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "model-training",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1590,
+        "y": 150
+      }
+    },
+    {
+      "id": "api-management",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 505
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 99.99978,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-01T21:02:18.282Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "inference-api-layer",
+      "extent": "parent",
+      "width": 164,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1590,
+        "y": 925
+      }
+    },
+    {
+      "id": "azure-ml-inference",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 230
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-01T21:02:18.282Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "inference-api-layer",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2070,
+        "y": 650
+      }
+    },
+    {
+      "id": "key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 255
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-01T21:02:18.282Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-identity",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2650,
+        "y": 400
+      }
+    },
+    {
+      "id": "microsoft-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 580
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-01T21:02:18.294Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-identity",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2650,
+        "y": 725
+      }
+    },
+    {
+      "id": "application-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 205
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-01T21:02:18.282Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "monitoring-logging",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2650,
+        "y": 1100
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "event-hubs",
+      "target": "data-lake-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store ingested data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "data-lake-storage",
+      "target": "azure-ml-training",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Load training data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "azure-ml-training",
+      "target": "container-registry",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish model container image",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "container-registry",
+      "target": "azure-ml-inference",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy container for inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "api-management",
+      "target": "azure-ml-inference",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward inference requests",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "azure-ml-inference",
+      "target": "key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve secrets for inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "api-management",
+      "target": "microsoft-entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate API calls",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "azure-ml-training",
+      "target": "key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve training secrets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "api-management",
+      "target": "application-insights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Log API usage and metrics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "azure-ml-inference",
+      "target": "application-insights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Log inference telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 187.60032894736844,
+    "y": 326.3675986842105,
+    "zoom": 0.5616776315789473
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-01",
+    "savedAt": "2026-02-01T21:02:54.465Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Event Hubs ingests real-time data and streams it to Data Lake Storage.",
+      "services": [
+        "event-hubs",
+        "data-lake-storage"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Data Lake Storage stores the incoming data, making it available for model training.",
+      "services": [
+        "data-lake-storage"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Machine Learning accesses training data from Data Lake Storage and initiates model training using required secrets from Key Vault.",
+      "services": [
+        "azure-ml-training",
+        "data-lake-storage",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Upon successful training, Azure Machine Learning publishes the trained model image to Container Registry.",
+      "services": [
+        "azure-ml-training",
+        "container-registry"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Machine Learning accesses Container Registry to deploy the model container for managed inference endpoints.",
+      "services": [
+        "azure-ml-inference",
+        "container-registry"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Api Management exposes the inference endpoint and authenticates incoming requests with Microsoft Entra ID.",
+      "services": [
+        "api-management",
+        "microsoft-entra-id"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Api Management forwards authenticated inference requests to the deployed Azure Machine Learning inference endpoint.",
+      "services": [
+        "api-management",
+        "azure-ml-inference"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure Machine Learning retrieves necessary secrets from Key Vault during model inferencing.",
+      "services": [
+        "azure-ml-inference",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Api Management and Azure Machine Learning send operational logs and metrics to Application Insights for monitoring.",
+      "services": [
+        "api-management",
+        "azure-ml-inference",
+        "application-insights"
+      ]
+    }
+  ],
+  "architecturePrompt": "A machine learning pipeline with data ingestion, training, and inference endpoints"
+}

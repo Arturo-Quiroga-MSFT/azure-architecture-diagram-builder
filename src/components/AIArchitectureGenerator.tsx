@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, X, Loader2, Clock, Zap } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics } from '../services/azureOpenAI';
 import { initializeReferenceArchitectures } from '../services/referenceArchitectureService';
+import ModelSelector from './ModelSelector';
 import './AIArchitectureGenerator.css';
 
 interface AIArchitectureGeneratorProps {
@@ -238,6 +239,9 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
             </div>
 
             <div className="modal-footer">
+              <div className="model-selector-wrapper">
+                <ModelSelector compact />
+              </div>
               {currentArchitecture && currentArchitecture.nodes.length > 0 && (
                 <div className="auto-snapshot-option">
                   <label className="checkbox-label">
