@@ -436,3 +436,196 @@
   background: #f9fafb;
   border-color: #9ca3af;
 }
+
+/* Bicep Templates Section */
+.bicep-section {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #7dd3fc;
+}
+
+.bicep-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bicep-header h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0369a1;
+}
+
+.btn-download-all-bicep {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-download-all-bicep:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  transform: translateY(-1px);
+}
+
+.bicep-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #0c4a6e;
+  line-height: 1.6;
+}
+
+.bicep-description code {
+  background: #bae6fd;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+  color: #075985;
+}
+
+.bicep-templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bicep-template-card {
+  background: white;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.bicep-template-card:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+}
+
+.bicep-template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.bicep-template-header:hover {
+  background: #f0f9ff;
+}
+
+.bicep-template-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bicep-icon {
+  color: #0284c7;
+}
+
+.bicep-template-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bicep-template-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.bicep-template-filename {
+  font-size: 12px;
+  color: #64748b;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.bicep-template-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-download-bicep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #7dd3fc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-download-bicep:hover {
+  background: #0284c7;
+  color: white;
+}
+
+.bicep-template-content {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.bicep-template-description {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.bicep-code-block {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.bicep-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.bicep-code-header .copy-button {
+  position: static;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.bicep-code {
+  margin: 0;
+  padding: 16px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

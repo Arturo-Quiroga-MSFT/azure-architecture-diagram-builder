@@ -133,6 +133,50 @@ const Legend: React.FC = () => {
               </div>
             </div>
           </div>
+
+          <div className="legend-section">
+            <div className="legend-section-title">Cost Levels</div>
+            
+            <div className="legend-item">
+              <div className="legend-badge cost-low">
+                <DollarSign size={12} />
+              </div>
+              <div className="legend-description">
+                <strong>Free / Low</strong>
+                <span>Under $100/month</span>
+              </div>
+            </div>
+            
+            <div className="legend-item">
+              <div className="legend-badge cost-medium">
+                <DollarSign size={12} />
+              </div>
+              <div className="legend-description">
+                <strong>Medium</strong>
+                <span>$100 - $500/month</span>
+              </div>
+            </div>
+            
+            <div className="legend-item">
+              <div className="legend-badge cost-high">
+                <DollarSign size={12} />
+              </div>
+              <div className="legend-description">
+                <strong>High</strong>
+                <span>$500 - $1,000/month</span>
+              </div>
+            </div>
+            
+            <div className="legend-item">
+              <div className="legend-badge cost-very-high">
+                <DollarSign size={12} />
+              </div>
+              <div className="legend-description">
+                <strong>Very High</strong>
+                <span>Over $1,000/month</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

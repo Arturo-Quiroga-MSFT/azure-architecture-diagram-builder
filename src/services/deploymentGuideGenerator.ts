@@ -52,6 +52,13 @@ export interface DeploymentStep {
   notes?: string[];
 }
 
+export interface BicepModule {
+  name: string;
+  description: string;
+  filename: string;
+  content: string;
+}
+
 export interface DeploymentGuide {
   title: string;
   overview: string;
@@ -66,6 +73,7 @@ export interface DeploymentGuide {
   troubleshooting: Array<{ issue: string; solution: string }>;
   estimatedCost: string;
   timestamp: string;
+  bicepTemplates?: BicepModule[];
 }
 
 /**
@@ -74,7 +82,7 @@ export interface DeploymentGuide {
 export async function generateDeploymentGuide(
   services: Array<{ name: string; type: string; category: string; description?: string }>,
   connections: Array<{ from: string; to: string; label: string; type?: string }>,
-  groups?: Array<{ name: string; services?: string[] }>,
+  _groups?: Array<{ name: string; services?: string[] }>,
   architectureDescription?: string,
   estimatedCost?: number
 ): Promise<DeploymentGuide> {
@@ -85,109 +93,71 @@ export async function generateDeploymentGuide(
 
   console.log('📋 Generating deployment guide with GPT-4.1...');
 
-  // Build architecture context
-  const servicesList = services.map(s => 
-    `- ${s.name} (${s.type})${s.description ? `: ${s.description}` : ''}`
+  // Build architecture context (limit to prevent token overflow)
+  const servicesList = services.slice(0, 25).map(s => 
+    `- ${s.name} (${s.type})`
   ).join('\n');
   
-  const connectionsList = connections.map(c => 
-    `- ${c.from} → ${c.to}: ${c.label} [${c.type || 'sync'}]`
+  const connectionsList = connections.slice(0, 20).map(c => 
+    `- ${c.from} → ${c.to}: ${c.label}`
   ).join('\n');
 
-  const systemPrompt = `You are an Azure DevOps expert specializing in deployment automation and documentation. Your role is to create comprehensive, production-ready deployment guides.
+  const systemPrompt = `You are an Azure DevOps expert. Create comprehensive deployment guides with Bicep templates.
 
-Generate detailed deployment documentation that includes:
+Generate deployment documentation with:
+1. Prerequisites - Azure CLI, permissions, tools
+2. Deployment Steps - Azure CLI commands with notes
+3. Configuration - Environment variables, settings
+4. Post-Deployment - Validation, monitoring
+5. Troubleshooting - Common issues and solutions
+6. Bicep Templates - Infrastructure as Code files
 
-1. **Prerequisites** - Azure CLI, subscriptions, permissions, tools
-2. **Deployment Steps** - Clear, numbered steps with Azure CLI commands or Portal instructions
-3. **Configuration** - Environment variables, connection strings, settings
-4. **Post-Deployment** - Validation, testing, monitoring setup
-5. **Troubleshooting** - Common issues and solutions
+**Bicep Guidelines:**
+- Create main.bicep + module files for each service
+- Use parameters for environment, location, naming
+- Include outputs for endpoints and connection strings
+- Add resource tags and comments
 
-**Guidelines:**
-- Provide actual Azure CLI commands when possible
-- Include both CLI and Azure Portal approaches
-- Add security best practices (use Key Vault, Managed Identity, etc.)
-- Reference official Azure documentation links
-- Be specific about resource naming conventions
-- Include estimated deployment time
-
-Return ONLY valid JSON (no markdown, no code blocks) with this structure:
+Return ONLY valid JSON:
 {
-  "title": "Deploy [Architecture Name] to Azure",
-  "overview": "2-3 sentence description of what will be deployed",
-  "prerequisites": [
-    "Azure subscription with Owner or Contributor access",
-    "Azure CLI installed (version 2.50+)"
-  ],
+  "title": "Deploy [Name] to Azure",
+  "overview": "Brief description",
+  "prerequisites": ["Azure subscription", "Azure CLI 2.50+"],
   "estimatedTime": "45-60 minutes",
-  "deploymentSteps": [
-    {
-      "step": 1,
-      "title": "Set up Azure environment",
-      "description": "Configure Azure CLI and create resource group",
-      "commands": [
-        "az login",
-        "az account set --subscription 'your-subscription-id'",
-        "az group create --name rg-myapp --location eastus2"
-      ],
-      "notes": [
-        "Choose a region close to your users",
-        "Use consistent naming conventions"
-      ]
-    }
-  ],
-  "configuration": [
-    {
-      "section": "Application Settings",
-      "settings": [
-        {
-          "name": "DATABASE_CONNECTION_STRING",
-          "value": "Retrieve from Azure SQL connection strings",
-          "description": "Connection string for primary database"
-        }
-      ]
-    }
-  ],
-  "postDeployment": [
-    "Verify all resources are running",
-    "Test endpoints with sample requests",
-    "Configure monitoring alerts"
-  ],
-  "troubleshooting": [
-    {
-      "issue": "Deployment fails with 'Resource not found'",
-      "solution": "Ensure resource group exists and you have proper permissions"
-    }
-  ],
-  "estimatedCost": "$150-200 per month for standard configuration"
+  "deploymentSteps": [{"step": 1, "title": "Setup", "description": "...", "commands": ["az login"], "notes": ["tip"]}],
+  "configuration": [{"section": "Settings", "settings": [{"name": "KEY", "value": "val", "description": "desc"}]}],
+  "postDeployment": ["Verify resources"],
+  "troubleshooting": [{"issue": "Error X", "solution": "Do Y"}],
+  "estimatedCost": "$100-200/month",
+  "bicepTemplates": [{"name": "Main", "description": "Orchestration", "filename": "main.bicep", "content": "// Bicep code here"}]
 }`;
 
   const userPrompt = `Create a deployment guide for this Azure architecture:
 
-**Architecture Description:**
-${architectureDescription || 'Production-ready Azure architecture'}
+**Description:** ${architectureDescription || 'Azure architecture'}
 
-**Services to Deploy (${services.length}):**
+**Services (${services.length}):**
 ${servicesList}
 
-**Service Connections (${connections.length}):**
+**Connections (${connections.length}):**
 ${connectionsList}
 
-**Logical Organization:**
-${groups ? groups.map(g => `- ${g.name}`).join('\n') : 'Services grouped logically'}
+${estimatedCost ? `**Est. Monthly Cost:** $${estimatedCost.toFixed(2)}` : ''}
 
-${estimatedCost ? `**Estimated Monthly Cost:** $${estimatedCost.toFixed(2)}` : ''}
-
-Generate a comprehensive, production-ready deployment guide with Azure CLI commands and best practices.`;
+Generate a deployment guide with Azure CLI commands and Bicep templates for this architecture.`;
 
   try {
     const content = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
-    ], 10000);
+    ], 16000);
 
     console.log('✅ Deployment guide response received:', content.length, 'characters');
+
+    // Handle empty response
+    if (!content || content.length === 0) {
+      throw new Error('Empty response from API. The architecture may be too complex. Try with fewer services.');
+    }
 
     // Parse JSON response
     let guide: DeploymentGuide;
@@ -204,6 +174,7 @@ Generate a comprehensive, production-ready deployment guide with Azure CLI comma
     console.log('📝 Steps:', guide.deploymentSteps.length);
     console.log('⚙️ Configuration sections:', guide.configuration.length);
     console.log('🔧 Troubleshooting tips:', guide.troubleshooting.length);
+    console.log('📦 Bicep templates:', guide.bicepTemplates?.length || 0);
 
     return guide;
 
@@ -295,6 +266,58 @@ export function downloadDeploymentGuide(guide: DeploymentGuide) {
   const link = document.createElement('a');
   link.href = url;
   link.download = `deployment-guide-${Date.now()}.md`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download a single Bicep template
+ */
+export function downloadBicepTemplate(template: BicepModule) {
+  const blob = new Blob([template.content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = template.filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download all Bicep templates as a combined file
+ */
+export function downloadAllBicepTemplates(guide: DeploymentGuide) {
+  if (!guide.bicepTemplates || guide.bicepTemplates.length === 0) {
+    console.warn('No Bicep templates available to download');
+    return;
+  }
+
+  // Create a combined file with all templates and instructions
+  let combined = `# Bicep Templates for ${guide.title}\n`;
+  combined += `# Generated: ${new Date(guide.timestamp).toLocaleString()}\n\n`;
+  combined += `# Instructions:\n`;
+  combined += `# 1. Create the folder structure as indicated by filenames\n`;
+  combined += `# 2. Copy each template section to its respective file\n`;
+  combined += `# 3. Run: az deployment group create --resource-group <rg-name> --template-file main.bicep\n\n`;
+  combined += `${'='.repeat(80)}\n\n`;
+
+  guide.bicepTemplates.forEach((template) => {
+    combined += `# FILE: ${template.filename}\n`;
+    combined += `# ${template.description}\n`;
+    combined += `${'─'.repeat(80)}\n\n`;
+    combined += template.content;
+    combined += `\n\n${'='.repeat(80)}\n\n`;
+  });
+
+  const blob = new Blob([combined], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `bicep-templates-${Date.now()}.txt`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

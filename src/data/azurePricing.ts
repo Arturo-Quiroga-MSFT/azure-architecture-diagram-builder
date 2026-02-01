@@ -45,7 +45,9 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   
   // Databases (handle icon name variations - iconLoader title-cases file names)
   'SQL Database': 'SQL Database',
+  'Sql Database': 'SQL Database',  // AI-generated title case
   'Azure SQL Database': 'SQL Database',
+  'Azure Sql Database': 'SQL Database',  // AI-generated title case
   'Azure Sql': 'SQL Database',  // From icon: Azure-SQL.svg
   'Azure SQL': 'SQL Database',
   'Cosmos DB': 'Azure Cosmos DB',
@@ -77,6 +79,9 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Load Balancer': 'Azure Load Balancer',
   'Load Balancers': 'Azure Load Balancer',
   'VPN Gateway': 'VPN Gateway',
+  'ExpressRoute': 'ExpressRoute',
+  'Express Route': 'ExpressRoute',
+  'Azure ExpressRoute': 'ExpressRoute',
   'Front Door': 'Azure Front Door Service',
   'Azure Front Door': 'Azure Front Door Service',
   'Azure Front Door Service': 'Azure Front Door Service',
@@ -85,6 +90,10 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Azure Content Delivery Network': 'Content Delivery Network',
   'Content Delivery Network': 'Content Delivery Network',
   'Traffic Manager': 'Azure Traffic Manager',
+  'Azure Firewall': 'Azure Firewall',
+  'Firewall': 'Azure Firewall',
+  'Network Watcher': 'Network Watcher',
+  'Azure Network Watcher': 'Network Watcher',
   
   // Analytics
   'Stream Analytics': 'Azure Stream Analytics',
@@ -127,8 +136,24 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   
   // Identity & Security
   'Active Directory': 'Azure Active Directory',
+  'Microsoft Entra ID': 'Microsoft Entra ID',
+  'Entra ID': 'Microsoft Entra ID',
+  'Azure AD': 'Microsoft Entra ID',
+  'Azure Active Directory': 'Microsoft Entra ID',
   'Key Vault': 'Key Vault',
   'Azure Key Vault': 'Key Vault',
+  
+  // Security
+  'Security Center': 'Microsoft Defender for Cloud',
+  'Microsoft Defender for Cloud': 'Microsoft Defender for Cloud',
+  'Defender for Cloud': 'Microsoft Defender for Cloud',
+  'Azure Defender': 'Microsoft Defender for Cloud',
+  
+  // Backup & Recovery
+  'Azure Backup': 'Backup',
+  'Backup': 'Backup',
+  'Recovery Services': 'Backup',
+  'Recovery Services Vault': 'Backup',
   
   // Monitoring
   'Application Insights': 'Application Insights',
@@ -211,6 +236,9 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Azure Static Web App': 'Standard',
   'Function Apps': 'Premium',
   'SQL Database': 'S1',
+  'Sql Database': 'S1',
+  'Azure SQL Database': 'S1',
+  'Azure Sql Database': 'S1',
   'Cosmos DB': 'Standard',
   'Storage': 'Hot LRS',
   'Storage Account': 'Hot LRS',
@@ -225,6 +253,20 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Virtual Machines': 'D2s_v3',
   'AKS': 'Standard',
   'Application Gateway': 'Standard_v2',
+  'ExpressRoute': 'Standard',
+  'Azure Firewall': 'Standard',
+  'Firewall': 'Standard',
+  'VPN Gateway': 'VpnGw2',
+  'Virtual Network': 'Standard',
+  'Network Watcher': 'Standard',
+  'Microsoft Entra ID': 'P1',
+  'Entra ID': 'P1',
+  'Azure AD': 'P1',
+  'Microsoft Defender for Cloud': 'Standard',
+  'Defender for Cloud': 'Standard',
+  'Security Center': 'Standard',
+  'Backup': 'Standard',
+  'Azure Backup': 'Standard',
   'Azure Cache for Redis': 'C1',
   'Cache Redis': 'C1',
   'API Management': 'Developer',
@@ -297,6 +339,12 @@ export const FALLBACK_PRICING: Record<string, {
     unit: 'per instance/month'
   },
   'SQL Database': {
+    basic: 4.90,
+    standard: 29.40, // S1
+    premium: 465.00, // P1
+    unit: 'per database/month'
+  },
+  'Sql Database': {
     basic: 4.90,
     standard: 29.40, // S1
     premium: 465.00, // P1
@@ -463,6 +511,66 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 162.00, // v2 Standard
     premium: 425.00, // v2 WAF
     unit: 'per gateway/month'
+  },
+  'ExpressRoute': {
+    basic: 55.00, // Local circuit
+    standard: 290.00, // Standard circuit
+    premium: 580.00, // Premium circuit
+    unit: 'per circuit/month'
+  },
+  'Azure Firewall': {
+    basic: 438.00, // Basic tier
+    standard: 912.50, // Standard tier
+    premium: 1095.00, // Premium tier
+    unit: 'per firewall/month'
+  },
+  'VPN Gateway': {
+    basic: 26.28, // VpnGw1
+    standard: 140.16, // VpnGw2
+    premium: 361.35, // VpnGw3
+    unit: 'per gateway/month'
+  },
+  'Virtual Network': {
+    basic: 0, // Free
+    standard: 3.65, // Peering
+    premium: 7.30, // Global peering
+    unit: 'per peering/month'
+  },
+  'Network Watcher': {
+    basic: 0, // Free tier
+    standard: 2.00, // Per flow log
+    premium: 10.00, // Connection monitor
+    unit: 'per resource/month'
+  },
+  'Microsoft Entra ID': {
+    basic: 0, // Free tier
+    standard: 6.00, // P1 per user
+    premium: 9.00, // P2 per user
+    unit: 'per user/month'
+  },
+  'Microsoft Defender for Cloud': {
+    basic: 0, // Free tier
+    standard: 15.00, // Per server
+    premium: 15.00, // Per server
+    unit: 'per server/month'
+  },
+  'Security Center': {
+    basic: 0, // Free tier
+    standard: 15.00, // Per server
+    premium: 15.00, // Per server
+    unit: 'per server/month'
+  },
+  'Backup': {
+    basic: 5.00, // 10GB
+    standard: 10.00, // 50GB
+    premium: 25.00, // 500GB
+    unit: 'per instance/month'
+  },
+  'Azure Backup': {
+    basic: 5.00, // 10GB
+    standard: 10.00, // 50GB
+    premium: 25.00, // 500GB
+    unit: 'per instance/month'
   },
   'Azure Kubernetes Service': {
     basic: 0,
