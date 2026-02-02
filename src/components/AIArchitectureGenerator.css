@@ -13,6 +13,77 @@
   transform: translateY(-1px);
 }
 
+/* Generate Architecture button with prominent pulsating effect */
+.btn-generate-ai {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  padding: 0.875rem 1.5rem !important;
+  animation: ai-generate-pulse 2s ease-in-out infinite;
+  position: relative;
+}
+
+.btn-generate-ai::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  padding: 4px;
+  background: linear-gradient(135deg, #8B5CF6, #EC4899);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  animation: ai-ring-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.btn-generate-ai svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.btn-generate-ai:not(:disabled) {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.39);
+}
+
+.btn-generate-ai:not(:disabled):hover {
+  background: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%) !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.5);
+}
+
+@keyframes ai-ring-pulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes ai-generate-pulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px 0 rgba(139, 92, 246, 0.39),
+      0 0 0 0 rgba(139, 92, 246, 0),
+      0 0 30px 0 rgba(236, 72, 153, 0);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 4px 14px 0 rgba(139, 92, 246, 0.39),
+      0 0 0 8px rgba(139, 92, 246, 0.25),
+      0 0 30px 8px rgba(236, 72, 153, 0.35);
+    transform: scale(1.02);
+  }
+}
+
 @keyframes ai-button-glow {
   0%, 100% {
     box-shadow:
@@ -27,8 +98,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-ai {
+  .btn-ai,
+  .btn-generate-ai {
     animation: none;
+  }
+  
+  .btn-generate-ai::before {
+    animation: none;
+  }
+  
+  .btn-generate-ai:not(:disabled):hover {
+    transform: none;
   }
 }
 

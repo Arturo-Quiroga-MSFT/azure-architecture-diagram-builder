@@ -140,7 +140,7 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
   return (
     <>
       <button
-        className="btn btn-ai"
+        className="btn btn-ai btn-generate-ai"
         onClick={() => {
           setIsOpen(true);
           // Reset state when opening modal
@@ -270,7 +270,7 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
                   {similarArchitectures.length > 0 ? 'Close' : 'Cancel'}
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-generate-ai"
                   onClick={handleGenerate}
                   disabled={isGenerating || !description.trim()}
                   style={{ display: similarArchitectures.length > 0 ? 'none' : 'flex' }}
