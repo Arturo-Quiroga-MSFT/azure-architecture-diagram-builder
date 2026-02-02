@@ -115,8 +115,8 @@
 }
 
 .group-label {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   cursor: text;
   padding: 2px 4px;
   border-radius: 3px;
@@ -129,8 +129,8 @@
 }
 
 .group-label-input {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #000000;
   border: 1px solid #000000;
   border-radius: 3px;
