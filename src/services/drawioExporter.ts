@@ -4,12 +4,55 @@
  * Converts React Flow diagrams to draw.io compatible XML format (.drawio)
  * enabling users to import and edit diagrams in draw.io/diagrams.net
  * 
+ * Icons are embedded as Base64-encoded data URIs for full offline support
+ * 
  * @author Arturo Quiroga
  * @date January 2026
  */
 
 import { Node, Edge } from 'reactflow';
 import { generateModelFilename } from '../utils/modelNaming';
+
+// Load SVG icon and convert to Base64 data URI for Draw.io
+async function loadIconAsBase64(iconPath: string): Promise<string | null> {
+  if (!iconPath) {
+    console.log('[Draw.io Export] No icon path provided');
+    return null;
+  }
+  
+  try {
+    console.log('[Draw.io Export] Loading icon:', iconPath);
+    
+    // Fetch the SVG file
+    const response = await fetch(iconPath);
+    if (!response.ok) {
+      console.warn(`[Draw.io Export] Failed to load icon (${response.status}): ${iconPath}`);
+      return null;
+    }
+    
+    const svgText = await response.text();
+    console.log('[Draw.io Export] Icon loaded, size:', svgText.length, 'bytes');
+    
+    // Convert to Base64 using modern approach
+    const encoder = new TextEncoder();
+    const data = encoder.encode(svgText);
+    let binary = '';
+    const len = data.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(data[i]);
+    }
+    const base64 = btoa(binary);
+    
+    console.log('[Draw.io Export] Base64 encoded, size:', base64.length, 'chars');
+    
+    // Return as data URI - Draw.io format: data:image/svg+xml,BASE64
+    // Note: Draw.io uses comma separator, not semicolon+base64
+    return `data:image/svg+xml,${base64}`;
+  } catch (error) {
+    console.error(`[Draw.io Export] Error loading icon ${iconPath}:`, error);
+    return null;
+  }
+}
 
 // Draw.io XML escape helper
 function escapeXml(str: string): string {
@@ -134,13 +177,13 @@ function createGroupCell(node: Node, cellId: string): string {
       </mxCell>`;
 }
 
-// Create draw.io mxCell for an Azure service node
-function createServiceCell(
+// Create draw.io mxCell for an Azure service node with embedded icon
+async function createServiceCell(
   node: Node, 
   cellId: string, 
   parentCellId: string,
   groupNodeMap: Map<string, { cellId: string; x: number; y: number }>
-): string {
+): Promise<{ containerCell: string; iconCell: string | null }> {
   // Get position - if node has a parent group, position is relative to group
   let x = node.position?.x || 0;
   let y = node.position?.y || 0;
@@ -170,13 +213,46 @@ function createServiceCell(
     pricingLabel = `&#xa;$${cost.toFixed(2)}/mo`;
   }
   
-  // Style for service node - rounded rectangle with icon placeholder
+  // Style for service node - rounded rectangle
   const style = `rounded=1;whiteSpace=wrap;html=1;fillColor=${fillColor};strokeColor=${strokeColor};strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;`;
   
-  return `
+  // Service cell XML
+  const containerCell = `
       <mxCell id="${cellId}" value="${label}${pricingLabel}" style="${style}" vertex="1"${tooltip} parent="${parentCellId}">
         <mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />
       </mxCell>`;
+  
+  // Try to load and embed icon as Base64 - create as separate absolute-positioned cell
+  const iconPath = node.data?.iconPath;
+  console.log('[Draw.io Export] Node:', label, 'iconPath:', iconPath);
+  
+  let iconCell: string | null = null;
+  
+  if (iconPath) {
+    const iconDataUri = await loadIconAsBase64(iconPath);
+    if (iconDataUri) {
+      console.log('[Draw.io Export] Icon embedded for:', label);
+      
+      const iconCellId = generateCellId();
+      const iconSize = 48;
+      const iconX = x + (width - iconSize) / 2; // Absolute center position
+      const iconY = y + 8; // Absolute top padding
+      
+      // Draw.io image style - use raw data URI (they handle encoding internally)
+      const iconStyle = `shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;html=1;image=${iconDataUri};`;
+      
+      iconCell = `
+      <mxCell id="${iconCellId}" value="" style="${iconStyle}" vertex="1" parent="${parentCellId}">
+        <mxGeometry x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" as="geometry" />
+      </mxCell>`;
+    } else {
+      console.warn('[Draw.io Export] Failed to load icon for:', label);
+    }
+  } else {
+    console.log('[Draw.io Export] No icon path for node:', label);
+  }
+  
+  return { containerCell, iconCell };
 }
 
 // Create draw.io mxCell for an edge/connection
@@ -214,12 +290,12 @@ function createEdgeCell(
       </mxCell>`;
 }
 
-// Main export function
-export function exportToDrawio(
+// Main export function (async to support icon embedding)
+export async function exportToDrawio(
   nodes: Node[], 
   edges: Edge[], 
   diagramName: string = 'Azure Architecture'
-): string {
+): Promise<string> {
   resetCellIdCounter();
   
   // Maps to track cell IDs
@@ -243,9 +319,8 @@ export function exportToDrawio(
     groupCells.push(createGroupCell(groupNode, cellId));
   }
   
-  // Generate cells for service nodes
-  const serviceCells: string[] = [];
-  for (const serviceNode of serviceNodes) {
+  // Generate cells for service nodes (with async icon loading)
+  const serviceCellPromises = serviceNodes.map(async (serviceNode) => {
     const cellId = generateCellId();
     nodeIdToCellId.set(serviceNode.id, cellId);
     
@@ -255,7 +330,20 @@ export function exportToDrawio(
       parentCellId = groupNodeMap.get(serviceNode.parentNode)!.cellId;
     }
     
-    serviceCells.push(createServiceCell(serviceNode, cellId, parentCellId, groupNodeMap));
+    return await createServiceCell(serviceNode, cellId, parentCellId, groupNodeMap);
+  });
+  
+  const serviceCellResults = await Promise.all(serviceCellPromises);
+  
+  // Separate container cells and icon cells
+  const serviceCells: string[] = [];
+  const iconCells: string[] = [];
+  
+  for (const result of serviceCellResults) {
+    serviceCells.push(result.containerCell);
+    if (result.iconCell) {
+      iconCells.push(result.iconCell);
+    }
   }
   
   // Generate cells for edges
@@ -268,8 +356,8 @@ export function exportToDrawio(
     }
   }
   
-  // Combine all cells
-  const allCells = [...groupCells, ...serviceCells, ...edgeCells].join('');
+  // Combine all cells - put icons after services so they appear on top
+  const allCells = [...groupCells, ...serviceCells, ...iconCells, ...edgeCells].join('');
   
   // Calculate diagram bounds for page size
   let maxX = 0, maxY = 0;
@@ -313,13 +401,13 @@ export function downloadDrawioFile(xml: string, fileName: string = 'azure-archit
   URL.revokeObjectURL(url);
 }
 
-// Combined export and download
-export function exportAndDownloadDrawio(
+// Combined export and download (async)
+export async function exportAndDownloadDrawio(
   nodes: Node[], 
   edges: Edge[], 
   diagramName?: string
-): string {
-  const xml = exportToDrawio(nodes, edges, diagramName);
+): Promise<string> {
+  const xml = await exportToDrawio(nodes, edges, diagramName);
   const fileName = generateModelFilename('azure-diagram', 'drawio');
   downloadDrawioFile(xml, fileName);
   return fileName;

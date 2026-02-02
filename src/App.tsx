@@ -942,10 +942,10 @@ function App() {
     }, 800);
   }, [reactFlowInstance, recordExport]);
 
-  const exportAsDrawio = useCallback(() => {
+  const exportAsDrawio = useCallback(async () => {
     try {
       const diagramName = titleBlockData.architectureName || 'Azure Architecture';
-      const fileName = exportAndDownloadDrawio(nodes, edges, diagramName);
+      const fileName = await exportAndDownloadDrawio(nodes, edges, diagramName);
       recordExport('drawio', fileName);
     } catch (err) {
       console.error('Error exporting Draw.io:', err);
