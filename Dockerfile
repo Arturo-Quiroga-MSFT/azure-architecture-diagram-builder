@@ -40,6 +40,9 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
 
+# Copy Azure icons to dist for production serving
+COPY --from=build /app/Azure_Public_Service_Icons ./dist/Azure_Public_Service_Icons
+
 ENV NODE_ENV=production
 ENV PORT=80
 
