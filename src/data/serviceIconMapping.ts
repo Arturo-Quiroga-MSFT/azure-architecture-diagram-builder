@@ -120,7 +120,22 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   
   'Azure Machine Learning': {
     displayName: 'Azure Machine Learning',
-    aliases: ['Machine Learning', 'ML', 'AML', 'Azure ML'],
+    aliases: [
+      'Machine Learning', 
+      'ML', 
+      'AML', 
+      'Azure ML',
+      'AML Workspace',
+      'Azure Machine Learning Workspace',
+      'Machine Learning Workspace',
+      'AML Compute',
+      'ML Workspace',
+      'Azure ML Workspace',
+      'ML Compute',
+      'Machine Learning Service',
+      'Azure Machine Learning Service',
+      'AzureML'
+    ],
     iconFile: 'azure-machine-learning',
     category: 'ai + machine learning',
     hasPricingData: true,

@@ -204,7 +204,7 @@ Icon categories mapping (MUST use these exact values):
 - "web": Static Web Apps, CDN, Front Door
 
 CRITICAL ICON MAPPINGS - Use EXACT service names:
-These service names will match icons directly - use these exact names in your response:
+These service names will match icons directly - use these exact names in your response for BOTH the "name" AND "type" fields:
 
 AI Services:
 - "Azure OpenAI" - for GPT models, chat completions
@@ -214,7 +214,7 @@ AI Services:
 - "Translator" - for translation services
 - "Document Intelligence" - for form processing, document analysis
 - "Custom Vision" - for custom image classification
-- "Azure Machine Learning" - for custom ML models
+- "Azure Machine Learning" - for ML workspaces, training, inference endpoints, batch/online deployments
 - "Cognitive Services" - only for generic multi-service scenarios
 
 Web & API Services:
@@ -264,18 +264,23 @@ CORRECT SERVICE NAMING EXAMPLES:
 ✅ CORRECT:
 {
   "name": "Azure OpenAI",
-  "type": "OpenAI GPT Models",
+  "type": "Azure OpenAI",
   "category": "ai + machine learning"
 }
 {
   "name": "App Service",
-  "type": "Web Application",
+  "type": "App Service",
   "category": "app services"
 }
 {
   "name": "Azure Cosmos DB",
-  "type": "NoSQL Database",
+  "type": "Azure Cosmos DB",
   "category": "databases"
+}
+{
+  "name": "Azure Machine Learning",
+  "type": "Azure Machine Learning",
+  "category": "ai + machine learning"
 }
 
 ❌ INCORRECT (will show wrong icon):
@@ -283,6 +288,8 @@ CORRECT SERVICE NAMING EXAMPLES:
   "name": "AI Studio",  ← WRONG! Use "Azure OpenAI"
   "name": "Web API",    ← WRONG! Use "App Service"
   "name": "Cosmos DB",  ← WRONG! Use "Azure Cosmos DB"
+  "name": "Machine Learning",  ← WRONG! Use "Azure Machine Learning"
+  "type": "ML Workspace",  ← WRONG! type should also be "Azure Machine Learning"
 }`;
 
   try {
