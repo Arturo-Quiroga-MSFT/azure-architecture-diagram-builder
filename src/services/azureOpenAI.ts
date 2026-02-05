@@ -164,7 +164,7 @@ Return ONLY a valid JSON object (no markdown, no explanations) with this exact s
     {
       "from": "service-id",
       "to": "service-id",
-      "label": "connection description",
+      "label": "Detailed description of what flows through this connection (e.g., 'Submit batch job per tenant', 'Route request to shared deployment')",
       "type": "sync|async|optional"
     }
   ],
@@ -248,7 +248,11 @@ Rules:
    - Use for: authentication, authorization, SSO, user management, RBAC
 5. Create logical connections based on data flow
 6. Make group labels concise and descriptive
-7. Do NOT specify sourcePosition or targetPosition - the layout engine will use horizontal flow (right → left) automatically for cleaner diagrams
+7. **CONNECTION LABELS ARE CRITICAL**: Write detailed, action-oriented labels that describe:
+   - What data/requests flow through the connection
+   - The purpose or action (e.g., "Submit batch job per tenant", "Route to dedicated deployment", "Read/write tenant-partitioned data")
+   - NOT generic labels like "Request", "Response", "Data" - be specific!
+8. Do NOT specify sourcePosition or targetPosition - the layout engine will use horizontal flow (right → left) automatically for cleaner diagrams
 8. Specify connection type for each connection:
    - "sync" (solid line) - Synchronous, request-response, real-time communication (HTTP, SQL queries)
    - "async" (dashed line) - Asynchronous, message-based, event-driven (queues, events, pub/sub)
@@ -401,10 +405,15 @@ IMPORTANT: Extract and describe:
 2. **Service relationships and connections** - How services connect to each other, data flow direction
 3. **Groupings and tiers** - Any logical groupings (e.g., "Web Tier", "Data Layer", "Security")
 4. **Connection types** - Whether connections appear to be synchronous (solid lines), asynchronous (dashed), or optional (dotted)
-5. **Labels and annotations** - Any text labels on connections or services
+5. **Labels and annotations** - PRESERVE THE EXACT TEXT of any labels on connections or services - these are critical!
 6. **Data flow** - The overall flow of data through the system
 7. **Security components** - Identity, authentication, firewalls, etc.
 8. **Monitoring/observability** - Any monitoring or logging services shown
+
+CRITICAL FOR CONNECTION LABELS:
+- If the diagram has text labels on the arrows/connections, include those EXACT labels in your description
+- Labels like "Submit batch job per tenant" or "Route to dedicated deployment" must be preserved verbatim
+- These labels are essential for recreating the diagram accurately
 
 OUTPUT FORMAT:
 Write a detailed paragraph description that fully captures the architecture shown in the image. Include:
