@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Sparkles, X, Loader2, Clock, Zap } from 'lucide-react';
-import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics } from '../services/azureOpenAI';
+import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage } from '../services/azureOpenAI';
 import { initializeReferenceArchitectures } from '../services/referenceArchitectureService';
 import ModelSelector from './ModelSelector';
+import ImageUploader from './ImageUploader';
 import './AIArchitectureGenerator.css';
 
 interface AIArchitectureGeneratorProps {
@@ -21,6 +22,8 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const [error, setError] = useState('');
   const [similarArchitectures, setSimilarArchitectures] = useState<any[]>([]);
   const [aiMetrics, setAiMetrics] = useState<AIMetrics | null>(null);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [imageAnalyzed, setImageAnalyzed] = useState(false);
   
   // Auto-snapshot preference (stored in localStorage)
   const [autoSnapshot, setAutoSnapshot] = useState<boolean>(() => {
@@ -32,6 +35,20 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const handleAutoSnapshotChange = (checked: boolean) => {
     setAutoSnapshot(checked);
     localStorage.setItem('aiGenerator.autoSnapshot', JSON.stringify(checked));
+  };
+
+  // Handle image analysis result
+  const handleImageAnalyzed = (analyzedDescription: string) => {
+    // Prepend or replace the description with the analyzed content
+    const prefix = '🖼️ [Analyzed from uploaded diagram]\n\n';
+    setDescription(prefix + analyzedDescription);
+    setImageAnalyzed(true);
+  };
+
+  // Wrapper to pass to ImageUploader
+  const handleAnalyzeImage = async (base64: string, mimeType: string) => {
+    const result = await analyzeArchitectureDiagramImage(base64, mimeType);
+    return { description: result.description };
   };
 
   const examplePrompts = [
@@ -146,6 +163,7 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
           // Reset state when opening modal
           setSimilarArchitectures([]);
           setError('');
+          setImageAnalyzed(false);
           // Initialize embeddings in background
           initializeReferenceArchitectures().catch(console.error);
         }}
@@ -172,18 +190,36 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
               <p className="modal-description">
                 Describe your Azure architecture in plain English, and AI will automatically
                 generate a diagram with the appropriate services and connections.
+                You can also <strong>upload an existing diagram</strong> (screenshot, whiteboard photo, or export from other tools)
+                and AI will analyze it to create your architecture.
               </p>
+
+              <ImageUploader
+                onImageAnalyzed={handleImageAnalyzed}
+                onAnalyzing={setIsAnalyzingImage}
+                onError={setError}
+                disabled={isGenerating}
+                analyzeImage={handleAnalyzeImage}
+              />
 
               <div className="form-group">
                 <label htmlFor="architecture-description">Architecture Description</label>
                 <textarea
                   id="architecture-description"
                   className="form-textarea"
-                  placeholder="Example: I need a web app with a frontend, API backend, SQL database, and blob storage..."
+                  placeholder={imageAnalyzed 
+                    ? "AI has analyzed your diagram. Review the description above, make any adjustments, then click Generate." 
+                    : "Example: I need a web app with a frontend, API backend, SQL database, and blob storage..."}
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={6}
-                  disabled={isGenerating}
+                  onChange={(e) => {
+                    setDescription(e.target.value);
+                    // Clear imageAnalyzed flag if user clears the text
+                    if (!e.target.value.includes('[Analyzed from uploaded diagram]')) {
+                      setImageAnalyzed(false);
+                    }
+                  }}
+                  rows={imageAnalyzed ? 10 : 6}
+                  disabled={isGenerating || isAnalyzingImage}
                 />
               </div>
 
@@ -272,7 +308,7 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
                 <button
                   className="btn btn-primary btn-generate-ai"
                   onClick={handleGenerate}
-                  disabled={isGenerating || !description.trim()}
+                  disabled={isGenerating || isAnalyzingImage || !description.trim()}
                   style={{ display: similarArchitectures.length > 0 ? 'none' : 'flex' }}
                 >
                   {isGenerating ? (

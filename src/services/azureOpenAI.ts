@@ -362,6 +362,156 @@ export function isAzureOpenAIConfigured(): boolean {
   return hasEndpoint && hasApiKey && (hasGpt52 || hasGpt41 || hasGpt41Mini);
 }
 
+/**
+ * Analyzes an architecture diagram image and generates a detailed text description
+ * that can be used as input for the AI architecture generator.
+ * 
+ * Phase 1 implementation: Image → Text Description → Existing Generation Pipeline
+ */
+export async function analyzeArchitectureDiagramImage(imageBase64: string, mimeType: string = 'image/png'): Promise<{ description: string; metrics: AIMetrics }> {
+  const settings = getModelSettingsForFeature('architectureGeneration');
+  const modelConfig = MODEL_CONFIG[settings.model];
+  
+  let deployment: string;
+  try {
+    deployment = getDeploymentName(settings.model);
+  } catch (e) {
+    throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
+  }
+
+  if (!endpoint || !apiKey) {
+    throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
+  }
+
+  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
+
+  const systemPrompt = `You are an expert Azure cloud architect specializing in analyzing architecture diagrams.
+
+Your task is to analyze the provided architecture diagram image and create a detailed, comprehensive text description that can be used to recreate this architecture.
+
+IMPORTANT: Extract and describe:
+1. **All services/components visible** - Identify each Azure service, third-party service, or component shown
+2. **Service relationships and connections** - How services connect to each other, data flow direction
+3. **Groupings and tiers** - Any logical groupings (e.g., "Web Tier", "Data Layer", "Security")
+4. **Connection types** - Whether connections appear to be synchronous (solid lines), asynchronous (dashed), or optional (dotted)
+5. **Labels and annotations** - Any text labels on connections or services
+6. **Data flow** - The overall flow of data through the system
+7. **Security components** - Identity, authentication, firewalls, etc.
+8. **Monitoring/observability** - Any monitoring or logging services shown
+
+OUTPUT FORMAT:
+Write a detailed paragraph description that fully captures the architecture shown in the image. Include:
+- All services by name (use official Azure service names where recognizable)
+- How they connect and interact
+- The purpose/role of each component
+- Any groupings or organizational structure
+- The overall workflow from input to output
+
+Be thorough and specific. The description will be used to automatically generate a diagram, so accuracy is critical.
+
+If you cannot identify a specific Azure service, describe it by its apparent function (e.g., "a database service", "an API gateway", "a message queue").
+
+If the image is not an architecture diagram or is unclear, describe what you can see and note any limitations.`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    {
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: 'Analyze this architecture diagram and provide a detailed description that captures all services, connections, groupings, and data flows shown. Be specific and thorough.'
+        },
+        {
+          type: 'image_url',
+          image_url: {
+            url: `data:${mimeType};base64,${imageBase64}`,
+            detail: 'high'
+          }
+        }
+      ]
+    }
+  ];
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes for image analysis
+  
+  const startTime = performance.now();
+
+  const requestBody: any = {
+    messages,
+    max_completion_tokens: 4000, // Enough for a detailed description
+  };
+  
+  // Add reasoning_effort for reasoning models
+  if (modelConfig.isReasoning) {
+    requestBody.reasoning_effort = settings.reasoningEffort;
+  }
+
+  console.log(`🖼️ Analyzing architecture diagram with ${modelConfig.displayName}...`);
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    const elapsedTimeMs = Math.round(performance.now() - startTime);
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Azure OpenAI Vision API error:', response.status, error);
+      
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
+      }
+      if (response.status === 404) {
+        throw new Error('Deployment not found. Please check your model deployment name.');
+      }
+      if (response.status === 400 && error.includes('image')) {
+        throw new Error('The selected model may not support image analysis. Try using GPT-4o or GPT-5.2.');
+      }
+      throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content || '';
+    
+    const usage = data.usage || {};
+    const metrics: AIMetrics = {
+      promptTokens: usage.prompt_tokens || 0,
+      completionTokens: usage.completion_tokens || 0,
+      totalTokens: usage.total_tokens || 0,
+      elapsedTimeMs,
+      model: data.model
+    };
+    
+    if (!content || content.trim().length === 0) {
+      throw new Error('Empty response from Azure OpenAI. The image may be too complex or unclear.');
+    }
+    
+    console.log('🖼️ Image analysis complete:', content.length, 'chars |', 
+      `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out |`,
+      `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+    
+    return { description: content, metrics };
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Image analysis timed out. The image may be too large or complex.');
+    }
+    
+    throw error;
+  }
+}
+
 export async function generateArchitectureFromARM(armTemplate: any) {
   // Extract key information from ARM template
   const resources = armTemplate.resources || [];
