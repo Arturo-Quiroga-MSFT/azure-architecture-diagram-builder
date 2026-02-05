@@ -214,8 +214,16 @@ AI Services:
 - "Translator" - for translation services
 - "Document Intelligence" - for form processing, document analysis
 - "Custom Vision" - for custom image classification
-- "Azure Machine Learning" - for ML workspaces, training, inference endpoints, batch/online deployments
+- "Azure Machine Learning" - for ML workspaces (use only when showing workspace as single node)
 - "Cognitive Services" - only for generic multi-service scenarios
+
+Azure Machine Learning Sub-Components (for granular architectures):
+- "AML Online Endpoint" - real-time inference endpoints ($0 cost - routing only)
+- "AML Batch Endpoint" - batch inference endpoints ($0 cost - routing only)
+- "AML Deployment" - model deployments within endpoints ($0 cost - config only)
+- "AML Managed Compute" - actual compute instances (HAS COST - VMs)
+- "Batch Compute Pool" - batch processing compute pools (HAS COST - VMs)
+NOTE: When breaking down AML architectures, use these specific names to avoid double-counting costs!
 
 Web & API Services:
 - "Api Management" - for API gateway and management
@@ -409,6 +417,15 @@ IMPORTANT: Extract and describe:
 6. **Data flow** - The overall flow of data through the system
 7. **Security components** - Identity, authentication, firewalls, etc.
 8. **Monitoring/observability** - Any monitoring or logging services shown
+
+AZURE MACHINE LEARNING GRANULAR COMPONENTS:
+If the diagram shows detailed AML architecture, identify these SPECIFIC component types:
+- "AML Online Endpoint" - for real-time inference endpoints
+- "AML Batch Endpoint" - for batch inference endpoints
+- "AML Deployment" (shared or dedicated) - for model deployments
+- "AML Managed Compute" - for compute instances/clusters
+- "Batch Compute Pool" - for batch processing pools
+Using these specific names helps with accurate cost estimation (endpoints are $0, compute has cost).
 
 CRITICAL FOR CONNECTION LABELS:
 - If the diagram has text labels on the arrows/connections, include those EXACT labels in your description

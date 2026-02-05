@@ -128,10 +128,8 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
       'AML Workspace',
       'Azure Machine Learning Workspace',
       'Machine Learning Workspace',
-      'AML Compute',
       'ML Workspace',
       'Azure ML Workspace',
-      'ML Compute',
       'Machine Learning Service',
       'Azure Machine Learning Service',
       'AzureML'
@@ -142,6 +140,62 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     pricingServiceName: 'Azure Machine Learning',
     isUsageBased: true,
     costRange: '$0-5000/mo (varies greatly)'
+  },
+  
+  // AML Sub-components (granular architecture support)
+  // These allow architects to break down AML into logical components
+  // with accurate cost attribution (endpoints/deployments are $0, compute has cost)
+  
+  'AML Online Endpoint': {
+    displayName: 'AML Online Endpoint',
+    aliases: ['Online Endpoint', 'AML Endpoint', 'Managed Online Endpoint', 'Real-time Endpoint'],
+    iconFile: 'azure-machine-learning',
+    category: 'ai + machine learning',
+    hasPricingData: false, // No direct cost - routing construct only
+    isUsageBased: false,
+    costRange: '$0 (routing only)'
+  },
+  
+  'AML Batch Endpoint': {
+    displayName: 'AML Batch Endpoint',
+    aliases: ['Batch Endpoint', 'AML Batch', 'Batch Inference Endpoint'],
+    iconFile: 'azure-machine-learning',
+    category: 'ai + machine learning',
+    hasPricingData: false, // No direct cost - routing construct only
+    isUsageBased: false,
+    costRange: '$0 (routing only)'
+  },
+  
+  'AML Deployment': {
+    displayName: 'AML Deployment',
+    aliases: ['Online Deployment', 'Batch Deployment', 'Model Deployment', 'Managed Deployment', 'Shared Deployment', 'Dedicated Deployment'],
+    iconFile: 'azure-machine-learning',
+    category: 'ai + machine learning',
+    hasPricingData: false, // Configuration only - compute cost is separate
+    isUsageBased: false,
+    costRange: '$0 (config only)'
+  },
+  
+  'AML Managed Compute': {
+    displayName: 'AML Managed Compute',
+    aliases: ['AML Compute', 'ML Compute', 'Managed Compute', 'AML Compute Instance', 'Compute Instance', 'AML Managed Compute (CPU/GPU)', 'Managed Compute (CPU/GPU)'],
+    iconFile: 'virtual-machines',
+    category: 'compute',
+    hasPricingData: true,
+    pricingServiceName: 'Virtual Machines',
+    isUsageBased: false,
+    costRange: '$50-2000/mo (per instance)'
+  },
+  
+  'Batch Compute Pool': {
+    displayName: 'Batch Compute Pool',
+    aliases: ['Batch Pool', 'AML Batch Compute', 'Batch Compute', 'Dedicated Batch Compute', 'Batch Compute (auto-scale)'],
+    iconFile: '10031-icon-service-Batch-Accounts',
+    category: 'compute',
+    hasPricingData: true,
+    pricingServiceName: 'Batch',
+    isUsageBased: true,
+    costRange: '$0-2000/mo (scale-to-zero capable)'
   },
   
   'Azure Cognitive Search': {

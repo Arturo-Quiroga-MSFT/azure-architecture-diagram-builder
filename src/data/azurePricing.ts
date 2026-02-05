@@ -650,6 +650,39 @@ export const FALLBACK_PRICING: Record<string, {
     premium: 200.00, // With compute
     unit: 'per workspace/month'
   },
+  // AML Sub-components (granular architecture)
+  // Endpoints and deployments have $0 cost - they are routing/config constructs
+  // Only compute resources have actual cost
+  'AML Online Endpoint': {
+    basic: 0,
+    standard: 0,
+    premium: 0,
+    unit: 'no direct cost (routing only)'
+  },
+  'AML Batch Endpoint': {
+    basic: 0,
+    standard: 0,
+    premium: 0,
+    unit: 'no direct cost (routing only)'
+  },
+  'AML Deployment': {
+    basic: 0,
+    standard: 0,
+    premium: 0,
+    unit: 'no direct cost (config only)'
+  },
+  'AML Managed Compute': {
+    basic: 50.00, // Small instance
+    standard: 200.00, // Standard instance (DS3_v2 equivalent)
+    premium: 800.00, // GPU instance
+    unit: 'per instance/month'
+  },
+  'Batch Compute Pool': {
+    basic: 0, // Scale-to-zero
+    standard: 100.00, // Small pool
+    premium: 500.00, // Large/GPU pool
+    unit: 'per pool/month (usage-based)'
+  },
   'Container Registry': {
     basic: 5.00, // Basic tier
     standard: 20.00, // Standard tier
