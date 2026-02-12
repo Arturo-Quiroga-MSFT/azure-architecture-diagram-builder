@@ -1,0 +1,1746 @@
+{
+  "nodes": [
+    {
+      "id": "ai-services",
+      "type": "groupNode",
+      "position": {
+        "x": 840,
+        "y": 3520
+      },
+      "data": {
+        "label": "AI Services"
+      },
+      "style": {
+        "width": 1000,
+        "height": 1210
+      },
+      "width": 1000,
+      "height": 1210,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 840,
+        "y": 3520
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "ml-platform",
+      "type": "groupNode",
+      "position": {
+        "x": 540,
+        "y": 1940
+      },
+      "data": {
+        "label": "ML Platform"
+      },
+      "style": {
+        "width": 1400,
+        "height": 1460
+      },
+      "width": 1400,
+      "height": 1460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 540,
+        "y": 1940
+      },
+      "dragging": false
+    },
+    {
+      "id": "storage-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1960,
+        "y": 1020
+      },
+      "data": {
+        "label": "Storage & Data"
+      },
+      "style": {
+        "width": 1120,
+        "height": 960
+      },
+      "width": 1120,
+      "height": 960,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1960,
+        "y": 1020
+      },
+      "dragging": false
+    },
+    {
+      "id": "monitor-alerts",
+      "type": "groupNode",
+      "position": {
+        "x": 2040,
+        "y": 3220
+      },
+      "data": {
+        "label": "Monitoring & Alerts"
+      },
+      "style": {
+        "width": 1020,
+        "height": 1335
+      },
+      "width": 1020,
+      "height": 1335,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2040,
+        "y": 3220
+      },
+      "dragging": false
+    },
+    {
+      "id": "identity-secrets",
+      "type": "groupNode",
+      "position": {
+        "x": 0,
+        "y": 460
+      },
+      "data": {
+        "label": "Identity & Secrets"
+      },
+      "style": {
+        "width": 1600,
+        "height": 1460
+      },
+      "width": 1600,
+      "height": 1460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 0,
+        "y": 460
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "AQ-DOC-INTEL",
+      "type": "azureNode",
+      "position": {
+        "x": 600,
+        "y": 120
+      },
+      "data": {
+        "label": "Document Intelligence",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/document-intelligence.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:51:11.710Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ai-services",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1440,
+        "y": 3640
+      },
+      "dragging": false
+    },
+    {
+      "id": "r2d2-foundry-001",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-openai.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:51:11.707Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ai-services",
+      "extent": "parent",
+      "width": 141,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1020,
+        "y": 3780
+      },
+      "dragging": false
+    },
+    {
+      "id": "r2d2-hosted-agents-project-resou",
+      "type": "azureNode",
+      "position": {
+        "x": 580,
+        "y": 860
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-openai.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:51:11.707Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ai-services",
+      "extent": "parent",
+      "width": 141,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1420,
+        "y": 4380
+      },
+      "dragging": false
+    },
+    {
+      "id": "r2d2-sweden-central-project-reso",
+      "type": "azureNode",
+      "position": {
+        "x": 800,
+        "y": 320
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-openai.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:51:11.707Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ai-services",
+      "extent": "parent",
+      "width": 141,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1640,
+        "y": 3840
+      },
+      "dragging": false
+    },
+    {
+      "id": "aq-mysearch001",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Cognitive Search",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-cognitive-search.svg"
+      },
+      "parentNode": "storage-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2720,
+        "y": 1200
+      }
+    },
+    {
+      "id": "7a28b21mainprojectacr",
+      "type": "azureNode",
+      "position": {
+        "x": 1040,
+        "y": 180
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-platform",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1580,
+        "y": 2120
+      }
+    },
+    {
+      "id": "ad520cd9e08f429685a9d6623618d73d",
+      "type": "azureNode",
+      "position": {
+        "x": 960,
+        "y": 440
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-platform",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1500,
+        "y": 2380
+      },
+      "dragging": false
+    },
+    {
+      "id": "aqr2d2acr001",
+      "type": "azureNode",
+      "position": {
+        "x": 1140,
+        "y": 900
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-platform",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1680,
+        "y": 2840
+      },
+      "dragging": false
+    },
+    {
+      "id": "aq-main-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 700,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-platform",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1240,
+        "y": 2080
+      },
+      "dragging": false
+    },
+    {
+      "id": "aq-hub-project",
+      "type": "azureNode",
+      "position": {
+        "x": 120,
+        "y": 800
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-platform",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 660,
+        "y": 2740
+      },
+      "dragging": false
+    },
+    {
+      "id": "AQ-ML-WORK-001",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 1060
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-platform",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": 3000
+      },
+      "dragging": false
+    },
+    {
+      "id": "aqmlwork0018580440867",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 430
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.664Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "storage-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2720,
+        "y": 1450
+      }
+    },
+    {
+      "id": "staqmainhub339573983327",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 680
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.664Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "storage-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2720,
+        "y": 1700
+      }
+    },
+    {
+      "id": "aqmlwork0018580440867-a88f9885-e7c9-48a7-937f-fbb938605b05",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 330
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.664Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "storage-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2140,
+        "y": 1350
+      }
+    },
+    {
+      "id": "staqmainhub339573983327-4f52da61-5852-42fb-a260-46cd0df48dc9",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 580
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.664Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "storage-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2140,
+        "y": 1600
+      }
+    },
+    {
+      "id": "aqmlwork0019254899053",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T20:51:11.706Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "monitor-alerts",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2700,
+        "y": 3400
+      }
+    },
+    {
+      "id": "aq-app-insights-001",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 1055
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "monitor-alerts",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2220,
+        "y": 4275
+      }
+    },
+    {
+      "id": "aqmlwork0017057039775",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 205
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T20:51:11.706Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "monitor-alerts",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2220,
+        "y": 3425
+      }
+    },
+    {
+      "id": "Application Insights Smart Detection",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 1055
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "monitor-alerts",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2700,
+        "y": 4275
+      }
+    },
+    {
+      "id": "aqmlwork0017720873297",
+      "type": "azureNode",
+      "position": {
+        "x": 340,
+        "y": 1020
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-secrets",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 340,
+        "y": 1480
+      },
+      "dragging": false
+    },
+    {
+      "id": "kv-aqmainhu339573983327",
+      "type": "azureNode",
+      "position": {
+        "x": 1160,
+        "y": 960
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.706Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-secrets",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1160,
+        "y": 1420
+      },
+      "dragging": false
+    },
+    {
+      "id": "diagnosticexpert-rmxsua67pyqu4",
+      "type": "azureNode",
+      "position": {
+        "x": 1280,
+        "y": 400
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-secrets",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1280,
+        "y": 860
+      },
+      "dragging": false
+    },
+    {
+      "id": "diagnosticexpert2-7aszq7riegoaw",
+      "type": "azureNode",
+      "position": {
+        "x": 1260,
+        "y": 200
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-secrets",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1260,
+        "y": 660
+      },
+      "dragging": false
+    },
+    {
+      "id": "diagnosticexpert-vqay7hbbjqz74",
+      "type": "azureNode",
+      "position": {
+        "x": 1300,
+        "y": 600
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:51:11.705Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-secrets",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": 1060
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "aqmlwork0017057039775",
+      "target": "aqmlwork0019254899053",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward real-time telemetry logs from workspace to central Log Analytics for cross-workspace correlation",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "AQ-ML-WORK-001",
+      "target": "aqmlwork0018580440867",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store and retrieve ML workspace artifacts, blobs, and models",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "AQ-ML-WORK-001",
+      "target": "aqmlwork0017720873297",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Access secured secrets, API keys, and credentials required for ML jobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "AQ-ML-WORK-001",
+      "target": "aqmlwork0017057039775",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit application and inferencing telemetry to Log Analytics for monitoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "AQ-ML-WORK-001",
+      "target": "aqr2d2acr001",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Pull and build custom ML training and inference Docker images from registry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "aq-main-hub",
+      "target": "staqmainhub339573983327",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write hub-level ML workspace data and models to central storage",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "aq-main-hub",
+      "target": "kv-aqmainhu339573983327",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Access secrets/keys for workspace authorization and external service connections",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "aq-main-hub",
+      "target": "ad520cd9e08f429685a9d6623618d73d",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve/publish container images to central registry for ML workloads",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-8",
+      "source": "aq-hub-project",
+      "target": "aq-main-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Delegate project ML workspace operations through hub association (resource management)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 31,
+        "labelOffsetY": -128,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "aq-hub-project",
+      "target": "staqmainhub339573983327",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Access and utilize shared hub storage for joint ML workloads (blobs/models)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "aq-hub-project",
+      "target": "kv-aqmainhu339573983327",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Share and reference centralized secrets and keys managed in hub Key Vault",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "aq-hub-project",
+      "target": "ad520cd9e08f429685a9d6623618d73d",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Use/share container images stored in central project registry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "aqmlwork0018580440867-a88f9885-e7c9-48a7-937f-fbb938605b05",
+      "target": "aqmlwork0018580440867",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Trigger event actions on BlobCreated/BlobRenamed for downstream ML pipelines",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "staqmainhub339573983327-4f52da61-5852-42fb-a260-46cd0df48dc9",
+      "target": "staqmainhub339573983327",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Fire storage events for central hub workspace blob lifecycle (BlobCreated/BlobRenamed)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "r2d2-foundry-001",
+      "target": "aq-mysearch001",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Invoke search index retrieval for grounding LLM responses and enabling RAG",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "r2d2-foundry-001",
+      "target": "aq-app-insights-001",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send telemetry, usage, and performance events for AI endpoint monitoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "r2d2-hosted-agents-project-resou",
+      "target": "aq-app-insights-001",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send agent execution telemetry and metrics for operational insights",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "aq-app-insights-001",
+      "target": "Application Insights Smart Detection",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Analyze collected telemetry to detect anomalies and recommend alerts",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "aqmlwork0017057039775",
+      "target": "Application Insights Smart Detection",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Inspect workspace telemetry data for anomaly detection and alerting",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "aq-main-hub",
+      "target": "r2d2-foundry-001",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Connect ML Hub workspace to OpenAI endpoints for interactive/inference tasks",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    },
+    {
+      "id": "edge-20",
+      "source": "aq-hub-project",
+      "target": "r2d2-foundry-001",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Enable project AI agents to call OpenAI endpoint for chat/instruct flows",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0,
+        "pathStyle": "orthogonal"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 680.8251618001384,
+    "y": -550.0998772048601,
+    "zoom": 0.5015427021545897
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T20:54:49.367Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User initiates ML experiment or AI inference via ML workspace (project/hub)",
+      "services": [
+        "AQ-ML-WORK-001",
+        "aq-hub-project",
+        "aq-main-hub"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "ML workspace retrieves credentials and configuration from Key Vault",
+      "services": [
+        "AQ-ML-WORK-001",
+        "aqmlwork0017720873297"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Container images required for compute are pulled from Container Registry",
+      "services": [
+        "AQ-ML-WORK-001",
+        "aqr2d2acr001",
+        "ad520cd9e08f429685a9d6623618d73d",
+        "7a28b21mainprojectacr"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Data artifacts and models are stored/retrieved from Storage Account for training and inference",
+      "services": [
+        "AQ-ML-WORK-001",
+        "aqmlwork0018580440867",
+        "staqmainhub339573983327"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "New data events trigger downstream ML pipelines via event-driven storage",
+      "services": [
+        "aqmlwork0018580440867-a88f9885-e7c9-48a7-937f-fbb938605b05",
+        "staqmainhub339573983327-4f52da61-5852-42fb-a260-46cd0df48dc9"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Project and hub ML workspaces interact with OpenAI endpoints for LLM inference",
+      "services": [
+        "r2d2-foundry-001",
+        "r2d2-hosted-agents-project-resou",
+        "r2d2-sweden-central-project-reso"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "LLM endpoint calls AI Search for grounding and RAG augmentation",
+      "services": [
+        "r2d2-foundry-001",
+        "aq-mysearch001"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Telemetry from AI endpoints and ML workloads is sent to Application Insights and Log Analytics",
+      "services": [
+        "r2d2-foundry-001",
+        "r2d2-hosted-agents-project-resou",
+        "AQ-ML-WORK-001",
+        "aq-app-insights-001",
+        "aqmlwork0017057039775"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Application Insights Smart Detection analyzes telemetry to detect anomalies and generate alert recommendations",
+      "services": [
+        "Application Insights Smart Detection"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Aggregated and correlated logs can be reviewed and acted upon via Log Analytics",
+      "services": [
+        "aqmlwork0019254899053"
+      ]
+    }
+  ],
+  "architecturePrompt": "add more descriptive labels to the edges of this architecture"
+}

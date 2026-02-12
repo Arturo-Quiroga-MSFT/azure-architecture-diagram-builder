@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, X, Loader2, Clock, Zap } from 'lucide-react';
+import { Sparkles, X, Loader2, Clock, Zap, Brain } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';
-import ModelSelector from './ModelSelector';
 import ImageUploader from './ImageUploader';
 import { useModelSettings, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import './AIArchitectureGenerator.css';
@@ -271,8 +270,13 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
             </div>
 
             <div className="modal-footer">
-              <div className="model-selector-wrapper">
-                <ModelSelector compact />
+              <div className="ai-modal-active-model">
+                <Brain size={14} />
+                <span>Using: <span className="model-badge">{MODEL_CONFIG[modelSettings.model].displayName}</span></span>
+                {MODEL_CONFIG[modelSettings.model].isReasoning && (
+                  <span className="model-badge">({modelSettings.reasoningEffort})</span>
+                )}
+                <span className="model-change-hint">Change in toolbar → AI Model</span>
               </div>
               {currentArchitecture && currentArchitecture.nodes.length > 0 && (
                 <div className="auto-snapshot-option">

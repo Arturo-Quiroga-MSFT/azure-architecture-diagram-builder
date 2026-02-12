@@ -1,0 +1,937 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": 450,
+        "y": -30
+      },
+      "data": {
+        "label": "Data Ingestion & Storage"
+      },
+      "style": {
+        "width": 1020,
+        "height": 460
+      },
+      "width": 1020,
+      "height": 460,
+      "positionAbsolute": {
+        "x": 450,
+        "y": -30
+      }
+    },
+    {
+      "id": "grp-mlops",
+      "type": "groupNode",
+      "position": {
+        "x": 450,
+        "y": 320
+      },
+      "data": {
+        "label": "ML Training & Deployment"
+      },
+      "style": {
+        "width": 1020,
+        "height": 710
+      },
+      "width": 1020,
+      "height": 710,
+      "positionAbsolute": {
+        "x": 450,
+        "y": 320
+      }
+    },
+    {
+      "id": "grp-serving",
+      "type": "groupNode",
+      "position": {
+        "x": 930,
+        "y": 920
+      },
+      "data": {
+        "label": "Inference & API Access"
+      },
+      "style": {
+        "width": 1020,
+        "height": 485
+      },
+      "width": 1020,
+      "height": 485,
+      "positionAbsolute": {
+        "x": 930,
+        "y": 920
+      }
+    },
+    {
+      "id": "grp-secops",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 1295
+      },
+      "data": {
+        "label": "Security & Observability"
+      },
+      "style": {
+        "width": 2840,
+        "height": 510
+      },
+      "width": 2840,
+      "height": 510,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 1295
+      }
+    },
+    {
+      "id": "svc-adf",
+      "type": "azureNode",
+      "position": {
+        "x": 70,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/data-factory.svg",
+        "pricing": {
+          "estimatedCost": 5,
+          "tier": "Cloud",
+          "skuName": "Cloud",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Month",
+          "lastUpdated": "2026-02-12T20:23:25.060Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ingestion",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 520,
+        "y": 60
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-adls",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Data Lake Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg",
+        "pricing": {
+          "estimatedCost": 18.4,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ingestion",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1110,
+        "y": 150
+      }
+    },
+    {
+      "id": "svc-aml",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-mlops",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 630,
+        "y": 500
+      }
+    },
+    {
+      "id": "svc-aml-compute",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "AML Managed Compute",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/virtual-machines.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-mlops",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1110,
+        "y": 500
+      }
+    },
+    {
+      "id": "svc-aml-deploy",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 430
+      },
+      "data": {
+        "label": "AML Deployment",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-mlops",
+      "extent": "parent",
+      "width": 166,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1110,
+        "y": 750
+      }
+    },
+    {
+      "id": "svc-aml-online",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "AML Online Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:23:25.059Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-serving",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1590,
+        "y": 1100
+      }
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 205
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "pricing": {
+          "estimatedCost": 50.26,
+          "tier": "Developer",
+          "skuName": "Developer",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-12T20:23:25.064Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-serving",
+      "extent": "parent",
+      "width": 165,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1110,
+        "y": 1125
+      }
+    },
+    {
+      "id": "svc-entra",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-secops",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 630,
+        "y": 1475
+      }
+    },
+    {
+      "id": "svc-kv",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 230
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-secops",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 1525
+      }
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 2100,
+        "y": 205
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T20:23:25.063Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-secops",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2070,
+        "y": 1500
+      }
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 2630,
+        "y": 105
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T20:23:25.064Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-secops",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 2600,
+        "y": 1400
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-adf",
+      "target": "svc-adls",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Ingest source data and land raw/curated files into the lake on a schedule",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-aml",
+      "target": "svc-adls",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read curated training datasets and write engineered features back to the lake",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-aml",
+      "target": "svc-aml-compute",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provision compute and submit training runs for pipeline steps",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-aml",
+      "target": "svc-aml-deploy",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Promote the registered best model to a deployable serving artifact",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-aml-deploy",
+      "target": "svc-aml-online",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Roll out a new real-time endpoint version with updated model/environment",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-apim",
+      "target": "svc-aml-online",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward authenticated scoring requests to the online endpoint and return predictions",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-entra",
+      "target": "svc-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Issue and validate OAuth/JWT tokens for callers accessing inference APIs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-kv",
+      "target": "svc-adf",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide secure credentials for ingestion connectors and linked services",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-kv",
+      "target": "svc-aml",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide secrets for data access, training configuration, and deployment settings",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-kv",
+      "target": "svc-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide backend endpoint keys/certificates used to call the inference service",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-aml-online",
+      "target": "svc-appinsights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit request telemetry, model latency, and prediction logging signals",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Export application traces and metrics to a centralized queryable workspace",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 609.569936421435,
+    "y": 127.01407811080833,
+    "zoom": 0.594913714804723
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T20:23:48.278Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Data Factory runs a scheduled ingestion pipeline to collect source data.",
+      "services": [
+        "svc-adf"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Ingested raw data and curated datasets are written to Data Lake Storage for downstream use.",
+      "services": [
+        "svc-adls",
+        "svc-adf"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Machine Learning loads curated datasets from the lake and prepares training/feature engineering steps.",
+      "services": [
+        "svc-aml",
+        "svc-adls"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Machine Learning provisions AML Managed Compute and submits training runs to produce candidate models.",
+      "services": [
+        "svc-aml",
+        "svc-aml-compute"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The best model is registered and promoted into an AML Deployment package for serving.",
+      "services": [
+        "svc-aml",
+        "svc-aml-deploy"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "The new model version is deployed to an AML Online Endpoint for real-time inference.",
+      "services": [
+        "svc-aml-deploy",
+        "svc-aml-online"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Clients authenticate via Microsoft Entra ID and call API Management, which forwards scoring requests to the online endpoint.",
+      "services": [
+        "svc-entra",
+        "svc-apim",
+        "svc-aml-online"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Inference telemetry is captured in Application Insights and centralized in Log Analytics for monitoring and troubleshooting.",
+      "services": [
+        "svc-aml-online",
+        "svc-appinsights",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "A machine learning pipeline with data ingestion, training, and inference endpoints"
+}

@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link, Clock, Camera } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link, Clock, Camera, Loader } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -29,6 +29,7 @@ import ValidationModal from './components/ValidationModal';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
 import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
+import ModelSettingsPopover from './components/ModelSettingsPopover';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
@@ -135,6 +136,9 @@ function App() {
   
   const [isStylePresetMenuOpen, setIsStylePresetMenuOpen] = useState(false);
   const stylePresetMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
+  const modelSettingsRef = useRef<HTMLDivElement | null>(null);
   const [stylePreset, setStylePreset] = useState<'detailed' | 'minimal' | 'presentation'>('detailed');
 
   const [sharedDiagramId, setSharedDiagramId] = useState<string | null>(() => {
@@ -193,7 +197,7 @@ function App() {
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen) return;
+      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
       const target = e.target as unknown as globalThis.Node | null;
       if (!target) return;
 
@@ -212,15 +216,20 @@ function App() {
       if (isStylePresetMenuOpen && stylePresetMenuRef.current && !stylePresetMenuRef.current.contains(target)) {
         setIsStylePresetMenuOpen(false);
       }
+
+      if (isModelSettingsOpen && modelSettingsRef.current && !modelSettingsRef.current.contains(target)) {
+        setIsModelSettingsOpen(false);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen) return;
+      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
       if (e.key === 'Escape') {
         setIsExportMenuOpen(false);
         setIsLayoutMenuOpen(false);
         setIsBulkSelectMenuOpen(false);
         setIsStylePresetMenuOpen(false);
+        setIsModelSettingsOpen(false);
       }
     };
 
@@ -230,7 +239,7 @@ function App() {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isExportMenuOpen, isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen]);
+  }, [isExportMenuOpen, isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen]);
 
   // Keyboard shortcuts: Delete and Ctrl+D (duplicate)
   useEffect(() => {
@@ -1433,12 +1442,57 @@ function App() {
       serviceMap.set(service.id, node);
     });
 
-    // Helper function to determine best connection positions based on node positions
-    // ALWAYS use horizontal flow (right → left) to avoid messy top/bottom connections
-    const getConnectionPositions = (_sourceId: string, _targetId: string, _conn: any) => {
-      // Always default to horizontal flow: source exits from right, target enters from left
-      // This creates cleaner, more readable diagrams that don't require manual edge adjustments
-      return { sourceHandle: 'right', targetHandle: 'left' };
+    // Build absolute position map for smart edge routing
+    // Services inside groups have relative positions, so we add the group's position
+    const absolutePositions = new Map<string, { x: number; y: number }>();
+    const groupPositionMap = new Map<string, { x: number; y: number }>();
+    positionedGroups.forEach((g: any) => groupPositionMap.set(g.id, g.position));
+
+    positionedServices.forEach((service: any) => {
+      if (service.groupId && groupPositionMap.has(service.groupId)) {
+        const gp = groupPositionMap.get(service.groupId)!;
+        absolutePositions.set(service.id, {
+          x: gp.x + service.position.x,
+          y: gp.y + service.position.y,
+        });
+      } else {
+        absolutePositions.set(service.id, service.position);
+      }
+    });
+
+    // Smart handle selection based on relative node positions
+    // Picks handles that create the shortest, least-crossing edge paths
+    const getConnectionPositions = (sourceId: string, targetId: string, _conn: any) => {
+      const srcPos = absolutePositions.get(sourceId);
+      const tgtPos = absolutePositions.get(targetId);
+
+      if (!srcPos || !tgtPos) {
+        return { sourceHandle: 'right', targetHandle: 'left' };
+      }
+
+      const dx = tgtPos.x - srcPos.x;
+      const dy = tgtPos.y - srcPos.y;
+
+      // Use the dominant axis to pick handles
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        // Primarily horizontal
+        if (dx >= 0) {
+          // Target is to the right → standard L-R flow
+          return { sourceHandle: 'right', targetHandle: 'left' };
+        } else {
+          // Target is to the left → reverse direction
+          return { sourceHandle: 'left-source', targetHandle: 'right-target' };
+        }
+      } else {
+        // Primarily vertical
+        if (dy >= 0) {
+          // Target is below
+          return { sourceHandle: 'bottom', targetHandle: 'top' };
+        } else {
+          // Target is above
+          return { sourceHandle: 'top-source', targetHandle: 'bottom-target' };
+        }
+      }
     };
 
     // Function to determine arrow direction based on edge label
@@ -1852,8 +1906,8 @@ function App() {
                   architectureName: titleBlockData.architectureName
                 }}
               />
-              <label className="btn btn-secondary" title="Upload ARM template to generate diagram">
-                <Upload size={18} />
+              <label className={`btn btn-secondary${isUploadingARM ? ' btn-parsing' : ''}`} title="Upload ARM template to generate diagram">
+                {isUploadingARM ? <Loader size={18} className="spin-icon" /> : <Upload size={18} />}
                 {isUploadingARM ? 'Parsing...' : 'Import ARM'}
                 <input
                   type="file"
@@ -2229,6 +2283,11 @@ function App() {
                   </div>
                 )}
               </div>
+              <ModelSettingsPopover
+                ref={modelSettingsRef}
+                isOpen={isModelSettingsOpen}
+                onToggle={() => setIsModelSettingsOpen(v => !v)}
+              />
               <button 
                 onClick={handleValidateArchitecture} 
                 className="btn btn-premium" 

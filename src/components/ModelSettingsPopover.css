@@ -1,0 +1,310 @@
+/* Model Settings Popover – toolbar dropdown styles */
+
+.toolbar-dropdown-menu--model-settings {
+  min-width: 320px;
+  right: 0;
+  left: auto;
+}
+
+/* Trigger button */
+.model-popover-trigger {
+  position: relative;
+  gap: 6px !important;
+}
+
+.model-popover-label {
+  font-weight: 600;
+}
+
+.model-popover-reasoning {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  text-transform: capitalize;
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.model-popover-override-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background: #f59e0b;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Model selection buttons */
+.msp-model-buttons {
+  display: flex;
+  gap: 4px;
+  padding: 0.25rem 0.4rem 0.4rem;
+}
+
+.msp-model-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 6px;
+  background: rgba(17, 24, 39, 0.03);
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  justify-content: center;
+}
+
+.msp-model-btn:hover {
+  background: rgba(0, 120, 212, 0.08);
+  border-color: rgba(0, 120, 212, 0.3);
+}
+
+.msp-model-btn.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: white;
+}
+
+/* Reasoning row */
+.msp-reasoning-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.4rem;
+}
+
+.msp-reasoning-label {
+  font-size: 0.82rem;
+  font-weight: 650;
+  opacity: 0.9;
+}
+
+.msp-reasoning-buttons {
+  display: flex;
+  gap: 3px;
+}
+
+.msp-reasoning-btn {
+  padding: 4px 10px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 5px;
+  background: transparent;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.msp-reasoning-btn:hover {
+  background: rgba(0, 120, 212, 0.08);
+  border-color: rgba(0, 120, 212, 0.3);
+}
+
+.msp-reasoning-btn.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: white;
+}
+
+/* Per-Feature Overrides heading with reset button */
+.toolbar-dropdown-menu--model-settings .toolbar-dropdown-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.msp-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  background: transparent;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.msp-reset-btn:hover {
+  background: #fef2f2;
+}
+
+/* Feature rows */
+.msp-features {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0.2rem;
+}
+
+.msp-feature-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.msp-feature-row.overridden {
+  background: rgba(0, 120, 212, 0.06);
+}
+
+.msp-feature-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.msp-feature-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.msp-feature-effective {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.msp-feature-controls {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.msp-feature-select {
+  padding: 4px 6px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  min-width: 80px;
+}
+
+.msp-feature-select:hover {
+  border-color: rgba(0, 120, 212, 0.4);
+}
+
+.msp-feature-select:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+.msp-reasoning-select {
+  padding: 4px 6px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  width: 60px;
+}
+
+.msp-reasoning-select:hover {
+  border-color: rgba(0, 120, 212, 0.4);
+}
+
+.msp-reasoning-select:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+/* Dark mode */
+body.dark-mode .toolbar-dropdown-menu--model-settings {
+  background: rgba(17, 24, 39, 0.92);
+  color: #f9fafb;
+}
+
+body.dark-mode .msp-model-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-model-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+body.dark-mode .msp-model-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+body.dark-mode .msp-reasoning-btn {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-reasoning-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+body.dark-mode .msp-reasoning-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+body.dark-mode .msp-feature-name {
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-feature-effective {
+  color: #64748b;
+}
+
+body.dark-mode .msp-feature-select,
+body.dark-mode .msp-reasoning-select {
+  background: rgba(17, 24, 39, 0.75);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-feature-row.overridden {
+  background: rgba(96, 165, 250, 0.08);
+}
+
+body.dark-mode .msp-reset-btn {
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+
+body.dark-mode .msp-reset-btn:hover {
+  background: rgba(127, 29, 29, 0.3);
+}
+
+body.dark-mode .model-popover-reasoning {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .ai-modal-active-model {
+  background: rgba(30, 58, 95, 0.5);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+body.dark-mode .ai-modal-active-model .model-change-hint {
+  color: #64748b;
+}

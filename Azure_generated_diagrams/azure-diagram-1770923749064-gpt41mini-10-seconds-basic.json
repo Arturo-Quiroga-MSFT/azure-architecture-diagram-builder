@@ -1,0 +1,359 @@
+{
+  "nodes": [
+    {
+      "id": "frontend-group",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 95
+      },
+      "data": {
+        "label": "Frontend"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 95
+      }
+    },
+    {
+      "id": "backend-group",
+      "type": "groupNode",
+      "position": {
+        "x": 550,
+        "y": -5
+      },
+      "data": {
+        "label": "Backend and API"
+      },
+      "style": {
+        "width": 540,
+        "height": 635
+      },
+      "width": 540,
+      "height": 635,
+      "positionAbsolute": {
+        "x": 550,
+        "y": -5
+      }
+    },
+    {
+      "id": "database-storage-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1130,
+        "y": -30
+      },
+      "data": {
+        "label": "Data Storage"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "positionAbsolute": {
+        "x": 1130,
+        "y": -30
+      }
+    },
+    {
+      "id": "react-frontend",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg",
+        "pricing": {
+          "estimatedCost": 9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T19:15:40.134Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "frontend-group",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 275
+      }
+    },
+    {
+      "id": "nodejs-backend",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 280
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T19:15:40.113Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "backend-group",
+      "extent": "parent",
+      "width": 128,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 730,
+        "y": 275
+      }
+    },
+    {
+      "id": "postgresql-db",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg",
+        "pricing": {
+          "estimatedCost": 109.86,
+          "tier": "Backup LRS",
+          "skuName": "Backup LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GiB/Month",
+          "lastUpdated": "2026-02-12T19:15:40.135Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "database-storage-group",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 150
+      }
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T19:15:40.113Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "database-storage-group",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 400
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "react-frontend",
+      "target": "nodejs-backend",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send API requests for application data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "nodejs-backend",
+      "target": "postgresql-db",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Perform SQL queries to read/write user and app data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "nodejs-backend",
+      "target": "blob-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Upload and retrieve image blobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 281.6666666666665,
+    "y": 197.29166666666663,
+    "zoom": 1.4083333333333334
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T19:15:49.064Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the React frontend application hosted on Static Web Apps",
+      "services": [
+        "react-frontend"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "React frontend sends API requests to Node.js backend hosted on App Service",
+      "services": [
+        "react-frontend",
+        "nodejs-backend"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Node.js backend processes the requests and queries PostgreSQL for app data",
+      "services": [
+        "nodejs-backend",
+        "postgresql-db"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Node.js backend fetches or stores images from/to Storage Account blob storage as needed",
+      "services": [
+        "nodejs-backend",
+        "blob-storage"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Node.js backend returns data responses to the React frontend",
+      "services": [
+        "nodejs-backend",
+        "react-frontend"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "React frontend updates UI based on backend API responses",
+      "services": [
+        "react-frontend"
+      ]
+    }
+  ],
+  "architecturePrompt": "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images"
+}

@@ -1,0 +1,1645 @@
+{
+  "nodes": [
+    {
+      "id": "grp_cognitive_services",
+      "type": "groupNode",
+      "position": {
+        "x": -400,
+        "y": -60
+      },
+      "data": {
+        "label": "AI Services (Azure Cognitive Services)"
+      },
+      "style": {
+        "width": 540,
+        "height": 2590
+      },
+      "width": 540,
+      "height": 2590,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -400,
+        "y": -60
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp_container_registry",
+      "type": "groupNode",
+      "position": {
+        "x": 2480,
+        "y": 700
+      },
+      "data": {
+        "label": "Container Registries"
+      },
+      "style": {
+        "width": 540,
+        "height": 1010
+      },
+      "width": 540,
+      "height": 1010,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2480,
+        "y": 700
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp_monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1130,
+        "y": 195
+      },
+      "data": {
+        "label": "Monitoring & Alerts"
+      },
+      "style": {
+        "width": 1120,
+        "height": 815
+      },
+      "width": 1120,
+      "height": 815,
+      "positionAbsolute": {
+        "x": 1130,
+        "y": 195
+      }
+    },
+    {
+      "id": "grp_keyvault",
+      "type": "groupNode",
+      "position": {
+        "x": 2400,
+        "y": 1800
+      },
+      "data": {
+        "label": "Secrets & Key Management (Key Vault)"
+      },
+      "style": {
+        "width": 540,
+        "height": 785
+      },
+      "width": 540,
+      "height": 785,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2400,
+        "y": 1800
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp_identity",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 2450
+      },
+      "data": {
+        "label": "Identity (Managed Identities)"
+      },
+      "style": {
+        "width": 540,
+        "height": 960
+      },
+      "width": 540,
+      "height": 960,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 2450
+      }
+    },
+    {
+      "id": "grp_storage",
+      "type": "groupNode",
+      "position": {
+        "x": 1710,
+        "y": 2475
+      },
+      "data": {
+        "label": "Storage Accounts"
+      },
+      "style": {
+        "width": 540,
+        "height": 1085
+      },
+      "width": 540,
+      "height": 1085,
+      "positionAbsolute": {
+        "x": 1710,
+        "y": 2475
+      }
+    },
+    {
+      "id": "grp_eventgrid",
+      "type": "groupNode",
+      "position": {
+        "x": 1130,
+        "y": 2950
+      },
+      "data": {
+        "label": "Event Grid Topics & Subscriptions"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "positionAbsolute": {
+        "x": 1130,
+        "y": 2950
+      }
+    },
+    {
+      "id": "grp_search",
+      "type": "groupNode",
+      "position": {
+        "x": 550,
+        "y": -30
+      },
+      "data": {
+        "label": "Search Services"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": 550,
+        "y": -30
+      }
+    },
+    {
+      "id": "grp_machine_learning",
+      "type": "groupNode",
+      "position": {
+        "x": 550,
+        "y": 1225
+      },
+      "data": {
+        "label": "Machine Learning Workspaces & Components"
+      },
+      "style": {
+        "width": 1120,
+        "height": 1835
+      },
+      "width": 1120,
+      "height": 1835,
+      "positionAbsolute": {
+        "x": 550,
+        "y": 1225
+      }
+    },
+    {
+      "id": "grp_operational_insights",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 3300
+      },
+      "data": {
+        "label": "Operational Insights (Log Analytics Workspace)"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 3300
+      }
+    },
+    {
+      "id": "svc_cog_AQ_DOC_INTEL",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "AQ-DOC-INTEL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/cognitive-services.svg"
+      },
+      "parentNode": "grp_cognitive_services",
+      "extent": "parent",
+      "width": 155,
+      "height": 111,
+      "positionAbsolute": {
+        "x": -220,
+        "y": 120
+      }
+    },
+    {
+      "id": "svc_cog_r2d2_foundry_001",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 885
+      },
+      "data": {
+        "label": "r2d2-foundry-001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/cognitive-services.svg"
+      },
+      "parentNode": "grp_cognitive_services",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": -220,
+        "y": 825
+      }
+    },
+    {
+      "id": "svc_cog_r2d2_hosted_agents",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "r2d2-hosted-agents-project-resou",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/cognitive-services.svg"
+      },
+      "parentNode": "grp_cognitive_services",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "positionAbsolute": {
+        "x": -220,
+        "y": 370
+      }
+    },
+    {
+      "id": "svc_cog_r2d2_sweden_central",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 2310
+      },
+      "data": {
+        "label": "r2d2-sweden-central-project-reso",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/cognitive-services.svg"
+      },
+      "parentNode": "grp_cognitive_services",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "positionAbsolute": {
+        "x": -220,
+        "y": 2250
+      }
+    },
+    {
+      "id": "svc_container_registry_7a28b21",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "7a28b21mainprojectacr",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg"
+      },
+      "parentNode": "grp_container_registry",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2660,
+        "y": 880
+      }
+    },
+    {
+      "id": "svc_container_registry_ad520c",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "ad520cd9e08f429685a9d6623618d73d",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg"
+      },
+      "parentNode": "grp_container_registry",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "positionAbsolute": {
+        "x": 2660,
+        "y": 1130
+      }
+    },
+    {
+      "id": "svc_container_registry_aqr2d2",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 730
+      },
+      "data": {
+        "label": "aqr2d2acr001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg"
+      },
+      "parentNode": "grp_container_registry",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2660,
+        "y": 1430
+      }
+    },
+    {
+      "id": "svc_app_insights_aq_app",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 205
+      },
+      "data": {
+        "label": "aq-app-insights-001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg"
+      },
+      "parentNode": "grp_monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1890,
+        "y": 400
+      }
+    },
+    {
+      "id": "svc_app_insights_aqmlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 535
+      },
+      "data": {
+        "label": "aqmlwork0017057039775",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg"
+      },
+      "parentNode": "grp_monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1890,
+        "y": 730
+      }
+    },
+    {
+      "id": "svc_key_vault_aqmlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "aqmlwork0017720873297",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg"
+      },
+      "parentNode": "grp_keyvault",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2580,
+        "y": 1980
+      }
+    },
+    {
+      "id": "svc_key_vault_kv_aqmainhu",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 480
+      },
+      "data": {
+        "label": "kv-aqmainhu339573983327",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg"
+      },
+      "parentNode": "grp_keyvault",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "positionAbsolute": {
+        "x": 2580,
+        "y": 2280
+      }
+    },
+    {
+      "id": "svc_user_managed_identity_diagexpert2",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "diagnosticexpert2-7aszq7riegoaw",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10433-icon-service-User-Settings.svg"
+      },
+      "parentNode": "grp_identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 2630
+      }
+    },
+    {
+      "id": "svc_user_managed_identity_diagexpert_rmxsua",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "diagnosticexpert-rmxsua67pyqu4",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10433-icon-service-User-Settings.svg"
+      },
+      "parentNode": "grp_identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 2880
+      }
+    },
+    {
+      "id": "svc_user_managed_identity_diagexpert_vqay7h",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 680
+      },
+      "data": {
+        "label": "diagnosticexpert-vqay7hbbjqz74",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10433-icon-service-User-Settings.svg"
+      },
+      "parentNode": "grp_identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 3130
+      }
+    },
+    {
+      "id": "svc_workspaces_aqmlwork",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "aqmlwork0019254899053",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg"
+      },
+      "parentNode": "grp_operational_insights",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 3480
+      }
+    },
+    {
+      "id": "svc_search_aq_mysearch001",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "aq-mysearch001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10148-icon-service-Analysis-Services.svg"
+      },
+      "parentNode": "grp_search",
+      "extent": "parent",
+      "width": 164,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 730,
+        "y": 150
+      }
+    },
+    {
+      "id": "svc_storage_aqmlwork0018580440867",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 330
+      },
+      "data": {
+        "label": "aqmlwork0018580440867",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg"
+      },
+      "parentNode": "grp_storage",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1890,
+        "y": 2805
+      }
+    },
+    {
+      "id": "svc_storage_staqmainhub339573983327",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 580
+      },
+      "data": {
+        "label": "staqmainhub339573983327",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg"
+      },
+      "parentNode": "grp_storage",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1890,
+        "y": 3055
+      }
+    },
+    {
+      "id": "svc_eventgrid_aqmlwork_systemtopic",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "aqmlwork0018580440867-a88f9885-e7c9-48a7-937f-fbb938605b05",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg"
+      },
+      "parentNode": "grp_eventgrid",
+      "extent": "parent",
+      "width": 171,
+      "height": 194,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 3130
+      }
+    },
+    {
+      "id": "svc_eventgrid_staqmainhub_systemtopic",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "staqmainhub339573983327-4f52da61-5852-42fb-a260-46cd0df48dc9",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg"
+      },
+      "parentNode": "grp_eventgrid",
+      "extent": "parent",
+      "width": 171,
+      "height": 194,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 3380
+      }
+    },
+    {
+      "id": "svc_action_group_smart_detection",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 510
+      },
+      "data": {
+        "label": "Application Insights Smart Detection",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "parentNode": "grp_monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 705
+      }
+    },
+    {
+      "id": "svc_ml_workspace_aq_hub_project",
+      "type": "azureNode",
+      "position": {
+        "x": 210,
+        "y": 815
+      },
+      "data": {
+        "label": "aq-hub-project",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg"
+      },
+      "parentNode": "grp_machine_learning",
+      "extent": "parent",
+      "width": 152,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 760,
+        "y": 2040
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc_ml_workspace_aq_main_hub",
+      "type": "azureNode",
+      "position": {
+        "x": 570,
+        "y": 315
+      },
+      "data": {
+        "label": "aq-main-hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg"
+      },
+      "parentNode": "grp_machine_learning",
+      "extent": "parent",
+      "width": 136,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1120,
+        "y": 1540
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc_ml_workspace_aq_ml_work_001",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 580
+      },
+      "data": {
+        "label": "AQ-ML-WORK-001",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg"
+      },
+      "parentNode": "grp_machine_learning",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 1805
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_cog_r2d2_foundry_001",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "CapHosts",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc_cog_r2d2_hosted_agents",
+      "target": "svc_cog_r2d2_hosted_agents",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "CapHosts",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_search_aq_mysearch001",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Cognitive Search Connection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_action_group_smart_detection",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Alerts",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_app_insights_aq_app",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "App Insights Connection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc_cog_r2d2_hosted_agents",
+      "target": "svc_app_insights_aq_app",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "App Insights Connection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_container_registry_ad520c",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Container Registry Access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc_ml_workspace_aq_hub_project",
+      "target": "svc_storage_staqmainhub339573983327",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Storage Account",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc_ml_workspace_aq_hub_project",
+      "target": "svc_key_vault_kv_aqmainhu",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Key Vault",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc_ml_workspace_aq_hub_project",
+      "target": "svc_container_registry_ad520c",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Container Registry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc_ml_workspace_aq_hub_project",
+      "target": "svc_ml_workspace_aq_main_hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Associated with Main Hub Workspace",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc_ml_workspace_aq_main_hub",
+      "target": "svc_storage_staqmainhub339573983327",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Storage Account",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc_ml_workspace_aq_main_hub",
+      "target": "svc_key_vault_kv_aqmainhu",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Key Vault",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc_ml_workspace_aq_main_hub",
+      "target": "svc_container_registry_ad520c",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Container Registry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc_ml_workspace_aq_ml_work_001",
+      "target": "svc_container_registry_aqr2d2",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Container Registry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc_ml_workspace_aq_ml_work_001",
+      "target": "svc_storage_aqmlwork0018580440867",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Storage Account",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "svc_ml_workspace_aq_ml_work_001",
+      "target": "svc_key_vault_aqmlwork",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Key Vault",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "svc_ml_workspace_aq_ml_work_001",
+      "target": "svc_app_insights_aqmlwork",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Uses Application Insights",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "svc_eventgrid_aqmlwork_systemtopic",
+      "target": "svc_storage_aqmlwork0018580440867",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Monitors Storage Account events",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "svc_eventgrid_staqmainhub_systemtopic",
+      "target": "svc_storage_staqmainhub339573983327",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Monitors Storage Account events",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-20",
+      "source": "svc_action_group_smart_detection",
+      "target": "svc_app_insights_aq_app",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Receives Alerts From",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-21",
+      "source": "svc_action_group_smart_detection",
+      "target": "svc_app_insights_aqmlwork",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Receives Alerts From",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-22",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_ml_workspace_aq_hub_project",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "AI service connection (AIServices)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-23",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_ml_workspace_aq_main_hub",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "AI service connection (AIServices)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-24",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_ml_workspace_aq_hub_project",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "AzureOpenAI connection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-25",
+      "source": "svc_cog_r2d2_foundry_001",
+      "target": "svc_ml_workspace_aq_main_hub",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "AzureOpenAI connection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 705.3772811080803,
+    "y": 20.5,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T20:36:05.655Z"
+  },
+  "architecturePrompt": "ARM Template: template (6).json"
+}

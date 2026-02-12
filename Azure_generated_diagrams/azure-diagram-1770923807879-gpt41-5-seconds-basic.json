@@ -1,0 +1,533 @@
+{
+  "nodes": [
+    {
+      "id": "web-group",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": -30
+      },
+      "data": {
+        "label": "Web Application Tier"
+      },
+      "style": {
+        "width": 540,
+        "height": 1135
+      },
+      "width": 540,
+      "height": 1135,
+      "positionAbsolute": {
+        "x": -30,
+        "y": -30
+      }
+    },
+    {
+      "id": "api-group",
+      "type": "groupNode",
+      "position": {
+        "x": 550,
+        "y": 145
+      },
+      "data": {
+        "label": "Backend API Tier"
+      },
+      "style": {
+        "width": 540,
+        "height": 810
+      },
+      "width": 540,
+      "height": 810,
+      "positionAbsolute": {
+        "x": 550,
+        "y": 145
+      }
+    },
+    {
+      "id": "data-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1130,
+        "y": 395
+      },
+      "data": {
+        "label": "Data Management"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "positionAbsolute": {
+        "x": 1130,
+        "y": 395
+      }
+    },
+    {
+      "id": "security-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1130,
+        "y": -30
+      },
+      "data": {
+        "label": "Security & Identity"
+      },
+      "style": {
+        "width": 540,
+        "height": 535
+      },
+      "width": 540,
+      "height": 535,
+      "positionAbsolute": {
+        "x": 1130,
+        "y": -30
+      }
+    },
+    {
+      "id": "static-web-apps",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 605
+      },
+      "data": {
+        "label": "Azure Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg",
+        "pricing": {
+          "estimatedCost": 9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T19:16:40.216Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "web-group",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 575
+      }
+    },
+    {
+      "id": "api-app-service",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T19:16:40.183Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "api-group",
+      "extent": "parent",
+      "width": 128,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 730,
+        "y": 575
+      }
+    },
+    {
+      "id": "postgre-sql-db",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg",
+        "pricing": {
+          "estimatedCost": 109.86,
+          "tier": "Backup LRS",
+          "skuName": "Backup LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GiB/Month",
+          "lastUpdated": "2026-02-12T19:16:40.218Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-group",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 575
+      }
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T19:16:40.183Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-group",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 825
+      }
+    },
+    {
+      "id": "entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 230
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T19:16:40.216Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-group",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1310,
+        "y": 200
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "static-web-apps",
+      "target": "api-app-service",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send user API requests from React frontend to Node.js backend",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "api-app-service",
+      "target": "postgre-sql-db",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Execute SQL queries for data retrieval and updates",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "api-app-service",
+      "target": "blob-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read and write image blobs for uploads and downloads",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "static-web-apps",
+      "target": "blob-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Fetch image blobs for client rendering",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "static-web-apps",
+      "target": "entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate users through identity provider",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "api-app-service",
+      "target": "entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Validate bearer tokens for API protection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 647.8069016152716,
+    "y": 138.0212922173274,
+    "zoom": 0.9618208516886931
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T19:16:47.879Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the React frontend hosted on Static Web Apps",
+      "services": [
+        "static-web-apps"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Static Web Apps prompts user authentication with Microsoft Entra ID",
+      "services": [
+        "static-web-apps",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "User submits an API request from the React frontend to App Service Node.js backend",
+      "services": [
+        "static-web-apps",
+        "api-app-service"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "App Service validates authentication token with Microsoft Entra ID",
+      "services": [
+        "api-app-service",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "App Service queries PostgreSQL for required application data",
+      "services": [
+        "api-app-service",
+        "postgre-sql-db"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "App Service reads or writes image blobs in Storage Account as needed",
+      "services": [
+        "api-app-service",
+        "blob-storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Static Web Apps fetches images from Storage Account for client display",
+      "services": [
+        "static-web-apps",
+        "blob-storage"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Application combines and returns data or image URLs to frontend for user interaction",
+      "services": [
+        "api-app-service",
+        "static-web-apps"
+      ]
+    }
+  ],
+  "architecturePrompt": "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images"
+}

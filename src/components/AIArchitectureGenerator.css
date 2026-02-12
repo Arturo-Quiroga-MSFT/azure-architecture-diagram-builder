@@ -285,21 +285,28 @@
   background: #f9fafb;
 }
 
-/* Model selector wrapper in footer */
-.model-selector-wrapper {
+/* Active model indicator in footer */
+.ai-modal-active-model {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #0369a1;
 }
 
-.model-selector-wrapper::before {
-  content: 'AI Model:';
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
+.ai-modal-active-model .model-badge {
+  font-weight: 700;
+}
+
+.ai-modal-active-model .model-change-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+  margin-left: auto;
 }
 
 .spinner {
@@ -420,4 +427,15 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+/* Dark mode support */
+body.dark-mode .ai-modal-active-model {
+  background: rgba(30, 58, 95, 0.5);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+body.dark-mode .ai-modal-active-model .model-change-hint {
+  color: #64748b;
 }
