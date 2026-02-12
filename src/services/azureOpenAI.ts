@@ -1,4 +1,4 @@
-import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { getServiceIconMapping, SERVICE_ICON_MAP } from '../data/serviceIconMapping';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
@@ -18,10 +18,20 @@ interface CallResult {
   metrics: AIMetrics;
 }
 
-async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
-  // Get model settings for architecture generation (uses override if set)
-  const settings = getModelSettingsForFeature('architectureGeneration');
+export interface ModelOverride {
+  model: ModelType;
+  reasoningEffort: ReasoningEffort;
+}
+
+async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): Promise<CallResult> {
+  // Use explicit model override if provided, otherwise read from store
+  const storeSettings = getModelSettingsForFeature('architectureGeneration');
+  const rawStore = getModelSettings();
+  const settings = modelOverride || storeSettings;
   const modelConfig = MODEL_CONFIG[settings.model];
+  
+  console.log(`📋 Model: using ${settings.model} | dropdown=${rawStore.model} | featureOverride=${rawStore.featureOverrides?.architectureGeneration?.model || 'none'} | source=${modelOverride ? 'explicit' : 'store'}`);
+
   
   let deployment: string;
   try {
@@ -55,7 +65,7 @@ async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
     requestBody.reasoning_effort = settings.reasoningEffort;
   }
   
-  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens}`);
+  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens}`);
 
   try {
     const response = await fetch(url, {
@@ -118,7 +128,7 @@ async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
   }
 }
 
-export async function generateArchitectureWithAI(description: string) {
+export async function generateArchitectureWithAI(description: string, modelOverride?: ModelOverride) {
   // Build a compact list of known service names for the prompt
   const knownServices = Object.entries(SERVICE_ICON_MAP)
     .map(([key, m]) => `${key} (${m.category})`)
@@ -157,7 +167,7 @@ Rules:
       { role: 'user', content: description }
     ];
 
-    const { content, metrics } = await callAzureOpenAI(messages);
+    const { content, metrics } = await callAzureOpenAI(messages, modelOverride);
     
     console.log('Azure OpenAI Response:', content);
     

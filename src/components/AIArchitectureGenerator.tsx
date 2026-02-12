@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Sparkles, X, Loader2, Clock, Zap } from 'lucide-react';
-import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage } from '../services/azureOpenAI';
+import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';
 import ModelSelector from './ModelSelector';
 import ImageUploader from './ImageUploader';
+import { useModelSettings, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import './AIArchitectureGenerator.css';
 
 interface AIArchitectureGeneratorProps {
@@ -22,6 +23,9 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const [aiMetrics, setAiMetrics] = useState<AIMetrics | null>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [imageAnalyzed, setImageAnalyzed] = useState(false);
+  
+  // Model settings from reactive hook (stays in sync with dropdown)
+  const [modelSettings] = useModelSettings();
   
   // Auto-snapshot preference (stored in localStorage)
   const [autoSnapshot, setAutoSnapshot] = useState<boolean>(() => {
@@ -77,20 +81,20 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     setIsGenerating(true);
     setError('');
     setAiMetrics(null); // Clear previous metrics
+    
+    // Use the dropdown-selected model directly from the reactive hook state
+    // (bypasses per-feature overrides which can silently override the dropdown)
+    const currentModelSettings: ModelOverride = {
+      model: modelSettings.model,
+      reasoningEffort: modelSettings.reasoningEffort
+    };
+    console.log(`🎯 Generate clicked: dropdown model=${modelSettings.model}, reasoning=${modelSettings.reasoningEffort}, overrides=${JSON.stringify(modelSettings.featureOverrides)}`);
 
     try {
       // Build context about existing architecture if present
       let contextPrompt = description;
       
       if (currentArchitecture && currentArchitecture.nodes.length > 0) {
-        const services = currentArchitecture.nodes
-          .filter(n => n.type === 'azureNode')
-          .map(n => ({
-            name: n.data.label,
-            type: n.data.serviceName || n.data.service || n.data.label,
-            group: n.parentNode || 'none'
-          }));
-        
         const groups = currentArchitecture.nodes
           .filter(n => n.type === 'groupNode')
           .map(n => ({
@@ -98,28 +102,44 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
             id: n.id
           }));
         
-        const connections = currentArchitecture.edges
-          .map(e => ({
-            from: services.find(s => currentArchitecture.nodes.find(n => n.id === e.source)?.data.label === s.name)?.name || e.source,
-            to: services.find(s => currentArchitecture.nodes.find(n => n.id === e.target)?.data.label === s.name)?.name || e.target,
-            label: e.label || ''
-          }));
+        // Build a group ID → name map for resolving parentNode references
+        const groupNameMap = new Map(groups.map(g => [g.id, g.name]));
         
-        contextPrompt = `EXISTING ARCHITECTURE: "${currentArchitecture.architectureName}"
+        const services = currentArchitecture.nodes
+          .filter(n => n.type === 'azureNode')
+          .map(n => {
+            const groupName = n.parentNode ? groupNameMap.get(n.parentNode) : null;
+            return {
+              name: n.data.label,
+              type: n.data.serviceName || n.data.service || n.data.label,
+              group: groupName || null
+            };
+          });
+        
+        const connections = currentArchitecture.edges
+          .map(e => {
+            const fromNode = currentArchitecture.nodes.find(n => n.id === e.source);
+            const toNode = currentArchitecture.nodes.find(n => n.id === e.target);
+            return `${fromNode?.data.label || e.source} → ${toNode?.data.label || e.target}${e.label ? ` (${e.label})` : ''}`;
+          });
+        
+        // Build a compact representation for modifications
+        const servicesList = services.map(s => 
+          `${s.name}${s.group ? ` [${s.group}]` : ''}`
+        ).join(', ');
+        
+        contextPrompt = `MODIFY EXISTING ARCHITECTURE: "${currentArchitecture.architectureName}"
+Services: ${servicesList}
+${groups.length > 0 ? `Groups: ${groups.map(g => g.name).join(', ')}` : ''}
+${connections.length > 0 ? `Connections: ${connections.join('; ')}` : ''}
 
-Current services:
-${services.map(s => `- ${s.name} (${s.type})${s.group !== 'none' ? ` in group "${s.group}"` : ''}`).join('\n')}
+CHANGE REQUESTED: ${description}
 
-${groups.length > 0 ? `Current groups:\n${groups.map(g => `- ${g.name}`).join('\n')}\n` : ''}
-${connections.length > 0 ? `Current connections:\n${connections.map(c => `- ${c.from} → ${c.to}${c.label ? ` (${c.label})` : ''}`).join('\n')}\n` : ''}
-
-USER REQUEST: ${description}
-
-IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all existing services, groups, and connections unless the user explicitly asks to remove them. Only add, modify, or remove what the user requested.`;
+IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connections, workflow). Keep everything unchanged EXCEPT what the user requested. Only add, modify, or remove what was asked.`;
       }
       
       // Call Azure OpenAI to generate architecture
-      const result = await generateArchitectureWithAI(contextPrompt);
+      const result = await generateArchitectureWithAI(contextPrompt, currentModelSettings);
       
       // Store AI metrics if available
       if (result.metrics) {

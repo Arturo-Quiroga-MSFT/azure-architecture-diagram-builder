@@ -1,0 +1,1243 @@
+{
+  "nodes": [
+    {
+      "id": "g-ot-edge",
+      "type": "groupNode",
+      "position": {
+        "x": 1790,
+        "y": -30
+      },
+      "data": {
+        "label": "OT Network & Facility Model"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": 1790,
+        "y": -30
+      }
+    },
+    {
+      "id": "g-ingest-rt",
+      "type": "groupNode",
+      "position": {
+        "x": 920,
+        "y": 0
+      },
+      "data": {
+        "label": "Ingestion & Real-time Processing"
+      },
+      "style": {
+        "width": 920,
+        "height": 1435
+      },
+      "width": 920,
+      "height": 1435,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 920,
+        "y": 0
+      },
+      "dragging": false
+    },
+    {
+      "id": "g-data-analytics",
+      "type": "groupNode",
+      "position": {
+        "x": 1790,
+        "y": 320
+      },
+      "data": {
+        "label": "Data Platform & Analytics"
+      },
+      "style": {
+        "width": 1120,
+        "height": 735
+      },
+      "width": 1120,
+      "height": 735,
+      "positionAbsolute": {
+        "x": 1790,
+        "y": 320
+      }
+    },
+    {
+      "id": "g-ml",
+      "type": "groupNode",
+      "position": {
+        "x": 2370,
+        "y": 945
+      },
+      "data": {
+        "label": "ML Model Serving & Training"
+      },
+      "style": {
+        "width": 1020,
+        "height": 1560
+      },
+      "width": 1020,
+      "height": 1560,
+      "positionAbsolute": {
+        "x": 2370,
+        "y": 945
+      }
+    },
+    {
+      "id": "g-sec-ops",
+      "type": "groupNode",
+      "position": {
+        "x": -180,
+        "y": 1320
+      },
+      "data": {
+        "label": "Security, Network Segmentation & Operations"
+      },
+      "style": {
+        "width": 2360,
+        "height": 1210
+      },
+      "width": 2360,
+      "height": 1210,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -180,
+        "y": 1320
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-digital-twins",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Digital Twins",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/01030-icon-service-Digital-Twins.svg",
+        "pricing": {
+          "estimatedCost": 0.05,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1K",
+          "lastUpdated": "2026-02-12T18:18:19.301Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-ot-edge",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1970,
+        "y": 150
+      }
+    },
+    {
+      "id": "svc-iot-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 240,
+        "y": 1180
+      },
+      "data": {
+        "label": "Azure IoT Hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/10182-icon-service-IoT-Hub.svg",
+        "pricing": {
+          "estimatedCost": 10,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1K",
+          "lastUpdated": "2026-02-12T18:18:19.301Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-ingest-rt",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1160,
+        "y": 1180
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-stream-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 600,
+        "y": 900
+      },
+      "data": {
+        "label": "Azure Stream Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/stream-analytics.svg"
+      },
+      "parentNode": "g-ingest-rt",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1520,
+        "y": 900
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-data-lake",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 355
+      },
+      "data": {
+        "label": "Azure Data Lake Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg",
+        "pricing": {
+          "estimatedCost": 18.4,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:18:19.300Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-data-analytics",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1970,
+        "y": 675
+      }
+    },
+    {
+      "id": "svc-storage-account",
+      "type": "azureNode",
+      "position": {
+        "x": 850,
+        "y": 100
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T18:18:19.237Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-data-analytics",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 2640,
+        "y": 420
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-synapse",
+      "type": "azureNode",
+      "position": {
+        "x": 870,
+        "y": 440
+      },
+      "data": {
+        "label": "Azure Synapse Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/azure-synapse-analytics.svg"
+      },
+      "parentNode": "g-data-analytics",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2660,
+        "y": 760
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-azure-ml",
+      "type": "azureNode",
+      "position": {
+        "x": 270,
+        "y": 255
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T18:18:19.303Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-ml",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2640,
+        "y": 1200
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aml-online-endpoint",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 730
+      },
+      "data": {
+        "label": "AML Online Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:18:19.302Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-ml",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 3030,
+        "y": 1675
+      }
+    },
+    {
+      "id": "svc-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 430
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:18:19.302Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-sec-ops",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 1750
+      }
+    },
+    {
+      "id": "svc-key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 680
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T18:18:19.305Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-sec-ops",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 2000
+      }
+    },
+    {
+      "id": "svc-vnet",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 180
+      },
+      "data": {
+        "label": "Virtual Network",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10061-icon-service-Virtual-Networks.svg",
+        "pricing": {
+          "estimatedCost": 3.65,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T18:18:19.302Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-sec-ops",
+      "extent": "parent",
+      "width": 154,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 1500
+      }
+    },
+    {
+      "id": "svc-azure-firewall",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Firewall",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10084-icon-service-Firewalls.svg",
+        "pricing": {
+          "estimatedCost": 11.68,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB",
+          "lastUpdated": "2026-02-12T18:18:19.303Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-sec-ops",
+      "extent": "parent",
+      "width": 142,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 0,
+        "y": 1500
+      }
+    },
+    {
+      "id": "svc-log-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 2060,
+        "y": 240
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T18:18:19.305Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-sec-ops",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1880,
+        "y": 1560
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-azure-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 930
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T18:18:19.305Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-sec-ops",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 2250
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-vnet",
+      "target": "svc-iot-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Expose IoT Hub over Private Endpoint to keep device ingestion on private IPs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-azure-firewall",
+      "target": "svc-vnet",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Enforce OT/IT segmentation with routed inspection and approved outbound rules",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-entra-id",
+      "target": "svc-iot-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authorize operator/service access to IoT Hub using Entra ID RBAC",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-key-vault",
+      "target": "svc-iot-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Securely store and rotate device/service secrets used for provisioning and operations",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-iot-hub",
+      "target": "svc-stream-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Stream telemetry events at 5-second cadence for real-time processing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-stream-analytics",
+      "target": "svc-aml-online-endpoint",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Invoke predictive maintenance model for per-signal anomaly scoring under sub-second latency",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-stream-analytics",
+      "target": "svc-digital-twins",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Update asset twin properties and relationships with latest health state and anomalies",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-stream-analytics",
+      "target": "svc-data-lake",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Persist raw and enriched telemetry (including anomaly scores) into hot storage zones",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-data-lake",
+      "target": "svc-storage-account",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Apply lifecycle/retention policies to tier data to cold archive for 7-year retention",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-data-lake",
+      "target": "svc-synapse",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read curated telemetry for batch trend analysis, KPIs, and reporting datasets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-data-lake",
+      "target": "svc-azure-ml",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide historical telemetry and labels for scheduled model training and evaluation",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-azure-ml",
+      "target": "svc-aml-online-endpoint",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy validated model versions to the online endpoint for real-time scoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-iot-hub",
+      "target": "svc-log-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send ingestion diagnostics and device connection logs for troubleshooting and audit",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-stream-analytics",
+      "target": "svc-log-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit streaming job logs, late-arrival diagnostics, and query errors for operations",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-azure-monitor",
+      "target": "svc-iot-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Track ingestion rates, throttling, and availability; trigger alerts on SLO breaches",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc-azure-monitor",
+      "target": "svc-stream-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Monitor job backpressure/latency and alert when end-to-end detection exceeds thresholds",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "svc-azure-monitor",
+      "target": "svc-aml-online-endpoint",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Alert on inference latency, error rate, and capacity saturation affecting real-time scoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 446.5,
+    "y": 53.5,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T18:19:44.885Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Devices are provisioned/managed in IoT Hub with credentials protected in Key Vault and operator/service access governed by Microsoft Entra ID.",
+      "services": [
+        "svc-iot-hub",
+        "svc-key-vault",
+        "svc-entra-id"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "OT/IT segregation is enforced by routing through the Virtual Network with Azure Firewall policies and using Private Endpoints to access IoT Hub privately.",
+      "services": [
+        "svc-vnet",
+        "svc-azure-firewall",
+        "svc-iot-hub"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Sensors publish telemetry (every 5 seconds) into IoT Hub, which buffers and scales ingestion for downstream processing.",
+      "services": [
+        "svc-iot-hub"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Stream Analytics consumes the IoT Hub event stream and performs real-time filtering, windowing, and feature calculations.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-iot-hub"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "For each telemetry window, Stream Analytics calls the AML Online Endpoint to score anomalies and failure probabilities with sub-second latency targets.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-aml-online-endpoint"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Stream Analytics writes enriched telemetry and anomaly results into Data Lake Storage for 6-month hot retention and downstream analytics.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-data-lake"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Asset state and alerts are reflected in the facility model by updating Digital Twins with the latest health, status, and relationships.",
+      "services": [
+        "svc-digital-twins",
+        "svc-stream-analytics"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Synapse runs batch analytics over curated datasets in Data Lake Storage to produce trends, downtime drivers, and maintenance KPIs for reporting.",
+      "services": [
+        "svc-synapse",
+        "svc-data-lake"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Azure Machine Learning trains and validates new predictive maintenance models using historical data in the lake, then deploys updated versions to the online endpoint.",
+      "services": [
+        "svc-azure-ml",
+        "svc-data-lake",
+        "svc-aml-online-endpoint"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Lifecycle policies move older data from Data Lake hot zones to Storage Account archive for 7-year cold retention; Azure Monitor and Log Analytics provide availability, latency, and ingestion health observability.",
+      "services": [
+        "svc-data-lake",
+        "svc-storage-account",
+        "svc-azure-monitor",
+        "svc-log-analytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling"
+}
