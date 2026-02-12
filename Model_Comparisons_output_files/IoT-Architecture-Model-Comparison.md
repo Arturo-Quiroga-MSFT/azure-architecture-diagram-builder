@@ -22,10 +22,10 @@
 
 | Model | File |
 |-------|------|
-| GPT-5.2 (medium) | `azure-diagram-1770919456845-gpt52-medium-269-seconds.json` |
-| GPT-5.2 (low) | `azure-diagram-1770920384885-gpt52-low-98-seconds.json` |
-| GPT-4.1 | `azure-diagram-1770919848691-gpt41-19-seconds.json` |
-| GPT-4.1 Mini | `azure-diagram-1770919578221-gpt41mini-23-seconds.json` |
+| GPT-5.2 (medium) | `azure-diagram-1770919456845-gpt52-medium-269-seconds_IoT.json` |
+| GPT-5.2 (low) | `azure-diagram-1770920384885-gpt52-low-98-seconds_IoT.json` |
+| GPT-4.1 | `azure-diagram-1770919848691-gpt41-19-seconds_IoT.json` |
+| GPT-4.1 Mini | `azure-diagram-1770919578221-gpt41mini-23-seconds_IoT.json` |
 
 ---
 

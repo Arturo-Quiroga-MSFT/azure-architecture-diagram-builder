@@ -24,7 +24,7 @@
 
 ## 📖 Overview
 
-Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **GPT-5.2** (Azure OpenAI's latest reasoning model), it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, and Infrastructure as Code generation.
+Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **GPT-5.2, GPT-4.1, and GPT-4.1 Mini** (Azure OpenAI), it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, and Infrastructure as Code generation.
 
 ### Why This Tool?
 
@@ -38,7 +38,7 @@ Azure Architecture Diagram Builder is an enterprise-grade web application that e
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Architecture Generation
-Describe your architecture in plain English and let GPT-5.2 automatically create a complete, professionally organized diagram with logical service groupings.
+Describe your architecture in plain English and let GPT-5.2 (or GPT-4.1/GPT-4.1 Mini) automatically create a complete, professionally organized diagram with logical service groupings.
 
 ```
 "Create a microservices e-commerce platform with high availability"
@@ -93,7 +93,7 @@ Start from proven patterns:
 - Cloud sync with shareable URLs
 
 ### 🎨 Professional Diagramming
-- **400+ Official Azure Icons** - Complete service library
+- **713 Official Azure Icons** - Complete service library across 29 categories
 - **Smart Grouping** - Logical organization (Frontend, Backend, Data, Security)
 - **Editable Connections** - Labels, animations, custom styling
 - **Alignment Tools** - Professional layout assistance
@@ -166,12 +166,15 @@ flowchart TD
 sequenceDiagram
     participant U as User
     participant UI as React UI
+    participant MS as Model Settings Store
     participant AI as Azure OpenAI
     participant P as Pricing API
     participant S as Storage
 
     U->>UI: Describe architecture
-    UI->>AI: Generate request (GPT-5.2)
+    UI->>MS: Get model selection
+    MS-->>UI: GPT-5.2/4.1/4.1-Mini + settings
+    UI->>AI: Generate request (selected model)
     AI-->>UI: Diagram specification (JSON)
     UI->>UI: Render nodes & connections
     UI->>P: Fetch regional pricing
@@ -179,6 +182,7 @@ sequenceDiagram
     UI->>UI: Display cost legend
     
     U->>UI: Validate architecture
+    UI->>MS: Get validator model
     UI->>AI: WAF validation request
     AI-->>UI: Recommendations by pillar
     U->>UI: Select improvements
@@ -186,6 +190,7 @@ sequenceDiagram
     AI-->>UI: Updated architecture
     
     U->>UI: Generate deployment guide
+    UI->>MS: Get deploy model
     UI->>AI: Documentation request
     AI-->>UI: Guide + Bicep templates
     
@@ -221,14 +226,12 @@ graph TB
         deployGen[deploymentGuideGenerator.ts]
         pricing[regionalPricingService.ts]
         drawio[drawioExporter.ts]
-        refArch[referenceArchitectureService.ts]
+        modelStore[modelSettingsStore.ts]
     end
 
     subgraph External["External APIs"]
         OpenAI[Azure OpenAI API]
         PricingAPI[Azure Retail Prices API]
-        BlobStorage[Azure Blob Storage]
-        CosmosDB[Cosmos DB]
     end
 
     AIGen --> azureOpenAI
@@ -236,11 +239,12 @@ graph TB
     Deploy --> deployGen
     Legend --> costService
     costService --> pricing
+    AIGen --> modelStore
+    Validation --> modelStore
+    Deploy --> modelStore
     
     azureOpenAI --> OpenAI
     pricing --> PricingAPI
-    Version --> BlobStorage
-    Version --> CosmosDB
 
     style Frontend fill:#61DAFB,color:#000
     style Services fill:#3178C6,color:#fff
@@ -278,10 +282,15 @@ Create a `.env` file in the project root:
 # Azure OpenAI Configuration (Required)
 VITE_AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key-here
-VITE_AZURE_OPENAI_DEPLOYMENT=gpt-5.2-2025-12-11
+VITE_AZURE_OPENAI_DEPLOYMENT=your-default-deployment
 
-# Reasoning model configuration
-VITE_REASONING_EFFORT=medium  # low | medium | high
+# Multi-model deployments
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT41=your-gpt41-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=your-gpt41mini-deployment
+
+# Reasoning model configuration (GPT-5.2 only)
+VITE_REASONING_EFFORT=medium  # none | low | medium | high
 
 # Optional: Cloud storage for sharing
 AZURE_COSMOS_ENDPOINT=https://your-cosmos.documents.azure.com:443/
@@ -295,7 +304,7 @@ npm run dev
 ```
 
 5. **Open your browser**
-Navigate to `http://localhost:5173`
+Navigate to `http://localhost:3000`
 
 ### Docker Deployment
 
@@ -367,7 +376,7 @@ docker run -p 80:80 \
 | Category | Technologies |
 |----------|-------------|
 | **Frontend** | React 18, TypeScript, React Flow, Vite |
-| **AI** | Azure OpenAI (GPT-5.2), Reasoning Models |
+| **AI** | Azure OpenAI (GPT-5.2, GPT-4.1, GPT-4.1 Mini), Reasoning Models |
 | **Styling** | CSS3, html-to-image |
 | **Backend** | Node.js, Express (optional API server) |
 | **Storage** | Azure Cosmos DB, Azure Blob Storage |
@@ -392,17 +401,27 @@ azure-diagrams/
 │   │   ├── Legend.tsx
 │   │   └── ...
 │   ├── services/             # Business logic
-│   │   ├── azureOpenAI.ts    # AI integration
-│   │   ├── architectureValidator.ts
-│   │   ├── deploymentGuideGenerator.ts
-│   │   ├── costEstimationService.ts
+│   │   ├── azureOpenAI.ts    # AI integration (558 lines)
+│   │   ├── architectureValidator.ts  # WAF validation (334 lines)
+│   │   ├── deploymentGuideGenerator.ts  # Guides & Bicep (396 lines)
+│   │   ├── costEstimationService.ts  # Pricing (401 lines)
+│   │   ├── drawioExporter.ts  # Draw.io export (414 lines)
+│   │   ├── regionalPricingService.ts  # Multi-region (352 lines)
+│   │   ├── versionStorageService.ts  # Version history (177 lines)
 │   │   └── ...
+│   ├── stores/               # State management
+│   │   └── modelSettingsStore.ts  # Multi-model settings (271 lines)
 │   ├── data/                 # Static data
-│   │   ├── pricing/          # Regional pricing data
-│   │   └── referenceArchitectures.json
-│   └── App.tsx               # Main application
-├── server/                   # Backend API (optional)
-├── Azure_Public_Service_Icons/  # Official Azure icons
+│   │   ├── pricing/          # Regional pricing data (235 files)
+│   │   ├── azurePricing.ts   # Service mappings (1,059 lines)
+│   │   └── serviceIconMapping.ts  # Icon mappings (812 lines)
+│   ├── utils/                # Utilities
+│   │   ├── iconLoader.ts     # Icon matching (113 lines)
+│   │   ├── layoutEngine.ts   # Auto-layout (258 lines)
+│   │   └── ...
+│   └── App.tsx               # Main application (2,619 lines)
+├── server/                   # Backend API (Express.js, port 8787)
+├── Azure_Public_Service_Icons/  # 713 official Azure icons (29 categories)
 ├── DOCS/                     # Documentation
 └── Dockerfile               # Container configuration
 ```
@@ -421,10 +440,11 @@ azure-diagrams/
 ## 🌟 What's New
 
 ### February 2026
-- **GPT-5.2 Integration** - Latest Azure OpenAI reasoning model
+- **Multi-Model Support** - GPT-5.2, GPT-4.1, GPT-4.1 Mini with per-feature overrides
+- **Model Selector UI** - Dropdown with reasoning effort configuration
 - **Bicep Templates** - IaC generation in deployment guides
-- **Node 20** - Updated runtime for better performance
-- **Reasoning Effort** - Configurable AI thinking depth
+- **Reasoning Effort** - Configurable AI thinking depth (GPT-5.2)
+- **Model Comparison** - Side-by-side architecture quality analysis
 
 ### January 2026
 - **WAF Validation** - Well-Architected Framework checks

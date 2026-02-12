@@ -1,0 +1,1000 @@
+{
+  "nodes": [
+    {
+      "id": "group-compute",
+      "type": "groupNode",
+      "position": {
+        "x": 580,
+        "y": -40
+      },
+      "data": {
+        "label": "Compute & Microservices"
+      },
+      "style": {
+        "width": 2600,
+        "height": 660
+      },
+      "width": 2600,
+      "height": 660,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 580,
+        "y": -40
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "group-database-cache",
+      "type": "groupNode",
+      "position": {
+        "x": 2260,
+        "y": 580
+      },
+      "data": {
+        "label": "Data Storage & Caching"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2260,
+        "y": 580
+      },
+      "dragging": false
+    },
+    {
+      "id": "group-integration-orchestration",
+      "type": "groupNode",
+      "position": {
+        "x": 1340,
+        "y": 1880
+      },
+      "data": {
+        "label": "Integration & Orchestration"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1340,
+        "y": 1880
+      },
+      "dragging": false
+    },
+    {
+      "id": "group-ai-ml",
+      "type": "groupNode",
+      "position": {
+        "x": 1400,
+        "y": 820
+      },
+      "data": {
+        "label": "AI & Machine Learning"
+      },
+      "style": {
+        "width": 540,
+        "height": 960
+      },
+      "width": 540,
+      "height": 960,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1400,
+        "y": 820
+      },
+      "dragging": false
+    },
+    {
+      "id": "group-networking-security",
+      "type": "groupNode",
+      "position": {
+        "x": -300,
+        "y": 1680
+      },
+      "data": {
+        "label": "Networking & Security"
+      },
+      "style": {
+        "width": 1880,
+        "height": 485
+      },
+      "width": 1880,
+      "height": 485,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -300,
+        "y": 1680
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aks",
+      "type": "azureNode",
+      "position": {
+        "x": 140,
+        "y": 300
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/azure-kubernetes-service.svg",
+        "pricing": {
+          "estimatedCost": 73,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T18:27:31.466Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 720,
+        "y": 260
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 1820,
+        "y": 220
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/azure-functions.svg"
+      },
+      "parentNode": "group-compute",
+      "extent": "parent",
+      "width": 159,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2400,
+        "y": 180
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmosdb",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T18:27:31.421Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-database-cache",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2440,
+        "y": 760
+      }
+    },
+    {
+      "id": "svc-redis",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Azure Cache for Redis",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg",
+        "pricing": {
+          "estimatedCost": 64.24,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:27:31.466Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-database-cache",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2440,
+        "y": 1010
+      }
+    },
+    {
+      "id": "svc-servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/service-bus.svg",
+        "pricing": {
+          "estimatedCost": 9.81,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:27:31.466Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-integration-orchestration",
+      "extent": "parent",
+      "width": 126,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1520,
+        "y": 2060
+      }
+    },
+    {
+      "id": "svc-azure-cognitive-search",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Cognitive Search",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-cognitive-search.svg"
+      },
+      "parentNode": "group-ai-ml",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1580,
+        "y": 1000
+      }
+    },
+    {
+      "id": "svc-azure-openai",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-openai.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:27:31.487Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-ai-ml",
+      "extent": "parent",
+      "width": 141,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1580,
+        "y": 1250
+      }
+    },
+    {
+      "id": "svc-azure-machine-learning",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 680
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T18:27:31.466Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-ai-ml",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1580,
+        "y": 1500
+      }
+    },
+    {
+      "id": "svc-cdn",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 140
+      },
+      "data": {
+        "label": "Content Delivery Network",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg",
+        "pricing": {
+          "estimatedCost": 8.7,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1M",
+          "lastUpdated": "2026-02-12T18:27:31.476Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-networking-security",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -220,
+        "y": 1820
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-application-gateway",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 180
+      },
+      "data": {
+        "label": "Application Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg",
+        "pricing": {
+          "estimatedCost": 162,
+          "tier": "Large",
+          "skuName": "Large",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB",
+          "lastUpdated": "2026-02-12T18:27:31.475Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-networking-security",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 260,
+        "y": 1860
+      }
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 1400,
+        "y": 140
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T18:27:31.466Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-networking-security",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1100,
+        "y": 1820
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-microsoft-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 1040,
+        "y": 205
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:27:31.466Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-networking-security",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 740,
+        "y": 1885
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-cdn",
+      "target": "svc-application-gateway",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deliver accelerated site content and assets to users",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-application-gateway",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route and load balance user requests to microservices",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-aks",
+      "target": "svc-cosmosdb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Query and update product catalog with global replication",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-aks",
+      "target": "svc-redis",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write session and cart state for fast user experience",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-aks",
+      "target": "svc-servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send order events for processing orchestration",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-servicebus",
+      "target": "svc-functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Trigger inventory update webhooks upon order fulfillment",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-functions",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Notify microservices of inventory changes in real-time",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-aks",
+      "target": "svc-azure-machine-learning",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit transaction data for fraud detection scoring within 200ms",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-aks",
+      "target": "svc-azure-openai",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Request personalized recommendations per user session",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-aks",
+      "target": "svc-azure-cognitive-search",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Query faceted search results for product listing and filtering",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-aks",
+      "target": "svc-keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve payment processing secrets and certificates securely",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-application-gateway",
+      "target": "svc-microsoft-entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate and authorize user access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 842.5,
+    "y": 101.25,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T18:28:57.799Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User requests e-commerce site content delivered via CDN with dynamic acceleration",
+      "services": [
+        "svc-cdn"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Traffic routed to Application Gateway which authenticates user and forwards requests to Kubernetes microservices",
+      "services": [
+        "svc-application-gateway",
+        "svc-microsoft-entra-id",
+        "svc-aks"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Microservices read product catalog from Cosmos DB and session/cart state from Redis Cache",
+      "services": [
+        "svc-aks",
+        "svc-cosmosdb",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "User performs a product search using Azure Cognitive Search for faceted results",
+      "services": [
+        "svc-aks",
+        "svc-azure-cognitive-search"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "On order placement, microservices send order events to Service Bus for orchestration",
+      "services": [
+        "svc-aks",
+        "svc-servicebus"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Service Bus triggers Azure Functions to update inventory based on order fulfillment",
+      "services": [
+        "svc-servicebus",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Functions notify microservices on inventory changes to sync stock levels in real-time",
+      "services": [
+        "svc-functions",
+        "svc-aks"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Microservices submit transaction details to Azure Machine Learning for fraud detection with latency under 200ms",
+      "services": [
+        "svc-aks",
+        "svc-azure-machine-learning"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Microservices request personalized recommendations from Azure OpenAI per user session",
+      "services": [
+        "svc-aks",
+        "svc-azure-openai"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "During checkout, microservices securely retrieve payment keys from Key Vault to ensure PCI-DSS compliance",
+      "services": [
+        "svc-aks",
+        "svc-keyvault"
+      ]
+    }
+  ],
+  "architecturePrompt": "A Black Friday-ready e-commerce platform handling 50,000 orders/hour peak with real-time inventory sync across 12 regional warehouses, ML-powered fraud detection scoring each transaction in under 200ms, personalized recommendations engine, multi-currency payment processing with PCI-DSS compliance, abandoned cart recovery workflows, using Azure Kubernetes Service for microservices, Cosmos DB for product catalog with global distribution, Redis Cache for session and cart state, Service Bus for order orchestration, Azure Functions for inventory webhooks, Cognitive Search for faceted product search, and CDN with dynamic site acceleration"
+}

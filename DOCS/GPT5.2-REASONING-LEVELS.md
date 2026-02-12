@@ -4,6 +4,8 @@
 
 Azure OpenAI with API version `2025-04-01-preview` supports configurable reasoning effort levels that control how deeply GPT-5.2 thinks before responding.
 
+> **Note**: Reasoning effort only applies to GPT-5.2. GPT-4.1 and GPT-4.1 Mini are non-reasoning models and ignore this setting.
+
 ## Configuration
 
 The reasoning level is controlled via the `VITE_REASONING_EFFORT` environment variable in your `.env` file:
@@ -20,7 +22,6 @@ VITE_REASONING_EFFORT=medium
 | **low** | Fast | Low | Basic architectures, draft designs |
 | **medium** | Balanced | Moderate | **Recommended default** - Production architectures with 5-10 services |
 | **high** | Slower | Higher | Complex enterprise architectures (10-15+ services) |
-| **xhigh** | Slowest | Highest | Mission-critical infrastructure, compliance-heavy designs |
 
 ## Current Implementation
 
@@ -43,7 +44,8 @@ Benefits with `medium` reasoning:
 | low | +15-25% | Simple apps |
 | **medium** | **+30-50%** | **Most production use** |
 | high | +60-100% | Enterprise architectures |
-| xhigh | +100-150% | Critical systems |
+
+> **Alternative**: For faster results at lower cost, consider using GPT-4.1 (10,000 max tokens, no reasoning overhead) or GPT-4.1 Mini (8,000 max tokens, fastest). These models skip reasoning entirely.
 
 ## When to Adjust
 
@@ -58,12 +60,8 @@ Benefits with `medium` reasoning:
 - Complex security/compliance requirements
 - Multi-region deployments
 - Hybrid cloud scenarios
-
-### Switch to `xhigh` if:
 - Mission-critical infrastructure
 - Financial/healthcare systems
-- Extensive regulatory requirements
-- Zero-trust architectures
 
 ## Testing Different Levels
 
@@ -78,9 +76,6 @@ VITE_REASONING_EFFORT=medium
 
 # Complex architectures
 VITE_REASONING_EFFORT=high
-
-# Maximum reasoning
-VITE_REASONING_EFFORT=xhigh
 ```
 
 Then restart your dev server:
@@ -117,6 +112,7 @@ See `notebooks/reasoning_effort_test.ipynb` for comprehensive testing of all rea
 
 ---
 
-**Last Updated:** January 14, 2026  
+**Last Updated:** February 12, 2026  
 **Status:** ✅ Working with Azure OpenAI API version 2025-04-01-preview  
-**Current Setting:** `medium` (recommended)
+**Current Setting:** `medium` (recommended)  
+**Models:** GPT-5.2 (reasoning), GPT-4.1 (non-reasoning), GPT-4.1 Mini (non-reasoning)

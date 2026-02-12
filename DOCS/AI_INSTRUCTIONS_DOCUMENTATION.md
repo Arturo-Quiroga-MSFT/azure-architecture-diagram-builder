@@ -1,26 +1,39 @@
 # AI Instructions Documentation
 
-**Last Updated**: January 11, 2026  
-**Model Used**: GPT-5.2 (Azure OpenAI Deployment)
+**Last Updated**: February 12, 2026  
+**Models Supported**: GPT-5.2, GPT-4.1, GPT-4.1 Mini (Azure OpenAI)
 
-This document details the AI instructions (system prompts) for all three GPT-5.2 agents in the Azure Architecture Diagram Builder application.
+This document details the AI instructions (system prompts) for all three agents in the Azure Architecture Diagram Builder application. Each agent supports multi-model selection.
 
 ---
 
 ## Overview
 
-All three agents use the **same GPT-5.2 deployment** configured via environment variables:
+The three agents support **multiple AI models** selected at runtime via `ModelSelector` dropdown, with per-feature overrides stored in localStorage.
+
+### Environment Variables
 - `VITE_AZURE_OPENAI_ENDPOINT` - Azure OpenAI endpoint URL
 - `VITE_AZURE_OPENAI_API_KEY` - API authentication key
-- `VITE_AZURE_OPENAI_DEPLOYMENT` - Model deployment name (GPT-5.2)
+- `VITE_AZURE_OPENAI_DEPLOYMENT` - Default deployment name
+- `VITE_AZURE_OPENAI_DEPLOYMENT_GPT52` - GPT-5.2 deployment
+- `VITE_AZURE_OPENAI_DEPLOYMENT_GPT41` - GPT-4.1 deployment
+- `VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI` - GPT-4.1 Mini deployment
+- `VITE_REASONING_EFFORT` - Reasoning effort for GPT-5.2 (none/low/medium/high)
+
+### Model Configuration (from `modelSettingsStore.ts`)
+| Model | Max Tokens | Reasoning | Deployment Env Var |
+|-------|-----------|-----------|-------------------|
+| GPT-5.2 | 16,000 | Yes (configurable effort) | `VITE_AZURE_OPENAI_DEPLOYMENT_GPT52` |
+| GPT-4.1 | 10,000 | No | `VITE_AZURE_OPENAI_DEPLOYMENT_GPT41` |
+| GPT-4.1 Mini | 8,000 | No | `VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI` |
 
 ---
 
-## 1. Main Diagram Generator (GPT-5.2)
+## 1. Main Diagram Generator (Multi-Model)
 
-**File**: `src/services/azureOpenAI.ts`  
-**Function**: `generateArchitectureWithAI(description: string)`  
-**Max Tokens**: 6,000  
+**File**: `src/services/azureOpenAI.ts` (558 lines)  
+**Function**: `generateArchitectureWithAI(description: string, modelOverride?: ModelOverride)`  
+**Max Tokens**: Per-model (GPT-5.2: 16,000 | GPT-4.1: 10,000 | GPT-4.1 Mini: 8,000)  
 **Response Format**: JSON Object
 
 ### Purpose
@@ -32,7 +45,7 @@ Generate Azure architecture diagrams with logical service groupings based on nat
 - Analyze user requirements and identify appropriate Azure services
 - Organize services into logical groups (following Microsoft reference architecture patterns)
 - **DO NOT** include position, x, y, width, or height (layout engine calculates automatically)
-- Use RAG (Retrieval-Augmented Generation) with similar reference architectures for context
+- Model selection is captured reactively via `useModelSettings()` hook and passed as `ModelOverride`
 
 #### Grouping Patterns
 - **Ingestion/Input Layer**: Web apps, API gateways, Event Hubs
@@ -131,11 +144,11 @@ Generate Azure architecture diagrams with logical service groupings based on nat
 
 ---
 
-## 2. Architecture Validator Agent (GPT-5.2)
+## 2. Architecture Validator Agent (Multi-Model)
 
-**File**: `src/services/architectureValidator.ts`  
-**Function**: `validateArchitecture(...)`  
-**Max Tokens**: 8,000  
+**File**: `src/services/architectureValidator.ts` (334 lines)  
+**Function**: `validateArchitecture(..., modelOverride?: ModelOverride)`  
+**Max Tokens**: Per-model (GPT-5.2: 16,000 | GPT-4.1: 10,000 | GPT-4.1 Mini: 8,000)  
 **Temperature**: 0.3  
 **Response Format**: JSON Object
 
@@ -249,11 +262,11 @@ Validate Azure architectures against the **Azure Well-Architected Framework** (5
 
 ---
 
-## 3. Deployment Guide Generator (GPT-5.2)
+## 3. Deployment Guide Generator (Multi-Model)
 
-**File**: `src/services/deploymentGuideGenerator.ts`  
-**Function**: `generateDeploymentGuide(...)`  
-**Max Tokens**: 10,000  
+**File**: `src/services/deploymentGuideGenerator.ts` (396 lines)  
+**Function**: `generateDeploymentGuide(..., modelOverride?: ModelOverride)`  
+**Max Tokens**: Per-model (GPT-5.2: 16,000 | GPT-4.1: 10,000 | GPT-4.1 Mini: 8,000)  
 **Temperature**: 0.3  
 **Response Format**: JSON Object
 
@@ -409,19 +422,19 @@ az webapp create \
 
 ## Token Allocation Strategy
 
-### GPT-5.2 Reasoning Tokens
-GPT-5.2 uses **reasoning tokens** internally (not visible in output) to process complex requests. Token allocation accounts for this:
+### Multi-Model Token Budgets
+All three agents now use the same `max_completion_tokens` value from `MODEL_CONFIG` in `modelSettingsStore.ts`. GPT-5.2 uses reasoning tokens internally (not visible in output); GPT-4.1 and GPT-4.1 Mini do not use reasoning tokens.
 
-| Agent | Max Completion Tokens | Reasoning Budget | Output Budget |
-|-------|----------------------|------------------|---------------|
-| **Diagram Generator** | 6,000 | ~1,500-2,000 | ~4,000-4,500 |
-| **Architecture Validator** | 8,000 | ~3,000-3,500 | ~4,500-5,000 |
-| **Deployment Guide** | 10,000 | ~3,000-4,000 | ~6,000-7,000 |
+| Model | Max Completion Tokens | Reasoning | Notes |
+|-------|----------------------|-----------|-------|
+| **GPT-5.2** | 16,000 | Yes (configurable effort) | Best quality, slowest |
+| **GPT-4.1** | 10,000 | No | Good balance of quality/speed |
+| **GPT-4.1 Mini** | 8,000 | No | Fastest, may misidentify services |
 
-### Why Different Token Limits?
-- **Diagram Generator**: Smaller JSON output, focused structure
-- **Architecture Validator**: Complex analysis across 5 pillars, detailed findings
-- **Deployment Guide**: Extensive documentation with commands, notes, and steps
+### Per-Agent Behavior
+- **Diagram Generator**: Uses full model token budget
+- **Architecture Validator**: Uses model token budget (complex 5-pillar analysis)
+- **Deployment Guide**: Uses model token budget (extensive documentation with commands)
 
 ---
 
@@ -438,7 +451,7 @@ GPT-5.2 uses **reasoning tokens** internally (not visible in output) to process 
 ```
 
 ### API Version
-`2024-08-01-preview` - Supports GPT-5.2 with reasoning tokens
+`2025-04-01-preview` - Supports GPT-5.2 reasoning, GPT-4.1, and GPT-4.1 Mini
 
 ### Error Handling
 - 401: Invalid API key
@@ -476,31 +489,37 @@ Generated by `formatDeploymentGuide(guide)`:
 
 ### Main Diagram Generator
 ```typescript
+const modelOverride = { model: 'gpt-5.2', reasoningEffort: 'medium' };
 const result = await generateArchitectureWithAI(
-  "Build a serverless e-commerce platform with AI recommendations"
+  "Build a serverless e-commerce platform with AI recommendations",
+  modelOverride
 );
 // Returns: { groups, services, connections, workflow }
 ```
 
 ### Architecture Validator
 ```typescript
+const modelOverride = { model: 'gpt-4.1', reasoningEffort: 'medium' };
 const validation = await validateArchitecture(
   services,      // Array of service objects
   connections,   // Array of connection objects
   groups,        // Optional groups array
-  "E-commerce platform"  // Description
+  "E-commerce platform",  // Description
+  modelOverride
 );
 // Returns: { overallScore, summary, pillars, quickWins, timestamp }
 ```
 
 ### Deployment Guide Generator
 ```typescript
+const modelOverride = { model: 'gpt-5.2', reasoningEffort: 'high' };
 const guide = await generateDeploymentGuide(
   services,
   connections,
   groups,
   "E-commerce platform",
-  250  // Estimated monthly cost
+  250,  // Estimated monthly cost
+  modelOverride
 );
 // Returns: Full deployment guide JSON
 ```
@@ -510,7 +529,7 @@ const guide = await generateDeploymentGuide(
 ## Future Enhancements
 
 ### Potential Improvements
-1. **Agent Comparison**: A/B testing different models (GPT-4 vs GPT-5.2)
+1. **Agent Comparison**: A/B testing different models (already supported via ModelSelector)
 2. **Cost Tracking**: Monitor token usage per agent
 3. **Caching**: Cache common validation patterns
 4. **Streaming**: Real-time response streaming for better UX
@@ -538,6 +557,6 @@ const guide = await generateDeploymentGuide(
 
 ---
 
-**Document Version**: 1.0  
-**Model**: GPT-5.2 (Azure OpenAI)  
-**Last Tested**: January 11, 2026
+**Document Version**: 2.0  
+**Models**: GPT-5.2, GPT-4.1, GPT-4.1 Mini (Azure OpenAI)  
+**Last Tested**: February 12, 2026

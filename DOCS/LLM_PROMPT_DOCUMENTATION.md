@@ -2,15 +2,14 @@
 
 ## Overview
 
-This document explains the AI/LLM instructions used to generate Azure architecture diagrams from natural language descriptions. The system uses Azure OpenAI (GPT-4/GPT-5.2) with structured prompts to convert user requirements into visual architecture diagrams.
+This document explains the AI/LLM instructions used to generate Azure architecture diagrams from natural language descriptions. The system uses Azure OpenAI (GPT-5.2, GPT-4.1, GPT-4.1 Mini) with structured prompts to convert user requirements into visual architecture diagrams.
 
 ## Architecture
 
-The AI generation system consists of three main components:
+The AI generation system consists of two main components:
 
-1. **RAG (Retrieval-Augmented Generation)**: Finds similar Microsoft reference architectures to provide context
-2. **System Prompt**: Detailed instructions defining the JSON schema, rules, and Azure service mappings
-3. **User Input**: Natural language description of the desired architecture
+1. **System Prompt**: Detailed instructions defining the JSON schema, rules, and Azure service mappings
+2. **User Input**: Natural language description of the desired architecture
 
 ## System Prompt Structure
 
@@ -22,26 +21,20 @@ with logical groupings.
 ```
 
 ### 2. Reference Architecture Context (Dynamic)
-The system automatically injects 1-3 similar Microsoft reference architectures:
-- Found using vector embeddings similarity search
-- Provides inspiration and validation
-- Shows service patterns from real-world architectures
+The system injects reference architecture patterns to guide service selection and grouping. These are built into the system prompt, not fetched via vector search.
 
 ### 3. JSON Output Schema
 
 The LLM must return a JSON object with four main sections:
 
 #### Groups
-Logical groupings of services (e.g., Web Tier, Data Layer, Security):
+Logical groupings of services (e.g., Web Tier, Data Layer, Security). Positions and dimensions are **NOT** included — the layout engine calculates these automatically:
 ```json
 {
   "groups": [
     {
       "id": "unique-group-id",
-      "label": "Group Name",
-      "position": {"x": 100, "y": 100},
-      "width": 700,
-      "height": 500
+      "label": "Group Name"
     }
   ]
 }
@@ -124,10 +117,10 @@ Organize services into logical groups following Microsoft reference architecture
 - **Common patterns**: Ingestion, Processing, Data Layer, Web Tier, Security, Monitoring
 - **Maximum 6 services per group** to maintain readability
 
-### Rule 2: Position Groups with Ample Spacing
-- **Horizontal spacing**: At least 800px apart
-- **Vertical spacing**: At least 600px apart
-- Ensures readability and prevents overlap
+### Rule 2: Let the Layout Engine Handle Positioning
+- **DO NOT** include position, x, y, width, or height in the JSON output
+- The `layoutEngine.ts` (258 lines) and `layoutPresets.ts` (460 lines) handle all positioning automatically
+- Groups are sized and positioned based on service count and connections
 
 ### Rule 3: Assign Services to Groups
 - Use `groupId` to associate services with their logical group
@@ -145,9 +138,9 @@ Organize services into logical groups following Microsoft reference architecture
 - Use clear, descriptive names like "Data Layer", "API & Real-time", "Client & Edge Delivery"
 - Follow Azure Architecture Center naming conventions
 
-### Rule 7: Size Groups Generously
-- **Width**: 700-900px based on content
-- **Height**: 500-600px based on service count
+### Rule 7: Layout is Automatic
+- Layout engine handles service placement within groups
+- Supports multiple layout presets (hierarchical, grid, circular, etc.)
 - Prevents visual cramping and allows for future additions
 
 ### Rule 8: Specify Connection Positions
@@ -279,13 +272,18 @@ message queue, and Redis cache
 ```bash
 VITE_AZURE_OPENAI_ENDPOINT=https://your-openai.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key
-VITE_AZURE_OPENAI_DEPLOYMENT=your-deployment-name
+VITE_AZURE_OPENAI_DEPLOYMENT=your-default-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT41=your-gpt41-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=your-gpt41mini-deployment
+VITE_REASONING_EFFORT=medium
 ```
 
 ### API Configuration
-- **Max tokens**: 6000 (supports complex architectures)
+- **Max tokens**: Per-model (GPT-5.2: 16,000 | GPT-4.1: 10,000 | GPT-4.1 Mini: 8,000)
 - **Response format**: `json_object` (ensures valid JSON)
-- **API version**: `2024-08-01-preview`
+- **API version**: `2025-04-01-preview`
+- **Model selection**: Runtime via `ModelSelector` dropdown with `ModelOverride`
 
 ## Best Practices
 
@@ -303,19 +301,18 @@ VITE_AZURE_OPENAI_DEPLOYMENT=your-deployment-name
 
 ## Limitations
 
-1. **Token limit**: Very large architectures may exceed 6000 tokens
-2. **Icon availability**: Limited to available icon categories
+1. **Token limit**: Very large architectures may exceed model-specific limits
+2. **Icon availability**: Limited to 713 icons across 29 categories
 3. **Connection complexity**: Cannot represent all possible Azure connection types
-4. **Group overlap**: Manual adjustment may be needed for complex layouts
+4. **Model variance**: GPT-4.1 Mini may occasionally misidentify services
 
 ## Future Enhancements
 
 Potential improvements to the prompt:
-- Support for Azure regions and availability zones
 - Cost estimation hints
-- Security best practice validation
 - Compliance framework mapping (HIPAA, PCI-DSS, etc.)
 - Multi-cloud hybrid scenarios
+- Custom prompt templates
 
 ## References
 
@@ -326,6 +323,6 @@ Potential improvements to the prompt:
 
 ---
 
-**Version**: 1.1  
-**Last Updated**: January 8, 2026  
-**Model**: GPT-5.2 (Azure OpenAI)
+**Version**: 2.0  
+**Last Updated**: February 12, 2026  
+**Models**: GPT-5.2, GPT-4.1, GPT-4.1 Mini (Azure OpenAI)
