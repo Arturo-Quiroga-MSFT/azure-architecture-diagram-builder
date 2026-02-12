@@ -1775,6 +1775,37 @@ function App() {
       return;
     }
 
+    // Capture diagram snapshot BEFORE opening the modal overlay
+    let diagramImageDataUrl: string | undefined;
+    if (reactFlowWrapper.current && reactFlowInstance) {
+      try {
+        reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+        // Brief delay for fitView to settle before capture
+        await new Promise(resolve => setTimeout(resolve, 400));
+        const isDark = document.body.classList.contains('dark-mode');
+        const canvas = await html2canvas(reactFlowWrapper.current, {
+          backgroundColor: isDark ? '#1a1a2e' : '#f8fafc',
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+          foreignObjectRendering: false,
+          ignoreElements: (element) => {
+            return (
+              element.classList?.contains('react-flow__minimap') ||
+              element.classList?.contains('react-flow__controls') ||
+              element.classList?.contains('react-flow__attribution')
+            );
+          },
+        });
+        diagramImageDataUrl = canvas.toDataURL('image/png');
+        console.log('\uD83D\uDCF8 Diagram snapshot captured for validation report');
+      } catch (err) {
+        console.warn('Could not capture diagram snapshot:', err);
+      }
+    }
+
+    // Now show the modal and start validation
     setIsValidating(true);
     setIsValidationModalOpen(true);
 
@@ -1812,6 +1843,10 @@ function App() {
         architecturePrompt || titleBlockData.architectureName
       );
 
+      // Attach diagram snapshot to results
+      if (diagramImageDataUrl) {
+        result.diagramImageDataUrl = diagramImageDataUrl;
+      }
       setValidationResult(result);
     } catch (error: any) {
       console.error('Validation error:', error);
@@ -1820,7 +1855,7 @@ function App() {
     } finally {
       setIsValidating(false);
     }
-  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName]);
+  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, reactFlowInstance]);
 
   const handleGenerateDeploymentGuide = useCallback(async () => {
     if (nodes.length === 0) {

@@ -118,16 +118,29 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
    */
   const handleDownload = () => {
     if (!validation) return;
+    const ts = new Date(validation.timestamp).getTime();
     const report = formatValidationReport(validation);
+    
+    // Download markdown report
     const blob = new Blob([report], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = generateModelFilename('architecture-validation', 'md');
+    link.download = generateModelFilename('architecture-validation', 'md', ts);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
+    // Download diagram PNG if captured
+    if (validation.diagramImageDataUrl) {
+      const imgLink = document.createElement('a');
+      imgLink.href = validation.diagramImageDataUrl;
+      imgLink.download = `architecture-validation-${ts}-diagram.png`;
+      document.body.appendChild(imgLink);
+      imgLink.click();
+      document.body.removeChild(imgLink);
+    }
   };
 
   return (
