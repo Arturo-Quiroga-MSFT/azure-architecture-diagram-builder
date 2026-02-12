@@ -143,9 +143,23 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
         isConnectable={true}
       />
       <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
         type="target"
         position={Position.Left}
         id="left"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
         className="node-handle"
         isConnectable={true}
       />
@@ -211,9 +225,23 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
         isConnectable={true}
       />
       <Handle
+        type="target"
+        position={Position.Right}
+        id="right-target"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
         type="source"
         position={Position.Bottom}
         id="bottom"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom-target"
         className="node-handle"
         isConnectable={true}
       />

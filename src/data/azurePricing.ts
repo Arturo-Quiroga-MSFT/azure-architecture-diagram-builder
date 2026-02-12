@@ -89,7 +89,8 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Azure CDN': 'Content Delivery Network',
   'Azure Content Delivery Network': 'Content Delivery Network',
   'Content Delivery Network': 'Content Delivery Network',
-  'Traffic Manager': 'Azure Traffic Manager',
+  'Traffic Manager': 'Traffic Manager',
+  'Azure Traffic Manager': 'Traffic Manager',
   'Azure Firewall': 'Azure Firewall',
   'Firewall': 'Azure Firewall',
   'Network Watcher': 'Network Watcher',
@@ -163,15 +164,36 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Monitor': 'Azure Monitor',  // Generic "Monitor" maps to Azure Monitor
   
   // IoT
-  'IoT Hub': 'Azure IoT Hub',
-  'IoT Central': 'Azure IoT Central',
+  'IoT Hub': 'IoT Hub',
+  'Azure IoT Hub': 'IoT Hub',
+  'IoT Central': 'IoT Central',
+  'Azure IoT Central': 'IoT Central',
+  'Digital Twins': 'Digital Twins',
+  'Azure Digital Twins': 'Digital Twins',
+  
+  // Containers (additional)
+  'Container Apps': 'Azure Container Apps',
+  'Azure Container Apps': 'Azure Container Apps',
+  'Container App': 'Azure Container Apps',
   
   // Integration
   'Service Bus': 'Azure Service Bus',
   'Azure Service Bus': 'Azure Service Bus',
   'Event Grid': 'Azure Event Grid',
-  'SignalR': 'Azure SignalR Service',
-  'Azure SignalR Service': 'Azure SignalR Service',
+  'Azure Event Grid': 'Azure Event Grid',
+  'SignalR': 'SignalR',
+  'SignalR Service': 'SignalR',
+  'Azure SignalR Service': 'SignalR',
+  'Notification Hubs': 'Notification Hubs',
+  'Azure Notification Hubs': 'Notification Hubs',
+  'Notification Hub': 'Notification Hubs',
+  
+  // Healthcare
+  'Azure API for FHIR': 'Azure API for FHIR',
+  'FHIR': 'Azure API for FHIR',
+  'FHIR Service': 'Azure API for FHIR',
+  'Health Data Services': 'Azure API for FHIR',
+  'Azure Health Data Services': 'Azure API for FHIR',
 };
 
 /**
@@ -222,6 +244,28 @@ export const USAGE_BASED_SERVICES = [
   'OpenAI',
   'Custom Vision',
   'Content Safety',
+  // IoT
+  'IoT Hub',
+  'Azure IoT Hub',
+  'IoT Central',
+  'Azure IoT Central',
+  'Digital Twins',
+  'Azure Digital Twins',
+  // Containers
+  'Container Apps',
+  'Azure Container Apps',
+  // Integration
+  'Event Grid',
+  'Azure Event Grid',
+  'SignalR',
+  'SignalR Service',
+  'Azure SignalR Service',
+  'Notification Hubs',
+  'Azure Notification Hubs',
+  // Healthcare
+  'Azure API for FHIR',
+  'FHIR',
+  'FHIR Service',
 ];
 
 /**
@@ -302,6 +346,32 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Translator': 'Standard',
   'Custom Vision': 'Standard',
   'Content Safety': 'Standard',
+  // IoT
+  'IoT Hub': 'S1',
+  'Azure IoT Hub': 'S1',
+  'IoT Central': 'Standard',
+  'Azure IoT Central': 'Standard',
+  'Digital Twins': 'Standard',
+  'Azure Digital Twins': 'Standard',
+  // Containers
+  'Container Apps': 'Consumption',
+  'Azure Container Apps': 'Consumption',
+  // Networking (additional)
+  'Load Balancer': 'Standard',
+  'Azure Load Balancer': 'Standard',
+  'Traffic Manager': 'Standard',
+  'Azure Traffic Manager': 'Standard',
+  // Integration
+  'Event Grid': 'Standard',
+  'Azure Event Grid': 'Standard',
+  'SignalR': 'Standard',
+  'SignalR Service': 'Standard',
+  'Azure SignalR Service': 'Standard',
+  'Notification Hubs': 'Standard',
+  'Azure Notification Hubs': 'Standard',
+  // Healthcare
+  'Azure API for FHIR': 'Standard',
+  'FHIR': 'Standard',
 };
 
 /**
@@ -650,6 +720,39 @@ export const FALLBACK_PRICING: Record<string, {
     premium: 200.00, // With compute
     unit: 'per workspace/month'
   },
+  // AML Sub-components (granular architecture)
+  // Endpoints and deployments have $0 cost - they are routing/config constructs
+  // Only compute resources have actual cost
+  'AML Online Endpoint': {
+    basic: 0,
+    standard: 0,
+    premium: 0,
+    unit: 'no direct cost (routing only)'
+  },
+  'AML Batch Endpoint': {
+    basic: 0,
+    standard: 0,
+    premium: 0,
+    unit: 'no direct cost (routing only)'
+  },
+  'AML Deployment': {
+    basic: 0,
+    standard: 0,
+    premium: 0,
+    unit: 'no direct cost (config only)'
+  },
+  'AML Managed Compute': {
+    basic: 50.00, // Small instance
+    standard: 200.00, // Standard instance (DS3_v2 equivalent)
+    premium: 800.00, // GPU instance
+    unit: 'per instance/month'
+  },
+  'Batch Compute Pool': {
+    basic: 0, // Scale-to-zero
+    standard: 100.00, // Small pool
+    premium: 500.00, // Large/GPU pool
+    unit: 'per pool/month (usage-based)'
+  },
   'Container Registry': {
     basic: 5.00, // Basic tier
     standard: 20.00, // Standard tier
@@ -781,6 +884,137 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 200.00, // Estimated typical usage
     premium: 2000.00, // High volume
     unit: 'per resource/month'
+  },
+  // IoT Services
+  'IoT Hub': {
+    basic: 10.00, // B1 tier
+    standard: 25.00, // S1 tier
+    premium: 250.00, // S3 tier
+    unit: 'per unit/month'
+  },
+  'Azure IoT Hub': {
+    basic: 10.00,
+    standard: 25.00,
+    premium: 250.00,
+    unit: 'per unit/month'
+  },
+  'IoT Central': {
+    basic: 0, // Free tier (2 devices)
+    standard: 50.00, // ~20 devices
+    premium: 250.00, // ~100 devices
+    unit: 'per app/month'
+  },
+  'Azure IoT Central': {
+    basic: 0,
+    standard: 50.00,
+    premium: 250.00,
+    unit: 'per app/month'
+  },
+  'Digital Twins': {
+    basic: 0, // Pay per operation
+    standard: 50.00, // Estimated typical usage
+    premium: 500.00, // High volume
+    unit: 'per resource/month'
+  },
+  'Azure Digital Twins': {
+    basic: 0,
+    standard: 50.00,
+    premium: 500.00,
+    unit: 'per resource/month'
+  },
+  // Container Services (additional)
+  'Container Apps': {
+    basic: 0, // Consumption (scale to zero)
+    standard: 50.00, // Typical workload
+    premium: 200.00, // High volume
+    unit: 'per app/month'
+  },
+  'Azure Container Apps': {
+    basic: 0,
+    standard: 50.00,
+    premium: 200.00,
+    unit: 'per app/month'
+  },
+  // Networking (additional)
+  'Load Balancer': {
+    basic: 0, // Basic tier is free
+    standard: 18.25, // Standard tier
+    premium: 36.50, // Additional rules
+    unit: 'per LB/month'
+  },
+  'Azure Load Balancer': {
+    basic: 0,
+    standard: 18.25,
+    premium: 36.50,
+    unit: 'per LB/month'
+  },
+  'Traffic Manager': {
+    basic: 0.54, // Per 1M DNS queries
+    standard: 5.00, // Estimated typical usage
+    premium: 20.00, // High traffic
+    unit: 'per profile/month'
+  },
+  'Azure Traffic Manager': {
+    basic: 0.54,
+    standard: 5.00,
+    premium: 20.00,
+    unit: 'per profile/month'
+  },
+  // Integration (additional)
+  'Event Grid': {
+    basic: 0, // First 100K ops free
+    standard: 0.60, // Per 1M operations
+    premium: 6.00, // 10M operations
+    unit: 'per million operations'
+  },
+  'Azure Event Grid': {
+    basic: 0,
+    standard: 0.60,
+    premium: 6.00,
+    unit: 'per million operations'
+  },
+  'SignalR': {
+    basic: 0, // Free tier (20 connections)
+    standard: 49.00, // Standard 1 unit (1K connections)
+    premium: 490.00, // 10 units
+    unit: 'per unit/month'
+  },
+  'SignalR Service': {
+    basic: 0,
+    standard: 49.00,
+    premium: 490.00,
+    unit: 'per unit/month'
+  },
+  'Azure SignalR Service': {
+    basic: 0,
+    standard: 49.00,
+    premium: 490.00,
+    unit: 'per unit/month'
+  },
+  'Notification Hubs': {
+    basic: 0, // Free tier
+    standard: 10.00, // Basic tier
+    premium: 200.00, // Standard tier (10M pushes)
+    unit: 'per namespace/month'
+  },
+  'Azure Notification Hubs': {
+    basic: 0,
+    standard: 10.00,
+    premium: 200.00,
+    unit: 'per namespace/month'
+  },
+  // Healthcare
+  'Azure API for FHIR': {
+    basic: 0, // Free tier limited
+    standard: 125.00, // Standard tier
+    premium: 500.00, // High volume
+    unit: 'per service/month'
+  },
+  'FHIR': {
+    basic: 0,
+    standard: 125.00,
+    premium: 500.00,
+    unit: 'per service/month'
   },
 };
 

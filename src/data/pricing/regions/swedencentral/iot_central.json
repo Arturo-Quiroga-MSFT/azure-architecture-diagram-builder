@@ -1,0 +1,52 @@
+{
+  "BillingCurrency": "USD",
+  "CustomerEntityId": "Default",
+  "CustomerEntityType": "Retail",
+  "Items": [
+    {
+      "currencyCode": "USD",
+      "tierMinimumUnits": 0.0,
+      "retailPrice": 0.000107,
+      "unitPrice": 0.000107,
+      "armRegionName": "swedencentral",
+      "location": "SE Central",
+      "effectiveStartDate": "2021-06-08T00:00:00Z",
+      "meterId": "4b3bc72f-942a-5845-9a46-06e7dcb1bf31",
+      "meterName": "Standard Tier 0",
+      "productId": "DZH318Z0BQD6",
+      "skuId": "DZH318Z0BQD6/0011",
+      "productName": "IoT Central",
+      "skuName": "Standard",
+      "serviceName": "IoT Central",
+      "serviceId": "DZH314238G9D",
+      "serviceFamily": "Internet of Things",
+      "unitOfMeasure": "1/Hour",
+      "type": "Consumption",
+      "isPrimaryMeterRegion": false,
+      "armSkuName": ""
+    },
+    {
+      "currencyCode": "USD",
+      "tierMinimumUnits": 0.0,
+      "retailPrice": 0.07,
+      "unitPrice": 0.07,
+      "armRegionName": "swedencentral",
+      "location": "SE Central",
+      "effectiveStartDate": "2021-06-08T00:00:00Z",
+      "meterId": "1b143be4-5153-585d-95cb-4aba960c6eee",
+      "meterName": "Standard Overage Messages ST0",
+      "productId": "DZH318Z0BQD6",
+      "skuId": "DZH318Z0BQD6/0011",
+      "productName": "IoT Central",
+      "skuName": "Standard",
+      "serviceName": "IoT Central",
+      "serviceId": "DZH314238G9D",
+      "serviceFamily": "Internet of Things",
+      "unitOfMeasure": "1K",
+      "type": "Consumption",
+      "isPrimaryMeterRegion": false,
+      "armSkuName": ""
+    }
+  ],
+  "Count": 2
+}

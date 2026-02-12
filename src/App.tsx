@@ -1274,9 +1274,13 @@ function App() {
     const iconLoadingPromises = services.map(async (service: any) => {
       try {
         // FIRST: Try using serviceIconMapping for exact matches
-        const mapping = getServiceIconMapping(service.type);
+        // Try service.name first (preferred), then service.type
+        let mapping = getServiceIconMapping(service.name);
+        if (!mapping) {
+          mapping = getServiceIconMapping(service.type);
+        }
         if (mapping) {
-          console.log(`  🎯 Found mapping for "${service.type}": ${mapping.iconFile}`);
+          console.log(`  🎯 Found mapping for "${service.name}" (type: ${service.type}): ${mapping.iconFile}`);
           const iconPath = `/Azure_Public_Service_Icons/Icons/${mapping.category}/${mapping.iconFile}.svg`;
           return { 
             serviceId: service.id, 
@@ -2559,9 +2563,9 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           console.log('🔄 Regenerating architecture with recommendations...');
           console.log('📋 Prompt:', regenerationPrompt);
           
-          // Call Azure OpenAI to regenerate (skip reference architectures for speed)
+          // Call Azure OpenAI to regenerate
           try {
-            const improvedArchitecture = await generateArchitectureWithAI(regenerationPrompt, true);
+            const improvedArchitecture = await generateArchitectureWithAI(regenerationPrompt);
             
             if (improvedArchitecture) {
               // Detect newly added services
