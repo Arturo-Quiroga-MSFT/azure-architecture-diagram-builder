@@ -12,7 +12,7 @@ export interface ServiceIconMapping {
   /** Icon filename (without path or extension) */
   iconFile: string;
   /** Category/folder in icon library */
-  category: 'ai + machine learning' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot' | 'monitor' | 'security';
+  category: 'ai + machine learning' | 'app services' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot' | 'monitor' | 'security' | 'other';
   /** Whether we have real pricing data for this service */
   hasPricingData: boolean;
   /** Service name used in pricing files (if hasPricingData is true) */
@@ -226,7 +226,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     displayName: 'App Service',
     aliases: ['Azure App Service', 'Web App', 'App Services'],
     iconFile: 'app-service',
-    category: 'web',
+    category: 'app services',
     hasPricingData: true,
     pricingServiceName: 'Azure App Service',
     isUsageBased: false,
@@ -305,7 +305,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'PostgreSQL': {
     displayName: 'Azure Database for PostgreSQL',
     aliases: ['PostgreSQL', 'Postgres', 'Azure PostgreSQL'],
-    iconFile: 'azure-database-postgresql',
+    iconFile: '10131-icon-service-Azure-Database-PostgreSQL-Server',
     category: 'databases',
     hasPricingData: true,
     pricingServiceName: 'Azure Database for PostgreSQL',
@@ -377,7 +377,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   'CDN': {
     displayName: 'Content Delivery Network',
     aliases: ['Azure CDN', 'CDN', 'Content Delivery'],
-    iconFile: 'cdn-profiles',
+    iconFile: '00056-icon-service-CDN-Profiles',
     category: 'networking',
     hasPricingData: true,
     pricingServiceName: 'Content Delivery Network',
@@ -425,7 +425,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     displayName: 'Event Hubs',
     aliases: ['Azure Event Hubs', 'Event Hub'],
     iconFile: 'event-hubs',
-    category: 'integration',
+    category: 'analytics',
     hasPricingData: true,
     pricingServiceName: 'Event Hubs',
     isUsageBased: true,
@@ -500,6 +500,255 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     pricingServiceName: 'API Management',
     isUsageBased: false,
     costRange: '$50-2800/mo'
+  },
+  
+  // ========================================
+  // IoT Services
+  // ========================================
+  'IoT Hub': {
+    displayName: 'Azure IoT Hub',
+    aliases: ['Azure IoT Hub', 'IoT', 'IoT Hub'],
+    iconFile: '10182-icon-service-IoT-Hub',
+    category: 'iot',
+    hasPricingData: true,
+    pricingServiceName: 'IoT Hub',
+    isUsageBased: true,
+    costRange: '$0-5000/mo'
+  },
+  
+  'IoT Central': {
+    displayName: 'Azure IoT Central',
+    aliases: ['Azure IoT Central', 'IoT Central'],
+    iconFile: '10184-icon-service-IoT-Central-Applications',
+    category: 'iot',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: '$0-250/mo'
+  },
+  
+  'Digital Twins': {
+    displayName: 'Azure Digital Twins',
+    aliases: ['Azure Digital Twins', 'Digital Twin'],
+    iconFile: '01030-icon-service-Digital-Twins',
+    category: 'iot',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: '$0-1000/mo'
+  },
+  
+  // ========================================
+  // Container Services (additional)
+  // ========================================
+  'Container Apps': {
+    displayName: 'Azure Container Apps',
+    aliases: ['Azure Container Apps', 'Container App', 'ACA'],
+    iconFile: '02989-icon-service-Container-Apps-Environments',
+    category: 'other',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Container Apps',
+    isUsageBased: true,
+    costRange: '$0-500/mo (consumption-based)'
+  },
+  
+  // ========================================
+  // Networking (additional)
+  // ========================================
+  'Virtual Network': {
+    displayName: 'Virtual Network',
+    aliases: ['VNet', 'Azure Virtual Network', 'VNET'],
+    iconFile: '10061-icon-service-Virtual-Networks',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'Virtual Network',
+    isUsageBased: false,
+    costRange: '$0-7.30/mo (peering)'
+  },
+  
+  'Load Balancer': {
+    displayName: 'Azure Load Balancer',
+    aliases: ['Azure Load Balancer', 'LB'],
+    iconFile: '10062-icon-service-Load-Balancers',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'Load Balancer',
+    isUsageBased: false,
+    costRange: '$18-730/mo'
+  },
+  
+  'Azure Firewall': {
+    displayName: 'Azure Firewall',
+    aliases: ['Firewall'],
+    iconFile: '10084-icon-service-Firewalls',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Firewall',
+    isUsageBased: false,
+    costRange: '$438-1095/mo'
+  },
+  
+  'VPN Gateway': {
+    displayName: 'VPN Gateway',
+    aliases: ['Azure VPN Gateway', 'VPN', 'Virtual Network Gateway'],
+    iconFile: '10063-icon-service-Virtual-Network-Gateways',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'VPN Gateway',
+    isUsageBased: false,
+    costRange: '$26-361/mo'
+  },
+  
+  'ExpressRoute': {
+    displayName: 'ExpressRoute',
+    aliases: ['Azure ExpressRoute', 'Express Route'],
+    iconFile: '10079-icon-service-ExpressRoute-Circuits',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'ExpressRoute',
+    isUsageBased: false,
+    costRange: '$55-580/mo'
+  },
+  
+  'Traffic Manager': {
+    displayName: 'Azure Traffic Manager',
+    aliases: ['Azure Traffic Manager'],
+    iconFile: '10065-icon-service-Traffic-Manager-Profiles',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'Traffic Manager',
+    isUsageBased: true,
+    costRange: '$0.54 per million queries'
+  },
+  
+  // ========================================
+  // Integration (additional)
+  // ========================================
+  'Event Grid': {
+    displayName: 'Azure Event Grid',
+    aliases: ['Azure Event Grid'],
+    iconFile: '10206-icon-service-Event-Grid-Topics',
+    category: 'integration',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Event Grid',
+    isUsageBased: true,
+    costRange: '$0.30 per million operations'
+  },
+  
+  'SignalR Service': {
+    displayName: 'Azure SignalR Service',
+    aliases: ['SignalR', 'Azure SignalR', 'Azure SignalR Service'],
+    iconFile: '10052-icon-service-SignalR',
+    category: 'web',
+    hasPricingData: true,
+    pricingServiceName: 'SignalR',
+    isUsageBased: true,
+    costRange: '$0-49/mo per unit'
+  },
+  
+  'Notification Hubs': {
+    displayName: 'Azure Notification Hubs',
+    aliases: ['Notification Hub', 'Azure Notification Hubs', 'Push Notifications'],
+    iconFile: '10045-icon-service-Notification-Hubs',
+    category: 'iot',
+    hasPricingData: true,
+    pricingServiceName: 'Notification Hubs',
+    isUsageBased: true,
+    costRange: '$0-200/mo'
+  },
+  
+  // ========================================
+  // Web (additional)
+  // ========================================
+  'Static Web Apps': {
+    displayName: 'Azure Static Web Apps',
+    aliases: ['Static Web App', 'Azure Static Web Apps', 'Azure Static Web App', 'SWA'],
+    iconFile: '01007-icon-service-Static-Apps',
+    category: 'web',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$0-9/mo'
+  },
+  
+  // ========================================
+  // Management, Monitoring & Security (additional)
+  // ========================================
+  'Azure Monitor': {
+    displayName: 'Azure Monitor',
+    aliases: ['Monitor'],
+    iconFile: '00001-icon-service-Monitor',
+    category: 'monitor',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Monitor',
+    isUsageBased: true,
+    costRange: '$2.30 per GB ingested'
+  },
+  
+  'Microsoft Defender for Cloud': {
+    displayName: 'Microsoft Defender for Cloud',
+    aliases: ['Defender for Cloud', 'Azure Defender', 'Security Center'],
+    iconFile: '10241-icon-service-Microsoft-Defender-for-Cloud',
+    category: 'security',
+    hasPricingData: true,
+    pricingServiceName: 'Microsoft Defender for Cloud',
+    isUsageBased: false,
+    costRange: '$0-15/mo per server'
+  },
+  
+  'Microsoft Entra ID': {
+    displayName: 'Microsoft Entra ID',
+    aliases: ['Entra ID', 'Azure AD', 'Azure Active Directory', 'Active Directory'],
+    iconFile: '10340-icon-service-Entra-Identity-Roles-and-Administrators',
+    category: 'identity',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$0-9/mo per user'
+  },
+  
+  'Backup': {
+    displayName: 'Azure Backup',
+    aliases: ['Azure Backup', 'Recovery Services', 'Recovery Services Vault'],
+    iconFile: '00017-icon-service-Recovery-Services-Vaults',
+    category: 'management + governance',
+    hasPricingData: true,
+    pricingServiceName: 'Backup',
+    isUsageBased: true,
+    costRange: '$5-25/mo per instance'
+  },
+  
+  'Network Watcher': {
+    displayName: 'Network Watcher',
+    aliases: ['Azure Network Watcher'],
+    iconFile: '10066-icon-service-Network-Watcher',
+    category: 'networking',
+    hasPricingData: true,
+    pricingServiceName: 'Network Watcher',
+    isUsageBased: true,
+    costRange: '$0-10/mo per resource'
+  },
+  
+  // ========================================
+  // Healthcare
+  // ========================================
+  'Azure API for FHIR': {
+    displayName: 'Azure API for FHIR',
+    aliases: ['FHIR', 'Azure Health Data Services', 'Health Data Services', 'FHIR Service'],
+    iconFile: '10212-icon-service-Azure-API-for-FHIR',
+    category: 'integration',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: '$0-3000/mo'
+  },
+  
+  // ========================================
+  // Storage (additional)
+  // ========================================
+  'Data Lake Storage': {
+    displayName: 'Azure Data Lake Storage',
+    aliases: ['Data Lake', 'Azure Data Lake', 'Data Lake Storage Gen2', 'ADLS', 'Azure Data Lake Storage Gen2'],
+    iconFile: '10090-icon-service-Data-Lake-Storage-Gen1',
+    category: 'storage',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: '$0.02-0.15 per GB/mo'
   },
 };
 

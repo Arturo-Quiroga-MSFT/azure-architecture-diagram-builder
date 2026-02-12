@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, X, Loader2, Clock, Zap } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage } from '../services/azureOpenAI';
-import { initializeReferenceArchitectures } from '../services/referenceArchitectureService';
 import ModelSelector from './ModelSelector';
 import ImageUploader from './ImageUploader';
 import './AIArchitectureGenerator.css';
@@ -20,7 +19,6 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
-  const [similarArchitectures, setSimilarArchitectures] = useState<any[]>([]);
   const [aiMetrics, setAiMetrics] = useState<AIMetrics | null>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [imageAnalyzed, setImageAnalyzed] = useState(false);
@@ -78,7 +76,6 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
 
     setIsGenerating(true);
     setError('');
-    setSimilarArchitectures([]); // Clear previous results
     setAiMetrics(null); // Clear previous metrics
 
     try {
@@ -124,11 +121,6 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
       // Call Azure OpenAI to generate architecture
       const result = await generateArchitectureWithAI(contextPrompt);
       
-      // Store similar architectures if available
-      if (result.similarArchitectures) {
-        setSimilarArchitectures(result.similarArchitectures);
-      }
-      
       // Store AI metrics if available
       if (result.metrics) {
         setAiMetrics(result.metrics);
@@ -140,9 +132,8 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
       // Close modal after successful generation
       setTimeout(() => {
         setIsOpen(false);
-        setSimilarArchitectures([]);
         setAiMetrics(null);
-      }, 10000); // Give user 10 seconds to see the success message and links
+      }, 25000); // Give user 25 seconds to see the success message
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
     } finally {
@@ -161,11 +152,8 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
         onClick={() => {
           setIsOpen(true);
           // Reset state when opening modal
-          setSimilarArchitectures([]);
           setError('');
           setImageAnalyzed(false);
-          // Initialize embeddings in background
-          initializeReferenceArchitectures().catch(console.error);
         }}
         title="Generate architecture with AI"
       >
@@ -229,31 +217,19 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
                 </div>
               )}
 
-              {similarArchitectures.length > 0 && (
+              {aiMetrics && (
                 <div className="similar-architectures">
                   <h3>✓ Architecture generated successfully!</h3>
-                  {aiMetrics && (
-                    <div className="ai-metrics">
-                      <span className="metric">
-                        <Clock size={14} />
-                        {(aiMetrics.elapsedTimeMs / 1000).toFixed(1)}s
-                      </span>
-                      <span className="metric">
-                        <Zap size={14} />
-                        {aiMetrics.promptTokens.toLocaleString()} in → {aiMetrics.completionTokens.toLocaleString()} out ({aiMetrics.totalTokens.toLocaleString()} total)
-                      </span>
-                    </div>
-                  )}
-                  <p>Your architecture is similar to these Microsoft reference architectures. Click to learn more about best practices:</p>
-                  <ul>
-                    {similarArchitectures.map((arch, i) => (
-                      <li key={i}>
-                        <a href={arch.url} target="_blank" rel="noopener noreferrer">
-                          {arch.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="ai-metrics">
+                    <span className="metric">
+                      <Clock size={14} />
+                      {(aiMetrics.elapsedTimeMs / 1000).toFixed(1)}s
+                    </span>
+                    <span className="metric">
+                      <Zap size={14} />
+                      {aiMetrics.promptTokens.toLocaleString()} in → {aiMetrics.completionTokens.toLocaleString()} out ({aiMetrics.totalTokens.toLocaleString()} total)
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -297,19 +273,16 @@ IMPORTANT: The user wants to MODIFY the existing architecture above. Keep all ex
               <div className="modal-footer-actions">
                 <button
                   className="btn btn-secondary"
-                  onClick={() => {
-                    setIsOpen(false);
-                    setSimilarArchitectures([]);
-                  }}
+                  onClick={() => setIsOpen(false)}
                   disabled={isGenerating}
                 >
-                  {similarArchitectures.length > 0 ? 'Close' : 'Cancel'}
+                  {aiMetrics ? 'Close' : 'Cancel'}
                 </button>
                 <button
                   className="btn btn-primary btn-generate-ai"
                   onClick={handleGenerate}
                   disabled={isGenerating || isAnalyzingImage || !description.trim()}
-                  style={{ display: similarArchitectures.length > 0 ? 'none' : 'flex' }}
+                  style={{ display: aiMetrics ? 'none' : 'flex' }}
                 >
                   {isGenerating ? (
                     <>

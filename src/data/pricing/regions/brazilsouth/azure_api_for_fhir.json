@@ -1,0 +1,30 @@
+{
+  "BillingCurrency": "USD",
+  "CustomerEntityId": "Default",
+  "CustomerEntityType": "Retail",
+  "Items": [
+    {
+      "currencyCode": "USD",
+      "tierMinimumUnits": 0.0,
+      "retailPrice": 3.0,
+      "unitPrice": 3.0,
+      "armRegionName": "brazilsouth",
+      "location": "BR South",
+      "effectiveStartDate": "2026-02-01T00:00:00Z",
+      "meterId": "cec2359e-62a4-5150-ab59-e356dc706d7d",
+      "meterName": "Classic Message",
+      "productId": "DZH318Z0SLZ6",
+      "skuId": "DZH318Z0SLZ6/0006",
+      "productName": "CXRReportGen Premium",
+      "skuName": "Classic Message",
+      "serviceName": "Azure API for FHIR",
+      "serviceId": "DZH319QRVZXR",
+      "serviceFamily": "Other",
+      "unitOfMeasure": "1 Hour",
+      "type": "Consumption",
+      "isPrimaryMeterRegion": true,
+      "armSkuName": "Classic Message"
+    }
+  ],
+  "Count": 1
+}

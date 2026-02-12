@@ -1,5 +1,5 @@
-import { findSimilarArchitectures } from './referenceArchitectureService';
 import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { getServiceIconMapping, SERVICE_ICON_MAP } from '../data/serviceIconMapping';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -118,191 +118,38 @@ async function callAzureOpenAI(messages: any[]): Promise<CallResult> {
   }
 }
 
-export async function generateArchitectureWithAI(description: string, skipReferenceArchitectures: boolean = false) {
-  // Skip loading reference architectures for regenerations (they already have an architecture)
-  let contextPrompt = '';
-  let similarArchitectures: any[] = [];
-  
-  if (!skipReferenceArchitectures) {
-    // Find similar reference architectures for context (only for new generations)
-    similarArchitectures = await findSimilarArchitectures(description, 3);
-    
-    if (similarArchitectures.length > 0) {
-      contextPrompt = `\n\nREFERENCE EXAMPLES (for inspiration and validation):\n${
-        similarArchitectures.map((arch, i) => 
-          `${i + 1}. ${arch.name}: ${arch.description}\n   Services: ${arch.services.join(', ')}`
-        ).join('\n\n')
-      }\n\nUse these examples as inspiration but create a solution specific to the user's requirements.`;
-    }
-  }
+export async function generateArchitectureWithAI(description: string) {
+  // Build a compact list of known service names for the prompt
+  const knownServices = Object.entries(SERVICE_ICON_MAP)
+    .map(([key, m]) => `${key} (${m.category})`)
+    .join(', ');
 
-  const systemPrompt = `You are an expert Azure cloud architect. Your task is to analyze architecture requirements and return a JSON specification for an Azure architecture diagram with logical groupings.
+  const systemPrompt = `You are an expert Azure cloud architect. Analyze architecture requirements and return a JSON specification for an Azure architecture diagram with logical groupings.
 
-Based on the user's description, identify the appropriate Azure services and organize them into logical groups (like Microsoft reference architectures).${contextPrompt}
+**IMPORTANT: DO NOT include position, x, y, width, or height in your response. The layout engine will calculate optimal positions automatically.**
 
-**IMPORTANT: DO NOT include position, x, y, width, or height in your response. The layout engine will calculate optimal positions automatically using graph algorithms.**
-
-Return ONLY a valid JSON object (no markdown, no explanations) with this exact structure:
+Return ONLY a valid JSON object (no markdown, no explanations) with this structure:
 {
-  "groups": [
-    {
-      "id": "unique-group-id",
-      "label": "Group Name (e.g., Ingestion, Processing, Data Layer, Web Tier)"
-    }
-  ],
-  "services": [
-    {
-      "id": "unique-id",
-      "name": "Service Display Name",
-      "type": "Azure service type",
-      "category": "icon category",
-      "description": "Brief role description",
-      "groupId": "group-id or null if not in a group"
-    }
-  ],
-  "connections": [
-    {
-      "from": "service-id",
-      "to": "service-id",
-      "label": "Detailed description of what flows through this connection (e.g., 'Submit batch job per tenant', 'Route request to shared deployment')",
-      "type": "sync|async|optional"
-    }
-  ],
-  "workflow": [
-    {
-      "step": 1,
-      "description": "Clear description of what happens in this step",
-      "services": ["service-id-1", "service-id-2"]
-    }
-  ]
+  "groups": [{ "id": "unique-group-id", "label": "Group Name" }],
+  "services": [{ "id": "unique-id", "name": "Service Display Name", "type": "Azure service type", "category": "icon category", "description": "Brief role", "groupId": "group-id or null" }],
+  "connections": [{ "from": "service-id", "to": "service-id", "label": "Detailed action description", "type": "sync|async|optional" }],
+  "workflow": [{ "step": 1, "description": "What happens in this step", "services": ["service-id-1"] }]
 }
 
-Common grouping patterns:
-- "Ingestion" or "Input Layer" - web apps, API gateways, event hubs
-- "Processing" or "Compute Layer" - functions, app services, AKS
-- "Data Layer" or "Storage" - databases, blob storage, cache
-- "Orchestration" or "Integration" - service bus, event grid, logic apps
-- "Analytics" or "Intelligence" - AI services, analytics, data processing
-- "Security" or "Identity" - key vault, AD, managed identity
-- "Monitoring" - Application Insights, Log Analytics
+KNOWN SERVICES (use these exact names for "name" and "type" fields):
+${knownServices}
 
-Icon categories mapping (MUST use these exact values):
-- "app services": App Service, Function Apps, Logic Apps, API Management, API Apps
-- "databases": SQL Database, Cosmos DB, MySQL, PostgreSQL, Database for MariaDB
-- "storage": Storage Account, Blob Storage, File Storage, Queue Storage, Table Storage
-- "networking": Virtual Network, Application Gateway, Load Balancer, VPN Gateway, DNS, Traffic Manager
-- "compute": Virtual Machines, VM Scale Sets, Batch
-- "containers": Container Registry, Container Instances, Kubernetes Service (AKS)
-- "ai + machine learning": Machine Learning, Cognitive Services, AI Studio, Bot Service
-- "analytics": Stream Analytics, Data Factory, Synapse Analytics, Event Hubs, Data Lake
-- "identity": Active Directory, Key Vault, Managed Identity
-- "monitor": Monitor, Application Insights, Log Analytics
-- "iot": IoT Hub, IoT Central, Digital Twins
-- "integration": Service Bus, Event Grid, API Management
-- "devops": DevOps, Pipelines, Repos, Artifacts
-- "security": Security Center, Sentinel, Key Vault
-- "web": Static Web Apps, CDN, Front Door
-
-CRITICAL ICON MAPPINGS - Use EXACT service names:
-These service names will match icons directly - use these exact names in your response for BOTH the "name" AND "type" fields:
-
-AI Services:
-- "Azure OpenAI" - for GPT models, chat completions
-- "Computer Vision" - for image analysis, OCR
-- "Azure Speech" - for speech-to-text, text-to-speech  
-- "Language" - for NLP, sentiment analysis, text analytics
-- "Translator" - for translation services
-- "Document Intelligence" - for form processing, document analysis
-- "Custom Vision" - for custom image classification
-- "Azure Machine Learning" - for ML workspaces (use only when showing workspace as single node)
-- "Cognitive Services" - only for generic multi-service scenarios
-
-Azure Machine Learning Sub-Components (for granular architectures):
-- "AML Online Endpoint" - real-time inference endpoints ($0 cost - routing only)
-- "AML Batch Endpoint" - batch inference endpoints ($0 cost - routing only)
-- "AML Deployment" - model deployments within endpoints ($0 cost - config only)
-- "AML Managed Compute" - actual compute instances (HAS COST - VMs)
-- "Batch Compute Pool" - batch processing compute pools (HAS COST - VMs)
-NOTE: When breaking down AML architectures, use these specific names to avoid double-counting costs!
-
-Web & API Services:
-- "Api Management" - for API gateway and management
-- "App Service" - for hosting web apps and APIs
-- "Azure Functions" - for serverless compute
-- "Logic Apps" - for workflow automation
-
-Databases:
-- "Azure Cosmos Db" - for NoSQL database
-- "Sql Database" - for relational database
-
-Compute & Containers:
-- "Virtual Machines" - for VMs
-- "Azure Kubernetes Service" - for container orchestration
-- "Container Instances" - for serverless containers
-- "Container Registry" - for container images
+Icon categories (use for "category" field):
+"app services", "databases", "storage", "networking", "compute", "containers", "ai + machine learning", "analytics", "identity", "monitor", "iot", "integration", "devops", "security", "web"
 
 Rules:
-1. Create 2-5 logical groups to organize services
-2. Assign services to appropriate groups using groupId (max 6 services per group)
-3. **CRITICAL**: Use EXACT service names from the "CRITICAL ICON MAPPINGS" section above
-   - For Azure OpenAI, use "Azure OpenAI" (NOT "AI Studio", "OpenAI Service", "GPT Service")
-   - For web APIs, use "App Service" (NOT "Web App", "Web API", "API Service")
-   - For databases, use "Azure Cosmos DB" (NOT just "Cosmos DB" or "CosmosDB")
-   - For NLP, use "Language" (NOT "Text Analytics")
-   - Check the mappings above for the correct name for every service
-4. **IDENTITY SERVICES**: ALWAYS use "Microsoft Entra ID" for identity and authentication
-   - NEVER use "Azure Active Directory", "Active Directory", "Azure AD", or "AAD"
-   - Microsoft Entra ID is the current name for Azure's identity platform
-   - Use for: authentication, authorization, SSO, user management, RBAC
-5. Create logical connections based on data flow
-6. Make group labels concise and descriptive
-7. **CONNECTION LABELS ARE CRITICAL**: Write detailed, action-oriented labels that describe:
-   - What data/requests flow through the connection
-   - The purpose or action (e.g., "Submit batch job per tenant", "Route to dedicated deployment", "Read/write tenant-partitioned data")
-   - NOT generic labels like "Request", "Response", "Data" - be specific!
-8. Do NOT specify sourcePosition or targetPosition - the layout engine will use horizontal flow (right → left) automatically for cleaner diagrams
-8. Specify connection type for each connection:
-   - "sync" (solid line) - Synchronous, request-response, real-time communication (HTTP, SQL queries)
-   - "async" (dashed line) - Asynchronous, message-based, event-driven (queues, events, pub/sub)
-   - "optional" (dotted line) - Optional paths, fallback routes, or conditional flows
-9. Provide a workflow array with numbered steps that explain the logical flow:
-   - Write clear, technical descriptions like Azure Architecture Center
-   - Explain what each step does and why
-   - Reference the service IDs involved in each step
-   - Make it comprehensive but concise (5-10 steps typically)
-   - Follow the data/request flow chronologically
-
-CORRECT SERVICE NAMING EXAMPLES:
-✅ CORRECT:
-{
-  "name": "Azure OpenAI",
-  "type": "Azure OpenAI",
-  "category": "ai + machine learning"
-}
-{
-  "name": "App Service",
-  "type": "App Service",
-  "category": "app services"
-}
-{
-  "name": "Azure Cosmos DB",
-  "type": "Azure Cosmos DB",
-  "category": "databases"
-}
-{
-  "name": "Azure Machine Learning",
-  "type": "Azure Machine Learning",
-  "category": "ai + machine learning"
-}
-
-❌ INCORRECT (will show wrong icon):
-{
-  "name": "AI Studio",  ← WRONG! Use "Azure OpenAI"
-  "name": "Web API",    ← WRONG! Use "App Service"
-  "name": "Cosmos DB",  ← WRONG! Use "Azure Cosmos DB"
-  "name": "Machine Learning",  ← WRONG! Use "Azure Machine Learning"
-  "type": "ML Workspace",  ← WRONG! type should also be "Azure Machine Learning"
-}`;
+1. Create 2-5 logical groups. Max 6 services per group.
+2. Use EXACT service names from the KNOWN SERVICES list above for both "name" and "type".
+3. For identity/auth, use "Microsoft Entra ID" (never "Azure Active Directory" or "AAD").
+4. Connection labels MUST be specific and action-oriented (e.g., "Submit batch job per tenant"), NOT generic ("Request", "Data").
+5. Do NOT specify sourcePosition or targetPosition.
+6. Connection types: "sync" (solid, HTTP/SQL), "async" (dashed, queues/events), "optional" (dotted, fallback).
+7. Provide 5-10 workflow steps following the data flow chronologically.`;
 
   try {
     const messages = [
@@ -326,13 +173,24 @@ CORRECT SERVICE NAMING EXAMPLES:
       throw new Error(`Invalid JSON response from Azure OpenAI: ${parseError.message}`);
     }
     
-    // Validate the response structure
-    // Add similar architectures metadata for UI display
-    architecture.similarArchitectures = similarArchitectures.map(arch => ({
-      name: arch.name,
-      url: arch.url,
-    }));
-    
+    // Post-process: normalize service names and categories against SERVICE_ICON_MAP
+    if (architecture.services && Array.isArray(architecture.services)) {
+      architecture.services = architecture.services.map((service: any) => {
+        // Try to match against known service mappings
+        let mapping = getServiceIconMapping(service.name) || getServiceIconMapping(service.type);
+        if (mapping) {
+          console.log(`  🔧 Normalized "${service.name}" → "${mapping.displayName}" (${mapping.category})`);
+          return {
+            ...service,
+            name: mapping.displayName,
+            type: mapping.displayName,
+            category: mapping.category,
+          };
+        }
+        return service;
+      });
+    }
+
     // Add AI metrics to the response
     architecture.metrics = metrics;
 
