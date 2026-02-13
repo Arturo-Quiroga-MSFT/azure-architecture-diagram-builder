@@ -5,7 +5,7 @@
  */
 
 import { forwardRef } from 'react';
-import { Brain, Sparkles, Zap, RotateCcw, ChevronDown } from 'lucide-react';
+import { Brain, Sparkles, Zap, RotateCcw, ChevronDown, Code, Layers, Flame } from 'lucide-react';
 import {
   useModelSettings,
   MODEL_CONFIG,
@@ -75,6 +75,12 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
           return <Sparkles size={14} />;
         case 'gpt-4.1-mini':
           return <Zap size={14} />;
+        case 'gpt-5.2-codex':
+          return <Code size={14} />;
+        case 'deepseek-v3.2-speciale':
+          return <Layers size={14} />;
+        case 'grok-4-fast-reasoning':
+          return <Flame size={14} />;
       }
     };
 

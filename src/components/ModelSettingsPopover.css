@@ -1,7 +1,7 @@
 /* Model Settings Popover – toolbar dropdown styles */
 
 .toolbar-dropdown-menu--model-settings {
-  min-width: 320px;
+  width: 480px;
   right: 0;
   left: auto;
 }
@@ -55,8 +55,9 @@
 
 /* Model selection buttons */
 .msp-model-buttons {
-  display: flex;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   padding: 0.25rem 0.4rem 0.4rem;
 }
 
@@ -64,8 +65,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  flex: 1;
-  padding: 6px 10px;
+  padding: 8px 10px;
   border: 1px solid rgba(17, 24, 39, 0.15);
   border-radius: 6px;
   background: rgba(17, 24, 39, 0.03);
@@ -75,6 +75,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .msp-model-btn:hover {
@@ -158,16 +159,15 @@
 .msp-features {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding: 0 0.2rem;
 }
 
 .msp-feature-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 8px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 8px;
   border-radius: 6px;
   transition: background 0.15s ease;
 }
@@ -178,40 +178,40 @@
 
 .msp-feature-info {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
 }
 
 .msp-feature-name {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #334155;
   white-space: nowrap;
 }
 
 .msp-feature-effective {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: #94a3b8;
+  white-space: nowrap;
 }
 
 .msp-feature-controls {
   display: flex;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 6px;
 }
 
 .msp-feature-select {
-  padding: 4px 6px;
+  padding: 5px 8px;
   border: 1px solid rgba(17, 24, 39, 0.15);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.9);
   color: #334155;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
   outline: none;
-  min-width: 80px;
+  width: 100%;
 }
 
 .msp-feature-select:hover {
