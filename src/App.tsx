@@ -1940,487 +1940,495 @@ function App() {
             <img src={microsoftLogoWhite} alt="Microsoft" className="microsoft-logo" />
             <h1>Azure Architecture Diagram Builder</h1>
           </div>
-          <div className="header-actions">
-            <div className="toolbar-group">
-              <RegionSelector onRegionChange={handleRegionChange} />
-              {totalMonthlyCost > 0 && (
-                <div className="cost-indicator" title="Total estimated monthly cost for all services">
-                  💰 {formatMonthlyCost(totalMonthlyCost)}
-                </div>
-              )}
-            </div>
-
-            <div className="toolbar-group">
-              <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
-                </svg>
-                Add Group
-              </button>
-              <AIArchitectureGenerator 
-                onGenerate={handleAIGenerate}
-                currentArchitecture={{
-                  nodes,
-                  edges,
-                  architectureName: titleBlockData.architectureName
-                }}
-              />
-              <button
-                className="btn btn-secondary"
-                onClick={() => setIsCompareModelsOpen(true)}
-                title="Compare architecture output across multiple AI models"
-              >
-                <GitCompare size={18} />
-                Compare Models
-              </button>
-              <label className={`btn btn-secondary${isUploadingARM ? ' btn-parsing' : ''}`} title="Upload ARM template to generate diagram">
-                {isUploadingARM ? <Loader size={18} className="spin-icon" /> : <Upload size={18} />}
-                {isUploadingARM ? 'Parsing...' : 'Import ARM'}
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={uploadARMTemplate}
-                  style={{ display: 'none' }}
-                  disabled={isUploadingARM}
-                />
-              </label>
-            </div>
-
-            <div className="toolbar-group">
-              <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
-                <Save size={18} />
-                Save
-              </button>
-              <button
-                onClick={shareDiagram}
-                className="btn btn-secondary"
-                title={isLoadingSharedDiagram ? 'Loading shared diagram…' : 'Save to cloud and copy shareable URL'}
-                disabled={isSharingDiagram || isLoadingSharedDiagram}
-              >
-                <Link size={18} />
-                {isSharingDiagram ? 'Sharing…' : 'Share'}
-              </button>
-              <label className="btn btn-secondary" title="Load diagram">
-                <Upload size={18} />
-                Load
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={loadDiagram}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              <button 
-                onClick={() => setIsVersionHistoryModalOpen(true)} 
-                className="btn btn-secondary" 
-                title="View version history"
-              >
-                <Clock size={18} />
-                History
-              </button>
-              <button 
-                onClick={() => setIsSaveSnapshotModalOpen(true)} 
-                className="btn btn-secondary" 
-                title="Save current diagram as snapshot"
-                disabled={nodes.length === 0}
-              >
-                <Camera size={18} />
-                Snapshot
-              </button>
-            </div>
-
-            <div className="toolbar-group">
-              <div className="toolbar-dropdown" ref={layoutMenuRef}>
-                <button
-                  onClick={() => setIsLayoutMenuOpen((v) => !v)}
-                  className="btn btn-secondary"
-                  title="Layout presets"
-                  aria-haspopup="menu"
-                  aria-expanded={isLayoutMenuOpen}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 4h7v7H4z" />
-                    <path d="M13 4h7v7h-7z" />
-                    <path d="M4 13h7v7H4z" />
-                    <path d="M13 13h7v7h-7z" />
-                  </svg>
-                  Layout
-                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
-                </button>
-
-                {isLayoutMenuOpen && (
-                  <div className="toolbar-dropdown-menu toolbar-dropdown-menu--layout" role="menu" aria-label="Layout options">
-                    <div className="toolbar-dropdown-heading">Preset</div>
-                    <select
-                      className="toolbar-dropdown-select"
-                      value={layoutPreset}
-                      onChange={(e) => setLayoutPreset(e.target.value as LayoutPreset)}
-                      aria-label="Layout preset"
-                    >
-                      <option value="flow-lr">Flow (L→R)</option>
-                      <option value="flow-tb">Flow (Top→Bottom)</option>
-                      <option value="swimlanes">Swimlanes by Group</option>
-                      <option value="radial">Radial</option>
-                    </select>
-
-                    <div className="toolbar-dropdown-separator" role="separator" />
-
-                    <div className="toolbar-dropdown-row">
-                      <label className="toolbar-dropdown-label" htmlFor="layoutEngine">
-                        Engine
-                      </label>
-                      <select
-                        id="layoutEngine"
-                        className="toolbar-dropdown-select"
-                        value={layoutEngine}
-                        onChange={(e) => setLayoutEngine(e.target.value as LayoutEngineType)}
-                      >
-                        <option value="dagre">Dagre</option>
-                        <option value="elk">ELK</option>
-                      </select>
-                    </div>
-
-                    <div className="toolbar-dropdown-separator" role="separator" />
-
-                    <div className="toolbar-dropdown-row">
-                      <label className="toolbar-dropdown-label" htmlFor="layoutSpacing">
-                        Spacing
-                      </label>
-                      <select
-                        id="layoutSpacing"
-                        className="toolbar-dropdown-select"
-                        value={layoutSpacing}
-                        onChange={(e) => setLayoutSpacing(e.target.value as LayoutSpacing)}
-                      >
-                        <option value="compact">Compact</option>
-                        <option value="comfortable">Comfortable</option>
-                      </select>
-                    </div>
-
-                    <div className="toolbar-dropdown-row">
-                      <label className="toolbar-dropdown-label" htmlFor="edgeStyle">
-                        Edge style
-                      </label>
-                      <select
-                        id="edgeStyle"
-                        className="toolbar-dropdown-select"
-                        value={layoutEdgeStyle}
-                        onChange={(e) => setLayoutEdgeStyle(e.target.value as LayoutEdgeStyle)}
-                      >
-                        <option value="straight">Straight</option>
-                        <option value="smooth">Smooth</option>
-                        <option value="orthogonal">Orthogonal</option>
-                      </select>
-                    </div>
-
-                    <label className="toolbar-dropdown-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={layoutEmphasizePrimaryPath}
-                        onChange={(e) => setLayoutEmphasizePrimaryPath(e.target.checked)}
-                        disabled={!(layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb')}
-                      />
-                      Emphasize primary path
-                    </label>
-
-                    <div className="toolbar-dropdown-hint">
-                      Current: {layoutPresetLabel[layoutPreset]} • Engine: {layoutEngine === 'elk' ? 'ELK' : 'Dagre'}
-                      {layoutPreset === 'radial' ? ' (centers on selected node when possible)' : ''}
-                    </div>
-
-                    <div className="toolbar-dropdown-separator" role="separator" />
-
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      disabled={nodes.length === 0}
-                      onClick={() => {
-                        setIsLayoutMenuOpen(false);
-                        applyLayout();
-                      }}
-                      title={nodes.length === 0 ? 'Add services first' : 'Apply selected layout preset'}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 12a9 9 0 1 1-9-9" />
-                        <path d="M21 3v9h-9" />
-                      </svg>
-                      Apply Layout
-                    </button>
+          <div className="header-actions-wrapper">
+            {/* Row 1: Project-level actions */}
+            <div className="header-actions">
+              <div className="toolbar-group">
+                <RegionSelector onRegionChange={handleRegionChange} />
+                {totalMonthlyCost > 0 && (
+                  <div className="cost-indicator" title="Total estimated monthly cost for all services">
+                    💰 {formatMonthlyCost(totalMonthlyCost)}
                   </div>
                 )}
               </div>
+
+              <div className="toolbar-group">
+                <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
+                  </svg>
+                  Add Group
+                </button>
+                <AIArchitectureGenerator 
+                  onGenerate={handleAIGenerate}
+                  currentArchitecture={{
+                    nodes,
+                    edges,
+                    architectureName: titleBlockData.architectureName
+                  }}
+                />
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setIsCompareModelsOpen(true)}
+                  title="Compare architecture output across multiple AI models"
+                >
+                  <GitCompare size={18} />
+                  Compare Models
+                </button>
+                <label className={`btn btn-secondary${isUploadingARM ? ' btn-parsing' : ''}`} title="Upload ARM template to generate diagram">
+                  {isUploadingARM ? <Loader size={18} className="spin-icon" /> : <Upload size={18} />}
+                  {isUploadingARM ? 'Parsing...' : 'Import ARM'}
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={uploadARMTemplate}
+                    style={{ display: 'none' }}
+                    disabled={isUploadingARM}
+                  />
+                </label>
+              </div>
+
+              <div className="toolbar-group">
+                <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
+                  <Save size={18} />
+                  Save
+                </button>
+                <button
+                  onClick={shareDiagram}
+                  className="btn btn-secondary"
+                  title={isLoadingSharedDiagram ? 'Loading shared diagram…' : 'Save to cloud and copy shareable URL'}
+                  disabled={isSharingDiagram || isLoadingSharedDiagram}
+                >
+                  <Link size={18} />
+                  {isSharingDiagram ? 'Sharing…' : 'Share'}
+                </button>
+                <label className="btn btn-secondary" title="Load diagram">
+                  <Upload size={18} />
+                  Load
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={loadDiagram}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+
+              <div className="toolbar-group">
+                <div className="toolbar-dropdown" ref={exportMenuRef}>
+                  <button
+                    onClick={() => setIsExportMenuOpen((v) => !v)}
+                    className="btn btn-primary"
+                    title="Export"
+                    aria-haspopup="menu"
+                    aria-expanded={isExportMenuOpen}
+                  >
+                    <Download size={18} />
+                    Export
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isExportMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Export options">
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportDiagram();
+                        }}
+                        title="Export as PNG"
+                      >
+                        <Download size={18} />
+                        Export PNG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportAsSvg();
+                        }}
+                        title="Export as SVG (vector format)"
+                      >
+                        <Download size={18} />
+                        Export SVG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportAsDrawio();
+                        }}
+                        title="Export for Draw.io / diagrams.net (editable format)"
+                      >
+                        <Download size={18} />
+                        Export Draw.io
+                      </button>
+                      <div className="toolbar-dropdown-separator" role="separator" />
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={totalMonthlyCost === 0}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportCostBreakdown();
+                        }}
+                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown'}
+                      >
+                        <DollarSign size={18} />
+                        Export Costs
+                      </button>
+
+                      <div className="toolbar-dropdown-separator" role="separator" />
+
+                      <div className="toolbar-dropdown-heading">Recent exports</div>
+                      {exportHistory.length === 0 ? (
+                        <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
+                      ) : (
+                        <div className="toolbar-dropdown-history">
+                          {exportHistory.slice(0, 6).map((item) => (
+                            <div key={item.id} className="toolbar-dropdown-history-item">
+                              <div className="toolbar-dropdown-history-file">{item.fileName}</div>
+                              <div className="toolbar-dropdown-history-meta">
+                                {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="toolbar-group">
+                <button 
+                  onClick={() => setIsDarkMode(!isDarkMode)} 
+                  className="btn btn-secondary" 
+                  title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
+                >
+                  {isDarkMode ? '☀️' : '🌙'}
+                </button>
+              </div>
             </div>
 
-            <div className="toolbar-group">
-              <div className="toolbar-dropdown" ref={bulkSelectMenuRef}>
-                <button
-                  onClick={() => setIsBulkSelectMenuOpen((v) => !v)}
-                  className="btn btn-secondary"
-                  title="Bulk select operations"
-                  aria-haspopup="menu"
-                  aria-expanded={isBulkSelectMenuOpen}
+            {/* Row 2: Canvas tools & AI settings */}
+            <div className="header-actions">
+              <div className="toolbar-group">
+                <button 
+                  onClick={() => setIsVersionHistoryModalOpen(true)} 
+                  className="btn btn-secondary" 
+                  title="View version history"
+                >
+                  <Clock size={18} />
+                  History
+                </button>
+                <button 
+                  onClick={() => setIsSaveSnapshotModalOpen(true)} 
+                  className="btn btn-secondary" 
+                  title="Save current diagram as snapshot"
                   disabled={nodes.length === 0}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="7" height="7" rx="1" />
-                    <rect x="14" y="3" width="7" height="7" rx="1" />
-                    <rect x="3" y="14" width="7" height="7" rx="1" />
-                    <rect x="14" y="14" width="7" height="7" rx="1" />
-                  </svg>
-                  Select
-                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  <Camera size={18} />
+                  Snapshot
                 </button>
-
-                {isBulkSelectMenuOpen && (
-                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Bulk select options">
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={selectAllNodes}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                      Select All Nodes
-                    </button>
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={deselectAll}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                      </svg>
-                      Deselect All
-                    </button>
-                    
-                    {getServiceTypes().length > 0 && (
-                      <>
-                        <div className="toolbar-dropdown-separator" role="separator" />
-                        <div className="toolbar-dropdown-heading">Select by Service Type</div>
-                        {getServiceTypes().map(serviceType => (
-                          <button
-                            key={serviceType}
-                            className="toolbar-dropdown-item"
-                            role="menuitem"
-                            onClick={() => selectAllNodesOfType(serviceType)}
-                          >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="18" height="18" rx="2" />
-                            </svg>
-                            {serviceType}
-                          </button>
-                        ))}
-                      </>
-                    )}
-                  </div>
-                )}
               </div>
-            </div>
 
-            <div className="toolbar-group">
-              <div className="toolbar-dropdown" ref={stylePresetMenuRef}>
-                <button
-                  onClick={() => setIsStylePresetMenuOpen((v) => !v)}
-                  className="btn btn-secondary"
-                  title="Change diagram style"
-                  aria-haspopup="menu"
-                  aria-expanded={isStylePresetMenuOpen}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-                  </svg>
-                  Style
-                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
-                </button>
+              <div className="toolbar-group">
+                <div className="toolbar-dropdown" ref={layoutMenuRef}>
+                  <button
+                    onClick={() => setIsLayoutMenuOpen((v) => !v)}
+                    className="btn btn-secondary"
+                    title="Layout presets"
+                    aria-haspopup="menu"
+                    aria-expanded={isLayoutMenuOpen}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 4h7v7H4z" />
+                      <path d="M13 4h7v7h-7z" />
+                      <path d="M4 13h7v7H4z" />
+                      <path d="M13 13h7v7h-7z" />
+                    </svg>
+                    Layout
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
 
-                {isStylePresetMenuOpen && (
-                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Style preset options">
-                    <div className="toolbar-dropdown-heading">Visual Style</div>
-                    <button
-                      className={`toolbar-dropdown-item ${stylePreset === 'detailed' ? 'active' : ''}`}
-                      role="menuitem"
-                      onClick={() => applyStylePreset('detailed')}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <path d="M3 9h18M3 15h18M9 3v18" />
-                      </svg>
-                      Detailed (Default)
-                    </button>
-                    <button
-                      className={`toolbar-dropdown-item ${stylePreset === 'minimal' ? 'active' : ''}`}
-                      role="menuitem"
-                      onClick={() => applyStylePreset('minimal')}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                      </svg>
-                      Minimal (Clean)
-                    </button>
-                    <button
-                      className={`toolbar-dropdown-item ${stylePreset === 'presentation' ? 'active' : ''}`}
-                      role="menuitem"
-                      onClick={() => applyStylePreset('presentation')}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2" />
-                        <path d="M8 21h8M12 17v4" />
-                      </svg>
-                      Presentation (Professional)
-                    </button>
-                    <div className="toolbar-dropdown-separator" role="separator" />
-                    <div className="toolbar-dropdown-hint">
-                      {stylePreset === 'detailed' && 'Shows all labels, pricing, and details'}
-                      {stylePreset === 'minimal' && 'Hides labels and pricing for cleaner view'}
-                      {stylePreset === 'presentation' && 'Professional look with bold connections'}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+                  {isLayoutMenuOpen && (
+                    <div className="toolbar-dropdown-menu toolbar-dropdown-menu--layout" role="menu" aria-label="Layout options">
+                      <div className="toolbar-dropdown-heading">Preset</div>
+                      <select
+                        className="toolbar-dropdown-select"
+                        value={layoutPreset}
+                        onChange={(e) => setLayoutPreset(e.target.value as LayoutPreset)}
+                        aria-label="Layout preset"
+                      >
+                        <option value="flow-lr">Flow (L→R)</option>
+                        <option value="flow-tb">Flow (Top→Bottom)</option>
+                        <option value="swimlanes">Swimlanes by Group</option>
+                        <option value="radial">Radial</option>
+                      </select>
 
-            <div className="toolbar-group">
-              <div className="toolbar-dropdown" ref={exportMenuRef}>
-                <button
-                  onClick={() => setIsExportMenuOpen((v) => !v)}
-                  className="btn btn-primary"
-                  title="Export"
-                  aria-haspopup="menu"
-                  aria-expanded={isExportMenuOpen}
-                >
-                  <Download size={18} />
-                  Export
-                  <ChevronDown size={16} style={{ marginLeft: 2 }} />
-                </button>
+                      <div className="toolbar-dropdown-separator" role="separator" />
 
-                {isExportMenuOpen && (
-                  <div className="toolbar-dropdown-menu" role="menu" aria-label="Export options">
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportDiagram();
-                      }}
-                      title="Export as PNG"
-                    >
-                      <Download size={18} />
-                      Export PNG
-                    </button>
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportAsSvg();
-                      }}
-                      title="Export as SVG (vector format)"
-                    >
-                      <Download size={18} />
-                      Export SVG
-                    </button>
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportAsDrawio();
-                      }}
-                      title="Export for Draw.io / diagrams.net (editable format)"
-                    >
-                      <Download size={18} />
-                      Export Draw.io
-                    </button>
-                    <div className="toolbar-dropdown-separator" role="separator" />
-                    <button
-                      className="toolbar-dropdown-item"
-                      role="menuitem"
-                      disabled={totalMonthlyCost === 0}
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        exportCostBreakdown();
-                      }}
-                      title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown'}
-                    >
-                      <DollarSign size={18} />
-                      Export Costs
-                    </button>
-
-                    <div className="toolbar-dropdown-separator" role="separator" />
-
-                    <div className="toolbar-dropdown-heading">Recent exports</div>
-                    {exportHistory.length === 0 ? (
-                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
-                    ) : (
-                      <div className="toolbar-dropdown-history">
-                        {exportHistory.slice(0, 6).map((item) => (
-                          <div key={item.id} className="toolbar-dropdown-history-item">
-                            <div className="toolbar-dropdown-history-file">{item.fileName}</div>
-                            <div className="toolbar-dropdown-history-meta">
-                              {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="toolbar-dropdown-row">
+                        <label className="toolbar-dropdown-label" htmlFor="layoutEngine">
+                          Engine
+                        </label>
+                        <select
+                          id="layoutEngine"
+                          className="toolbar-dropdown-select"
+                          value={layoutEngine}
+                          onChange={(e) => setLayoutEngine(e.target.value as LayoutEngineType)}
+                        >
+                          <option value="dagre">Dagre</option>
+                          <option value="elk">ELK</option>
+                        </select>
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      <div className="toolbar-dropdown-separator" role="separator" />
+
+                      <div className="toolbar-dropdown-row">
+                        <label className="toolbar-dropdown-label" htmlFor="layoutSpacing">
+                          Spacing
+                        </label>
+                        <select
+                          id="layoutSpacing"
+                          className="toolbar-dropdown-select"
+                          value={layoutSpacing}
+                          onChange={(e) => setLayoutSpacing(e.target.value as LayoutSpacing)}
+                        >
+                          <option value="compact">Compact</option>
+                          <option value="comfortable">Comfortable</option>
+                        </select>
+                      </div>
+
+                      <div className="toolbar-dropdown-row">
+                        <label className="toolbar-dropdown-label" htmlFor="edgeStyle">
+                          Edge style
+                        </label>
+                        <select
+                          id="edgeStyle"
+                          className="toolbar-dropdown-select"
+                          value={layoutEdgeStyle}
+                          onChange={(e) => setLayoutEdgeStyle(e.target.value as LayoutEdgeStyle)}
+                        >
+                          <option value="straight">Straight</option>
+                          <option value="smooth">Smooth</option>
+                          <option value="orthogonal">Orthogonal</option>
+                        </select>
+                      </div>
+
+                      <label className="toolbar-dropdown-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={layoutEmphasizePrimaryPath}
+                          onChange={(e) => setLayoutEmphasizePrimaryPath(e.target.checked)}
+                          disabled={!(layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb')}
+                        />
+                        Emphasize primary path
+                      </label>
+
+                      <div className="toolbar-dropdown-hint">
+                        Current: {layoutPresetLabel[layoutPreset]} • Engine: {layoutEngine === 'elk' ? 'ELK' : 'Dagre'}
+                        {layoutPreset === 'radial' ? ' (centers on selected node when possible)' : ''}
+                      </div>
+
+                      <div className="toolbar-dropdown-separator" role="separator" />
+
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={nodes.length === 0}
+                        onClick={() => {
+                          setIsLayoutMenuOpen(false);
+                          applyLayout();
+                        }}
+                        title={nodes.length === 0 ? 'Add services first' : 'Apply selected layout preset'}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 12a9 9 0 1 1-9-9" />
+                          <path d="M21 3v9h-9" />
+                        </svg>
+                        Apply Layout
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="toolbar-dropdown" ref={bulkSelectMenuRef}>
+                  <button
+                    onClick={() => setIsBulkSelectMenuOpen((v) => !v)}
+                    className="btn btn-secondary"
+                    title="Bulk select operations"
+                    aria-haspopup="menu"
+                    aria-expanded={isBulkSelectMenuOpen}
+                    disabled={nodes.length === 0}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    Select
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isBulkSelectMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Bulk select options">
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={selectAllNodes}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                        Select All Nodes
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={deselectAll}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                        </svg>
+                        Deselect All
+                      </button>
+                      
+                      {getServiceTypes().length > 0 && (
+                        <>
+                          <div className="toolbar-dropdown-separator" role="separator" />
+                          <div className="toolbar-dropdown-heading">Select by Service Type</div>
+                          {getServiceTypes().map(serviceType => (
+                            <button
+                              key={serviceType}
+                              className="toolbar-dropdown-item"
+                              role="menuitem"
+                              onClick={() => selectAllNodesOfType(serviceType)}
+                            >
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                              </svg>
+                              {serviceType}
+                            </button>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="toolbar-dropdown" ref={stylePresetMenuRef}>
+                  <button
+                    onClick={() => setIsStylePresetMenuOpen((v) => !v)}
+                    className="btn btn-secondary"
+                    title="Change diagram style"
+                    aria-haspopup="menu"
+                    aria-expanded={isStylePresetMenuOpen}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                    </svg>
+                    Style
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isStylePresetMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Style preset options">
+                      <div className="toolbar-dropdown-heading">Visual Style</div>
+                      <button
+                        className={`toolbar-dropdown-item ${stylePreset === 'detailed' ? 'active' : ''}`}
+                        role="menuitem"
+                        onClick={() => applyStylePreset('detailed')}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <path d="M3 9h18M3 15h18M9 3v18" />
+                        </svg>
+                        Detailed (Default)
+                      </button>
+                      <button
+                        className={`toolbar-dropdown-item ${stylePreset === 'minimal' ? 'active' : ''}`}
+                        role="menuitem"
+                        onClick={() => applyStylePreset('minimal')}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                        </svg>
+                        Minimal (Clean)
+                      </button>
+                      <button
+                        className={`toolbar-dropdown-item ${stylePreset === 'presentation' ? 'active' : ''}`}
+                        role="menuitem"
+                        onClick={() => applyStylePreset('presentation')}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="3" width="20" height="14" rx="2" />
+                          <path d="M8 21h8M12 17v4" />
+                        </svg>
+                        Presentation (Professional)
+                      </button>
+                      <div className="toolbar-dropdown-separator" role="separator" />
+                      <div className="toolbar-dropdown-hint">
+                        {stylePreset === 'detailed' && 'Shows all labels, pricing, and details'}
+                        {stylePreset === 'minimal' && 'Hides labels and pricing for cleaner view'}
+                        {stylePreset === 'presentation' && 'Professional look with bold connections'}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <ModelSettingsPopover
-                ref={modelSettingsRef}
-                isOpen={isModelSettingsOpen}
-                onToggle={() => setIsModelSettingsOpen(v => !v)}
-              />
-              <button 
-                onClick={handleValidateArchitecture} 
-                className="btn btn-premium" 
-                title="Validate architecture against Azure Well-Architected Framework"
-                disabled={nodes.length === 0}
-              >
-                <Shield size={18} />
-                Validate Architecture
-              </button>
-              {validationResult && (
-                <button
-                  onClick={() => setIsValidationModalOpen(true)}
-                  className="btn btn-secondary"
-                  title="Open last validation results"
+
+              <div className="toolbar-group">
+                <ModelSettingsPopover
+                  ref={modelSettingsRef}
+                  isOpen={isModelSettingsOpen}
+                  onToggle={() => setIsModelSettingsOpen(v => !v)}
+                />
+                <button 
+                  onClick={handleValidateArchitecture} 
+                  className="btn btn-premium" 
+                  title="Validate architecture against Azure Well-Architected Framework"
+                  disabled={nodes.length === 0}
                 >
                   <Shield size={18} />
-                  Validation {validationResult.overallScore}/100
+                  Validate Architecture
                 </button>
-              )}
-              <button 
-                onClick={handleGenerateDeploymentGuide} 
-                className="btn btn-premium" 
-                title="Generate comprehensive deployment guide"
-                disabled={nodes.length === 0}
-              >
-                <FileText size={18} />
-                Deployment Guide
-              </button>
-              {deploymentGuide && (
-                <button
-                  onClick={() => setIsDeploymentGuideModalOpen(true)}
-                  className="btn btn-secondary"
-                  title="Open last deployment guide"
+                {validationResult && (
+                  <button
+                    onClick={() => setIsValidationModalOpen(true)}
+                    className="btn btn-secondary"
+                    title="Open last validation results"
+                  >
+                    <Shield size={18} />
+                    Validation {validationResult.overallScore}/100
+                  </button>
+                )}
+                <button 
+                  onClick={handleGenerateDeploymentGuide} 
+                  className="btn btn-premium" 
+                  title="Generate comprehensive deployment guide"
+                  disabled={nodes.length === 0}
                 >
                   <FileText size={18} />
-                  View Guide
+                  Deployment Guide
                 </button>
-              )}
-            </div>
-
-            <div className="toolbar-group">
-              <button 
-                onClick={() => setIsDarkMode(!isDarkMode)} 
-                className="btn btn-secondary" 
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
-              >
-                {isDarkMode ? '☀️' : '🌙'}
-              </button>
+                {deploymentGuide && (
+                  <button
+                    onClick={() => setIsDeploymentGuideModalOpen(true)}
+                    className="btn btn-secondary"
+                    title="Open last deployment guide"
+                  >
+                    <FileText size={18} />
+                    View Guide
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
