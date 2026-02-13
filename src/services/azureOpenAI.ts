@@ -112,9 +112,7 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
       throw new Error('Empty response from Azure OpenAI. The request may have been too large or complex. Try reducing recommendations or using lower reasoning effort.');
     }
     
-    console.log('API Response:', content.length, 'chars |', 
-      `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) |`,
-      `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+    console.log(`API Response: ${content.length} chars | Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) | Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s | Model: ${modelConfig.displayName}`);
     
     return { content, metrics };
   } catch (error: any) {
@@ -174,9 +172,10 @@ LAYOUT READABILITY — CRITICAL:
       { role: 'user', content: description }
     ];
 
+    const activeModel = modelOverride?.model || getModelSettings().model;
     const { content, metrics } = await callAzureOpenAI(messages, modelOverride);
     
-    console.log('Azure OpenAI Response:', content);
+    console.log(`Azure OpenAI Response [${MODEL_CONFIG[activeModel].displayName}]:`, content);
     
     if (!content) {
       throw new Error('No response from Azure OpenAI. The model may have timed out or returned empty content.');

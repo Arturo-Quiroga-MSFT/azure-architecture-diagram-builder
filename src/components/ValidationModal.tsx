@@ -136,7 +136,7 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
     if (validation.diagramImageDataUrl) {
       const imgLink = document.createElement('a');
       imgLink.href = validation.diagramImageDataUrl;
-      imgLink.download = `architecture-validation-${ts}-diagram.png`;
+      imgLink.download = generateModelFilename('architecture-validation-diagram', 'png', ts);
       document.body.appendChild(imgLink);
       imgLink.click();
       document.body.removeChild(imgLink);

@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link, Clock, Camera, Loader } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link, Clock, Camera, Loader, GitCompare } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -30,6 +30,7 @@ import DeploymentGuideModal from './components/DeploymentGuideModal';
 import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
+import CompareModelsModal from './components/CompareModelsModal';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
@@ -122,6 +123,7 @@ function App() {
   // Version History State
   const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
+  const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement | null>(null);
@@ -1972,6 +1974,14 @@ function App() {
                   architectureName: titleBlockData.architectureName
                 }}
               />
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsCompareModelsOpen(true)}
+                title="Compare architecture output across multiple AI models"
+              >
+                <GitCompare size={18} />
+                Compare Models
+              </button>
               <label className={`btn btn-secondary${isUploadingARM ? ' btn-parsing' : ''}`} title="Upload ARM template to generate diagram">
                 {isUploadingARM ? <Loader size={18} className="spin-icon" /> : <Upload size={18} />}
                 {isUploadingARM ? 'Parsing...' : 'Import ARM'}
@@ -2771,6 +2781,11 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         onSave={handleSaveSnapshot}
         diagramName={titleBlockData.architectureName}
         serviceCount={nodes.filter(n => n.type === 'azureNode').length}
+      />
+      <CompareModelsModal
+        isOpen={isCompareModelsOpen}
+        onClose={() => setIsCompareModelsOpen(false)}
+        onApply={(architecture, prompt) => handleAIGenerate(architecture, prompt, true)}
       />
     </div>
   );

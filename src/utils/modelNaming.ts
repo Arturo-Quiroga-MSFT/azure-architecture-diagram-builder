@@ -15,10 +15,16 @@ export function getModelAbbreviation(): string {
   switch (settings.model) {
     case 'gpt-5.2':
       return 'gpt52';
+    case 'gpt-5.2-codex':
+      return 'gpt52codex';
     case 'gpt-4.1':
       return 'gpt41';
     case 'gpt-4.1-mini':
       return 'gpt41mini';
+    case 'deepseek-v3.2-speciale':
+      return 'deepseek';
+    case 'grok-4-fast-reasoning':
+      return 'grok4fast';
     default:
       return 'unknown';
   }
