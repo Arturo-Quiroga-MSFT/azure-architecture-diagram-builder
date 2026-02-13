@@ -1,5 +1,8 @@
 import type { Edge, Node } from 'reactflow';
 import { relayoutDiagram } from './layoutEngine';
+import { relayoutDiagram as elkRelayoutDiagram } from './elkLayoutEngine';
+
+export type LayoutEngineType = 'dagre' | 'elk';
 
 export type LayoutPreset = 'flow-lr' | 'flow-tb' | 'swimlanes' | 'radial';
 export type LayoutSpacing = 'compact' | 'comfortable';
@@ -11,6 +14,7 @@ export interface ApplyLayoutOptions {
   edgeStyle: LayoutEdgeStyle;
   emphasizePrimaryPath: boolean;
   selectedNodeId?: string;
+  layoutEngine?: LayoutEngineType;
 }
 
 const NODE_WIDTH = 180;
@@ -205,7 +209,7 @@ function straightenPrimaryPath(nodes: Node[], edges: Edge[], direction: 'LR' | '
   return { nodes: updatedNodes, edges: updatedEdges };
 }
 
-function applySwimlanesByGroup(nodes: Node[], edges: Edge[], spacing: ReturnType<typeof getSpacing>) {
+async function applySwimlanesByGroup(nodes: Node[], edges: Edge[], spacing: ReturnType<typeof getSpacing>, doRelayout: RelayoutFn) {
   const groupNodes = nodes.filter((n) => n.type === 'groupNode');
   const serviceNodes = nodes.filter((n) => n.type === 'azureNode');
 
@@ -257,7 +261,7 @@ function applySwimlanesByGroup(nodes: Node[], edges: Edge[], spacing: ReturnType
       ...members.map((m) => ({ ...m, parentNode: undefined, extent: undefined } as any)),
     ];
 
-    const laidOut = relayoutDiagram(tempNodes, subEdges, {
+    const laidOut = await doRelayout(tempNodes, subEdges, {
       direction: 'LR',
       nodeSpacing: spacing.nodeSpacing,
       rankSpacing: spacing.rankSpacing,
@@ -311,7 +315,7 @@ function applySwimlanesByGroup(nodes: Node[], edges: Edge[], spacing: ReturnType
   if (ungrouped.length > 0) {
     const ids = new Set(ungrouped.map((u) => u.id));
     const subEdges = edgesFor(ids);
-    const laidOut = relayoutDiagram(
+    const laidOut = await doRelayout(
       ungrouped.map((m) => ({ ...m, parentNode: undefined, extent: undefined } as any)),
       subEdges,
       {
@@ -414,14 +418,24 @@ function applyRadial(
   return { nodes: updatedNodes, edges };
 }
 
-export function applyLayoutPreset(nodes: Node[], edges: Edge[], opts: ApplyLayoutOptions): { nodes: Node[]; edges: Edge[] } {
+/**
+ * Unified relayout function type — works for both sync (Dagre) and async (ELK).
+ */
+type RelayoutFn = (nodes: any[], edges: any[], options?: any) => any[] | Promise<any[]>;
+
+function getRelayoutFn(engine: LayoutEngineType = 'dagre'): RelayoutFn {
+  return engine === 'elk' ? elkRelayoutDiagram : relayoutDiagram;
+}
+
+export async function applyLayoutPreset(nodes: Node[], edges: Edge[], opts: ApplyLayoutOptions): Promise<{ nodes: Node[]; edges: Edge[] }> {
   const spacing = getSpacing(opts.spacing);
+  const doRelayout = getRelayoutFn(opts.layoutEngine);
 
   // Always apply edge path style.
   const styledEdges = withEdgeStyle(edges, opts.edgeStyle);
 
   if (opts.preset === 'flow-lr') {
-    const laidOutNodes = relayoutDiagram(nodes, styledEdges, {
+    const laidOutNodes = await doRelayout(nodes, styledEdges, {
       direction: 'LR',
       nodeSpacing: spacing.nodeSpacing,
       rankSpacing: spacing.rankSpacing,
@@ -436,7 +450,7 @@ export function applyLayoutPreset(nodes: Node[], edges: Edge[], opts: ApplyLayou
   }
 
   if (opts.preset === 'flow-tb') {
-    const laidOutNodes = relayoutDiagram(nodes, styledEdges, {
+    const laidOutNodes = await doRelayout(nodes, styledEdges, {
       direction: 'TB',
       nodeSpacing: spacing.nodeSpacing,
       rankSpacing: spacing.rankSpacing,
@@ -451,7 +465,7 @@ export function applyLayoutPreset(nodes: Node[], edges: Edge[], opts: ApplyLayou
   }
 
   if (opts.preset === 'swimlanes') {
-    const result = applySwimlanesByGroup(nodes, styledEdges, spacing);
+    const result = await applySwimlanesByGroup(nodes, styledEdges, spacing, doRelayout);
     return result;
   }
 

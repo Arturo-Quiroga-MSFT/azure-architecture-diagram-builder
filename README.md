@@ -466,6 +466,7 @@ azure-diagrams/
 ## 📖 Documentation
 
 - **[System Architecture](DOCS/ARCHITECTURE.md)** - Technical deep-dive
+- **[Layout Engines: Dagre vs ELK](DOCS/LAYOUT_ENGINES_COMPARISON.md)** - Comparison, pros/cons, and best fit analysis
 - **[Regional Pricing](DOCS/REGIONAL_PRICING_IMPLEMENTATION.md)** - Cost estimation details
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
 - **[Icon Mapping](DOCS/ICON_MAPPING.md)** - Service to icon reference

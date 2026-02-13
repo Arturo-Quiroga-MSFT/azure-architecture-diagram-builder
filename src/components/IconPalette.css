@@ -12,6 +12,7 @@
 
 .icon-palette.collapsed {
   width: 40px;
+  overflow: visible;
 }
 
 .collapse-toggle {
@@ -37,7 +38,7 @@
 }
 
 .icon-palette.collapsed .collapse-toggle {
-  height: 150px;
+  height: 200px;
   padding: 1rem 0.6rem;
   width: 40px;
 }

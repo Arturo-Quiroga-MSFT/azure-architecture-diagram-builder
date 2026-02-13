@@ -33,6 +33,7 @@ import ModelSettingsPopover from './components/ModelSettingsPopover';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
+import { layoutArchitecture as elkLayoutArchitecture } from './utils/elkLayoutEngine';
 import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, getActiveRegion, AzureRegion } from './services/regionalPricingService';
@@ -47,6 +48,7 @@ import {
   type LayoutPreset,
   type LayoutSpacing,
   type LayoutEdgeStyle,
+  type LayoutEngineType,
 } from './utils/layoutPresets';
 import { generateModelFilename } from './utils/modelNaming';
 import './App.css';
@@ -130,6 +132,7 @@ function App() {
   const [layoutSpacing, setLayoutSpacing] = useState<LayoutSpacing>('comfortable');
   const [layoutEdgeStyle, setLayoutEdgeStyle] = useState<LayoutEdgeStyle>('smooth');
   const [layoutEmphasizePrimaryPath, setLayoutEmphasizePrimaryPath] = useState(false);
+  const [layoutEngine, setLayoutEngine] = useState<LayoutEngineType>('dagre');
   
   const [isBulkSelectMenuOpen, setIsBulkSelectMenuOpen] = useState(false);
   const bulkSelectMenuRef = useRef<HTMLDivElement | null>(null);
@@ -575,17 +578,18 @@ function App() {
     setIsStylePresetMenuOpen(false);
   }, [setEdges, setNodes]);
 
-  const applyLayout = useCallback(() => {
+  const applyLayout = useCallback(async () => {
     const selectedAzureNodeId = nodes.find((n) => n.type === 'azureNode' && (n as any).selected)?.id;
     const shouldEmphasize =
       layoutEmphasizePrimaryPath && (layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb');
 
-    const result = applyLayoutPreset(nodes as any, edges as any, {
+    const result = await applyLayoutPreset(nodes as any, edges as any, {
       preset: layoutPreset,
       spacing: layoutSpacing,
       edgeStyle: layoutEdgeStyle,
       emphasizePrimaryPath: shouldEmphasize,
       selectedNodeId: selectedAzureNodeId,
+      layoutEngine,
     });
 
     setNodes(result.nodes as any);
@@ -601,6 +605,7 @@ function App() {
     layoutSpacing,
     layoutEdgeStyle,
     layoutEmphasizePrimaryPath,
+    layoutEngine,
     reactFlowInstance,
     setNodes,
     setEdges,
@@ -1395,16 +1400,34 @@ function App() {
     console.log(`✅ Icon loading complete. Loaded ${iconCache.size}/${services.length} icons`);
 
     // ============================================================================
-    // LAYOUT ENGINE: Calculate optimal positions using Dagre algorithm
+    // LAYOUT ENGINE: Calculate optimal positions using selected algorithm
     // ============================================================================
-    console.log('📐 Calculating layout with Dagre algorithm...');
+    const engineLabel = layoutEngine === 'elk' ? 'ELK' : 'Dagre';
+    console.log(`📐 Calculating layout with ${engineLabel} algorithm...`);
     console.log('📦 Groups before layout:', groups);
-    const { services: positionedServices, groups: positionedGroups } = layoutArchitecture(
-      services,
-      connections,
-      groups || [],
-      { direction: 'LR' } // Left-to-right data flow
-    );
+
+    let positionedServices: any[];
+    let positionedGroups: any[];
+
+    if (layoutEngine === 'elk') {
+      const result = await elkLayoutArchitecture(
+        services,
+        connections,
+        groups || [],
+        { direction: 'LR' }
+      );
+      positionedServices = result.services;
+      positionedGroups = result.groups;
+    } else {
+      const result = layoutArchitecture(
+        services,
+        connections,
+        groups || [],
+        { direction: 'LR' }
+      );
+      positionedServices = result.services;
+      positionedGroups = result.groups;
+    }
     console.log('📦 Positioned groups after layout:', positionedGroups);
 
     // Create group nodes with calculated positions and sizes
@@ -2038,6 +2061,23 @@ function App() {
                     <div className="toolbar-dropdown-separator" role="separator" />
 
                     <div className="toolbar-dropdown-row">
+                      <label className="toolbar-dropdown-label" htmlFor="layoutEngine">
+                        Engine
+                      </label>
+                      <select
+                        id="layoutEngine"
+                        className="toolbar-dropdown-select"
+                        value={layoutEngine}
+                        onChange={(e) => setLayoutEngine(e.target.value as LayoutEngineType)}
+                      >
+                        <option value="dagre">Dagre</option>
+                        <option value="elk">ELK</option>
+                      </select>
+                    </div>
+
+                    <div className="toolbar-dropdown-separator" role="separator" />
+
+                    <div className="toolbar-dropdown-row">
                       <label className="toolbar-dropdown-label" htmlFor="layoutSpacing">
                         Spacing
                       </label>
@@ -2079,7 +2119,7 @@ function App() {
                     </label>
 
                     <div className="toolbar-dropdown-hint">
-                      Current: {layoutPresetLabel[layoutPreset]}
+                      Current: {layoutPresetLabel[layoutPreset]} • Engine: {layoutEngine === 'elk' ? 'ELK' : 'Dagre'}
                       {layoutPreset === 'radial' ? ' (centers on selected node when possible)' : ''}
                     </div>
 
