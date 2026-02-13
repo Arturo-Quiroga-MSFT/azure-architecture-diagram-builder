@@ -1,0 +1,792 @@
+{
+  "nodes": [
+    {
+      "id": "ingress-web",
+      "type": "groupNode",
+      "position": {
+        "x": -20,
+        "y": -20
+      },
+      "data": {
+        "label": "Ingress & Web"
+      },
+      "style": {
+        "width": 1060,
+        "height": 1350
+      },
+      "width": 1060,
+      "height": 1350,
+      "positionAbsolute": {
+        "x": -20,
+        "y": -20
+      }
+    },
+    {
+      "id": "app-compute",
+      "type": "groupNode",
+      "position": {
+        "x": 1090,
+        "y": 230
+      },
+      "data": {
+        "label": "Application & Compute"
+      },
+      "style": {
+        "width": 630,
+        "height": 1820
+      },
+      "width": 630,
+      "height": 1820,
+      "positionAbsolute": {
+        "x": 1090,
+        "y": 230
+      }
+    },
+    {
+      "id": "data-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 1770,
+        "y": -150
+      },
+      "data": {
+        "label": "Data & Storage"
+      },
+      "style": {
+        "width": 630,
+        "height": 950
+      },
+      "width": 630,
+      "height": 950,
+      "positionAbsolute": {
+        "x": 1770,
+        "y": -150
+      }
+    },
+    {
+      "id": "identity-security",
+      "type": "groupNode",
+      "position": {
+        "x": 1770,
+        "y": 810
+      },
+      "data": {
+        "label": "Identity & Security"
+      },
+      "style": {
+        "width": 630,
+        "height": 840
+      },
+      "width": 630,
+      "height": 840,
+      "positionAbsolute": {
+        "x": 1770,
+        "y": 810
+      }
+    },
+    {
+      "id": "monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1770,
+        "y": 1690
+      },
+      "data": {
+        "label": "Monitoring & Observability"
+      },
+      "style": {
+        "width": 1185,
+        "height": 560
+      },
+      "width": 1185,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 1770,
+        "y": 1690
+      }
+    },
+    {
+      "id": "frontdoor",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 740
+      },
+      "data": {
+        "label": "Azure Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/azure-front-door.svg",
+        "pricing": {
+          "estimatedCost": 35,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ingress-web",
+      "extent": "parent",
+      "width": 165,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 205,
+        "y": 720
+      }
+    },
+    {
+      "id": "staticwebapps",
+      "type": "azureNode",
+      "position": {
+        "x": 655,
+        "y": 740
+      },
+      "data": {
+        "label": "Azure Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg",
+        "pricing": {
+          "estimatedCost": 9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-13T21:17:26.861Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ingress-web",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 635,
+        "y": 720
+      }
+    },
+    {
+      "id": "appservice",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 820
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "app-compute",
+      "extent": "parent",
+      "width": 128,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1315,
+        "y": 1050
+      }
+    },
+    {
+      "id": "postgresql",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 370
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg",
+        "pricing": {
+          "estimatedCost": 109.86,
+          "tier": "Backup LRS",
+          "skuName": "Backup LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GiB/Month",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-storage",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 220
+      }
+    },
+    {
+      "id": "storage",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 710
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-storage",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 560
+      }
+    },
+    {
+      "id": "entra",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 240
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-13T21:17:26.861Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-security",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 1050
+      }
+    },
+    {
+      "id": "keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 520
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "identity-security",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 1330
+      }
+    },
+    {
+      "id": "monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 80
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "monitoring",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 1770
+      }
+    },
+    {
+      "id": "loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 80
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-13T21:17:26.852Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "monitoring",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2550,
+        "y": 1770
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "frontdoor",
+      "target": "staticwebapps",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route authenticated web traffic to frontend",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "staticwebapps",
+      "target": "appservice",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Invoke backend API for application logic",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "appservice",
+      "target": "postgresql",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Perform SQL queries for user and app data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "appservice",
+      "target": "storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write image blobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "staticwebapps",
+      "target": "storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Render images stored in blobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "appservice",
+      "target": "entra",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Validate user identity, issue tokens",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "appservice",
+      "target": "keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Fetch secrets for DB and storage access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "monitor",
+      "target": "loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send aggregated telemetry for analysis",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "appservice",
+      "target": "monitor",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit application and API metrics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 680.25,
+    "y": 139.5,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-13",
+    "savedAt": "2026-02-13T21:17:46.962Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the React frontend through the global entry point",
+      "services": [
+        "frontdoor",
+        "staticwebapps"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Frontend calls Node.js backend API for application logic",
+      "services": [
+        "staticwebapps",
+        "appservice"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Backend validates user identity and tokens",
+      "services": [
+        "appservice",
+        "entra"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Backend retrieves secrets for data access",
+      "services": [
+        "appservice",
+        "keyvault"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Backend reads and writes relational data in PostgreSQL",
+      "services": [
+        "appservice",
+        "postgresql"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Backend stores and retrieves image blobs",
+      "services": [
+        "appservice",
+        "storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Frontend renders images directly from blob storage",
+      "services": [
+        "staticwebapps",
+        "storage"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Backend emits metrics to monitoring",
+      "services": [
+        "appservice",
+        "monitor"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Monitoring sends aggregated telemetry for analysis",
+      "services": [
+        "monitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images"
+}
