@@ -155,6 +155,7 @@ export async function validateArchitecture(
   const servicesList = services.map(s => `- ${s.name} (${s.type})`).join('\n');
   const connectionsList = connections.map(c => `- ${c.from} → ${c.to}: ${c.label}`).join('\n');
   const groupsList = groups ? groups.map(g => `- ${g.name}`).join('\n') : 'No groups';
+  const serviceNamesList = services.map(s => s.name);
 
   const systemPrompt = `You are an Azure Well-Architected Framework expert. Your role is to review Azure architectures and provide actionable recommendations across the five pillars:
 
@@ -213,6 +214,8 @@ ${connectionsList}
 
 **Logical Groups:**
 ${groupsList}
+
+IMPORTANT: In the "resources" arrays, use EXACTLY the service names as listed above (e.g., "${serviceNamesList.slice(0, 3).join('", "')}"). Do not rename or rephrase them.
 
 Provide a comprehensive Well-Architected Framework assessment with actionable recommendations.`;
 

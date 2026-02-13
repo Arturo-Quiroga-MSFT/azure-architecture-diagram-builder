@@ -6,23 +6,40 @@
   left: auto;
 }
 
-/* Trigger button */
+/* Trigger button – must stand out on the blue header in both modes */
 .model-popover-trigger {
   position: relative;
-  gap: 6px !important;
+  gap: 8px !important;
+  padding: 9px 16px !important;
+  font-size: 1.05rem !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(200, 160, 255, 0.28) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.model-popover-trigger:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, rgba(200, 160, 255, 0.38) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 0 14px rgba(200, 160, 255, 0.35) !important;
 }
 
 .model-popover-label {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: white;
 }
 
 .model-popover-reasoning {
-  font-size: 0.75rem;
-  opacity: 0.85;
+  font-size: 0.85rem;
+  opacity: 1;
   text-transform: capitalize;
-  padding: 1px 6px;
-  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 4px;
+  font-weight: 700;
+  color: white;
 }
 
 .model-popover-override-dot {

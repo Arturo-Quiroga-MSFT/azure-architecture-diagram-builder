@@ -1270,6 +1270,10 @@ function App() {
     
     // Category correction map - AI categorizes services differently than icon folders
     const correctCategory = (serviceType: string, aiCategory: string): string => {
+      // Check SERVICE_ICON_MAP first for authoritative category
+      const mapping = getServiceIconMapping(serviceType);
+      if (mapping) return mapping.category;
+      
       const corrections: Record<string, string> = {
         'Azure Functions': 'compute',
         'Logic Apps': 'integration',
@@ -2656,6 +2660,19 @@ CRITICAL INSTRUCTIONS:
 4. Update connections to reflect security improvements, monitoring, and best practices
 5. Maintain and extend the logical grouping structure - create new groups as needed for new service categories
 6. Ensure the architecture implements the selected recommendations
+
+SERVICE MAPPING — CRITICAL:
+- When adding private endpoints or Private Link, add "Azure Private Link" as an explicit service node AND "Azure DNS" for private DNS resolution. Connect source services → Azure Private Link → target PaaS services.
+- When adding WAF capabilities, add "Web Application Firewall" as a service node if not already covered by Application Gateway or Azure Front Door.
+- When adding SIEM/security monitoring, add "Microsoft Sentinel" as a service node.
+- Always use exact service names from the known services list in the system prompt.
+
+LAYOUT RULES:
+7. Limit total connections to 12-18. Only show primary data/control flow, not obvious implicit relationships. Show only 1 representative Key Vault edge, not one per service.
+8. For monitoring: connect ONLY the primary compute service to Azure Monitor, then a SINGLE edge to Log Analytics. Maximum 2-3 monitoring edges total.
+9. Arrange groups in directional flow: Ingress → Application → Data (left-to-right). Security at bottom-left, Monitoring at bottom-right.
+10. Minimize cross-group edges. Place tightly-coupled services in the SAME group. Aim for 1-2 outgoing edges per group.
+11. Total service count: 8-12 max. Only add security/identity services when the recommendations explicitly require them.
 
 Return the IMPROVED architecture in the same JSON format as before with proper group assignments.`;
 

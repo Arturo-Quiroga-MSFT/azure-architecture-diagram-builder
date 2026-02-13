@@ -707,7 +707,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     displayName: 'Azure Backup',
     aliases: ['Azure Backup', 'Recovery Services', 'Recovery Services Vault'],
     iconFile: '00017-icon-service-Recovery-Services-Vaults',
-    category: 'management + governance',
+    category: 'security',
     hasPricingData: true,
     pricingServiceName: 'Backup',
     isUsageBased: true,
@@ -723,6 +723,79 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     pricingServiceName: 'Network Watcher',
     isUsageBased: true,
     costRange: '$0-10/mo per resource'
+  },
+  
+  // ========================================
+  // Security (additional)
+  // ========================================
+  'Azure Bastion': {
+    displayName: 'Azure Bastion',
+    aliases: ['Bastion', 'Bastion Host'],
+    iconFile: '02422-icon-service-Bastions',
+    category: 'networking',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$138-876/mo'
+  },
+  
+  'Azure DDoS Protection': {
+    displayName: 'Azure DDoS Protection',
+    aliases: ['DDoS Protection', 'DDoS', 'DDoS Protection Plan'],
+    iconFile: '10072-icon-service-DDoS-Protection-Plans',
+    category: 'networking',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$2944/mo'
+  },
+  
+  'Azure Policy': {
+    displayName: 'Azure Policy',
+    aliases: ['Policy', 'Azure Policies', 'Governance Policy'],
+    iconFile: '10316-icon-service-Policy',
+    category: 'security',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$0 (included)'
+  },
+  
+  'Microsoft Sentinel': {
+    displayName: 'Microsoft Sentinel',
+    aliases: ['Sentinel', 'Azure Sentinel', 'SIEM', 'Azure SIEM'],
+    iconFile: '10248-icon-service-Azure-Sentinel',
+    category: 'security',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: '$2.46 per GB ingested'
+  },
+  
+  'Web Application Firewall': {
+    displayName: 'Web Application Firewall',
+    aliases: ['WAF', 'Azure WAF', 'Web Application Firewall Policy'],
+    iconFile: '10362-icon-service-Web-Application-Firewall-Policies(WAF)',
+    category: 'networking',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$100-500/mo'
+  },
+  
+  'Private Link': {
+    displayName: 'Azure Private Link',
+    aliases: ['Azure Private Link', 'Private Endpoint', 'Private Endpoints', 'Azure Private Endpoint'],
+    iconFile: '00427-icon-service-Private-Link',
+    category: 'networking',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$7.30/mo per endpoint'
+  },
+  
+  'Azure DNS': {
+    displayName: 'Azure DNS',
+    aliases: ['DNS', 'DNS Zone', 'DNS Zones', 'Private DNS'],
+    iconFile: '10064-icon-service-DNS-Zones',
+    category: 'networking',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: '$0.50/mo per zone'
   },
   
   // ========================================
