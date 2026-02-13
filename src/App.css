@@ -564,6 +564,15 @@ body.dark-mode .toolbar-dropdown-separator {
 .loading-banner {
   animation: pulse 2s ease-in-out infinite !important;
 }
+
+.loading-banner .prompt-text {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.loading-banner .prompt-text strong {
+  color: #bfdbfe !important;
+}
 /* ========================================
    DARK MODE
    ======================================== */

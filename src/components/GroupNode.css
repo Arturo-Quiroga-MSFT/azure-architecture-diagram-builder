@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   transition: all 0.2s;
-  pointer-events: all;
+  pointer-events: none;
 }
 
 .group-node.selected {
@@ -19,12 +19,17 @@
   box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.2);
 }
 
+.group-node .react-flow__resize-control {
+  pointer-events: all;
+}
+
 .group-node-header {
   background: rgba(0, 0, 0, 0.03);
   padding: 8px 12px;
   border-bottom: 1px dashed;
   border-radius: 6px 6px 0 0;
   position: relative;
+  pointer-events: all;
 }
 
 .group-header-content {
@@ -145,6 +150,7 @@
   padding: 12px;
   position: relative;
   z-index: 1;
+  pointer-events: none;
 }
 /* Make group nodes appear behind regular nodes */
 .react-flow__node-groupNode {

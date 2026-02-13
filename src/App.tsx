@@ -2444,12 +2444,17 @@ function App() {
                   top: '10px',
                   transform: 'translateX(-50%)',
                   zIndex: 1001,
-                  backgroundColor: '#3b82f6',
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
+                  border: '2px solid #60a5fa',
+                  padding: '1rem 2.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2)',
+                  maxWidth: '700px',
                   animation: 'pulse 2s ease-in-out infinite',
                 }}
               >
-                <div className="prompt-text">
-                  <strong>⏳ Applying recommendations...</strong> Regenerating architecture with improvements
+                <div className="prompt-text" style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.3px' }}>
+                  <strong style={{ fontSize: '1.2rem' }}>⏳ Applying recommendations...</strong> Regenerating architecture with improvements
                 </div>
               </div>
             )}

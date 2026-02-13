@@ -273,7 +273,7 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
 
             <div className="modal-footer">
               <div className="ai-modal-active-model">
-                <Brain size={14} />
+                <Brain size={20} />
                 <span>Using: <span className="model-badge">{MODEL_CONFIG[modelSettings.model].displayName}</span></span>
                 {MODEL_CONFIG[modelSettings.model].isReasoning && (
                   <span className="model-badge">({modelSettings.reasoningEffort})</span>
