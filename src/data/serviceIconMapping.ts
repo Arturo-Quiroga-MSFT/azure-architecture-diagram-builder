@@ -752,7 +752,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     displayName: 'Azure Policy',
     aliases: ['Policy', 'Azure Policies', 'Governance Policy'],
     iconFile: '10316-icon-service-Policy',
-    category: 'security',
+    category: 'management + governance',
     hasPricingData: false,
     isUsageBased: false,
     costRange: '$0 (included)'

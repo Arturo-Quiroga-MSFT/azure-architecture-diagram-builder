@@ -170,7 +170,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       
       {previewUrl && !isAnalyzing && (
         <p className="image-success-hint">
-          ✓ Image analyzed! The description has been added to the prompt above. Review and generate when ready.
+          ✓ Image analyzed! The description has been added to the prompt below. Review and generate when ready.
         </p>
       )}
     </div>
