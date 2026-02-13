@@ -1,5 +1,7 @@
 .title-block {
   position: absolute;
+  bottom: 20px;
+  left: 380px;
   background: white;
   border: 2px solid #333;
   border-radius: 4px;
@@ -8,20 +10,14 @@
   z-index: 1000;
   min-width: 320px;
   user-select: none;
+  cursor: grab;
   transition: box-shadow 0.2s;
 }
 
 .title-block.dragging {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  z-index: 1001;
-}
-
-.title-block-display {
-  cursor: grab;
-}
-
-.title-block-display:active {
   cursor: grabbing;
+  z-index: 1001;
 }
 
 .title-block-header {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import './TitleBlock.css';
 
 interface TitleBlockProps {
@@ -22,9 +22,10 @@ const TitleBlock: React.FC<TitleBlockProps> = ({
     author,
     version,
   });
-  const [position, setPosition] = useState({ x: window.innerWidth - 350, y: window.innerHeight - 200 });
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const blockRef = useRef<HTMLDivElement>(null);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -40,52 +41,49 @@ const TitleBlock: React.FC<TitleBlockProps> = ({
     setEditData({ architectureName, author, version });
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // Don't start dragging if clicking on inputs or buttons
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (isEditing || (e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON') {
       return;
     }
-    
+    const el = blockRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const parentRect = el.offsetParent?.getBoundingClientRect() ?? { left: 0, top: 0 };
+    const currentX = rect.left - parentRect.left;
+    const currentY = rect.top - parentRect.top;
+    dragOffsetRef.current = { x: e.clientX - currentX, y: e.clientY - currentY };
+    setDragPosition({ x: currentX, y: currentY });
     setIsDragging(true);
-    setDragOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    });
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-    
-    setPosition({
-      x: e.clientX - dragOffset.x,
-      y: e.clientY - dragOffset.y,
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  }, [isEditing]);
 
   React.useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragOffset]);
+    if (!isDragging) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      setDragPosition({
+        x: e.clientX - dragOffsetRef.current.x,
+        y: e.clientY - dragOffsetRef.current.y,
+      });
+    };
+    const handleMouseUp = () => setIsDragging(false);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const style: React.CSSProperties = dragPosition
+    ? { left: dragPosition.x, top: dragPosition.y, bottom: 'auto' }
+    : {};
+  if (isDragging) style.cursor = 'grabbing';
+  else if (!isEditing) style.cursor = 'grab';
 
   return (
-    <div 
+    <div
+      ref={blockRef}
       className={`title-block ${isDragging ? 'dragging' : ''}`}
-      style={{
-        position: 'absolute',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        cursor: isDragging ? 'grabbing' : (isEditing ? 'default' : 'grab'),
-      }}
+      style={style}
       onMouseDown={handleMouseDown}
     >
       {isEditing ? (

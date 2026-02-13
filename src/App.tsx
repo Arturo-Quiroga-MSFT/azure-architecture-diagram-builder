@@ -82,9 +82,7 @@ function App() {
   const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [infoBannerPosition, setInfoBannerPosition] = useState({ x: 0, y: 0 });
-  const [isDraggingInfoBanner, setIsDraggingInfoBanner] = useState(false);
-  const [dragOffsetInfo, setDragOffsetInfo] = useState({ x: 0, y: 0 });
+
   const [isUploadingARM, setIsUploadingARM] = useState(false);
   const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -408,20 +406,13 @@ function App() {
           y: e.clientY - dragOffset.y,
         });
       }
-      if (isDraggingInfoBanner) {
-        setInfoBannerPosition({
-          x: e.clientX - dragOffsetInfo.x,
-          y: e.clientY - dragOffsetInfo.y,
-        });
-      }
     };
 
     const handleMouseUp = () => {
       setIsDraggingBanner(false);
-      setIsDraggingInfoBanner(false);
     };
 
-    if (isDraggingBanner || isDraggingInfoBanner) {
+    if (isDraggingBanner) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -430,7 +421,7 @@ function App() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDraggingBanner, dragOffset, isDraggingInfoBanner, dragOffsetInfo]);
+  }, [isDraggingBanner, dragOffset]);
 
   const handleEdgeLabelChange = useCallback((edgeId: string, newLabel: string) => {
     setEdges((eds) =>
@@ -2551,37 +2542,7 @@ function App() {
                 </div>
               </div>
             )}
-            {/* Draggable info banner */}
-            <div
-              className="info-banner draggable"
-              style={{
-                position: 'absolute',
-                right: infoBannerPosition.x === 0 ? '10px' : 'auto',
-                left: infoBannerPosition.x !== 0 ? `${infoBannerPosition.x}px` : 'auto',
-                top: infoBannerPosition.y === 0 ? '10px' : `${infoBannerPosition.y}px`,
-                cursor: isDraggingInfoBanner ? 'grabbing' : 'grab',
-                zIndex: 1000,
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                const rect = e.currentTarget.getBoundingClientRect();
-                setDragOffsetInfo({
-                  x: e.clientX - rect.left,
-                  y: e.clientY - rect.top,
-                });
-                if (infoBannerPosition.x === 0) {
-                  // First time dragging - calculate initial position from right
-                  const initialX = rect.left;
-                  setInfoBannerPosition({ x: initialX, y: 10 });
-                }
-                setIsDraggingInfoBanner(true);
-              }}
-            >
-              <div className="info-text">
-                Drag icons from the left panel onto the canvas. 
-                Connect nodes by dragging from one node to another.
-              </div>
-            </div>
+
             <TitleBlock
               architectureName={titleBlockData.architectureName}
               author={titleBlockData.author}

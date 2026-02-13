@@ -446,30 +446,6 @@ body.dark-mode .toolbar-dropdown-separator {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.info-banner {
-  background: white;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
-  user-select: none;
-  transition: box-shadow 0.2s, border-color 0.2s;
-}
-
-.info-banner.draggable:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border-color: #ccc;
-}
-
-.info-banner.draggable:active {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-.info-text {
-  font-size: 0.75rem;
-  color: #666;
-  max-width: 250px;
-}
 
 .prompt-banner {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
@@ -722,25 +698,6 @@ body.dark-mode .prompt-text strong {
   font-weight: 700;
 }
 
-/* Info banner in dark mode */
-body.dark-mode .info-banner {
-  background: rgba(45, 45, 45, 0.98);
-  border: 1px solid #505050;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-body.dark-mode .info-banner.draggable:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  border-color: #606060;
-}
-
-body.dark-mode .info-banner.draggable:active {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
-}
-
-body.dark-mode .info-text {
-  color: #b0b0b0;
-}
 
 /* Context menu in dark mode */
 body.dark-mode .context-menu {
