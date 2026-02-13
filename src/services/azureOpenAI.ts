@@ -44,7 +44,8 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
     throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
   }
 
-  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
+  // Responses API endpoint (replaces Chat Completions)
+  const url = `${endpoint}openai/v1/responses`;
 
   // Add timeout for large requests (5 minutes for regenerations)
   const controller = new AbortController();
@@ -53,19 +54,23 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
   // Start timing
   const startTime = performance.now();
 
-  // Build request body based on model type
+  // Build Responses API request body
+  // Pass all messages (including system) as input — json_object format
+  // requires the word 'json' to appear in input messages
   const requestBody: any = {
-    messages,
-    max_completion_tokens: modelConfig.maxCompletionTokens,
-    response_format: { type: 'json_object' },
+    model: deployment,
+    input: messages,
+    max_output_tokens: modelConfig.maxCompletionTokens,
+    text: { format: { type: 'json_object' } },
+    store: false,
   };
   
-  // Add reasoning_effort only for reasoning models (GPT-5.2)
+  // Add reasoning config for reasoning models
   if (modelConfig.isReasoning) {
-    requestBody.reasoning_effort = settings.reasoningEffort;
+    requestBody.reasoning = { effort: settings.reasoningEffort };
   }
   
-  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens}`);
+  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: Responses`);
 
   try {
     const response = await fetch(url, {
@@ -96,13 +101,27 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content || '';
     
-    // Extract token usage from response
+    // Responses API: extract text from output
+    // output_text is a convenience field; fall back to parsing output[].content[] if missing
+    let content = data.output_text || '';
+    if (!content && data.output) {
+      for (const item of data.output) {
+        if (item.type === 'message' && item.content) {
+          for (const part of item.content) {
+            if (part.type === 'output_text') {
+              content += part.text;
+            }
+          }
+        }
+      }
+    }
+    
+    // Responses API uses input_tokens/output_tokens
     const usage = data.usage || {};
     const metrics: AIMetrics = {
-      promptTokens: usage.prompt_tokens || 0,
-      completionTokens: usage.completion_tokens || 0,
+      promptTokens: usage.input_tokens || 0,
+      completionTokens: usage.output_tokens || 0,
       totalTokens: usage.total_tokens || 0,
       elapsedTimeMs,
       model: data.model
@@ -276,7 +295,8 @@ export async function analyzeArchitectureDiagramImage(imageBase64: string, mimeT
     throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
   }
 
-  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
+  // Responses API endpoint
+  const url = `${endpoint}openai/v1/responses`;
 
   const systemPrompt = `You are an expert Azure cloud architect specializing in analyzing architecture diagrams.
 
@@ -320,42 +340,40 @@ If you cannot identify a specific Azure service, describe it by its apparent fun
 
 If the image is not an architecture diagram or is unclear, describe what you can see and note any limitations.`;
 
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    {
-      role: 'user',
-      content: [
-        {
-          type: 'text',
-          text: 'Analyze this architecture diagram and provide a detailed description that captures all services, connections, groupings, and data flows shown. Be specific and thorough.'
-        },
-        {
-          type: 'image_url',
-          image_url: {
-            url: `data:${mimeType};base64,${imageBase64}`,
-            detail: 'high'
-          }
-        }
-      ]
-    }
-  ];
-
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes for image analysis
   
   const startTime = performance.now();
 
+  // Responses API request body with image input
   const requestBody: any = {
-    messages,
-    max_completion_tokens: 4000, // Enough for a detailed description
+    model: deployment,
+    instructions: systemPrompt,
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: 'Analyze this architecture diagram and provide a detailed description that captures all services, connections, groupings, and data flows shown. Be specific and thorough.'
+          },
+          {
+            type: 'input_image',
+            image_url: `data:${mimeType};base64,${imageBase64}`,
+          }
+        ]
+      }
+    ],
+    max_output_tokens: 4000,
+    store: false,
   };
   
-  // Add reasoning_effort for reasoning models
+  // Add reasoning config for reasoning models
   if (modelConfig.isReasoning) {
-    requestBody.reasoning_effort = settings.reasoningEffort;
+    requestBody.reasoning = { effort: settings.reasoningEffort };
   }
 
-  console.log(`🖼️ Analyzing architecture diagram with ${modelConfig.displayName}...`);
+  console.log(`🖼️ Analyzing architecture diagram with ${modelConfig.displayName}... | API: Responses`);
 
   try {
     const response = await fetch(url, {
@@ -388,12 +406,26 @@ If the image is not an architecture diagram or is unclear, describe what you can
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content || '';
     
+    // Responses API: extract text from output
+    let content = data.output_text || '';
+    if (!content && data.output) {
+      for (const item of data.output) {
+        if (item.type === 'message' && item.content) {
+          for (const part of item.content) {
+            if (part.type === 'output_text') {
+              content += part.text;
+            }
+          }
+        }
+      }
+    }
+    
+    // Responses API uses input_tokens/output_tokens
     const usage = data.usage || {};
     const metrics: AIMetrics = {
-      promptTokens: usage.prompt_tokens || 0,
-      completionTokens: usage.completion_tokens || 0,
+      promptTokens: usage.input_tokens || 0,
+      completionTokens: usage.output_tokens || 0,
       totalTokens: usage.total_tokens || 0,
       elapsedTimeMs,
       model: data.model

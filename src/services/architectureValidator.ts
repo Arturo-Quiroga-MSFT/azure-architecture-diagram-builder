@@ -46,27 +46,32 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
     throw new Error('Azure OpenAI credentials not configured');
   }
 
-  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2025-04-01-preview`;
+  // Responses API endpoint
+  const url = `${endpoint}openai/v1/responses`;
 
-  console.log(`🌐 Calling Azure OpenAI API with ${modelConfig.displayName}:`, url);
+  console.log(`🌐 Calling Azure OpenAI Responses API with ${modelConfig.displayName}`);
   
   // Start timing
   const startTime = performance.now();
 
-  // Build request body based on model type
+  // Build Responses API request body
+  // Pass all messages (including system) as input — json_object format
+  // requires the word 'json' to appear in input messages
   const effectiveMaxTokens = Math.min(maxTokens, modelConfig.maxCompletionTokens);
   const requestBody: any = {
-    messages,
-    max_completion_tokens: effectiveMaxTokens,
-    response_format: { type: 'json_object' },
+    model: deployment,
+    input: messages,
+    max_output_tokens: effectiveMaxTokens,
+    text: { format: { type: 'json_object' } },
+    store: false,
   };
   
-  // Add reasoning_effort only for reasoning models (GPT-5.2)
+  // Add reasoning config for reasoning models
   if (modelConfig.isReasoning) {
-    requestBody.reasoning_effort = settings.reasoningEffort;
+    requestBody.reasoning = { effort: settings.reasoningEffort };
   }
   
-  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens}`);
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: Responses`);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -88,17 +93,29 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
 
   const data = await response.json();
   
-  // Extract token usage from response
+  // Responses API uses input_tokens/output_tokens
   const usage = data.usage || {};
   const metrics: AIMetrics = {
-    promptTokens: usage.prompt_tokens || 0,
-    completionTokens: usage.completion_tokens || 0,
+    promptTokens: usage.input_tokens || 0,
+    completionTokens: usage.output_tokens || 0,
     totalTokens: usage.total_tokens || 0,
     elapsedTimeMs,
     model: data.model
   };
   
-  const content = data.choices[0]?.message?.content || '';
+  // Responses API: extract text from output
+  let content = data.output_text || '';
+  if (!content && data.output) {
+    for (const item of data.output) {
+      if (item.type === 'message' && item.content) {
+        for (const part of item.content) {
+          if (part.type === 'output_text') {
+            content += part.text;
+          }
+        }
+      }
+    }
+  }
   
   console.log('📦 API Response:', content.length, 'chars |',
     `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) |`,
