@@ -26,6 +26,17 @@
   margin: 0;
 }
 
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.microsoft-logo {
+  height: 80px;
+  width: auto;
+}
+
 .header-actions {
   display: flex;
   gap: 0.5rem;

@@ -51,6 +51,7 @@ import {
   type LayoutEngineType,
 } from './utils/layoutPresets';
 import { generateModelFilename } from './utils/modelNaming';
+import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
 const nodeTypes = {
@@ -1942,7 +1943,10 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-content">
-          <h1>Azure Architecture Diagram Builder</h1>
+          <div className="header-brand">
+            <img src={microsoftLogoWhite} alt="Microsoft" className="microsoft-logo" />
+            <h1>Azure Architecture Diagram Builder</h1>
+          </div>
           <div className="header-actions">
             <div className="toolbar-group">
               <RegionSelector onRegionChange={handleRegionChange} />
