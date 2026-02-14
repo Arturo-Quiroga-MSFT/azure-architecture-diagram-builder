@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-4.1' | 'gpt-4.1-mini' | 'deepseek-v3.2-speciale' | 'grok-4-fast-reasoning';
+export type ModelType = 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-4.1' | 'gpt-4.1-mini';
 export type ReasoningEffort = 'low' | 'medium' | 'high';
 
 /**
@@ -106,20 +106,7 @@ export const MODEL_CONFIG: Record<ModelType, {
     maxCompletionTokens: 16000,
     description: 'Optimized for code generation - ideal for Bicep/IaC'
   },
-  'deepseek-v3.2-speciale': {
-    displayName: 'DeepSeek V3.2',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK',
-    isReasoning: false,
-    maxCompletionTokens: 16000,
-    description: 'Strong structured output at lower cost'
-  },
-  'grok-4-fast-reasoning': {
-    displayName: 'Grok 4 Fast',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST',
-    isReasoning: true,
-    maxCompletionTokens: 16000,
-    description: 'Fast reasoning - good balance of speed and depth'
-  }
+
 };
 
 /**

@@ -21,10 +21,6 @@ export function getModelAbbreviation(): string {
       return 'gpt41';
     case 'gpt-4.1-mini':
       return 'gpt41mini';
-    case 'deepseek-v3.2-speciale':
-      return 'deepseek';
-    case 'grok-4-fast-reasoning':
-      return 'grok4fast';
     default:
       return 'unknown';
   }
