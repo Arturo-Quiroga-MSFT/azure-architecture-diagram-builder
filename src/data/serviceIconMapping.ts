@@ -412,7 +412,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   
   'Stream Analytics': {
     displayName: 'Azure Stream Analytics',
-    aliases: ['Stream Analytics', 'ASA'],
+    aliases: ['Stream Analytics', 'ASA', 'Azure Stream Analytics'],
     iconFile: 'stream-analytics',
     category: 'analytics',
     hasPricingData: true,

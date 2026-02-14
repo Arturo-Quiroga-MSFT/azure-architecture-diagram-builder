@@ -99,6 +99,8 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Azure Network Watcher': 'Network Watcher',
   
   // Analytics
+  'Power BI Embedded': 'Power BI Embedded',
+  'Power BI': 'Power BI Embedded',
   'Stream Analytics': 'Azure Stream Analytics',
   'Azure Stream Analytics': 'Azure Stream Analytics',
   'Data Factory': 'Azure Data Factory',
@@ -722,6 +724,12 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 80.30, // 1 SU (Standard)
     premium: 481.80, // 6 SUs
     unit: 'per streaming unit/month'
+  },
+  'Power BI Embedded': {
+    basic: 735.00, // A1 (3 GB RAM)
+    standard: 1471.00, // A2 (5 GB RAM)
+    premium: 4706.00, // A4 (25 GB RAM)
+    unit: 'per capacity/month'
   },
   'Event Hubs': {
     basic: 11.28, // Basic tier
