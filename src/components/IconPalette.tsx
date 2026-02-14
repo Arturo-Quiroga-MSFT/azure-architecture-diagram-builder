@@ -17,13 +17,10 @@ const IconPalette: React.FC = () => {
     } else {
       newExpanded.add(category);
       
-      // Load icons for this category if not already loaded
-      if (!categoryIcons.has(category)) {
-        const icons = await loadIconsFromCategory(category);
-        setCategoryIcons(prev => new Map(prev).set(category, icons));
-        
-        // Load URLs for all icons in category
-        for (const icon of icons) {
+      // Load icon URLs for this category if not already loaded
+      const icons = categoryIcons.get(category) || [];
+      for (const icon of icons) {
+        if (!iconUrls.has(icon.path)) {
           const url = await loadIcon(icon.path);
           setIconUrls(prev => new Map(prev).set(icon.path, url));
         }
@@ -32,20 +29,25 @@ const IconPalette: React.FC = () => {
     setExpandedCategories(newExpanded);
   };
 
-  // Load initial category
+  // Load all icon metadata on mount so search works across all categories
   useEffect(() => {
-    const loadInitialCategory = async () => {
-      const category = 'ai + machine learning';
-      const icons = await loadIconsFromCategory(category);
-      setCategoryIcons(new Map().set(category, icons));
-      
-      for (const icon of icons) {
+    const loadAllIconMetadata = async () => {
+      const newCategoryIcons = new Map<string, AzureIcon[]>();
+      for (const category of iconCategories) {
+        const icons = await loadIconsFromCategory(category);
+        newCategoryIcons.set(category, icons);
+      }
+      setCategoryIcons(newCategoryIcons);
+
+      // Load icon URLs for the initially expanded category
+      const initialIcons = newCategoryIcons.get('ai + machine learning') || [];
+      for (const icon of initialIcons) {
         const url = await loadIcon(icon.path);
         setIconUrls(prev => new Map(prev).set(icon.path, url));
       }
     };
     
-    loadInitialCategory();
+    loadAllIconMetadata();
   }, []);
 
   const onDragStart = (event: React.DragEvent, icon: AzureIcon) => {
@@ -56,9 +58,44 @@ const IconPalette: React.FC = () => {
     event.dataTransfer.effectAllowed = 'move';
   };
 
-  const filteredCategories = iconCategories.filter(cat =>
-    searchTerm === '' || cat.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCategories = iconCategories.filter(cat => {
+    if (searchTerm === '') return true;
+    const term = searchTerm.toLowerCase();
+    if (cat.toLowerCase().includes(term)) return true;
+    // Also show category if any of its icons match the search
+    const icons = categoryIcons.get(cat) || [];
+    return icons.some(icon => icon.name.toLowerCase().includes(term));
+  });
+
+  // Auto-expand categories with matching icons when searching, load their icon URLs
+  useEffect(() => {
+    if (searchTerm === '') return;
+    const term = searchTerm.toLowerCase();
+    const categoriesToExpand: string[] = [];
+    filteredCategories.forEach(cat => {
+      const icons = categoryIcons.get(cat) || [];
+      if (icons.some(icon => icon.name.toLowerCase().includes(term))) {
+        if (!expandedCategories.has(cat)) {
+          categoriesToExpand.push(cat);
+        }
+        // Load icon URLs for visible matched icons
+        icons.forEach(async (icon) => {
+          if (icon.name.toLowerCase().includes(term) && !iconUrls.has(icon.path)) {
+            const url = await loadIcon(icon.path);
+            setIconUrls(prev => new Map(prev).set(icon.path, url));
+          }
+        });
+      }
+    });
+    if (categoriesToExpand.length > 0) {
+      setExpandedCategories(prev => {
+        const next = new Set(prev);
+        categoriesToExpand.forEach(c => next.add(c));
+        return next;
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
 
   return (
     <div className={`icon-palette ${isCollapsed ? 'collapsed' : ''}`}>
