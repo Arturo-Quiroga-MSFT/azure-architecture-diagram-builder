@@ -4,7 +4,7 @@ import { iconCategories, loadIconsFromCategory, AzureIcon, loadIcon } from '../u
 import './IconPalette.css';
 
 interface IconPaletteProps {
-  forceCollapsed?: boolean;
+  forceCollapsed?: number;
 }
 
 const IconPalette: React.FC<IconPaletteProps> = ({ forceCollapsed }) => {

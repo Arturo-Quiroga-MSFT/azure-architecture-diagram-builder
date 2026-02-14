@@ -751,7 +751,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     displayName: 'Azure Backup',
     aliases: ['Azure Backup', 'Recovery Services', 'Recovery Services Vault'],
     iconFile: '00017-icon-service-Recovery-Services-Vaults',
-    category: 'migrate',
+    category: 'management + governance',
     hasPricingData: true,
     pricingServiceName: 'Backup',
     isUsageBased: true,

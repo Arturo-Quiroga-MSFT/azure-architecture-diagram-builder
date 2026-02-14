@@ -2051,7 +2051,7 @@ function App() {
                       setGeneratedWithModel(null);
                       setValidationResult(null);
                       setDeploymentGuide(null);
-                      setTitleBlockData({ name: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+                      setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
                     }
                   }}
                   className="btn btn-secondary"

@@ -12,7 +12,7 @@ interface WorkflowPanelProps {
   workflow: WorkflowStep[];
   onServiceHover?: (serviceIds: string[]) => void;
   onServiceLeave?: () => void;
-  forceCollapsed?: boolean;
+  forceCollapsed?: number;
 }
 
 const WorkflowPanel: React.FC<WorkflowPanelProps> = ({ 

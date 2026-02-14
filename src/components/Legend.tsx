@@ -3,7 +3,7 @@ import { Zap, DollarSign } from 'lucide-react';
 import './Legend.css';
 
 interface LegendProps {
-  forceCollapsed?: boolean;
+  forceCollapsed?: number;
 }
 
 const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
