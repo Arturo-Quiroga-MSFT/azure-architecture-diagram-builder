@@ -503,6 +503,50 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   },
   
   // ========================================
+  // Dashboard & Visualization Services
+  // ========================================
+  'Azure Managed Grafana': {
+    displayName: 'Azure Managed Grafana',
+    aliases: ['Managed Grafana', 'Grafana', 'Azure Grafana'],
+    iconFile: '02905-icon-service-Azure-Managed-Grafana',
+    category: 'other',
+    hasPricingData: true,
+    pricingServiceName: 'Azure Managed Grafana',
+    isUsageBased: false,
+    costRange: '$10-300/mo'
+  },
+  'Power BI Embedded': {
+    displayName: 'Power BI Embedded',
+    aliases: ['Power BI', 'PowerBI', 'Power BI Dashboard', 'PBI'],
+    iconFile: '03332-icon-service-Power-BI-Embedded',
+    category: 'analytics',
+    hasPricingData: true,
+    pricingServiceName: 'Power BI Embedded',
+    isUsageBased: false,
+    costRange: '$735-4,700/mo'
+  },
+  'Azure Dashboard': {
+    displayName: 'Azure Dashboard',
+    aliases: ['Azure Portal Dashboard', 'Dashboard', 'Azure Monitor Dashboard'],
+    iconFile: '02488-icon-service-Azure-Monitor-Dashboard',
+    category: 'other',
+    hasPricingData: false,
+    pricingServiceName: 'Azure Dashboard',
+    isUsageBased: false,
+    costRange: 'Free'
+  },
+  'Azure Workbooks': {
+    displayName: 'Azure Workbooks',
+    aliases: ['Workbooks', 'Monitor Workbooks', 'Azure Monitor Workbooks'],
+    iconFile: '02189-icon-service-Azure-Workbooks',
+    category: 'analytics',
+    hasPricingData: false,
+    pricingServiceName: 'Azure Workbooks',
+    isUsageBased: false,
+    costRange: 'Free (data costs apply)'
+  },
+  
+  // ========================================
   // IoT Services
   // ========================================
   'IoT Hub': {

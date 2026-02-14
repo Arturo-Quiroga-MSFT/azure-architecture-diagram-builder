@@ -183,7 +183,8 @@ LAYOUT READABILITY — CRITICAL:
 9. **Hub-and-spoke for monitoring.** Do NOT draw individual edges from every service to Log Analytics or Azure Monitor. Instead, connect ONLY the primary compute service to Azure Monitor, then a SINGLE edge from Azure Monitor to Log Analytics. Maximum 2-3 edges involving monitoring services total.
 10. **Limit total connections to 12-18.** Only include connections that represent the PRIMARY data or control flow. Omit obvious implicit relationships (e.g., every service using Key Vault — show only 1 representative Key Vault edge). Omit diagnostic/telemetry edges except the hub-and-spoke pattern in rule 9.
 11. **Minimize cross-group edges.** Place tightly-coupled services in the SAME group. If two services exchange data frequently, they belong together. Cross-group connections cause visual clutter — aim for no more than 1-2 outgoing edges per group to other groups.
-12. **Total service count: 8-12 max** unless the user's description explicitly names more services. Include every service the user mentions. Only add EXTRA security/identity services (Key Vault, Entra ID, DDoS, WAF) beyond what the user asked for when the architecture critically depends on them.`;
+12. **Total service count: 8-12 max** unless the user's description explicitly names more services. Include every service the user mentions. Only add EXTRA security/identity services (Key Vault, Entra ID, DDoS, WAF) beyond what the user asked for when the architecture critically depends on them.
+13. **Dashboard & visualization services.** When the user mentions dashboards, reporting, visualization, or analytics UIs, include a dedicated visualization service such as Azure Managed Grafana, Power BI Embedded, Azure Dashboard, or Azure Workbooks — do NOT substitute a generic compute/web service for the dashboard role.`;
 
   try {
     const messages = [
