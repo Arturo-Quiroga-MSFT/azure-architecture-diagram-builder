@@ -23,6 +23,49 @@ export interface ModelOverride {
   reasoningEffort: ReasoningEffort;
 }
 
+/**
+ * Fallback to Chat Completions API when Responses API doesn't support the model.
+ */
+async function callChatCompletionsFallback(
+  deployment: string,
+  messages: any[],
+  maxTokens: number,
+  signal?: AbortSignal
+): Promise<{ content: string; usage: any; model: string }> {
+  const url = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-12-01-preview`;
+
+  const requestBody: any = {
+    messages,
+    max_tokens: maxTokens,
+    response_format: { type: 'json_object' },
+  };
+
+  console.log(`🔄 Falling back to Chat Completions API | deployment: ${deployment} | max_tokens: ${maxTokens}`);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': apiKey,
+    },
+    body: JSON.stringify(requestBody),
+    ...(signal ? { signal } : {}),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('❌ Chat Completions fallback error:', response.status, error);
+    throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
+  }
+
+  const data = await response.json();
+  return {
+    content: data.choices?.[0]?.message?.content || '',
+    usage: data.usage || {},
+    model: data.model,
+  };
+}
+
 async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): Promise<CallResult> {
   // Use explicit model override if provided, otherwise read from store
   const storeSettings = getModelSettingsForFeature('architectureGeneration');
@@ -90,6 +133,25 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
 
     if (!response.ok) {
       const error = await response.text();
+
+      // Auto-fallback to Chat Completions for models that don't support Responses API
+      if (response.status === 400 && error.includes('not supported by Responses API')) {
+        console.warn(`⚠️ ${modelConfig.displayName} does not support Responses API — falling back to Chat Completions API`);
+        const fallback = await callChatCompletionsFallback(deployment, messages, modelConfig.maxCompletionTokens, controller.signal);
+        const fallbackElapsed = Math.round(performance.now() - startTime);
+        const usage = fallback.usage;
+        return {
+          content: fallback.content,
+          metrics: {
+            promptTokens: usage.prompt_tokens || 0,
+            completionTokens: usage.completion_tokens || 0,
+            totalTokens: usage.total_tokens || 0,
+            elapsedTimeMs: fallbackElapsed,
+            model: fallback.model,
+          }
+        };
+      }
+
       console.error('Azure OpenAI API error:', response.status, error);
       if (response.status === 401) {
         throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
@@ -391,6 +453,50 @@ If the image is not an architecture diagram or is unclear, describe what you can
 
     if (!response.ok) {
       const error = await response.text();
+
+      // Auto-fallback to Chat Completions for models that don't support Responses API
+      if (response.status === 400 && error.includes('not supported by Responses API')) {
+        console.warn(`⚠️ ${modelConfig.displayName} does not support Responses API for image analysis — falling back to Chat Completions API`);
+        const chatUrl = `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-12-01-preview`;
+        const chatBody = {
+          messages: [
+            { role: 'system', content: systemPrompt },
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: 'Analyze this architecture diagram and provide a detailed description that captures all services, connections, groupings, and data flows shown. Be specific and thorough.' },
+                { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageBase64}` } }
+              ]
+            }
+          ],
+          max_tokens: 4000,
+        };
+        const chatResponse = await fetch(chatUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'api-key': apiKey },
+          body: JSON.stringify(chatBody),
+          signal: controller.signal,
+        });
+        const chatElapsed = Math.round(performance.now() - startTime);
+        if (!chatResponse.ok) {
+          const chatError = await chatResponse.text();
+          throw new Error(`Azure OpenAI API error (${chatResponse.status}): ${chatError}`);
+        }
+        const chatData = await chatResponse.json();
+        const chatContent = chatData.choices?.[0]?.message?.content || '';
+        const chatUsage = chatData.usage || {};
+        return {
+          description: chatContent,
+          metrics: {
+            promptTokens: chatUsage.prompt_tokens || 0,
+            completionTokens: chatUsage.completion_tokens || 0,
+            totalTokens: chatUsage.total_tokens || 0,
+            elapsedTimeMs: chatElapsed,
+            model: chatData.model,
+          }
+        };
+      }
+
       console.error('Azure OpenAI Vision API error:', response.status, error);
       
       if (response.status === 401) {
