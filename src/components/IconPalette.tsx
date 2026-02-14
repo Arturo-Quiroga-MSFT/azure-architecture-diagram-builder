@@ -3,8 +3,16 @@ import { Search, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { iconCategories, loadIconsFromCategory, AzureIcon, loadIcon } from '../utils/iconLoader';
 import './IconPalette.css';
 
-const IconPalette: React.FC = () => {
+interface IconPaletteProps {
+  forceCollapsed?: boolean;
+}
+
+const IconPalette: React.FC<IconPaletteProps> = ({ forceCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (forceCollapsed) setIsCollapsed(true);
+  }, [forceCollapsed]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['ai + machine learning']));
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryIcons, setCategoryIcons] = useState<Map<string, AzureIcon[]>>(new Map());

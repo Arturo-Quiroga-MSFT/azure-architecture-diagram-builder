@@ -30,22 +30,12 @@ ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MI
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/server ./server
-
-# Copy Azure icons to dist for production serving
-COPY --from=build /app/Azure_Public_Service_Icons ./dist/Azure_Public_Service_Icons
-
-ENV NODE_ENV=production
-ENV PORT=80
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/Azure_Public_Service_Icons /usr/share/nginx/html/Azure_Public_Service_Icons
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-CMD ["node", "server/index.js"]
+CMD ["nginx", "-g", "daemon off;"]

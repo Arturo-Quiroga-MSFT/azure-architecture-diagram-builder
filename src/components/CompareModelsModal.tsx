@@ -213,6 +213,23 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                 </button>
               ))}
             </div>
+            <div className="compare-sample-prompts">
+              {[
+                'A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS, Bastion for VM access, and Microsoft Entra ID with Conditional Access',
+                'An industrial IoT platform with 5,000+ sensors, real-time anomaly detection, IoT Hub for ingestion, Stream Analytics for processing, and Azure ML for predictive models',
+                'A healthcare data platform with FHIR API, HIPAA-compliant storage, real-time patient monitoring, Azure Health Data Services, and Power BI for clinical dashboards',
+                'A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing'
+              ].map((sample) => (
+                <button
+                  key={sample}
+                  className="compare-sample-chip"
+                  onClick={() => setPrompt(sample)}
+                  disabled={isRunning}
+                >
+                  {sample}
+                </button>
+              ))}
+            </div>
             <textarea
               className="compare-prompt"
               placeholder="Describe the Azure architecture you want to compare across models..."

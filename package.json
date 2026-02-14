@@ -5,27 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "PORT=8787 node server/index.js",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "node server/index.js",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "@azure/cosmos": "^4.9.0",
-    "@azure/identity": "^4.0.1",
     "@azure/openai": "^2.0.0",
     "@types/dagre": "^0.7.53",
-    "cors": "^2.8.5",
     "dagre": "^0.8.5",
-    "dotenv": "^16.4.5",
     "elkjs": "^0.11.0",
-    "express": "^4.19.2",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.294.0",
-    "nanoid": "^5.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reactflow": "^11.10.4"

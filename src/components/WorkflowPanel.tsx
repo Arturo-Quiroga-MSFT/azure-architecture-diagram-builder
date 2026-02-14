@@ -12,14 +12,20 @@ interface WorkflowPanelProps {
   workflow: WorkflowStep[];
   onServiceHover?: (serviceIds: string[]) => void;
   onServiceLeave?: () => void;
+  forceCollapsed?: boolean;
 }
 
 const WorkflowPanel: React.FC<WorkflowPanelProps> = ({ 
   workflow, 
   onServiceHover, 
-  onServiceLeave 
+  onServiceLeave,
+  forceCollapsed 
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  React.useEffect(() => {
+    if (forceCollapsed) setIsExpanded(false);
+  }, [forceCollapsed]);
 
   if (!workflow || workflow.length === 0) return null;
 

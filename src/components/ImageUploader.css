@@ -30,7 +30,7 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fafafa;
+  background: #eff6ff;
   min-height: 140px;
   display: flex;
   align-items: center;
@@ -183,4 +183,40 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Dark mode */
+body.dark-mode .image-uploader-header {
+  color: #f3f4f6;
+}
+
+body.dark-mode .optional-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+body.dark-mode .upload-prompt {
+  color: #d1d5db;
+}
+
+body.dark-mode .upload-prompt p {
+  color: #f3f4f6;
+}
+
+body.dark-mode .upload-prompt .upload-icon {
+  color: #d1d5db;
+}
+
+body.dark-mode .upload-hint {
+  color: #9ca3af;
+}
+
+body.dark-mode .image-drop-zone {
+  background: #1e2a3a;
+  border-color: #3b5068;
+}
+
+body.dark-mode .image-drop-zone:hover:not(.disabled):not(.has-image) {
+  background: #1e2440;
+  border-color: #8B5CF6;
 }

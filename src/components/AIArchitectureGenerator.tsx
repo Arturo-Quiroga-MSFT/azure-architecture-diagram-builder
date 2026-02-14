@@ -52,20 +52,55 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     return { description: result.description };
   };
 
-  const examplePrompts = [
-    "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images",
-    "A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS services, Bastion for VM access, Microsoft Entra ID with Conditional Access, and Microsoft Defender for Cloud — segmented into DMZ, application, and data tiers",
-    "A security operations center architecture with Microsoft Sentinel for SIEM, Log Analytics, Microsoft Defender for Cloud, Azure Key Vault, Azure Monitor, automation playbooks with Logic Apps, and integration with Microsoft Entra ID for identity threat detection",
-    "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling",
-    "A microservices architecture with container apps, API gateway, message queue, and Redis cache",
-    "A machine learning pipeline with data ingestion, training, and inference endpoints",
-    "An intelligent customer service chatbot using Azure OpenAI for conversations, Language for sentiment analysis, Speech Services for voice input/output, and Translator for multi-language support, with chat history in Cosmos DB and API Management for external access",
-    "A smart document processing platform that uses Computer Vision to analyze uploaded images, Document Intelligence to extract form data, Language to classify and summarize content, all coordinated through Azure Functions with results stored in Cosmos DB and searchable via Cognitive Search",
-    "A content moderation system for social media using Computer Vision to scan images, Language for text analysis and content safety checks, Azure OpenAI for context understanding, with real-time processing via Event Hubs and results stored in SQL Database with API Management exposing moderation APIs",
-    "A global multiplayer game backend supporting 500,000+ concurrent players across 5 regions with sub-50ms latency requirements, real-time matchmaking with skill-based ranking, persistent player profiles and inventory, anti-cheat telemetry processing, live events and seasonal content delivery, social features including friends lists and chat, using PlayFab for game services, Cosmos DB with multi-region writes for player data, SignalR Service for real-time websockets, Event Hubs for gameplay telemetry, Azure Functions for game logic, CDN for asset delivery, API Management with rate limiting, and Application Insights with custom gaming metrics",
-    "A Black Friday-ready e-commerce platform handling 50,000 orders/hour peak with real-time inventory sync across 12 regional warehouses, ML-powered fraud detection scoring each transaction in under 200ms, personalized recommendations engine, multi-currency payment processing with PCI-DSS compliance, abandoned cart recovery workflows, using Azure Kubernetes Service for microservices, Cosmos DB for product catalog with global distribution, Redis Cache for session and cart state, Service Bus for order orchestration, Azure Functions for inventory webhooks, Cognitive Search for faceted product search, and CDN with dynamic site acceleration",
-    "A HIPAA-compliant healthcare data platform integrating EHR systems via HL7 FHIR R4 APIs, medical imaging PACS with DICOM support storing 500TB of radiology images, real-time clinical decision support, patient portal with secure messaging, audit logging for all PHI access, disaster recovery with 15-minute RPO, using Azure API for FHIR, Azure Health Data Services for DICOM, Blob Storage with immutable retention for images, Cosmos DB for patient timelines, Azure Functions for HL7v2 to FHIR transformation, Logic Apps for clinical workflows, Key Vault for encryption key management, and Microsoft Defender for Cloud for continuous compliance monitoring",
-    "An eventing architecture for healthcare imaging with high throughput (50,000-75,000 events/sec), large payloads up to 10MB, strict message ordering, cloud-to-on-prem bridging via VPN Gateway, managed services only (no self-managed Kafka), 99.99% availability SLO, supporting 250M studies, 2.5M daily volume, 5M daily notifications, with Event Hubs for ingestion, Service Bus for routing, Azure Functions for processing, Cosmos DB for metadata, Blob Storage for images, and Log Analytics for monitoring"
+  const categorizedPrompts = [
+    {
+      category: 'Web & Microservices',
+      color: '#3b82f6',
+      prompts: [
+        "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images",
+        "A microservices architecture with container apps, API gateway, message queue, and Redis cache",
+      ],
+    },
+    {
+      category: 'Security & Networking',
+      color: '#ef4444',
+      prompts: [
+        "A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS services, Bastion for VM access, Microsoft Entra ID with Conditional Access, and Microsoft Defender for Cloud — segmented into DMZ, application, and data tiers",
+        "A security operations center architecture with Microsoft Sentinel for SIEM, Log Analytics, Microsoft Defender for Cloud, Azure Key Vault, Azure Monitor, automation playbooks with Logic Apps, and integration with Microsoft Entra ID for identity threat detection",
+      ],
+    },
+    {
+      category: 'IoT',
+      color: '#14b8a6',
+      prompts: [
+        "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling",
+      ],
+    },
+    {
+      category: 'AI & Cognitive',
+      color: '#8b5cf6',
+      prompts: [
+        "A machine learning pipeline with data ingestion, training, and inference endpoints",
+        "An intelligent customer service chatbot using Azure OpenAI for conversations, Language for sentiment analysis, Speech Services for voice input/output, and Translator for multi-language support, with chat history in Cosmos DB and API Management for external access",
+        "A smart document processing platform that uses Computer Vision to analyze uploaded images, Document Intelligence to extract form data, Language to classify and summarize content, all coordinated through Azure Functions with results stored in Cosmos DB and searchable via Cognitive Search",
+        "A content moderation system for social media using Computer Vision to scan images, Language for text analysis and content safety checks, Azure OpenAI for context understanding, with real-time processing via Event Hubs and results stored in SQL Database with API Management exposing moderation APIs",
+      ],
+    },
+    {
+      category: 'E-commerce',
+      color: '#f59e0b',
+      prompts: [
+        "A Black Friday-ready e-commerce platform handling 50,000 orders/hour peak with real-time inventory sync across 12 regional warehouses, ML-powered fraud detection scoring each transaction in under 200ms, personalized recommendations engine, multi-currency payment processing with PCI-DSS compliance, abandoned cart recovery workflows, using Azure Kubernetes Service for microservices, Cosmos DB for product catalog with global distribution, Redis Cache for session and cart state, Service Bus for order orchestration, Azure Functions for inventory webhooks, Cognitive Search for faceted product search, and CDN with dynamic site acceleration",
+      ],
+    },
+    {
+      category: 'Healthcare',
+      color: '#22c55e',
+      prompts: [
+        "A HIPAA-compliant healthcare data platform integrating EHR systems via HL7 FHIR R4 APIs, medical imaging PACS with DICOM support storing 500TB of radiology images, real-time clinical decision support, patient portal with secure messaging, audit logging for all PHI access, disaster recovery with 15-minute RPO, using Azure API for FHIR, Azure Health Data Services for DICOM, Blob Storage with immutable retention for images, Cosmos DB for patient timelines, Azure Functions for HL7v2 to FHIR transformation, Logic Apps for clinical workflows, Key Vault for encryption key management, and Microsoft Defender for Cloud for continuous compliance monitoring",
+        "An eventing architecture for healthcare imaging with high throughput (50,000-75,000 events/sec), large payloads up to 10MB, strict message ordering, cloud-to-on-prem bridging via VPN Gateway, managed services only (no self-managed Kafka), 99.99% availability SLO, supporting 250M studies, 2.5M daily volume, 5M daily notifications, with Event Hubs for ingestion, Service Bus for routing, Azure Functions for processing, Cosmos DB for metadata, Blob Storage for images, and Log Analytics for monitoring",
+      ],
+    },
   ];
 
   const handleGenerate = async () => {
@@ -150,11 +185,11 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
       onGenerate(result, description, autoSnapshot);
       setDescription('');
       
-      // Close modal after successful generation
+      // Close modal shortly after successful generation
       setTimeout(() => {
         setIsOpen(false);
         setAiMetrics(null);
-      }, 25000); // Give user 25 seconds to see the success message
+      }, 7000); // Give user 7 seconds to see the success message
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
     } finally {
@@ -203,22 +238,14 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                 and AI will analyze it to create your architecture.
               </p>
 
-              <ImageUploader
-                onImageAnalyzed={handleImageAnalyzed}
-                onAnalyzing={setIsAnalyzingImage}
-                onError={setError}
-                disabled={isGenerating}
-                analyzeImage={handleAnalyzeImage}
-              />
-
               <div className="form-group">
-                <label htmlFor="architecture-description">Architecture Description</label>
+                <label htmlFor="architecture-description">Architecture Description or Modification</label>
                 <textarea
                   id="architecture-description"
                   className="form-textarea"
                   placeholder={imageAnalyzed 
                     ? "AI has analyzed your diagram. Review the description above, make any adjustments, then click Generate." 
-                    : "Example: I need a web app with a frontend, API backend, SQL database, and blob storage..."}
+                    : "Describe a new architecture or request changes to the current diagram. Example: I need a web app with a frontend, API backend, SQL database, and blob storage..."}
                   value={description}
                   onChange={(e) => {
                     setDescription(e.target.value);
@@ -231,6 +258,14 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                   disabled={isGenerating || isAnalyzingImage}
                 />
               </div>
+
+              <ImageUploader
+                onImageAnalyzed={handleImageAnalyzed}
+                onAnalyzing={setIsAnalyzingImage}
+                onError={setError}
+                disabled={isGenerating}
+                analyzeImage={handleAnalyzeImage}
+              />
 
               {error && (
                 <div className="error-message">
@@ -257,15 +292,24 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
               <div className="example-prompts">
                 <h3>Example Prompts</h3>
                 <div className="example-list">
-                  {examplePrompts.map((example, index) => (
-                    <button
-                      key={index}
-                      className="example-button"
-                      onClick={() => useExample(example)}
-                      disabled={isGenerating}
-                    >
-                      {example}
-                    </button>
+                  {categorizedPrompts.map((group) => (
+                    <div key={group.category} className="example-category">
+                      <div className="example-category-label" style={{ color: group.color }}>
+                        <span className="example-category-dot" style={{ backgroundColor: group.color }} />
+                        {group.category}
+                      </div>
+                      {group.prompts.map((prompt, idx) => (
+                        <button
+                          key={idx}
+                          className="example-button"
+                          style={{ borderLeftColor: group.color }}
+                          onClick={() => useExample(prompt)}
+                          disabled={isGenerating}
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
                   ))}
                 </div>
               </div>

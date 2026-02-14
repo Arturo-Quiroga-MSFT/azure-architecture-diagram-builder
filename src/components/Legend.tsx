@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, DollarSign } from 'lucide-react';
 import './Legend.css';
 
-const Legend: React.FC = () => {
+interface LegendProps {
+  forceCollapsed?: boolean;
+}
+
+const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (forceCollapsed) setIsCollapsed(true);
+  }, [forceCollapsed]);
 
   return (
     <div className={`legend ${isCollapsed ? 'collapsed' : ''}`}>

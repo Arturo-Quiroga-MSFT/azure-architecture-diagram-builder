@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Link, Clock, Camera, Loader, GitCompare } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -125,6 +125,7 @@ function App() {
   const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
   const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
+  const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement | null>(null);
@@ -148,16 +149,7 @@ function App() {
   const modelSettingsRef = useRef<HTMLDivElement | null>(null);
   const [stylePreset, setStylePreset] = useState<'detailed' | 'minimal' | 'presentation'>('detailed');
 
-  const [sharedDiagramId, setSharedDiagramId] = useState<string | null>(() => {
-    try {
-      return new URLSearchParams(window.location.search).get('diagram');
-    } catch {
-      return null;
-    }
-  });
-  const [isSharingDiagram, setIsSharingDiagram] = useState(false);
-  const [isLoadingSharedDiagram, setIsLoadingSharedDiagram] = useState(false);
-  const loadedSharedDiagramIdRef = useRef<string | null>(null);
+
 
   const [exportHistory, setExportHistory] = useState<ExportHistoryItem[]>(() => {
     try {
@@ -1047,31 +1039,7 @@ function App() {
     [setNodes, setEdges, reactFlowInstance]
   );
 
-  useEffect(() => {
-    if (!sharedDiagramId) return;
-    if (!reactFlowInstance) return;
-    if (loadedSharedDiagramIdRef.current === sharedDiagramId) return;
 
-    loadedSharedDiagramIdRef.current = sharedDiagramId;
-    setIsLoadingSharedDiagram(true);
-
-    (async () => {
-      try {
-        const resp = await fetch(`/api/diagrams/${encodeURIComponent(sharedDiagramId)}`);
-        if (!resp.ok) {
-          throw new Error(`Failed to load shared diagram (${resp.status})`);
-        }
-        const doc = await resp.json();
-        const flow = doc?.flow ?? doc;
-        applyFlowObject(flow);
-      } catch (e) {
-        console.error('Failed to load shared diagram:', e);
-        alert('Failed to load shared diagram link.');
-      } finally {
-        setIsLoadingSharedDiagram(false);
-      }
-    })();
-  }, [sharedDiagramId, reactFlowInstance, applyFlowObject]);
 
   // Load version from URL hash (for "Open in New Tab" feature)
   useEffect(() => {
@@ -1093,59 +1061,7 @@ function App() {
     }
   }, [applyFlowObject]);
 
-  const shareDiagram = useCallback(async () => {
-    if (!reactFlowInstance) return;
 
-    setIsSharingDiagram(true);
-    try {
-      const flow = reactFlowInstance.toObject();
-      const resp = await fetch('/api/diagrams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          flow: {
-            ...flow,
-            metadata: {
-              ...titleBlockData,
-              savedAt: new Date().toISOString(),
-            },
-            workflow: workflow.length > 0 ? workflow : undefined,
-            architecturePrompt: architecturePrompt || undefined,
-          },
-          title: titleBlockData.architectureName,
-        }),
-      });
-
-      if (!resp.ok) {
-        throw new Error(`Failed to save (${resp.status})`);
-      }
-
-      const json = await resp.json();
-      const id = String(json?.id || '').trim();
-      if (!id) throw new Error('Missing id from backend');
-
-      // Update URL (without reload) and copy share link.
-      loadedSharedDiagramIdRef.current = id;
-      setSharedDiagramId(id);
-
-      const nextUrl = new URL(window.location.href);
-      nextUrl.searchParams.set('diagram', id);
-      window.history.replaceState(null, '', nextUrl.toString());
-
-      const shareUrl = `${window.location.origin}${window.location.pathname}?diagram=${encodeURIComponent(id)}`;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('Share link copied to clipboard.');
-      } catch {
-        alert(`Share link:\n${shareUrl}`);
-      }
-    } catch (e) {
-      console.error('Failed to share diagram:', e);
-      alert('Failed to share diagram. Is the backend running?');
-    } finally {
-      setIsSharingDiagram(false);
-    }
-  }, [reactFlowInstance, titleBlockData, workflow, architecturePrompt]);
 
   const loadDiagram = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1668,6 +1584,9 @@ function App() {
       })
       .catch(err => console.error('❌ Failed to initialize pricing for AI nodes:', err));
 
+    // Collapse all panels to maximize diagram view
+    setPanelsCollapsedSignal(prev => prev + 1);
+
     // Fit view after a short delay to allow nodes to render
     setTimeout(() => {
       if (reactFlowInstance) {
@@ -1885,6 +1804,8 @@ function App() {
         result.diagramImageDataUrl = diagramImageDataUrl;
       }
       setValidationResult(result);
+      // Collapse panels to maximize diagram view
+      setPanelsCollapsedSignal(prev => prev + 1);
     } catch (error: any) {
       console.error('Validation error:', error);
       alert(`Failed to validate architecture: ${error.message}`);
@@ -1984,7 +1905,7 @@ function App() {
                   }}
                 />
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-compare-models"
                   onClick={() => setIsCompareModelsOpen(true)}
                   title="Compare architecture output across multiple AI models"
                 >
@@ -2009,15 +1930,7 @@ function App() {
                   <Save size={18} />
                   Save
                 </button>
-                <button
-                  onClick={shareDiagram}
-                  className="btn btn-secondary"
-                  title={isLoadingSharedDiagram ? 'Loading shared diagram…' : 'Save to cloud and copy shareable URL'}
-                  disabled={isSharingDiagram || isLoadingSharedDiagram}
-                >
-                  <Link size={18} />
-                  {isSharingDiagram ? 'Sharing…' : 'Share'}
-                </button>
+
                 <label className="btn btn-secondary" title="Load diagram">
                   <Upload size={18} />
                   Load
@@ -2127,6 +2040,24 @@ function App() {
                   style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
                 >
                   {isDarkMode ? '☀️' : '🌙'}
+                </button>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
+                      setNodes([]);
+                      setEdges([]);
+                      setArchitecturePrompt('');
+                      setWorkflow([]);
+                      setGeneratedWithModel(null);
+                      setValidationResult(null);
+                      setDeploymentGuide(null);
+                      setTitleBlockData({ name: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+                    }
+                  }}
+                  className="btn btn-secondary"
+                  title="Clear diagram and start fresh"
+                >
+                  <RefreshCw size={18} />
                 </button>
               </div>
             </div>
@@ -2451,7 +2382,7 @@ function App() {
       </header>
       
       <div className="workspace">
-        <IconPalette />
+        <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
         
         <div className="canvas-container" ref={reactFlowWrapper}>
           <ReactFlow
@@ -2580,7 +2511,7 @@ function App() {
                 elapsedTimeMs={generatedWithModel.timeMs}
               />
             )}
-            <Legend />
+            <Legend forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
           </ReactFlow>
           <AlignmentToolbar 
             selectedNodes={nodes.filter(n => n.selected)}
@@ -2592,6 +2523,7 @@ function App() {
             workflow={workflow}
             onServiceHover={(serviceIds) => setHighlightedServices(serviceIds)}
             onServiceLeave={() => setHighlightedServices([])}
+            forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined}
           />
         )}
         
