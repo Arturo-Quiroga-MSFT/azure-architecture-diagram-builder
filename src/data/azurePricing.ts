@@ -18,6 +18,8 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Static Web App': 'Static Web Apps',
   'Function App': 'Azure Functions',
   'Function Apps': 'Azure Functions',
+  'Azure Functions': 'Azure Functions',
+  'Functions': 'Azure Functions',
   'Logic Apps': 'Logic Apps',
   'Logic App': 'Logic Apps',
   'API Management': 'API Management',
@@ -98,6 +100,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   
   // Analytics
   'Stream Analytics': 'Azure Stream Analytics',
+  'Azure Stream Analytics': 'Azure Stream Analytics',
   'Data Factory': 'Azure Data Factory',
   'Azure Data Factory': 'Azure Data Factory',
   'Synapse Analytics': 'Azure Synapse Analytics',
@@ -402,6 +405,18 @@ export const FALLBACK_PRICING: Record<string, {
     premium: 318.70, // Premium EP2
     unit: 'per instance/month'
   },
+  'Azure Functions': {
+    basic: 0, // Consumption plan
+    standard: 159.35, // Premium EP1
+    premium: 318.70, // Premium EP2
+    unit: 'per instance/month'
+  },
+  'Functions': {
+    basic: 0, // Consumption plan
+    standard: 159.35, // Premium EP1
+    premium: 318.70, // Premium EP2
+    unit: 'per instance/month'
+  },
   'Virtual Machines': {
     basic: 29.20, // B2s
     standard: 70.08, // D2s_v3
@@ -695,6 +710,18 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 5.00, // Estimated for typical usage
     premium: 50.00, // High volume
     unit: 'per pipeline/month'
+  },
+  'Stream Analytics': {
+    basic: 80.30, // 1 SU (Standard)
+    standard: 80.30, // 1 SU (Standard)
+    premium: 481.80, // 6 SUs
+    unit: 'per streaming unit/month'
+  },
+  'Azure Stream Analytics': {
+    basic: 80.30, // 1 SU (Standard)
+    standard: 80.30, // 1 SU (Standard)
+    premium: 481.80, // 6 SUs
+    unit: 'per streaming unit/month'
   },
   'Event Hubs': {
     basic: 11.28, // Basic tier
