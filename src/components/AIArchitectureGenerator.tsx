@@ -189,7 +189,7 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
       setTimeout(() => {
         setIsOpen(false);
         setAiMetrics(null);
-      }, 7000); // Give user 7 seconds to see the success message
+      }, 45000); // Give user 45 seconds to review results or type a modification
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
     } finally {

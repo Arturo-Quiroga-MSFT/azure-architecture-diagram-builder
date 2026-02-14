@@ -24,7 +24,7 @@
 
 ## 📖 Overview
 
-Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **GPT-5.2, GPT-4.1, and GPT-4.1 Mini** (Azure OpenAI), it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, and Infrastructure as Code generation.
+Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **GPT-5.2, GPT-5.2 Codex, GPT-4.1, and GPT-4.1 Mini** (Azure OpenAI), it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, and Infrastructure as Code generation.
 
 ### Why This Tool?
 
@@ -332,18 +332,60 @@ npm run dev
 5. **Open your browser**
 Navigate to `http://localhost:3000`
 
-### Docker Deployment
+### Docker Deployment (Local)
 
 ```bash
-# Build the image
-docker build -t azure-diagram-builder .
+# Build the image (Vite vars must be build args, not runtime env vars)
+docker build -t azure-diagram-builder \
+  --build-arg VITE_AZURE_OPENAI_ENDPOINT="..." \
+  --build-arg VITE_AZURE_OPENAI_API_KEY="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI="..." .
 
 # Run locally
-docker run -p 80:80 \
-  -e VITE_AZURE_OPENAI_ENDPOINT="..." \
-  -e VITE_AZURE_OPENAI_API_KEY="..." \
-  -e VITE_AZURE_OPENAI_DEPLOYMENT="..." \
-  azure-diagram-builder
+docker run -p 80:80 azure-diagram-builder
+```
+
+### Azure Container Apps Deployment
+
+```bash
+# 1. Copy and fill in your .env
+cp .env.example .env
+
+# 2. Deploy (reads all config from .env)
+./scripts/deploy_aca.sh
+```
+
+See `.env.example` for all required variables including `ACR_NAME`, `ACA_APP_NAME`, `RESOURCE_GROUP`, and model deployments.
+
+### Securing with Entra ID (Optional)
+
+To restrict access to specific users:
+
+```bash
+# 1. Create App Registration
+az ad app create --display-name "My Diagram Builder Auth" \
+  --sign-in-audience AzureADMyOrg \
+  --web-redirect-uris "https://<your-aca-fqdn>/.auth/login/aad/callback" \
+  --enable-id-token-issuance true
+
+# 2. Create client secret
+az ad app credential reset --id <APP_ID> --years 1
+
+# 3. Enable ACA auth
+az containerapp auth microsoft update -g <RG> -n <APP> \
+  --client-id <APP_ID> --client-secret <SECRET> \
+  --issuer "https://login.microsoftonline.com/<TENANT_ID>/v2.0" --yes
+
+# 4. Require login
+az containerapp auth update -g <RG> -n <APP> \
+  --unauthenticated-client-action RedirectToLoginPage
+
+# 5. Restrict to specific users
+az ad sp create --id <APP_ID>
+az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
+# Then assign users via Azure Portal > Enterprise Applications > Users and groups
 ```
 
 ---
@@ -410,8 +452,7 @@ docker run -p 80:80 \
 | **Frontend** | React 18, TypeScript, React Flow, Vite |
 | **AI** | Azure OpenAI (GPT-5.2, GPT-4.1, GPT-4.1 Mini), Reasoning Models |
 | **Styling** | CSS3, html-to-image |
-| **Backend** | Node.js, Express (optional API server) |
-| **Storage** | Azure Cosmos DB, Azure Blob Storage |
+| **Serving** | nginx:alpine (Docker), Vite dev server (local) |
 | **APIs** | Azure Retail Prices API |
 | **Export** | JSZip, Draw.io XML format |
 | **Deployment** | Docker, Azure Container Apps |
@@ -455,7 +496,9 @@ azure-diagrams/
 │   │   ├── layoutPresets.ts  # Reference architectures (460 lines)
 │   │   └── modelNaming.ts    # Model display names (76 lines)
 │   └── App.tsx               # Main application (2,735 lines)
-├── server/                   # Backend API (Express.js, port 8787)
+├── scripts/                  # Deployment scripts
+│   ├── deploy_aca.sh         # Configurable ACA deployment (reads from .env)
+│   └── update_aca.sh         # Author's ACA deployment (hardcoded resources)
 ├── Azure_Public_Service_Icons/  # 713 official Azure icons (29 categories)
 ├── DOCS/                     # Documentation
 └── Dockerfile               # Container configuration
@@ -475,15 +518,38 @@ azure-diagrams/
 
 ## 🌟 What's New
 
-### February 2026
+### February 14, 2026 — UI Polish, Auth & Deployment
+- **Entra ID Authentication** — ACA built-in auth with per-user assignment (no code changes needed)
+- **Configurable Deploy Script** — New `scripts/deploy_aca.sh` reads all config from `.env` — clone, configure, deploy
+- **GPT-5.2 Codex Deployment Support** — Added to Dockerfile and deploy pipeline
+- **Compare Models Button Styling** — Amber gradient with pulse animation, dark mode compatible
+- **Remove Share Feature** — Removed broken Share button, Express server, and Cosmos DB backend
+- **Categorized AI Prompts** — 6 color-coded categories (Web, Security, IoT, AI, E-commerce, Healthcare) replacing flat list
+- **Dark Mode Improvements** — Full dark mode support for AI modal, image uploader, form elements
+- **Auto-Collapse Panels** — Icon palette, workflow panel, and legend collapse after AI generation
+- **Start Fresh Button** — One-click reset with confirmation to clear entire diagram state
+- **Compare Models Verbose Prompts** — 8 sample prompts (4 concise + 4 detailed enterprise scenarios)
+- **Form UX Improvements** — Textarea above image upload, purple/blue fill colors, improved labels
+- **Dockerfile Optimized** — Switched from Node.js server to nginx:alpine static serving
+- **Sidebar Search Fix** — Icon search now works across all categories
+- **Azure Backup Icon Fix** — Corrected category mapping
+- **Stream Analytics Alias Fix** — Corrected icon resolution
+- **Power BI Embedded Pricing** — Added missing pricing data
+- **Azure Functions & Stream Analytics Pricing** — Added regional pricing data
+- **Dashboard Services** — Added Power BI, Grafana, Azure Dashboard to icon mapping
+
+### February 2026 — Core Features
 - **Architecture Image Import** — Upload diagram images for AI-powered recreation
 - **Workflow Animation Panel** — Step-by-step data flow visualization with service highlighting
-- **Multi-Model Support** — GPT-5.2, GPT-4.1, GPT-4.1 Mini with per-feature overrides
+- **Multi-Model Support** — GPT-5.2, GPT-5.2 Codex, GPT-4.1, GPT-4.1 Mini with per-feature overrides
+- **Responses API Migration** — All API calls migrated from Chat Completions to Responses API
 - **Model Selector UI** — Toolbar dropdown with reasoning effort configuration
 - **Model Comparison Reports** — Side-by-side architecture quality analysis across all models
 - **Bicep Templates** — IaC generation in deployment guides
 - **Reasoning Effort** — Configurable AI thinking depth (GPT-5.2: low/medium/high)
 - **Smart Layout Engine** — Dagre-based auto-layout with group overlap resolution
+- **ELK.js Layout Engine** — Alternative layout with toggle
+- **Microsoft Logo** — Added to header banner
 - **12 AI Layout Rules** — Directional flow, hub-and-spoke, connection caps, cross-group edge minimization
 - **Auto-Snapshot** — Automatic version save before AI regeneration
 - **13 Curated Example Prompts** — Security, healthcare, gaming, e-commerce, IoT, AI services
@@ -491,6 +557,9 @@ azure-diagrams/
 - **Resizable Group Nodes** — Drag handles to adjust group boundaries
 - **Iterative Regeneration** — Regenerate with selected WAF improvements applied
 - **Security-Focused Prompts** — Zero Trust, SOC, and enterprise security scenarios
+- **ModelBadge** — Shows which AI model generated the current diagram
+- **Chat Completions Fallback** — Automatic fallback for models not supporting Responses API
+- **Two-Row Toolbar** — Split toolbar for better fit on normal-width windows
 
 ### January 2026
 - **WAF Validation** — Well-Architected Framework checks across all 5 pillars
