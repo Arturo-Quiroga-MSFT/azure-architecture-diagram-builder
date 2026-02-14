@@ -1,0 +1,61 @@
+.model-badge {
+  position: absolute;
+  bottom: 70px;
+  left: 380px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #0078d4;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.78rem;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.15);
+  z-index: 1000;
+  user-select: none;
+  cursor: grab;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  transition: box-shadow 0.2s;
+}
+
+.model-badge.dragging {
+  cursor: grabbing;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+  z-index: 1001;
+}
+
+.model-badge-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.model-badge-text strong {
+  color: #0078d4;
+  font-weight: 600;
+}
+
+.model-badge-time {
+  color: #888;
+  font-size: 0.72rem;
+  padding-left: 4px;
+  border-left: 1px solid #ddd;
+}
+
+/* Dark Mode */
+body.dark-mode .model-badge {
+  background: rgba(45, 45, 45, 0.92);
+  border-color: #60a5fa;
+  color: #e0e0e0;
+}
+
+body.dark-mode .model-badge-text strong {
+  color: #60a5fa;
+}
+
+body.dark-mode .model-badge-time {
+  color: #999;
+  border-left-color: #555;
+}

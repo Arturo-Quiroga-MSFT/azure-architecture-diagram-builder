@@ -20,6 +20,7 @@ import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
 import TitleBlock from './components/TitleBlock';
+import ModelBadge from './components/ModelBadge';
 import Legend from './components/Legend';
 import EditableEdge from './components/EditableEdge';
 import AlignmentToolbar from './components/AlignmentToolbar';
@@ -42,6 +43,7 @@ import { formatMonthlyCost } from './utils/pricingHelpers';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
+import { MODEL_CONFIG } from './stores/modelSettingsStore';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import { exportAndDownloadDrawio } from './services/drawioExporter';
 import {
@@ -117,6 +119,7 @@ function App() {
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+  const [generatedWithModel, setGeneratedWithModel] = useState<{ name: string; timeMs?: number } | null>(null);
 
   // Version History State
   const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
@@ -1250,6 +1253,7 @@ function App() {
       setEdges([]);
       setArchitecturePrompt('');
       setWorkflow([]);
+      setGeneratedWithModel(null);
       // setShowWorkflow(false);
 
       // Store the prompt and workflow for display
@@ -1620,6 +1624,18 @@ function App() {
     console.log(`Setting ${newNodes.length} nodes and ${newEdges.length} edges`);
     setNodes(newNodes);
     setEdges(newEdges);
+
+    // Set the model badge from metrics
+    if (architecture.metrics) {
+      const modelKey = Object.keys(MODEL_CONFIG).find(
+        k => MODEL_CONFIG[k as keyof typeof MODEL_CONFIG].deploymentEnvVar &&
+             import.meta.env[MODEL_CONFIG[k as keyof typeof MODEL_CONFIG].deploymentEnvVar] === architecture.metrics.model
+      );
+      const displayName = modelKey
+        ? MODEL_CONFIG[modelKey as keyof typeof MODEL_CONFIG].displayName
+        : architecture.metrics.model || 'AI';
+      setGeneratedWithModel({ name: displayName, timeMs: architecture.metrics.elapsedTimeMs });
+    }
 
     // Initialize pricing for all service nodes asynchronously (uses active region)
     const currentRegion = getActiveRegion();
@@ -2558,6 +2574,12 @@ function App() {
               date={titleBlockData.date}
               onUpdate={(data) => setTitleBlockData({ ...titleBlockData, ...data })}
             />
+            {generatedWithModel && (
+              <ModelBadge
+                modelName={generatedWithModel.name}
+                elapsedTimeMs={generatedWithModel.timeMs}
+              />
+            )}
             <Legend />
           </ReactFlow>
           <AlignmentToolbar 
