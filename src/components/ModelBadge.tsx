@@ -48,16 +48,16 @@ const ModelBadge: React.FC<ModelBadgeProps> = ({ modelName, elapsedTimeMs }) => 
   return (
     <div
       ref={badgeRef}
-      className={`model-badge ${isDragging ? 'dragging' : ''}`}
+      className={`model-generation-badge ${isDragging ? 'dragging' : ''}`}
       style={style}
       onMouseDown={handleMouseDown}
     >
-      <span className="model-badge-icon">🤖</span>
-      <span className="model-badge-text">
+      <span className="model-generation-badge-icon">🤖</span>
+      <span className="model-generation-badge-text">
         Generated with <strong>{modelName}</strong>
       </span>
       {elapsedTimeMs != null && (
-        <span className="model-badge-time">
+        <span className="model-generation-badge-time">
           {(elapsedTimeMs / 1000).toFixed(1)}s
         </span>
       )}

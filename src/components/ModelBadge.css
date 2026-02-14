@@ -1,4 +1,4 @@
-.model-badge {
+.model-generation-badge {
   position: absolute;
   bottom: 70px;
   left: 380px;
@@ -21,23 +21,23 @@
   transition: box-shadow 0.2s;
 }
 
-.model-badge.dragging {
+.model-generation-badge.dragging {
   cursor: grabbing;
   box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
   z-index: 1001;
 }
 
-.model-badge-icon {
+.model-generation-badge-icon {
   font-size: 0.9rem;
   line-height: 1;
 }
 
-.model-badge-text strong {
+.model-generation-badge-text strong {
   color: #0078d4;
   font-weight: 600;
 }
 
-.model-badge-time {
+.model-generation-badge-time {
   color: #888;
   font-size: 0.72rem;
   padding-left: 4px;
@@ -45,17 +45,17 @@
 }
 
 /* Dark Mode */
-body.dark-mode .model-badge {
+body.dark-mode .model-generation-badge {
   background: rgba(45, 45, 45, 0.92);
   border-color: #60a5fa;
   color: #e0e0e0;
 }
 
-body.dark-mode .model-badge-text strong {
+body.dark-mode .model-generation-badge-text strong {
   color: #60a5fa;
 }
 
-body.dark-mode .model-badge-time {
+body.dark-mode .model-generation-badge-time {
   color: #999;
   border-left-color: #555;
 }
