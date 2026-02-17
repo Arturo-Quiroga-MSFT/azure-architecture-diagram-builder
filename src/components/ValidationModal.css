@@ -561,3 +561,69 @@
 .finding-item.selected .finding-header {
   background-color: #dbeafe;
 }
+
+/* --------------------------------------------------------------------------
+   Dark Mode Support
+   -------------------------------------------------------------------------- */
+
+body.dark-mode .loading-content h3 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .loading-description {
+  color: #9ca3af;
+}
+
+body.dark-mode .pillars-info {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+body.dark-mode .pillars-info h4 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .pillars-list li {
+  color: #d1d5db;
+}
+
+body.dark-mode .pillars-list li strong {
+  color: #f3f4f6;
+}
+
+body.dark-mode .modal-loading p {
+  color: #9ca3af;
+}
+
+body.dark-mode .validation-modal .modal-header h2 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .validation-modal .modal-header {
+  border-bottom-color: #444;
+}
+
+body.dark-mode .validation-score {
+  background: #2a2a2a;
+}
+
+body.dark-mode .score-summary h3 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .score-summary p {
+  color: #9ca3af;
+}
+
+body.dark-mode .finding-item {
+  border-color: #444;
+}
+
+body.dark-mode .finding-item.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-left-color: #3b82f6;
+}
+
+body.dark-mode .finding-item.selected .finding-header {
+  background-color: rgba(59, 130, 246, 0.15);
+}
