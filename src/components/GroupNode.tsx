@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
-import { NodeProps, NodeResizer } from 'reactflow';
-import { Palette } from 'lucide-react';
+import { NodeProps, NodeResizer, useReactFlow } from 'reactflow';
+import { Palette, Minimize2 } from 'lucide-react';
 import './GroupNode.css';
 
 // Predefined color palette for groups
@@ -70,11 +70,48 @@ const getGroupColors = (label: string): { bg: string; border: string; header: st
   return { bg: 'rgba(107, 114, 128, 0.20)', border: '#6b7280', header: '#6b7280' };
 };
 
-const GroupNode: React.FC<NodeProps> = memo(({ data, selected }) => {
+const GroupNode: React.FC<NodeProps> = memo(({ id, data, selected }) => {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [label, setLabel] = useState(data.label || 'Group');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customColor, setCustomColor] = useState(data.customColor || null);
+  const { getNodes, setNodes } = useReactFlow();
+
+  const handleFitToContent = () => {
+    const allNodes = getNodes();
+    const children = allNodes.filter(n => n.parentNode === id);
+    if (children.length === 0) return;
+
+    const padding = 40;
+    const headerHeight = 50;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    children.forEach(child => {
+      const x = child.position.x;
+      const y = child.position.y;
+      const w = child.width || 160;
+      const h = child.height || 100;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + w);
+      maxY = Math.max(maxY, y + h);
+    });
+
+    const offsetX = minX - padding;
+    const offsetY = minY - padding - headerHeight;
+    const newWidth = (maxX - minX) + padding * 2;
+    const newHeight = (maxY - minY) + padding * 2 + headerHeight;
+
+    setNodes(nds => nds.map(n => {
+      if (n.id === id) {
+        return { ...n, style: { ...n.style, width: newWidth, height: newHeight } };
+      }
+      if (n.parentNode === id) {
+        return { ...n, position: { x: n.position.x - offsetX, y: n.position.y - offsetY } };
+      }
+      return n;
+    }));
+  };
 
   const handleLabelDoubleClick = () => {
     setIsEditingLabel(true);
@@ -144,6 +181,14 @@ const GroupNode: React.FC<NodeProps> = memo(({ data, selected }) => {
               {label}
             </div>
           )}
+          <button
+            className="fit-to-content-button"
+            onClick={handleFitToContent}
+            title="Fit to content"
+            style={{ color: colors.header }}
+          >
+            <Minimize2 size={16} />
+          </button>
           <button
             className="color-picker-button"
             onClick={() => setShowColorPicker(!showColorPicker)}

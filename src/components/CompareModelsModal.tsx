@@ -26,7 +26,7 @@ interface ComparisonResult {
 interface CompareModelsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (architecture: any, prompt: string) => void;
+  onApply: (architecture: any, prompt: string, sourceModel?: ModelType, sourceReasoningEffort?: ReasoningEffort) => void;
 }
 
 const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose, onApply }) => {
@@ -115,7 +115,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
 
   const handleApply = (result: ComparisonResult) => {
     if (result.architecture) {
-      onApply(result.architecture, prompt);
+      onApply(result.architecture, prompt, result.model, result.reasoningEffort);
       onClose();
     }
   };

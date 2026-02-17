@@ -3,16 +3,30 @@
  * Generates consistent model suffixes for comparing outputs across different models
  */
 
-import { getModelSettings, MODEL_CONFIG, ReasoningEffort } from '../stores/modelSettingsStore';
+import { getModelSettings, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
+
+// Override model info set when a diagram is applied from Compare Models
+let _overrideModel: ModelType | null = null;
+let _overrideReasoning: ReasoningEffort | null = null;
 
 /**
- * Get the model abbreviation from current settings
- * Returns: gpt52, gpt41, gpt41mini
+ * Set a model override for filename generation (used after applying from Compare Models)
  */
-export function getModelAbbreviation(): string {
-  const settings = getModelSettings();
-  
-  switch (settings.model) {
+export function setSourceModel(model: ModelType, reasoningEffort: ReasoningEffort): void {
+  _overrideModel = model;
+  _overrideReasoning = reasoningEffort;
+}
+
+/**
+ * Clear the model override so filenames use the main UI selector again
+ */
+export function clearSourceModel(): void {
+  _overrideModel = null;
+  _overrideReasoning = null;
+}
+
+function abbreviateModel(model: ModelType): string {
+  switch (model) {
     case 'gpt-5.2':
       return 'gpt52';
     case 'gpt-5.2-codex':
@@ -27,6 +41,18 @@ export function getModelAbbreviation(): string {
 }
 
 /**
+ * Get the model abbreviation from current settings (or override)
+ * Returns: gpt52, gpt41, gpt41mini
+ */
+export function getModelAbbreviation(): string {
+  if (_overrideModel) {
+    return abbreviateModel(_overrideModel);
+  }
+  const settings = getModelSettings();
+  return abbreviateModel(settings.model);
+}
+
+/**
  * Get the current reasoning effort level from settings
  */
 export function getReasoningEffort(): ReasoningEffort {
@@ -38,8 +64,8 @@ export function getReasoningEffort(): ReasoningEffort {
  * Check if current model is a reasoning model (GPT-5.2)
  */
 export function isReasoningModel(): boolean {
-  const settings = getModelSettings();
-  return MODEL_CONFIG[settings.model].isReasoning;
+  const model = _overrideModel || getModelSettings().model;
+  return MODEL_CONFIG[model].isReasoning;
 }
 
 /**
@@ -53,7 +79,7 @@ export function getModelSuffix(): string {
   const model = getModelAbbreviation();
   
   if (isReasoningModel()) {
-    const reasoning = getReasoningEffort();
+    const reasoning = _overrideReasoning || getReasoningEffort();
     return `${model}-${reasoning}`;
   }
   

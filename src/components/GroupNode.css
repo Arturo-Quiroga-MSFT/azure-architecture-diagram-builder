@@ -39,6 +39,23 @@
   justify-content: space-between;
 }
 
+.fit-to-content-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.fit-to-content-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 .color-picker-button {
   background: transparent;
   border: none;

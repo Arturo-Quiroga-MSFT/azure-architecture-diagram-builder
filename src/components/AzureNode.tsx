@@ -37,13 +37,8 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   const [label, setLabel] = useState(data.label || 'Azure Service');
   const { setNodes } = useReactFlow();
   
-// Access parentNode from data (React Flow stores it there)
+  // Access parentNode from data (React Flow stores it there)
   const parentNode = data.parentNode;
-
-  // Debug: Check if parentNode prop is being received
-  useEffect(() => {
-    console.log('AzureNode render:', { id, label, parentNode, selected });
-  }, [id, label, parentNode, selected]);
 
   // Extract pricing data
   const pricing = data.pricing as NodePricingConfig | undefined;
@@ -52,7 +47,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   
   // Extract style preset
   const stylePreset = (data as any).stylePreset || 'detailed';
-  const showLabels = stylePreset !== 'minimal';
+  const showLabels = true; // Always show labels
   const showPricing = stylePreset === 'detailed';
 
   useEffect(() => {
@@ -125,7 +120,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   };
 
   return (
-    <div className={`azure-node ${selected ? 'selected' : ''}`} style={borderStyle}>
+    <div className={`azure-node ${selected ? 'selected' : ''} style-${stylePreset}`} style={borderStyle}>
       {parentNode && selected && (
         <button
           className="ungroup-button"
@@ -185,7 +180,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
           </div>
         )}
         {iconUrl ? (
-          <img src={iconUrl} alt={label} className="node-icon" />
+          <img src={iconUrl} alt={label} className={`node-icon ${stylePreset === 'presentation' ? 'node-icon--presentation' : ''}`} />
         ) : (
           <div className="node-icon-placeholder">
             <div className="loading-spinner"></div>
@@ -255,6 +250,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
 prevProps.data.parentNode === nextProps.data.parentNode &&
     prevProps.data.label === nextProps.data.label &&
     prevProps.data.iconPath === nextProps.data.iconPath &&
+    prevProps.data.stylePreset === nextProps.data.stylePreset &&
     JSON.stringify(prevProps.data.pricing) === JSON.stringify(nextProps.data.pricing)
   );
 });

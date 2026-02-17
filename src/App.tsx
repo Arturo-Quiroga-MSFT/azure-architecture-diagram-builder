@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -53,7 +53,7 @@ import {
   type LayoutEdgeStyle,
   type LayoutEngineType,
 } from './utils/layoutPresets';
-import { generateModelFilename } from './utils/modelNaming';
+import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
@@ -147,7 +147,7 @@ function App() {
 
   const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
   const modelSettingsRef = useRef<HTMLDivElement | null>(null);
-  const [stylePreset, setStylePreset] = useState<'detailed' | 'minimal' | 'presentation'>('detailed');
+  const [stylePreset, setStylePreset] = useState<'detailed' | 'presentation'>('detailed');
 
 
 
@@ -512,7 +512,7 @@ function App() {
   }, [nodes]);
 
   // Style preset functions
-  const applyStylePreset = useCallback((preset: 'detailed' | 'minimal' | 'presentation') => {
+  const applyStylePreset = useCallback((preset: 'detailed' | 'presentation') => {
     setStylePreset(preset);
 
     // Update nodes with style data
@@ -534,21 +534,20 @@ function App() {
         const nextLabelBgStyle: any = { ...(edge.labelBgStyle ?? {}) };
 
         switch (preset) {
-          case 'minimal':
-            nextStyle.strokeWidth = 1;
-            nextLabelStyle.opacity = 0;
-            nextLabelBgStyle.fillOpacity = 0;
-            nextLabelBgStyle.strokeWidth = 0;
-            break;
           case 'presentation':
-            nextStyle.strokeWidth = 2;
+            nextStyle.strokeWidth = 2.5;
+            delete nextStyle.strokeDasharray;
             nextLabelStyle.opacity = 1;
+            nextLabelStyle.fontSize = 15;
+            nextLabelStyle.fontWeight = '600';
             nextLabelBgStyle.fillOpacity = 0.95;
-            nextLabelBgStyle.strokeWidth = 1.5;
+            nextLabelBgStyle.strokeWidth = 2;
+            nextLabelBgStyle.rx = 6;
             break;
           case 'detailed':
           default:
             delete nextStyle.strokeWidth;
+            delete nextStyle.strokeDasharray;
             nextLabelStyle.opacity = 1;
             nextLabelBgStyle.fillOpacity = 0.9;
             nextLabelBgStyle.strokeWidth = 1.5;
@@ -1620,6 +1619,7 @@ function App() {
         const { generateArchitectureFromARM } = await import('./services/azureOpenAI');
         const result = await generateArchitectureFromARM(armTemplate);
         
+        clearSourceModel();
         handleAIGenerate(result, `ARM Template: ${file.name}`);
       } catch (error: any) {
         console.error('ARM template parsing error:', error);
@@ -1897,7 +1897,10 @@ function App() {
                   Add Group
                 </button>
                 <AIArchitectureGenerator 
-                  onGenerate={handleAIGenerate}
+                  onGenerate={(arch, prompt, autoSnap) => {
+                    clearSourceModel();
+                    handleAIGenerate(arch, prompt, autoSnap);
+                  }}
                   currentArchitecture={{
                     nodes,
                     edges,
@@ -2300,16 +2303,6 @@ function App() {
                         Detailed (Default)
                       </button>
                       <button
-                        className={`toolbar-dropdown-item ${stylePreset === 'minimal' ? 'active' : ''}`}
-                        role="menuitem"
-                        onClick={() => applyStylePreset('minimal')}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                        </svg>
-                        Minimal (Clean)
-                      </button>
-                      <button
                         className={`toolbar-dropdown-item ${stylePreset === 'presentation' ? 'active' : ''}`}
                         role="menuitem"
                         onClick={() => applyStylePreset('presentation')}
@@ -2323,12 +2316,20 @@ function App() {
                       <div className="toolbar-dropdown-separator" role="separator" />
                       <div className="toolbar-dropdown-hint">
                         {stylePreset === 'detailed' && 'Shows all labels, pricing, and details'}
-                        {stylePreset === 'minimal' && 'Hides labels and pricing for cleaner view'}
                         {stylePreset === 'presentation' && 'Professional look with bold connections'}
                       </div>
                     </div>
                   )}
                 </div>
+
+                <button
+                  onClick={() => setPanelsCollapsedSignal(prev => prev + 1)}
+                  className="btn btn-secondary"
+                  title="Collapse all panels for maximum diagram space"
+                >
+                  <PanelLeftClose size={18} />
+                  Focus
+                </button>
               </div>
 
               <div className="toolbar-group">
@@ -2638,6 +2639,15 @@ CRITICAL INSTRUCTIONS:
 5. Maintain and extend the logical grouping structure - create new groups as needed for new service categories
 6. Ensure the architecture implements the selected recommendations
 
+MULTI-REGION RESILIENCY — CRITICAL:
+When a recommendation involves multi-region, failover, geo-redundancy, or disaster recovery:
+- **ADD DUPLICATE SERVICES** in a secondary region. For example, if the primary has "API Management", add a second node "API Management (Secondary)" in a separate region group.
+- **CREATE REGION GROUPS**: Replace a single "Application & AI" group with "Primary Region (East US)" and "Secondary Region (West US)" groups, each containing their own instances of the affected services.
+- **SHOW FAILOVER ROUTING**: Add Azure Front Door or Traffic Manager as the entry point that routes to both regional deployments via origin groups or priority routing.
+- **DATABASE REPLICATION**: For Cosmos DB, add a second node "Azure Cosmos DB (Replica)" in the secondary region group with a replication connection between the two.
+- **DO NOT just change edge labels** to mention "primary" or "failover" — that is NOT implementing multi-region. You must ADD actual service nodes in a secondary region.
+- Target 14-18 services total for multi-region architectures (roughly double the region-scoped services).
+
 SERVICE MAPPING — CRITICAL:
 - When adding private endpoints or Private Link, add "Azure Private Link" as an explicit service node AND "Azure DNS" for private DNS resolution. Connect source services → Azure Private Link → target PaaS services.
 - When adding WAF capabilities, add "Web Application Firewall" as a service node if not already covered by Application Gateway or Azure Front Door.
@@ -2649,7 +2659,7 @@ LAYOUT RULES:
 8. For monitoring: connect ONLY the primary compute service to Azure Monitor, then a SINGLE edge to Log Analytics. Maximum 2-3 monitoring edges total.
 9. Arrange groups in directional flow: Ingress → Application → Data (left-to-right). Security at bottom-left, Monitoring at bottom-right.
 10. Minimize cross-group edges. Place tightly-coupled services in the SAME group. Aim for 1-2 outgoing edges per group.
-11. Total service count: 8-12 max. Only add security/identity services when the recommendations explicitly require them.
+11. Total service count: 8-18 depending on complexity. Multi-region architectures will have more services. Only add security/identity services when the recommendations explicitly require them.
 
 Return the IMPROVED architecture in the same JSON format as before with proper group assignments.`;
 
@@ -2708,7 +2718,12 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
       <CompareModelsModal
         isOpen={isCompareModelsOpen}
         onClose={() => setIsCompareModelsOpen(false)}
-        onApply={(architecture, prompt) => handleAIGenerate(architecture, prompt, true)}
+        onApply={(architecture, prompt, sourceModel, sourceReasoningEffort) => {
+          if (sourceModel && sourceReasoningEffort) {
+            setSourceModel(sourceModel, sourceReasoningEffort);
+          }
+          handleAIGenerate(architecture, prompt, true);
+        }}
       />
     </div>
   );

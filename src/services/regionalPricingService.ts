@@ -171,6 +171,7 @@ export function getAvailableServices(_region: AzureRegion): string[] {
     'Container Instances',
     'Application Gateway',
     'Azure Machine Learning',
+    'Azure Cognitive Search',
   ];
 }
 

@@ -386,3 +386,50 @@ body.dark-mode .ungroup-button svg {
 body.dark-mode .ungroup-button:hover svg {
   color: #111827;
 }
+
+/* ==============================
+   STYLE PRESETS
+   ============================== */
+
+/* --- Presentation (Professional) --- */
+.azure-node.style-presentation {
+  padding: 16px 20px;
+  min-width: 150px;
+  border-radius: 12px;
+  border-left-width: 6px !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.azure-node.style-presentation .node-icon,
+.azure-node.style-presentation .node-icon--presentation {
+  width: 56px;
+  height: 56px;
+}
+
+.azure-node.style-presentation .node-label {
+  font-size: 1.05rem;
+  font-weight: 600;
+  max-width: 180px;
+  color: #1a1a2e;
+}
+
+.azure-node.style-presentation .node-content {
+  gap: 10px;
+}
+
+.azure-node.style-presentation:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode overrides for presets */
+body.dark-mode .azure-node.style-presentation {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .azure-node.style-presentation .node-label {
+  color: #1a1a2e;
+}

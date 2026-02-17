@@ -139,6 +139,11 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Translator Text': 'Translator',
   'Custom Vision': 'Custom Vision',
   'Content Safety': 'Content Safety',
+  'Azure Cognitive Search': 'Azure Cognitive Search',
+  'Cognitive Search': 'Azure Cognitive Search',
+  'Azure AI Search': 'Azure Cognitive Search',
+  'AI Search': 'Azure Cognitive Search',
+  'Azure Search': 'Azure Cognitive Search',
   
   // Identity & Security
   'Active Directory': 'Azure Active Directory',
@@ -249,6 +254,10 @@ export const USAGE_BASED_SERVICES = [
   'OpenAI',
   'Custom Vision',
   'Content Safety',
+  'Azure Cognitive Search',
+  'Cognitive Search',
+  'Azure AI Search',
+  'AI Search',
   // IoT
   'IoT Hub',
   'Azure IoT Hub',
@@ -351,6 +360,10 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Translator': 'Standard',
   'Custom Vision': 'Standard',
   'Content Safety': 'Standard',
+  'Azure Cognitive Search': 'Basic',
+  'Cognitive Search': 'Basic',
+  'Azure AI Search': 'Basic',
+  'AI Search': 'Basic',
   // IoT
   'IoT Hub': 'S1',
   'Azure IoT Hub': 'S1',
@@ -919,6 +932,30 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 200.00, // Estimated typical usage
     premium: 2000.00, // High volume
     unit: 'per resource/month'
+  },
+  'Azure Cognitive Search': {
+    basic: 73.73, // Basic tier ($0.101/hr × 730hrs)
+    standard: 245.28, // Standard S1 ($0.336/hr × 730hrs)
+    premium: 1962.24, // Standard S3 ($2.688/hr × 730hrs)
+    unit: 'per instance/month'
+  },
+  'Cognitive Search': {
+    basic: 73.73,
+    standard: 245.28,
+    premium: 1962.24,
+    unit: 'per instance/month'
+  },
+  'Azure AI Search': {
+    basic: 73.73,
+    standard: 245.28,
+    premium: 1962.24,
+    unit: 'per instance/month'
+  },
+  'AI Search': {
+    basic: 73.73,
+    standard: 245.28,
+    premium: 1962.24,
+    unit: 'per instance/month'
   },
   // IoT Services
   'IoT Hub': {
