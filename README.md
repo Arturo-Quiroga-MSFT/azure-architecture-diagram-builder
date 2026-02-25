@@ -9,7 +9,7 @@
 
 **A professional AI-powered tool for designing, validating, and deploying Azure cloud architectures**
 
-[Live Demo](https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io) • [Short Link](https://aka.ms/azure-adb) • [Documentation](DOCS/ARCHITECTURE.md) • [Report Bug](../../issues)
+[Live Demo](https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io) • [Short Link](https://aka.ms/diagram-builder) • [Documentation](DOCS/ARCHITECTURE.md) • [Report Bug](../../issues)
 
 </div>
 
