@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Pricing Helper Utilities
  * Formatters, converters, and region helpers for pricing data

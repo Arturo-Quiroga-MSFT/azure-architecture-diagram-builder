@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Azure Service Pricing Mappings
  * Maps our service types to Azure Retail Prices API service names

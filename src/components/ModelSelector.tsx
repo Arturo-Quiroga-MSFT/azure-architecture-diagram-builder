@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Model Selector Component
  * Allows users to select AI model and reasoning effort level

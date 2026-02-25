@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React, { useState } from 'react';
 import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';

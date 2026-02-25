@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Layout Engine - Automatic graph layout using Dagre
  * Replaces LLM-based positioning with deterministic algorithms

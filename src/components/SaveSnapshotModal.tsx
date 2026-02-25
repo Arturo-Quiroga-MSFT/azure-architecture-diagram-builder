@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React, { useState } from 'react';
 import { X, Camera } from 'lucide-react';
 import './SaveSnapshotModal.css';

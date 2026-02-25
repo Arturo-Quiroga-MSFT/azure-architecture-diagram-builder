@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React, { memo, useState } from 'react';
 import { NodeProps, NodeResizer, useReactFlow } from 'reactflow';
 import { Palette, Minimize2 } from 'lucide-react';

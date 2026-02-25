@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Model naming utilities for file exports
  * Generates consistent model suffixes for comparing outputs across different models

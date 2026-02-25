@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Deployment Guide Generator Agent
  * Uses GPT-5-2 to generate comprehensive deployment documentation

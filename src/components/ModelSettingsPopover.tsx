@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Model Settings Popover
  * Toolbar dropdown for AI model selection across all features.

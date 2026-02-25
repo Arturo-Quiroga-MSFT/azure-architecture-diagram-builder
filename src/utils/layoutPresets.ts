@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import type { Edge, Node } from 'reactflow';
 import { relayoutDiagram } from './layoutEngine';
 import { relayoutDiagram as elkRelayoutDiagram } from './elkLayoutEngine';

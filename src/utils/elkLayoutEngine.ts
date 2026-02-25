@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * ELK Layout Engine - Automatic graph layout using ELK.js
  * Alternative to Dagre for hierarchical layout with compound node support.

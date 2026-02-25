@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Local Pricing Service
  * Now delegates to Regional Pricing Service for multi-region support

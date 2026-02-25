@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, Image, X, Loader2 } from 'lucide-react';
 import './ImageUploader.css';

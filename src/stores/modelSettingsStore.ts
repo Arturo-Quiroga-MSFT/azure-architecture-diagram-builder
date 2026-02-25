@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Model Settings Store
  * Manages AI model selection and reasoning effort preferences

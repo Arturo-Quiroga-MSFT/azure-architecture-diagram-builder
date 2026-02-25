@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Version Storage Service
  * Manages diagram version history using IndexedDB for local persistence

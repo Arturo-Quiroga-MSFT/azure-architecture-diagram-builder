@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Service to Icon Mapping
  * Maps Azure service names to their icon files and indicates pricing data availability

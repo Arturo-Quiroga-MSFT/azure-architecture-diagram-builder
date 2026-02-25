@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Azure Pricing Service
  * Fetches pricing data from Azure Retail Prices API with intelligent caching

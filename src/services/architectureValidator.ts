@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Architecture Validator Agent
  * Uses GPT-5-2 to validate architecture against Azure Well-Architected Framework

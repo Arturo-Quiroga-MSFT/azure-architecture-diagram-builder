@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 /**
  * Regional Pricing Service
  * Manages loading and querying pricing data for different Azure regions

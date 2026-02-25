@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 declare module 'gifshot' {
   interface GifshotOptions {
     images?: string[];
