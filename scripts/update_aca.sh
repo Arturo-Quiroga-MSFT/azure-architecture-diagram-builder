@@ -39,7 +39,8 @@ export $(cat .env | grep -v '^#' | xargs) && az acr build --registry acrazuredia
     --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52" \
     --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41" \
     --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI" \
-    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX" . \
+    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX" \
+    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX" . \
 && az containerapp update --name azure-diagram-builder \
     --resource-group azure-diagrams-rg \
     --image acrazurediagrams1767583743.azurecr.io/azure-diagram-builder:latest \
