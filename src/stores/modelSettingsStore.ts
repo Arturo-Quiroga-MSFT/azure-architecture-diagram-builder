@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-4.1' | 'gpt-4.1-mini';
+export type ModelType = 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-4.1' | 'gpt-4.1-mini';
 export type ReasoningEffort = 'low' | 'medium' | 'high';
 
 /**
@@ -108,6 +108,13 @@ export const MODEL_CONFIG: Record<ModelType, {
     isReasoning: true,
     maxCompletionTokens: 16000,
     description: 'Optimized for code generation - ideal for Bicep/IaC'
+  },
+  'gpt-5.3-codex': {
+    displayName: 'GPT-5.3 Codex',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX',
+    isReasoning: true,
+    maxCompletionTokens: 16000,
+    description: 'Latest codex model - enhanced reasoning and code generation'
   },
 
 };
