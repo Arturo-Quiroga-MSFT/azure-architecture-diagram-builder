@@ -32,7 +32,10 @@ function env(plain: string, vite?: string): string | undefined {
   return process.env[plain] ?? (vite ? process.env[vite] : undefined);
 }
 
-const ENDPOINT = env("AZURE_OPENAI_ENDPOINT", "VITE_AZURE_OPENAI_ENDPOINT");
+// Strip any trailing path segments so both "https://x.openai.azure.com/" and
+// "https://x.openai.azure.com/openai/v1/" work as input.
+const RAW_ENDPOINT = env("AZURE_OPENAI_ENDPOINT", "VITE_AZURE_OPENAI_ENDPOINT");
+const ENDPOINT = RAW_ENDPOINT?.replace(/\/openai\/v1\/?$/, "/").replace(/\/+$/, "");
 const API_KEY = env("AZURE_OPENAI_API_KEY", "VITE_AZURE_OPENAI_API_KEY");
 
 // ---------------------------------------------------------------------------
@@ -190,7 +193,7 @@ async function callAzureOpenAI(
 
   const deployment = getDeployment(model);
   const cfg = MODEL_CONFIG[model];
-  const url = `${ENDPOINT.replace(/\/$/, "")}/openai/v1/responses`;
+  const url = `${ENDPOINT}/openai/v1/responses`;
 
   const body: Record<string, unknown> = {
     model: deployment,
