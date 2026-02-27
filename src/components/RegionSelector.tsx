@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import { setActiveRegion, getActiveRegion, AVAILABLE_REGIONS, AzureRegion, RegionInfo } from '../services/regionalPricingService';
+import { trackRegionChange } from '../services/telemetryService';
 import './RegionSelector.css';
 
 interface RegionSelectorProps {
@@ -17,6 +18,7 @@ const RegionSelector: React.FC<RegionSelectorProps> = ({ onRegionChange }) => {
     setSelectedRegion(region);
     setActiveRegion(region);
     setIsOpen(false);
+    trackRegionChange(region);
     
     if (onRegionChange) {
       onRegionChange(region);

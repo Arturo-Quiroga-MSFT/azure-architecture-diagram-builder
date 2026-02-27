@@ -57,6 +57,7 @@ import {
   type LayoutEngineType,
 } from './utils/layoutPresets';
 import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
+import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackARMImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh } from './services/telemetryService';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
@@ -879,6 +880,7 @@ function App() {
             link.click();
             URL.revokeObjectURL(url);
             recordExport('png', fileName);
+            trackExport('png', nodes.filter(n => n.type === 'azureNode').length);
           }
         });
       } catch (err) {
@@ -886,7 +888,7 @@ function App() {
         alert('Failed to export diagram. Please try again.');
       }
     }, 800);
-  }, [reactFlowInstance, recordExport]);
+  }, [reactFlowInstance, recordExport, nodes]);
 
   const exportAsSvg = useCallback(async () => {
     if (!reactFlowWrapper.current || !reactFlowInstance) {
@@ -940,18 +942,20 @@ function App() {
         link.click();
         URL.revokeObjectURL(url);
         recordExport('svg', fileName);
+        trackExport('svg', nodes.filter(n => n.type === 'azureNode').length);
       } catch (err) {
         console.error('Error exporting SVG:', err);
         alert('Failed to export SVG. Please try again.');
       }
     }, 800);
-  }, [reactFlowInstance, recordExport]);
+  }, [reactFlowInstance, recordExport, nodes]);
 
   const exportAsDrawio = useCallback(async () => {
     try {
       const diagramName = titleBlockData.architectureName || 'Azure Architecture';
       const fileName = await exportAndDownloadDrawio(nodes, edges, diagramName);
       recordExport('drawio', fileName);
+      trackExport('drawio', nodes.filter(n => n.type === 'azureNode').length);
     } catch (err) {
       console.error('Error exporting Draw.io:', err);
       alert('Failed to export Draw.io file. Please try again.');
@@ -978,7 +982,8 @@ function App() {
     link.setAttribute('download', fileName);
     link.click();
     recordExport('json', fileName);
-  }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt]);
+    trackExport('json', nodes.filter(n => n.type === 'azureNode').length);
+  }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt, nodes]);
 
   const exportCostBreakdown = useCallback(() => {
     // Calculate the cost breakdown
@@ -1001,6 +1006,7 @@ function App() {
     link.click();
     URL.revokeObjectURL(url);
     recordExport('costs', fileName);
+    trackExport('csv', nodes.filter(n => n.type === 'azureNode').length);
   }, [nodes, recordExport]);
 
   const applyFlowObject = useCallback(
@@ -1101,6 +1107,7 @@ function App() {
       }
       
       console.log('✅ Version restored successfully');
+      trackVersionOperation('restore');
     } catch (error) {
       console.error('Failed to restore version:', error);
       alert('Failed to restore version');
@@ -1123,6 +1130,7 @@ function App() {
         }
       );
       console.log('✅ Manual snapshot saved successfully');
+      trackVersionOperation('save');
     } catch (error) {
       console.error('Failed to save manual snapshot:', error);
       throw error;
@@ -1589,6 +1597,16 @@ function App() {
     // Collapse all panels to maximize diagram view
     setPanelsCollapsedSignal(prev => prev + 1);
 
+    // Track architecture generation telemetry
+    trackArchitectureGeneration({
+      promptLength: prompt?.length,
+      serviceCount: services?.length,
+      connectionCount: connections?.length,
+      groupCount: groups?.length,
+      workflowStepCount: workflowSteps?.length,
+      isModification: nodes.length > 0,
+    });
+
     // Fit view after a short delay to allow nodes to render
     setTimeout(() => {
       if (reactFlowInstance) {
@@ -1623,6 +1641,7 @@ function App() {
         const result = await generateArchitectureFromARM(armTemplate);
         
         clearSourceModel();
+        trackARMImport(file.name, armTemplate.resources?.length);
         handleAIGenerate(result, `ARM Template: ${file.name}`);
       } catch (error: any) {
         console.error('ARM template parsing error:', error);
@@ -1807,6 +1826,13 @@ function App() {
         result.diagramImageDataUrl = diagramImageDataUrl;
       }
       setValidationResult(result);
+      trackValidation({
+        model: result.metrics?.model,
+        overallScore: result.overallScore,
+        serviceCount: services.length,
+        findingCount: result.pillars?.reduce((sum: number, p: any) => sum + (p.findings?.length || 0), 0),
+        elapsedTimeMs: result.metrics?.elapsedTimeMs,
+      });
       // Collapse panels to maximize diagram view
       setPanelsCollapsedSignal(prev => prev + 1);
     } catch (error: any) {
@@ -1863,6 +1889,12 @@ function App() {
       );
 
       setDeploymentGuide(guide);
+      trackDeploymentGuide({
+        model: guide.metrics?.model,
+        serviceCount: services.length,
+        bicepFileCount: guide.bicepTemplates?.length,
+        elapsedTimeMs: guide.metrics?.elapsedTimeMs,
+      });
     } catch (error: any) {
       console.error('Guide generation error:', error);
       alert(`Failed to generate deployment guide: ${error.message}`);
@@ -2050,6 +2082,7 @@ function App() {
                 <button
                   onClick={() => {
                     if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
+                      trackStartFresh();
                       setNodes([]);
                       setEdges([]);
                       setArchitecturePrompt('');
@@ -2688,6 +2721,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
               
               // Apply the improved architecture
               await handleAIGenerate(improvedArchitecture, bannerText);
+              trackRecommendationsApplied(selectedFindings.length);
               
               setIsApplyingRecommendations(false);
               alert(`✅ Architecture regenerated successfully!\n\nApplied ${selectedFindings.length} recommendations.\n${newServices.length > 0 ? `\nAdded ${newServices.length} new services: ${newServices.join(', ')}` : ''}`);
@@ -2722,6 +2756,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         isOpen={isCompareModelsOpen}
         onClose={() => setIsCompareModelsOpen(false)}
         onApply={(architecture, prompt, sourceModel, sourceReasoningEffort) => {
+          trackModelComparison({ selectedModel: sourceModel });
           if (sourceModel && sourceReasoningEffort) {
             setSourceModel(sourceModel, sourceReasoningEffort);
           }

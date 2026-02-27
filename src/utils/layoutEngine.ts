@@ -169,9 +169,23 @@ export function layoutArchitecture(
   // Set default edge label
   g.setDefaultEdgeLabel(() => ({}));
   
+  // Build a set of service node IDs to detect collisions with group IDs
+  const serviceIds = new Set(services.map(s => s.id));
+  
+  // Map group IDs to their Dagre node IDs (prefixed if they collide with a service ID)
+  const groupIdMap = new Map<string, string>();
+  groups.forEach(group => {
+    const dagreId = serviceIds.has(group.id) ? `__group__${group.id}` : group.id;
+    if (dagreId !== group.id) {
+      console.warn(`⚠️ Group id "${group.id}" collides with a service id — using "${dagreId}" internally`);
+    }
+    groupIdMap.set(group.id, dagreId);
+  });
+  
   // Add groups as parent nodes first (if any)
   groups.forEach(group => {
-    g.setNode(group.id, {
+    const dagreId = groupIdMap.get(group.id)!;
+    g.setNode(dagreId, {
       label: group.label,
       clusterLabelPos: 'top',
       style: 'fill: none',  // Groups are just containers
@@ -188,7 +202,12 @@ export function layoutArchitecture(
     
     // Link service to its parent group (if any)
     if (service.groupId) {
-      g.setParent(service.id, service.groupId);
+      const parentDagreId = groupIdMap.get(service.groupId);
+      if (parentDagreId) {
+        g.setParent(service.id, parentDagreId);
+      } else {
+        console.warn(`⚠️ Service "${service.id}" references unknown group "${service.groupId}"`);
+      }
     }
   });
   
@@ -218,7 +237,8 @@ export function layoutArchitecture(
   // Get group bounding boxes from Dagre (it calculated them for compound nodes)
   const positionedGroups: PositionedGroup[] = groups
     .map(group => {
-      const groupNode = g.node(group.id);
+      const dagreId = groupIdMap.get(group.id) ?? group.id;
+      const groupNode = g.node(dagreId);
       
       if (!groupNode) {
         console.warn(`  ⚠️ Group ${group.id} not found in graph`);

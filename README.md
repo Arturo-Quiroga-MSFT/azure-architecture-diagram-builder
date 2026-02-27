@@ -119,6 +119,26 @@ Features include:
 | **JSON** | Backup, version control |
 | **CSV** | Cost analysis in Excel |
 
+### 📊 Application Insights Telemetry
+
+- **Automatic tracking** — page views, session duration, unique users, geography
+- **Feature usage events** — every key action is tracked as a custom event:
+  | Event | Properties |
+  |-------|------------|
+  | `Architecture_Generated` | model, reasoning effort, prompt length, service/connection/group counts, elapsed time, tokens |
+  | `Architecture_Validated` | model, overall WAF score, finding count, elapsed time |
+  | `DeploymentGuide_Generated` | model, service count, bicep file count, elapsed time |
+  | `Diagram_Exported` | format (png/svg/drawio/json/csv), service count |
+  | `ARM_Template_Imported` | filename, resource count |
+  | `Image_Imported` | — |
+  | `Models_Compared` | selected model |
+  | `Recommendations_Applied` | recommendation count |
+  | `Version_Operation` | save / restore |
+  | `Region_Changed` | region ID |
+  | `Start_Fresh` | — |
+- **Zero-impact when disabled** — if `VITE_APPINSIGHTS_CONNECTION_STRING` is not set, all tracking calls are no-ops
+- **Privacy-friendly** — no PII collected; anonymous user IDs via cookies
+
 ---
 
 ## 🏗️ Architecture
@@ -251,11 +271,13 @@ graph TB
         pricing[regionalPricingService.ts]
         drawio[drawioExporter.ts]
         modelStore[modelSettingsStore.ts]
+        telemetry[telemetryService.ts]
     end
 
     subgraph External["External APIs"]
         OpenAI[Azure OpenAI API]
         PricingAPI[Azure Retail Prices API]
+        AppInsights[Application Insights]
     end
 
     AIGen --> azureOpenAI
@@ -271,6 +293,7 @@ graph TB
     
     azureOpenAI --> OpenAI
     pricing --> PricingAPI
+    telemetry --> AppInsights
 
     style Frontend fill:#61DAFB,color:#000
     style Services fill:#3178C6,color:#fff
@@ -322,6 +345,10 @@ VITE_REASONING_EFFORT=medium  # none | low | medium | high
 AZURE_COSMOS_ENDPOINT=https://your-cosmos.documents.azure.com:443/
 COSMOS_DATABASE_ID=diagrams
 COSMOS_CONTAINER_ID=diagrams
+
+# Optional: Application Insights telemetry
+# Create an App Insights resource in Azure Portal and paste the connection string
+VITE_APPINSIGHTS_CONNECTION_STRING=InstrumentationKey=...;IngestionEndpoint=...
 ```
 
 4. **Start the development server**
@@ -342,6 +369,9 @@ docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI="..." .
+
+# Optional: include App Insights telemetry
+#   --build-arg VITE_APPINSIGHTS_CONNECTION_STRING="..." \
 
 # Run locally
 docker run -p 80:80 azure-diagram-builder

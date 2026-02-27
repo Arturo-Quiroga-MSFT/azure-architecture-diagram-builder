@@ -6,6 +6,7 @@ import { Sparkles, X, Loader2, Clock, Zap, Brain } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';
 import ImageUploader from './ImageUploader';
 import { useModelSettings, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { trackImageImport } from '../services/telemetryService';
 import './AIArchitectureGenerator.css';
 
 interface AIArchitectureGeneratorProps {
@@ -47,6 +48,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     const prefix = '🖼️ [Analyzed from uploaded diagram]\n\n';
     setDescription(prefix + analyzedDescription);
     setImageAnalyzed(true);
+    trackImageImport();
   };
 
   // Wrapper to pass to ImageUploader

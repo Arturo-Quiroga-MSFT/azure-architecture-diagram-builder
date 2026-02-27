@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",
+    "@microsoft/applicationinsights-web": "^3.3.11",
     "@types/dagre": "^0.7.53",
     "dagre": "^0.8.5",
     "elkjs": "^0.11.0",
