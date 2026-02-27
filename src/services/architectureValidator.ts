@@ -8,6 +8,8 @@
  */
 
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { detectWafPatterns, calculatePreliminaryScore, type PatternDetectionResult } from './wafPatternDetector';
+import { getKnowledgeBaseStats } from '../data/wafRules';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -153,7 +155,15 @@ export interface ArchitectureValidation {
 }
 
 /**
- * Validate architecture against Azure Well-Architected Framework
+ * Validate architecture against Azure Well-Architected Framework.
+ * 
+ * Hybrid approach:
+ *   1. Run instant, deterministic rule-based checks (~1ms)
+ *   2. Send the pre-computed findings + architecture to the LLM for
+ *      contextual refinement, scoring, and additional insights
+ * 
+ * This is ~3-5x faster than sending everything to the LLM from scratch
+ * because the LLM prompt is smaller and more focused.
  */
 export async function validateArchitecture(
   services: Array<{ name: string; type: string; category: string; description?: string }>,
@@ -169,27 +179,54 @@ export async function validateArchitecture(
   const settings = getModelSettingsForFeature('validation');
   const modelConfig = MODEL_CONFIG[settings.model];
 
-  console.log(`🔍 Starting architecture validation with ${modelConfig.displayName}...`);
+  console.log(`🔍 Starting hybrid WAF validation with ${modelConfig.displayName}...`);
 
+  // ── Phase 1: Instant local rule-based analysis ──────────────────────
+  const localResult = detectWafPatterns(services, connections, groups);
+  const preliminaryScore = calculatePreliminaryScore(localResult.findings);
+  const kbStats = getKnowledgeBaseStats();
+  
+  console.log(`⚡ Phase 1 (local): ${localResult.findings.length} findings, preliminary score ${preliminaryScore}/100 (${localResult.elapsedMs}ms)`);
+  console.log(`  📚 Knowledge base: ${kbStats.totalRules} rules across ${kbStats.serviceCount} services`);
+
+  // ── Phase 2: LLM contextual refinement ──────────────────────────────
   // Build architecture context
   const servicesList = services.map(s => `- ${s.name} (${s.type})`).join('\n');
   const connectionsList = connections.map(c => `- ${c.from} → ${c.to}: ${c.label}`).join('\n');
   const groupsList = groups ? groups.map(g => `- ${g.name}`).join('\n') : 'No groups';
   const serviceNamesList = services.map(s => s.name);
 
-  const systemPrompt = `You are an Azure Well-Architected Framework expert. Your role is to review Azure architectures and provide actionable recommendations across the five pillars:
+  // Summarize local findings for the LLM so it doesn't re-discover them
+  const localFindingsSummary = localResult.findings.length > 0
+    ? localResult.findings.map(f =>
+        `[${f.severity.toUpperCase()}] ${f.category}: ${f.issue} → ${f.recommendation}` +
+        (f.resources?.length ? ` (affects: ${f.resources.join(', ')})` : '')
+      ).join('\n')
+    : 'No rule-based findings detected.';
 
-1. **Reliability** - Resiliency, availability, disaster recovery
-2. **Security** - Identity, data protection, network security
-3. **Cost Optimization** - Right-sizing, reserved instances, consumption patterns
-4. **Operational Excellence** - Monitoring, automation, DevOps practices
-5. **Performance Efficiency** - Scaling, caching, optimization
+  const patternsNote = localResult.patternsDetected.length > 0
+    ? `Detected patterns: ${localResult.patternsDetected.join(', ')}`
+    : 'No common anti-patterns detected.';
 
-Analyze the architecture and provide:
-- Overall assessment score (0-100)
-- Findings for each pillar with severity levels
-- Specific, actionable recommendations
-- Quick wins that can be implemented immediately
+  const systemPrompt = `You are an Azure Well-Architected Framework expert performing a focused review.
+
+A rule-based pre-scan has already identified the following findings and patterns:
+
+=== PRE-SCAN RESULTS (${localResult.findings.length} findings, preliminary score: ${preliminaryScore}/100) ===
+${patternsNote}
+${localFindingsSummary}
+=== END PRE-SCAN ===
+
+Your job is to:
+1. **Validate** the pre-scan findings — confirm, adjust severity, or dismiss any that don't apply in context
+2. **Add** contextual findings the rule engine cannot detect (e.g., sub-optimal service pairings, missing best-practice configurations, workload-specific advice)
+3. **Score** each pillar holistically (0-100) combining both the validated pre-scan findings and your additional findings
+4. **Identify** quick wins — high impact, low effort improvements
+
+IMPORTANT:
+- Do NOT simply repeat pre-scan findings verbatim. Instead, refine the wording and add context-specific details.
+- Each finding must include a "source" field: "rule-based" (from pre-scan) or "ai-analysis" (your addition).
+- Focus your energy on contextual/architecture-specific insights the rules couldn't catch.
 
 Return ONLY valid JSON (no markdown) with this structure:
 {
@@ -203,9 +240,10 @@ Return ONLY valid JSON (no markdown) with this structure:
         {
           "severity": "high",
           "category": "High Availability",
-          "issue": "Single region deployment without redundancy",
-          "recommendation": "Deploy across multiple availability zones or implement geo-replication",
-          "resources": ["service-name-1", "service-name-2"]
+          "issue": "...",
+          "recommendation": "...",
+          "resources": ["service-name-1"],
+          "source": "rule-based"
         }
       ]
     }
@@ -214,9 +252,10 @@ Return ONLY valid JSON (no markdown) with this structure:
     {
       "severity": "medium",
       "category": "Cost Optimization",
-      "issue": "Always-on resources that could use consumption pricing",
-      "recommendation": "Switch Azure Functions to Consumption plan for variable workloads",
-      "resources": ["Azure Functions"]
+      "issue": "...",
+      "recommendation": "...",
+      "resources": ["Azure Functions"],
+      "source": "ai-analysis"
     }
   ]
 }`;
@@ -237,16 +276,16 @@ ${groupsList}
 
 IMPORTANT: In the "resources" arrays, use EXACTLY the service names as listed above (e.g., "${serviceNamesList.slice(0, 3).join('", "')}"). Do not rename or rephrase them.
 
-Provide a comprehensive Well-Architected Framework assessment with actionable recommendations.`;
+Provide a focused Well-Architected Framework assessment, building on the pre-scan results.`;
 
   try {
-    console.log('📤 Sending validation request to Azure OpenAI...');
+    console.log('📤 Phase 2: Sending focused validation to Azure OpenAI...');
     const { content, metrics } = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
     ], 8000);
 
-    console.log('✅ Validation response received:', content.length, 'characters');
+    console.log('✅ Hybrid validation response received:', content.length, 'characters');
 
     // Parse JSON response
     let validation: ArchitectureValidation;
@@ -268,9 +307,19 @@ Provide a comprehensive Well-Architected Framework assessment with actionable re
     validation.metrics = metrics;
     validation.modelUsed = modelConfig.displayName + (modelConfig.isReasoning ? ` (${settings.reasoningEffort})` : '');
 
-    console.log('🎯 Validation complete. Overall score:', validation.overallScore);
+    // Attach hybrid metadata
+    (validation as any).hybridMetadata = {
+      localFindings: localResult.findings.length,
+      patternsDetected: localResult.patternsDetected,
+      localElapsedMs: localResult.elapsedMs,
+      preliminaryScore,
+      kbRulesUsed: kbStats.totalRules,
+    };
+
+    console.log('🎯 Hybrid validation complete. Overall score:', validation.overallScore);
     console.log('📊 Pillars analyzed:', validation.pillars.length);
     console.log('⚡ Quick wins identified:', validation.quickWins.length);
+    console.log(`🔬 Hybrid breakdown: ${localResult.findings.length} local + LLM refinement in ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s total`);
 
     return validation;
 

@@ -392,6 +392,34 @@
   color: #3b82f6;
 }
 
+/* Source badges (rule-based vs AI) */
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.source-badge.rule-based {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.source-badge.ai-analysis {
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+/* Hybrid metric badge */
+.hybrid-metric {
+  color: #059669 !important;
+}
+
 .finding-content {
   padding-left: 26px;
 }

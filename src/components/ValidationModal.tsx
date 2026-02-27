@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw, Clock, Zap } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw, Clock, Zap, Database, Cpu } from 'lucide-react';
 import { ArchitectureValidation, ValidationFinding, formatValidationReport } from '../services/architectureValidator';
 import { generateModelFilename } from '../utils/modelNaming';
 import './ValidationModal.css';
@@ -162,8 +162,8 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
             <div className="loading-content">
               <h3>Analyzing architecture against Azure Well-Architected Framework...</h3>
               <p className="loading-description">
-                The Azure Well-Architected Framework (WAF) is a set of guiding principles and best practices 
-                that help you build secure, high-performing, resilient, and efficient cloud architectures.
+                Running hybrid analysis: instant rule-based checks against {'>'}65 curated WAF rules, 
+                followed by AI-powered contextual refinement for architecture-specific insights.
               </p>
               <div className="pillars-info">
                 <h4>Five Pillars of Azure Well-Architected Framework:</h4>
@@ -216,6 +216,12 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
                       <Zap size={14} />
                       {validation.metrics.promptTokens.toLocaleString()} in → {validation.metrics.completionTokens.toLocaleString()} out ({validation.metrics.totalTokens.toLocaleString()} total)
                     </span>
+                    {(validation as any).hybridMetadata && (
+                      <span className="metric hybrid-metric">
+                        <Database size={14} />
+                        {(validation as any).hybridMetadata.localFindings} local rules ({(validation as any).hybridMetadata.localElapsedMs}ms) + AI refinement
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -256,6 +262,12 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
                               <span className={`severity-badge ${finding.severity}`}>
                                 {finding.severity}
                               </span>
+                              {(finding as any).source && (
+                                <span className={`source-badge ${(finding as any).source}`}>
+                                  {(finding as any).source === 'rule-based' ? <Database size={12} /> : <Cpu size={12} />}
+                                  {(finding as any).source === 'rule-based' ? 'Rule' : 'AI'}
+                                </span>
+                              )}
                             </div>
                             <div className="finding-content">
                               <p className="finding-issue"><strong>Issue:</strong> {finding.issue}</p>
