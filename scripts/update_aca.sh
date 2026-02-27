@@ -21,6 +21,7 @@
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT52: GPT-5.2 deployment name (build-time)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT41: GPT-4.1 deployment name (build-time)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI: GPT-4.1-mini deployment name (build-time)
+# - VITE_APPINSIGHTS_CONNECTION_STRING: Application Insights connection string (build-time, optional)
 # - AZURE_COSMOS_ENDPOINT: Cosmos DB endpoint (runtime)
 # - COSMOS_DATABASE_ID: Cosmos DB database ID (runtime)
 # - COSMOS_CONTAINER_ID: Cosmos DB container ID (runtime)
@@ -28,26 +29,52 @@
 # Note: Vite environment variables must be passed as build arguments because they are
 # embedded at build time via import.meta.env, not available at runtime.
 #
+# IMPORTANT — App Insights connection string workaround:
+#   The VITE_APPINSIGHTS_CONNECTION_STRING value contains semicolons (;) which break
+#   `az acr build --build-arg`. ACR Tasks forwards build args to a remote Docker agent
+#   via shell commands, and semicolons are interpreted as shell command separators —
+#   causing "docker build requires exactly 1 argument" errors.
+#
+#   Workaround: This script extracts the connection string from .env into a separate
+#   file (.env.appinsights), which is NOT excluded by .dockerignore. The Dockerfile
+#   then COPYs this file and sources it in the same RUN layer as `npm run build`.
+#   The file is gitignored since it's auto-generated at deploy time.
+#
 # Usage:
 #   ./scripts/update_aca.sh
 #
 
-export $(cat .env | grep -v '^#' | xargs) && az acr build --registry acrazurediagrams1767583743 \
+set -euo pipefail
+
+# Load environment variables (handles semicolons and special chars in values)
+set -a && source .env && set +a
+
+# Extract App Insights connection string to a separate file for Docker build
+# (az acr build --build-arg can't handle semicolons in values)
+grep '^VITE_APPINSIGHTS_CONNECTION_STRING' .env | sed 's/^//' | tr -d '"' > .env.appinsights 2>/dev/null || true
+echo "📎 App Insights env file: $(cat .env.appinsights 2>/dev/null || echo 'not set')"
+
+echo "🚀 Building image in ACR..."
+az acr build --registry acrazurediagrams1767583743 \
     --image azure-diagram-builder:latest \
-    --build-arg VITE_AZURE_OPENAI_ENDPOINT="$VITE_AZURE_OPENAI_ENDPOINT" \
-    --build-arg VITE_AZURE_OPENAI_API_KEY="$VITE_AZURE_OPENAI_API_KEY" \
-    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52" \
-    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41" \
-    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI" \
-    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX" \
-    --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX="$VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX" \
-    --build-arg VITE_APPINSIGHTS_CONNECTION_STRING="$VITE_APPINSIGHTS_CONNECTION_STRING" . \
-&& az containerapp update --name azure-diagram-builder \
+    --build-arg "VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT" \
+    --build-arg "VITE_AZURE_OPENAI_API_KEY=$VITE_AZURE_OPENAI_API_KEY" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT41=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX" \
+    .
+
+echo "🔄 Updating Container App..."
+az containerapp update --name azure-diagram-builder \
     --resource-group azure-diagrams-rg \
     --image acrazurediagrams1767583743.azurecr.io/azure-diagram-builder:latest \
     --set-env-vars \
-        AZURE_COSMOS_ENDPOINT="$AZURE_COSMOS_ENDPOINT" \
-        COSMOS_DATABASE_ID="$COSMOS_DATABASE_ID" \
-        COSMOS_CONTAINER_ID="$COSMOS_CONTAINER_ID" \
-        PUBLIC_URL="https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io" \
-    --revision-suffix v$(date +%s)
+        "AZURE_COSMOS_ENDPOINT=$AZURE_COSMOS_ENDPOINT" \
+        "COSMOS_DATABASE_ID=$COSMOS_DATABASE_ID" \
+        "COSMOS_CONTAINER_ID=$COSMOS_CONTAINER_ID" \
+        "PUBLIC_URL=https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io" \
+    --revision-suffix "v$(date +%s)"
+
+echo "✅ Deployment complete!"

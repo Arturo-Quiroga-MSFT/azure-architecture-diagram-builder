@@ -20,8 +20,6 @@ ARG VITE_AZURE_OPENAI_DEPLOYMENT_GPT41
 ARG VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI
 ARG VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX
 ARG VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX
-ARG VITE_APPINSIGHTS_CONNECTION_STRING
-
 # Set environment variables for build
 ENV VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT
 ENV VITE_AZURE_OPENAI_API_KEY=$VITE_AZURE_OPENAI_API_KEY
@@ -30,10 +28,19 @@ ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT41=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41
 ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI
 ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX
 ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX
-ENV VITE_APPINSIGHTS_CONNECTION_STRING=$VITE_APPINSIGHTS_CONNECTION_STRING
 
-# Build the app
-RUN npm run build
+# App Insights connection string workaround:
+# The connection string contains semicolons (e.g. "InstrumentationKey=...;IngestionEndpoint=...")
+# which cannot be passed via `az acr build --build-arg` because ACR Tasks interprets them
+# as shell command separators. Instead, the deploy script (scripts/update_aca.sh) extracts
+# the value into .env.appinsights, which is COPY'd here and sourced at build time.
+# The glob pattern (appinsights*) ensures the build doesn't fail if the file is absent.
+COPY .env.appinsights* ./
+
+# Build the app (source App Insights env if present, then build)
+RUN if [ -f .env.appinsights ]; then \
+      export $(cat .env.appinsights) && echo "App Insights: $VITE_APPINSIGHTS_CONNECTION_STRING" | cut -c1-60; \
+    fi && npm run build
 
 # Production stage
 FROM nginx:alpine
