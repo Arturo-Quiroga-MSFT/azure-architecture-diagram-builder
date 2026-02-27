@@ -18,6 +18,7 @@ import { z } from "zod";
 import { config } from "dotenv";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DefaultAzureCredential } from "@azure/identity";
 
 // ---------------------------------------------------------------------------
 // Environment
@@ -33,6 +34,25 @@ function env(plain: string, vite?: string): string | undefined {
 
 const ENDPOINT = env("AZURE_OPENAI_ENDPOINT", "VITE_AZURE_OPENAI_ENDPOINT");
 const API_KEY = env("AZURE_OPENAI_API_KEY", "VITE_AZURE_OPENAI_API_KEY");
+
+// ---------------------------------------------------------------------------
+// Entra ID (Azure AD) token auth — used when API key is not set
+// ---------------------------------------------------------------------------
+
+const COGNITIVE_SERVICES_SCOPE = "https://cognitiveservices.azure.com/.default";
+let credential: DefaultAzureCredential | null = null;
+
+async function getAuthHeader(): Promise<Record<string, string>> {
+  if (API_KEY) {
+    return { "api-key": API_KEY };
+  }
+  // Fall back to Entra ID / DefaultAzureCredential (az login, managed identity, etc.)
+  if (!credential) {
+    credential = new DefaultAzureCredential();
+  }
+  const token = await credential.getToken(COGNITIVE_SERVICES_SCOPE);
+  return { Authorization: `Bearer ${token.token}` };
+}
 
 /** Supported models and their env-var deployment names */
 const MODEL_CONFIG: Record<
@@ -162,9 +182,9 @@ async function callAzureOpenAI(
   model: string,
   reasoningEffort: string
 ): Promise<AiResult> {
-  if (!ENDPOINT || !API_KEY) {
+  if (!ENDPOINT) {
     throw new Error(
-      "Azure OpenAI credentials not configured. Set VITE_AZURE_OPENAI_ENDPOINT and VITE_AZURE_OPENAI_API_KEY in .env."
+      "Azure OpenAI endpoint not configured. Set VITE_AZURE_OPENAI_ENDPOINT in .env."
     );
   }
 
@@ -188,9 +208,10 @@ async function callAzureOpenAI(
   const timeout = setTimeout(() => controller.abort(), 300_000);
 
   try {
+    const authHeader = await getAuthHeader();
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "api-key": API_KEY },
+      headers: { "Content-Type": "application/json", ...authHeader },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
