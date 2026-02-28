@@ -8,7 +8,7 @@
  */
 
 import { forwardRef } from 'react';
-import { Brain, RotateCcw, ChevronDown, Code, Cpu } from 'lucide-react';
+import { Brain, RotateCcw, ChevronDown, Code, Cpu, Layers, Zap } from 'lucide-react';
 import {
   useModelSettings,
   MODEL_CONFIG,
@@ -91,6 +91,10 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
 
         case 'gpt-5.2-codex':
           return <Code size={14} />;
+        case 'deepseek-v3.2-speciale':
+          return <Layers size={14} />;
+        case 'grok-4.1-fast':
+          return <Zap size={14} />;
       }
     };
 

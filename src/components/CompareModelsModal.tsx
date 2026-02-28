@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare } from 'lucide-react';
+import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import {
   MODEL_CONFIG,
@@ -11,6 +11,21 @@ import {
   getAvailableModels,
   getModelSettings,
 } from '../stores/modelSettingsStore';
+
+/** Abbreviate model name for filenames */
+function abbreviateModelForFile(model: ModelType): string {
+  const map: Record<string, string> = {
+    'gpt-5.1': 'gpt51', 'gpt-5.2': 'gpt52', 'gpt-5.2-codex': 'gpt52codex',
+    'gpt-5.3-codex': 'gpt53codex', 'deepseek-v3.2-speciale': 'deepseek', 'grok-4.1-fast': 'grok41fast',
+  };
+  return map[model] || 'unknown';
+}
+
+/** Build a model suffix like "gpt52-medium" or "deepseek" */
+function modelSuffix(model: ModelType, effort: ReasoningEffort): string {
+  const abbr = abbreviateModelForFile(model);
+  return MODEL_CONFIG[model].isReasoning ? `${abbr}-${effort}` : abbr;
+}
 import './CompareModelsModal.css';
 
 interface ComparisonResult {
@@ -121,6 +136,71 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       onApply(result.architecture, prompt, result.model, result.reasoningEffort);
       onClose();
     }
+  };
+
+  /** Download a single JSON blob */
+  const downloadJson = (data: object, filename: string) => {
+    const json = JSON.stringify(data, null, 2);
+    const uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+    const a = document.createElement('a');
+    a.href = uri;
+    a.download = filename;
+    a.click();
+  };
+
+  /** Save each successful result as an individual diagram JSON */
+  const saveAllDiagrams = async () => {
+    const ts = Date.now();
+    const successful = results.filter(r => r.status === 'success' && r.architecture);
+    for (let i = 0; i < successful.length; i++) {
+      const r = successful[i];
+      const suffix = modelSuffix(r.model, r.reasoningEffort);
+      const filename = `azure-diagram-${ts}-${suffix}.json`;
+      const diagramData = {
+        ...r.architecture,
+        metadata: {
+          prompt,
+          model: r.model,
+          modelDisplayName: MODEL_CONFIG[r.model].displayName,
+          reasoningEffort: r.reasoningEffort,
+          metrics: r.metrics,
+          savedAt: new Date().toISOString(),
+          source: 'model-comparison',
+        },
+      };
+      downloadJson(diagramData, filename);
+      // Small delay to avoid browser blocking rapid downloads
+      if (i < successful.length - 1) {
+        await new Promise(res => setTimeout(res, 150));
+      }
+    }
+  };
+
+  /** Save a single combined comparison report */
+  const saveComparisonReport = () => {
+    const ts = Date.now();
+    const successful = results.filter(r => r.status === 'success');
+    const report: Record<string, any> = {
+      prompt,
+      timestamp: new Date().toISOString(),
+      reasoningEffort,
+      modelCount: successful.length,
+      results: {} as Record<string, any>,
+    };
+    for (const r of successful) {
+      const key = modelSuffix(r.model, r.reasoningEffort);
+      report.results[key] = {
+        model: r.model,
+        displayName: MODEL_CONFIG[r.model].displayName,
+        metrics: r.metrics,
+        serviceCount: r.serviceCount,
+        connectionCount: r.connectionCount,
+        groupCount: r.groupCount,
+        workflowSteps: r.workflowSteps,
+        architecture: r.architecture,
+      };
+    }
+    downloadJson(report, `model-comparison-${ts}.json`);
   };
 
   const completedCount = results.filter(r => r.status === 'success' || r.status === 'error').length;
@@ -268,6 +348,26 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
             <div className="compare-section">
               <h3 className="compare-section-title">
                 Results
+                {!isRunning && successResults.length > 0 && (
+                  <div className="compare-save-actions">
+                    <button
+                      className="compare-save-btn"
+                      onClick={saveAllDiagrams}
+                      title="Download each model's diagram as a separate JSON file"
+                    >
+                      <Download size={14} />
+                      Save All Diagrams
+                    </button>
+                    <button
+                      className="compare-save-btn compare-save-report-btn"
+                      onClick={saveComparisonReport}
+                      title="Download a single JSON with all results for side-by-side analysis"
+                    >
+                      <FileJson size={14} />
+                      Save Comparison Report
+                    </button>
+                  </div>
+                )}
                 {!isRunning && (
                   <button
                     className="compare-rerun-btn"

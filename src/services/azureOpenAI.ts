@@ -4,6 +4,7 @@
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { getServiceIconMapping, SERVICE_ICON_MAP } from '../data/serviceIconMapping';
 import { trackAIModelUsage } from './telemetryService';
+import { buildApiUrl, buildRequestBody, parseApiResponse } from './apiHelper';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -48,8 +49,9 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
     throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
   }
 
-  // Responses API endpoint (replaces Chat Completions)
-  const url = `${endpoint}openai/v1/responses`;
+  // Determine API format (Responses for OpenAI models, Chat Completions for third-party)
+  const apiFormat = modelConfig.apiFormat || 'responses';
+  const url = buildApiUrl(endpoint, deployment, apiFormat);
 
   // Add timeout for large requests (5 minutes for regenerations)
   const controller = new AbortController();
@@ -58,23 +60,17 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
   // Start timing
   const startTime = performance.now();
 
-  // Build Responses API request body
-  // Pass all messages (including system) as input — json_object format
-  // requires the word 'json' to appear in input messages
-  const requestBody: any = {
-    model: deployment,
-    input: messages,
-    max_output_tokens: modelConfig.maxCompletionTokens,
-    text: { format: { type: 'json_object' } },
-    store: false,
-  };
+  // Build request body using the appropriate API format
+  const requestBody = buildRequestBody({
+    deployment,
+    messages,
+    maxTokens: modelConfig.maxCompletionTokens,
+    apiFormat,
+    isReasoning: modelConfig.isReasoning,
+    reasoningEffort: settings.reasoningEffort,
+  });
   
-  // Add reasoning config for reasoning models (skip when effort is 'none')
-  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
-    requestBody.reasoning = { effort: settings.reasoningEffort };
-  }
-  
-  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: Responses`);
+  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
 
   try {
     const response = await fetch(url, {
@@ -106,27 +102,13 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
 
     const data = await response.json();
     
-    // Responses API: extract text from output
-    // output_text is a convenience field; fall back to parsing output[].content[] if missing
-    let content = data.output_text || '';
-    if (!content && data.output) {
-      for (const item of data.output) {
-        if (item.type === 'message' && item.content) {
-          for (const part of item.content) {
-            if (part.type === 'output_text') {
-              content += part.text;
-            }
-          }
-        }
-      }
-    }
-    
-    // Responses API uses input_tokens/output_tokens
-    const usage = data.usage || {};
+    // Parse response using the appropriate API format
+    const parsed = parseApiResponse(data, apiFormat);
+    const content = parsed.content;
     const metrics: AIMetrics = {
-      promptTokens: usage.input_tokens || 0,
-      completionTokens: usage.output_tokens || 0,
-      totalTokens: usage.total_tokens || 0,
+      promptTokens: parsed.promptTokens,
+      completionTokens: parsed.completionTokens,
+      totalTokens: parsed.totalTokens,
       elapsedTimeMs,
       model: data.model
     };
@@ -257,6 +239,47 @@ LAYOUT READABILITY — CRITICAL:
       architecture.groups = [];
     }
 
+    // Normalize groups: some models return plain strings instead of objects
+    // e.g. ["dmz-primary", "app-tier"] → [{id: "dmz-primary", label: "DMZ Primary"}, ...]
+    architecture.groups = architecture.groups.map((g: any) => {
+      if (typeof g === 'string') {
+        return {
+          id: g,
+          label: g.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        };
+      }
+      // Strip groupId from group objects to prevent circular parent refs
+      const { groupId, ...cleanGroup } = g;
+      return cleanGroup;
+    });
+
+    // Build valid group ID set and resolve conflicts
+    const groupIds = new Set(architecture.groups.map((g: any) => g.id));
+    const serviceIds = new Set(architecture.services.map((s: any) => s.id));
+
+    // Prevent ID collisions between groups and services (causes ReactFlow circular refs)
+    for (const gid of groupIds) {
+      if (serviceIds.has(gid)) {
+        console.warn(`⚠️ Group ID "${gid}" collides with a service ID — prefixing group`);
+        const group = architecture.groups.find((g: any) => g.id === gid);
+        const newId = `group-${gid}`;
+        group.id = newId;
+        // Update service references
+        architecture.services.forEach((s: any) => {
+          if (s.groupId === gid) s.groupId = newId;
+        });
+      }
+    }
+
+    // Clear invalid groupId references on services to prevent "parent not found" crashes
+    const validGroupIds = new Set(architecture.groups.map((g: any) => g.id));
+    architecture.services.forEach((s: any) => {
+      if (s.groupId && !validGroupIds.has(s.groupId)) {
+        console.warn(`⚠️ Service "${s.id}" references unknown group "${s.groupId}" — clearing`);
+        s.groupId = null;
+      }
+    });
+
     return architecture;
   } catch (error: any) {
     console.error('Azure OpenAI Error:', error);
@@ -285,8 +308,10 @@ export function isAzureOpenAIConfigured(): boolean {
   // Check for specific model deployments (no longer using legacy default)
   const hasGpt51 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51;
   const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
+  const hasDeepSeek = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK;
+  const hasGrok = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST;
   
-  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52);
+  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52 || hasDeepSeek || hasGrok);
 }
 
 /**
@@ -299,6 +324,11 @@ export async function analyzeArchitectureDiagramImage(imageBase64: string, mimeT
   const settings = getModelSettingsForFeature('architectureGeneration');
   const modelConfig = MODEL_CONFIG[settings.model];
   
+  // Vision is only supported by OpenAI models (Responses API)
+  if (modelConfig.supportsVision === false) {
+    throw new Error(`${modelConfig.displayName} does not support image analysis. Please select an OpenAI model (GPT-5.x) for diagram-to-architecture conversion.`);
+  }
+
   let deployment: string;
   try {
     deployment = getDeploymentName(settings.model);
@@ -602,6 +632,45 @@ ${JSON.stringify(armTemplate, null, 2)}`;
     if (!architecture.groups) {
       architecture.groups = [];
     }
+
+    // Normalize groups: some models return plain strings instead of objects
+    architecture.groups = architecture.groups.map((g: any) => {
+      if (typeof g === 'string') {
+        return {
+          id: g,
+          label: g.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+        };
+      }
+      // Strip groupId from group objects to prevent circular parent refs
+      const { groupId, ...cleanGroup } = g;
+      return cleanGroup;
+    });
+
+    // Build valid group ID set and resolve conflicts
+    const groupIds = new Set(architecture.groups.map((g: any) => g.id));
+    const serviceIds = new Set(architecture.services.map((s: any) => s.id));
+
+    // Prevent ID collisions between groups and services (causes ReactFlow circular refs)
+    for (const gid of groupIds) {
+      if (serviceIds.has(gid)) {
+        console.warn(`⚠️ Group ID "${gid}" collides with a service ID — prefixing group`);
+        const group = architecture.groups.find((g: any) => g.id === gid);
+        const newId = `group-${gid}`;
+        group.id = newId;
+        architecture.services.forEach((s: any) => {
+          if (s.groupId === gid) s.groupId = newId;
+        });
+      }
+    }
+
+    // Clear invalid groupId references on services to prevent "parent not found" crashes
+    const validGroupIds = new Set(architecture.groups.map((g: any) => g.id));
+    architecture.services.forEach((s: any) => {
+      if (s.groupId && !validGroupIds.has(s.groupId)) {
+        console.warn(`⚠️ Service "${s.id}" references unknown group "${s.groupId}" — clearing`);
+        s.groupId = null;
+      }
+    });
 
     return architecture;
   } catch (error: any) {

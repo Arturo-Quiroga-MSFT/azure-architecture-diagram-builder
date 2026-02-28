@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { Settings, Brain, ChevronDown, ChevronRight, RotateCcw, Cpu } from 'lucide-react';
+import { Settings, Brain, ChevronDown, ChevronRight, RotateCcw, Cpu, Layers, Zap } from 'lucide-react';
 import { 
   useModelSettings, 
   MODEL_CONFIG, 
@@ -77,6 +77,10 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
         return <Cpu size={16} />;
       case 'gpt-5.2':
         return <Brain size={16} />;
+      case 'deepseek-v3.2-speciale':
+        return <Layers size={16} />;
+      case 'grok-4.1-fast':
+        return <Zap size={16} />;
 
       default:
         return <Settings size={16} />;

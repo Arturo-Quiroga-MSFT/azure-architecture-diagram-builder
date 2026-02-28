@@ -11,6 +11,7 @@ import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_
 import { detectWafPatterns, calculatePreliminaryScore, type PatternDetectionResult } from './wafPatternDetector';
 import { getKnowledgeBaseStats } from '../data/wafRules';
 import { trackAIModelUsage } from './telemetryService';
+import { buildApiUrl, buildRequestBody, parseApiResponse } from './apiHelper';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -52,32 +53,27 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
     throw new Error('Azure OpenAI credentials not configured');
   }
 
-  // Responses API endpoint
-  const url = `${endpoint}openai/v1/responses`;
+  // Determine API format
+  const apiFormat = modelConfig.apiFormat || 'responses';
+  const url = buildApiUrl(endpoint, deployment, apiFormat);
 
-  console.log(`🌐 Calling Azure OpenAI Responses API with ${modelConfig.displayName}`);
+  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
   
   // Start timing
   const startTime = performance.now();
 
-  // Build Responses API request body
-  // Pass all messages (including system) as input — json_object format
-  // requires the word 'json' to appear in input messages
+  // Build request body using the appropriate API format
   const effectiveMaxTokens = Math.min(maxTokens, modelConfig.maxCompletionTokens);
-  const requestBody: any = {
-    model: deployment,
-    input: messages,
-    max_output_tokens: effectiveMaxTokens,
-    text: { format: { type: 'json_object' } },
-    store: false,
-  };
+  const requestBody = buildRequestBody({
+    deployment,
+    messages,
+    maxTokens: effectiveMaxTokens,
+    apiFormat,
+    isReasoning: modelConfig.isReasoning,
+    reasoningEffort: settings.reasoningEffort,
+  });
   
-  // Add reasoning config for reasoning models (skip when effort is 'none')
-  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
-    requestBody.reasoning = { effort: settings.reasoningEffort };
-  }
-  
-  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: Responses`);
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -99,29 +95,17 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
 
   const data = await response.json();
   
-  // Responses API uses input_tokens/output_tokens
-  const usage = data.usage || {};
+  // Parse response using the appropriate API format
+  const parsed = parseApiResponse(data, apiFormat);
   const metrics: AIMetrics = {
-    promptTokens: usage.input_tokens || 0,
-    completionTokens: usage.output_tokens || 0,
-    totalTokens: usage.total_tokens || 0,
+    promptTokens: parsed.promptTokens,
+    completionTokens: parsed.completionTokens,
+    totalTokens: parsed.totalTokens,
     elapsedTimeMs,
     model: data.model
   };
   
-  // Responses API: extract text from output
-  let content = data.output_text || '';
-  if (!content && data.output) {
-    for (const item of data.output) {
-      if (item.type === 'message' && item.content) {
-        for (const part of item.content) {
-          if (part.type === 'output_text') {
-            content += part.text;
-          }
-        }
-      }
-    }
-  }
+  const content = parsed.content;
   
   console.log('📦 API Response:', content.length, 'chars |',
     `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) |`,

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex';
+export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'deepseek-v3.2-speciale' | 'grok-4.1-fast';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -81,6 +81,8 @@ export const MODEL_CONFIG: Record<ModelType, {
   maxCompletionTokens: number;
   description: string;
   defaultReasoningEffort?: ReasoningEffort;
+  apiFormat?: 'responses' | 'chat-completions'; // defaults to 'responses'
+  supportsVision?: boolean; // defaults to true
 }> = {
   'gpt-5.1': {
     displayName: 'GPT-5.1',
@@ -111,7 +113,24 @@ export const MODEL_CONFIG: Record<ModelType, {
     maxCompletionTokens: 16000,
     description: 'Latest codex model - enhanced reasoning and code generation'
   },
-
+  'deepseek-v3.2-speciale': {
+    displayName: 'DeepSeek V3.2 Speciale',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Strong structured JSON output at lower cost - third-party model',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'grok-4.1-fast': {
+    displayName: 'Grok 4.1 Fast',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Fast non-reasoning model from xAI - diversified provider',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
 };
 
 /**
