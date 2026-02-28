@@ -1,0 +1,221 @@
+/* Reference Image Viewer — floating thumbnail + expanded overlay */
+
+/* ─── Shared base ─────────────────────────────────────────────────── */
+.ref-image-viewer {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ─── Collapsed pill ──────────────────────────────────────────────── */
+.ref-image-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: #ccc;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ref-image-collapsed:hover {
+  background: rgba(50, 50, 50, 0.9);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Thumbnail card ──────────────────────────────────────────────── */
+.ref-image-thumbnail {
+  width: 200px;
+  background: rgba(30, 30, 30, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.ref-image-thumbnail:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 4px 24px rgba(139, 92, 246, 0.15);
+}
+
+.ref-image-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ref-image-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.ref-image-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.ref-image-btn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.ref-image-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.ref-image-btn-dismiss:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.ref-image-thumb {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  cursor: pointer;
+  display: block;
+  transition: opacity 0.15s ease;
+}
+
+.ref-image-thumb:hover {
+  opacity: 0.85;
+}
+
+/* ─── Expanded overlay ────────────────────────────────────────────── */
+.ref-image-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ref-image-overlay-content {
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  cursor: default;
+}
+
+.ref-image-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ddd;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ref-image-overlay-header span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ref-image-close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.ref-image-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.ref-image-full {
+  display: block;
+  max-width: 85vw;
+  max-height: calc(90vh - 50px);
+  object-fit: contain;
+}
+
+/* ─── Light mode ──────────────────────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  .ref-image-collapsed {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #555;
+  }
+
+  .ref-image-collapsed:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+  }
+
+  .ref-image-thumbnail {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .ref-image-header {
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .ref-image-label {
+    color: #666;
+  }
+
+  .ref-image-btn {
+    color: #999;
+  }
+
+  .ref-image-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+  }
+
+  .ref-image-overlay-content {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .ref-image-overlay-header {
+    color: #333;
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+}

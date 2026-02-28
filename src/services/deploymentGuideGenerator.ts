@@ -228,7 +228,7 @@ Generate a deployment guide with Azure CLI commands and Bicep templates for this
     const { content, metrics } = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
-    ], 16000);
+    ], 32000);
 
     // Handle empty response
     if (!content || content.length === 0) {

@@ -22,6 +22,7 @@ import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
+import ReferenceImageViewer from './components/ReferenceImageViewer';
 import TitleBlock from './components/TitleBlock';
 import ModelBadge from './components/ModelBadge';
 import Legend from './components/Legend';
@@ -132,6 +133,7 @@ function App() {
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
   const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
   const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
+  const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -1984,8 +1986,9 @@ function App() {
                   Add Group
                 </button>
                 <AIArchitectureGenerator 
-                  onGenerate={(arch, prompt, autoSnap) => {
+                  onGenerate={(arch, prompt, autoSnap, refImageUrl) => {
                     clearSourceModel();
+                    if (refImageUrl) setReferenceImageUrl(refImageUrl);
                     handleAIGenerate(arch, prompt, autoSnap);
                   }}
                   currentArchitecture={{
@@ -2645,6 +2648,12 @@ function App() {
               />
             )}
             <Legend forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
+            {referenceImageUrl && (
+              <ReferenceImageViewer
+                imageUrl={referenceImageUrl}
+                onDismiss={() => setReferenceImageUrl(null)}
+              />
+            )}
           </ReactFlow>
           <AlignmentToolbar 
             selectedNodes={nodes.filter(n => n.selected)}

@@ -88,7 +88,7 @@ export const MODEL_CONFIG: Record<ModelType, {
     displayName: 'GPT-5.1',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT51',
     isReasoning: true,
-    maxCompletionTokens: 16000,
+    maxCompletionTokens: 32000,
     description: 'Versatile model - fast by default, optional reasoning when needed',
     defaultReasoningEffort: 'none'
   },
@@ -96,21 +96,21 @@ export const MODEL_CONFIG: Record<ModelType, {
     displayName: 'GPT-5.2',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT52',
     isReasoning: true,
-    maxCompletionTokens: 16000,
+    maxCompletionTokens: 32000,
     description: 'Most capable reasoning model - best for complex architectures'
   },
   'gpt-5.2-codex': {
     displayName: 'GPT-5.2 Codex',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX',
     isReasoning: true,
-    maxCompletionTokens: 16000,
+    maxCompletionTokens: 32000,
     description: 'Optimized for code generation - ideal for Bicep/IaC'
   },
   'gpt-5.3-codex': {
     displayName: 'GPT-5.3 Codex',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX',
     isReasoning: true,
-    maxCompletionTokens: 16000,
+    maxCompletionTokens: 32000,
     description: 'Latest codex model - enhanced reasoning and code generation'
   },
   'deepseek-v3.2-speciale': {

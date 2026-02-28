@@ -7,6 +7,7 @@ import './ImageUploader.css';
 
 interface ImageUploaderProps {
   onImageAnalyzed: (description: string) => void;
+  onImageDataUrl?: (dataUrl: string) => void;
   onAnalyzing: (analyzing: boolean) => void;
   onError: (error: string) => void;
   disabled?: boolean;
@@ -18,6 +19,7 @@ const SUPPORTED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageAnalyzed,
+  onImageDataUrl,
   onAnalyzing,
   onError,
   disabled = false,
@@ -49,6 +51,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     reader.onload = async (e) => {
       const result = e.target?.result as string;
       setPreviewUrl(result);
+      onImageDataUrl?.(result);
 
       // Extract base64 data (remove the data:image/...;base64, prefix)
       const base64Data = result.split(',')[1];

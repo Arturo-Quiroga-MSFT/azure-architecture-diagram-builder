@@ -10,7 +10,7 @@ import { trackImageImport } from '../services/telemetryService';
 import './AIArchitectureGenerator.css';
 
 interface AIArchitectureGeneratorProps {
-  onGenerate: (architecture: any, prompt: string, autoSnapshot: boolean) => void;
+  onGenerate: (architecture: any, prompt: string, autoSnapshot: boolean, referenceImageUrl?: string) => void;
   currentArchitecture?: {
     nodes: any[];
     edges: any[];
@@ -26,6 +26,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const [aiMetrics, setAiMetrics] = useState<AIMetrics | null>(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [imageAnalyzed, setImageAnalyzed] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   
   // Model settings from reactive hook (stays in sync with dropdown)
   const [modelSettings] = useModelSettings();
@@ -187,13 +188,14 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
         setAiMetrics(result.metrics);
       }
       
-      onGenerate(result, description, autoSnapshot);
+      onGenerate(result, description, autoSnapshot, uploadedImageUrl || undefined);
       setDescription('');
       
       // Close modal shortly after successful generation
       setTimeout(() => {
         setIsOpen(false);
         setAiMetrics(null);
+        setUploadedImageUrl(null);
       }, 45000); // Give user 45 seconds to review results or type a modification
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
@@ -266,6 +268,7 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
 
               <ImageUploader
                 onImageAnalyzed={handleImageAnalyzed}
+                onImageDataUrl={setUploadedImageUrl}
                 onAnalyzing={setIsAnalyzingImage}
                 onError={setError}
                 disabled={isGenerating}
