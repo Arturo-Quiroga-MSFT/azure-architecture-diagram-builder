@@ -35,6 +35,7 @@ import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
 import CompareModelsModal from './components/CompareModelsModal';
+import CompareValidationModal from './components/CompareValidationModal';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
@@ -130,6 +131,7 @@ function App() {
   const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
   const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
+  const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
   const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -2443,6 +2445,15 @@ function App() {
                   <Shield size={18} />
                   Validate Architecture
                 </button>
+                <button
+                  className="btn btn-compare-models"
+                  onClick={() => setIsCompareValidationOpen(true)}
+                  title="Compare WAF validation results across multiple AI models"
+                  disabled={nodes.length === 0}
+                >
+                  <GitCompare size={18} />
+                  Compare Validation
+                </button>
                 {validationResult && (
                   <button
                     onClick={() => setIsValidationModalOpen(true)}
@@ -2847,6 +2858,36 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           }
           handleAIGenerate(architecture, prompt, true);
         }}
+      />
+      <CompareValidationModal
+        isOpen={isCompareValidationOpen}
+        onClose={() => setIsCompareValidationOpen(false)}
+        onApply={(validation) => {
+          setValidationResult(validation);
+          setIsValidationModalOpen(true);
+          setPanelsCollapsedSignal(prev => prev + 1);
+        }}
+        services={nodes
+          .filter(n => n.type === 'azureNode')
+          .map(n => ({
+            name: n.data.label || n.data.serviceName || 'Unknown Service',
+            type: n.data.serviceName || n.data.label || 'Unknown',
+            category: n.data.category || 'General',
+          }))}
+        connections={edges.map(e => ({
+          from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+          to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+          label: String(e.label || ''),
+        }))}
+        groups={nodes
+          .filter(n => n.type === 'groupNode')
+          .map(n => ({
+            name: n.data.label || 'Group',
+            services: nodes
+              .filter(child => child.parentNode === n.id)
+              .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+          }))}
+        architectureDescription={architecturePrompt || titleBlockData.architectureName}
       />
     </div>
   );

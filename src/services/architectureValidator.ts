@@ -7,11 +7,16 @@
  * Provides recommendations for reliability, security, performance, cost optimization, and operational excellence
  */
 
-import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
-import { detectWafPatterns, calculatePreliminaryScore, type PatternDetectionResult } from './wafPatternDetector';
+import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
+import { detectWafPatterns, calculatePreliminaryScore } from './wafPatternDetector';
 import { getKnowledgeBaseStats } from '../data/wafRules';
 import { trackAIModelUsage } from './telemetryService';
 import { buildApiUrl, buildRequestBody, parseApiResponse } from './apiHelper';
+
+export interface ValidationModelOverride {
+  model: ModelType;
+  reasoningEffort: ReasoningEffort;
+}
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -30,9 +35,10 @@ interface CallResult {
   metrics: AIMetrics;
 }
 
-async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promise<CallResult> {
+async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelOverride?: ValidationModelOverride): Promise<CallResult> {
   // Re-read settings fresh to pick up any recent UI changes
-  const settings = getModelSettingsForFeature('validation');
+  const storeSettings = getModelSettingsForFeature('validation');
+  const settings = modelOverride || storeSettings;
   const defaultSettings = getModelSettings();
   const modelConfig = MODEL_CONFIG[settings.model];
   
@@ -165,14 +171,16 @@ export async function validateArchitecture(
   services: Array<{ name: string; type: string; category: string; description?: string }>,
   connections: Array<{ from: string; to: string; label: string }>,
   groups?: Array<{ name: string; services?: string[] }>,
-  architectureDescription?: string
+  architectureDescription?: string,
+  modelOverride?: ValidationModelOverride
 ): Promise<ArchitectureValidation> {
   
   if (!endpoint || !apiKey) {
     throw new Error('Azure OpenAI configuration missing. Please check your .env file.');
   }
   
-  const settings = getModelSettingsForFeature('validation');
+  const storeSettings = getModelSettingsForFeature('validation');
+  const settings = modelOverride || storeSettings;
   const modelConfig = MODEL_CONFIG[settings.model];
 
   console.log(`🔍 Starting hybrid WAF validation with ${modelConfig.displayName}...`);
@@ -183,7 +191,7 @@ export async function validateArchitecture(
   const kbStats = getKnowledgeBaseStats();
   
   console.log(`⚡ Phase 1 (local): ${localResult.findings.length} findings, preliminary score ${preliminaryScore}/100 (${localResult.elapsedMs}ms)`);
-  console.log(`  📚 Knowledge base: ${kbStats.totalRules} rules across ${kbStats.serviceCount} services`);
+  console.log(`  📚 Knowledge base: ${kbStats.totalRules} rules across ${kbStats.servicesCovered} services`);
 
   // ── Phase 2: LLM contextual refinement ──────────────────────────────
   // Build architecture context
@@ -281,7 +289,7 @@ Provide a comprehensive Well-Architected Framework assessment with actionable re
     const { content, metrics } = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
-    ], 8000);
+    ], 8000, modelOverride);
 
     console.log('✅ Hybrid validation response received:', content.length, 'characters');
 
