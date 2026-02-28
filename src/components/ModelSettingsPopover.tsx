@@ -8,7 +8,7 @@
  */
 
 import { forwardRef } from 'react';
-import { Brain, Sparkles, Zap, RotateCcw, ChevronDown, Code } from 'lucide-react';
+import { Brain, RotateCcw, ChevronDown, Code, Cpu } from 'lucide-react';
 import {
   useModelSettings,
   MODEL_CONFIG,
@@ -36,7 +36,19 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
     const hasAnyOverride = (Object.keys(FEATURE_CONFIG) as FeatureType[]).some(hasFeatureOverride);
 
     const handleModelChange = (model: ModelType) => {
-      updateSettings({ model });
+      const config = MODEL_CONFIG[model];
+      // Auto-set reasoning effort to model's default when switching
+      if (config.defaultReasoningEffort !== undefined) {
+        updateSettings({ model, reasoningEffort: config.defaultReasoningEffort });
+      } else {
+        // For models without a default, keep current effort but ensure it's valid
+        const currentEffort = settings.reasoningEffort;
+        if (!config.isReasoning || (currentEffort === 'none' && !config.defaultReasoningEffort)) {
+          updateSettings({ model, reasoningEffort: 'medium' });
+        } else {
+          updateSettings({ model });
+        }
+      }
     };
 
     const handleReasoningChange = (reasoning: ReasoningEffort) => {
@@ -72,12 +84,11 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
 
     const getModelIcon = (model: ModelType) => {
       switch (model) {
+        case 'gpt-5.1':
+          return <Cpu size={14} />;
         case 'gpt-5.2':
           return <Brain size={14} />;
-        case 'gpt-4.1':
-          return <Sparkles size={14} />;
-        case 'gpt-4.1-mini':
-          return <Zap size={14} />;
+
         case 'gpt-5.2-codex':
           return <Code size={14} />;
       }
@@ -152,11 +163,12 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
                 <div className="msp-reasoning-row">
                   <span className="msp-reasoning-label">Reasoning</span>
                   <div className="msp-reasoning-buttons">
-                    {(['low', 'medium', 'high'] as ReasoningEffort[]).map((level) => (
+                    {(['none', 'low', 'medium', 'high'] as ReasoningEffort[]).map((level) => (
                       <button
                         key={level}
                         className={`msp-reasoning-btn ${settings.reasoningEffort === level ? 'active' : ''}`}
                         onClick={() => handleReasoningChange(level)}
+                        title={level === 'none' ? 'No reasoning - fastest response' : undefined}
                       >
                         {level.charAt(0).toUpperCase() + level.slice(1)}
                       </button>
@@ -219,6 +231,7 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
                           }
                           className="msp-reasoning-select"
                         >
+                          <option value="none">None</option>
                           <option value="low">Low</option>
                           <option value="medium">Med</option>
                           <option value="high">High</option>
@@ -233,7 +246,7 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
             <div className="toolbar-dropdown-separator" role="separator" />
 
             <div className="toolbar-dropdown-hint">
-              Recommended: GPT-5.2 (medium) for generation, (low) for validation
+              Recommended: GPT-5.2 (medium) for generation, GPT-5.1 (none) for fast tasks
             </div>
           </div>
         )}

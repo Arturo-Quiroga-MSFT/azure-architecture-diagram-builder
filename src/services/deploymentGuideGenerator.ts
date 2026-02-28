@@ -65,8 +65,8 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
     store: false,
   };
   
-  // Add reasoning config for reasoning models
-  if (modelConfig.isReasoning) {
+  // Add reasoning config for reasoning models (skip when effort is 'none')
+  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
     requestBody.reasoning = { effort: settings.reasoningEffort };
   }
   

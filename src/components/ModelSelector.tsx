@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { Settings, Zap, Brain, Sparkles, ChevronDown, ChevronRight, RotateCcw } from 'lucide-react';
+import { Settings, Brain, ChevronDown, ChevronRight, RotateCcw, Cpu } from 'lucide-react';
 import { 
   useModelSettings, 
   MODEL_CONFIG, 
@@ -73,12 +73,11 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
 
   const getModelIcon = (model: ModelType) => {
     switch (model) {
+      case 'gpt-5.1':
+        return <Cpu size={16} />;
       case 'gpt-5.2':
         return <Brain size={16} />;
-      case 'gpt-4.1':
-        return <Sparkles size={16} />;
-      case 'gpt-4.1-mini':
-        return <Zap size={16} />;
+
       default:
         return <Settings size={16} />;
     }
@@ -247,7 +246,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
           <div className="model-selector-group">
             <label className="model-label">Default Reasoning Effort</label>
             <div className="reasoning-buttons">
-              {(['low', 'medium', 'high'] as ReasoningEffort[]).map(level => (
+              {(['none', 'low', 'medium', 'high'] as ReasoningEffort[]).map(level => (
                 <button
                   key={level}
                   className={`reasoning-button ${settings.reasoningEffort === level ? 'active' : ''}`}
@@ -258,6 +257,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
               ))}
             </div>
             <p className="reasoning-hint">
+              {settings.reasoningEffort === 'none' && 'No reasoning - fastest response, lowest cost'}
               {settings.reasoningEffort === 'low' && 'Faster responses, less detailed analysis'}
               {settings.reasoningEffort === 'medium' && 'Balanced speed and depth'}
               {settings.reasoningEffort === 'high' && 'Thorough analysis, may take longer'}
@@ -315,6 +315,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
                           onChange={(e) => handleFeatureReasoningChange(feature, e.target.value as ReasoningEffort)}
                           className="feature-reasoning-select"
                         >
+                          <option value="none">None</option>
                           <option value="low">Low</option>
                           <option value="medium">Med</option>
                           <option value="high">High</option>

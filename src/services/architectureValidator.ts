@@ -72,8 +72,8 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
     store: false,
   };
   
-  // Add reasoning config for reasoning models
-  if (modelConfig.isReasoning) {
+  // Add reasoning config for reasoning models (skip when effort is 'none')
+  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
     requestBody.reasoning = { effort: settings.reasoningEffort };
   }
   
@@ -208,37 +208,39 @@ export async function validateArchitecture(
   const groupsList = groups ? groups.map(g => `- ${g.name}`).join('\n') : 'No groups';
   const serviceNamesList = services.map(s => s.name);
 
-  // Summarize local findings for the LLM so it doesn't re-discover them
-  const localFindingsSummary = localResult.findings.length > 0
-    ? localResult.findings.map(f =>
-        `[${f.severity.toUpperCase()}] ${f.category}: ${f.issue} → ${f.recommendation}` +
+  // Only send architecture-level pattern findings to the LLM (not per-service
+  // best-practice rules, which are generic and would overwhelm the prompt)
+  const patternFindingsSummary = localResult.patternFindings.length > 0
+    ? localResult.patternFindings.map(f =>
+        `- [${f.severity.toUpperCase()}] ${f.category}: ${f.issue}` +
         (f.resources?.length ? ` (affects: ${f.resources.join(', ')})` : '')
       ).join('\n')
-    : 'No rule-based findings detected.';
+    : 'No architecture-level anti-patterns detected.';
 
   const patternsNote = localResult.patternsDetected.length > 0
-    ? `Detected patterns: ${localResult.patternsDetected.join(', ')}`
+    ? `Detected topology patterns: ${localResult.patternsDetected.join(', ')}`
     : 'No common anti-patterns detected.';
 
-  const systemPrompt = `You are an Azure Well-Architected Framework expert performing a focused review.
+  const systemPrompt = `You are an Azure Well-Architected Framework expert. Your role is to review Azure architectures and provide actionable recommendations across the five pillars:
 
-A rule-based pre-scan has already identified the following findings and patterns:
+1. **Reliability** - Resiliency, availability, disaster recovery
+2. **Security** - Identity, data protection, network security
+3. **Cost Optimization** - Right-sizing, reserved instances, consumption patterns
+4. **Operational Excellence** - Monitoring, automation, DevOps practices
+5. **Performance Efficiency** - Scaling, caching, optimization
 
-=== PRE-SCAN RESULTS (${localResult.findings.length} findings, preliminary score: ${preliminaryScore}/100) ===
+A topology pre-scan detected these architecture-level patterns to consider:
 ${patternsNote}
-${localFindingsSummary}
-=== END PRE-SCAN ===
+${patternFindingsSummary}
 
-Your job is to:
-1. **Validate** the pre-scan findings — confirm, adjust severity, or dismiss any that don't apply in context
-2. **Add** contextual findings the rule engine cannot detect (e.g., sub-optimal service pairings, missing best-practice configurations, workload-specific advice)
-3. **Score** each pillar holistically (0-100) combining both the validated pre-scan findings and your additional findings
-4. **Identify** quick wins — high impact, low effort improvements
+Use these patterns as hints — validate whether they apply in context, dismiss any that don't, and add your own architecture-specific findings.
 
-IMPORTANT:
-- Do NOT simply repeat pre-scan findings verbatim. Instead, refine the wording and add context-specific details.
-- Each finding must include a "source" field: "rule-based" (from pre-scan) or "ai-analysis" (your addition).
-- Focus your energy on contextual/architecture-specific insights the rules couldn't catch.
+SCORING GUIDANCE:
+- Score the architecture based on what IS present, not what COULD be added
+- A well-connected architecture with appropriate services should score 60-80
+- Only score below 50 for architectures with critical gaps (no auth, no monitoring, single points of failure)
+- Findings are improvement suggestions, not reasons to penalize the score severely
+- Each finding should include a "source" field: "rule-based" (from pre-scan) or "ai-analysis" (your addition)
 
 Return ONLY valid JSON (no markdown) with this structure:
 {
@@ -288,7 +290,7 @@ ${groupsList}
 
 IMPORTANT: In the "resources" arrays, use EXACTLY the service names as listed above (e.g., "${serviceNamesList.slice(0, 3).join('", "')}"). Do not rename or rephrase them.
 
-Provide a focused Well-Architected Framework assessment, building on the pre-scan results.`;
+Provide a comprehensive Well-Architected Framework assessment with actionable recommendations.`;
 
   try {
     console.log('📤 Phase 2: Sending focused validation to Azure OpenAI...');

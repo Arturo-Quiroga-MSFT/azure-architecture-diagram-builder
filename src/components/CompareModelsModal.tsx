@@ -181,7 +181,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
               <div className="compare-reasoning-row">
                 <span>Reasoning Effort (for reasoning models):</span>
                 <div className="compare-reasoning-buttons">
-                  {(['low', 'medium', 'high'] as ReasoningEffort[]).map(level => (
+                  {(['none', 'low', 'medium', 'high'] as ReasoningEffort[]).map(level => (
                     <button
                       key={level}
                       className={`compare-reasoning-btn ${reasoningEffort === level ? 'active' : ''}`}

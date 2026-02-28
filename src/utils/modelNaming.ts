@@ -30,14 +30,15 @@ export function clearSourceModel(): void {
 
 function abbreviateModel(model: ModelType): string {
   switch (model) {
+    case 'gpt-5.1':
+      return 'gpt51';
     case 'gpt-5.2':
       return 'gpt52';
     case 'gpt-5.2-codex':
       return 'gpt52codex';
-    case 'gpt-4.1':
-      return 'gpt41';
-    case 'gpt-4.1-mini':
-      return 'gpt41mini';
+    case 'gpt-5.3-codex':
+      return 'gpt53codex';
+
     default:
       return 'unknown';
   }
@@ -45,7 +46,7 @@ function abbreviateModel(model: ModelType): string {
 
 /**
  * Get the model abbreviation from current settings (or override)
- * Returns: gpt52, gpt41, gpt41mini
+ * Returns: gpt51, gpt52, gpt52codex, gpt53codex
  */
 export function getModelAbbreviation(): string {
   if (_overrideModel) {
@@ -74,8 +75,7 @@ export function isReasoningModel(): boolean {
 /**
  * Generate the model suffix for filenames
  * Examples:
- *   - gpt41 (non-reasoning)
- *   - gpt41mini (non-reasoning)
+ *   - gpt51-none (reasoning off), gpt51-medium (reasoning on)
  *   - gpt52-low, gpt52-medium, gpt52-high (reasoning models)
  */
 export function getModelSuffix(): string {

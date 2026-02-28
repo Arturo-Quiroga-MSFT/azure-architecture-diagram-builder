@@ -69,8 +69,8 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
     store: false,
   };
   
-  // Add reasoning config for reasoning models
-  if (modelConfig.isReasoning) {
+  // Add reasoning config for reasoning models (skip when effort is 'none')
+  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
     requestBody.reasoning = { effort: settings.reasoningEffort };
   }
   
@@ -283,11 +283,10 @@ export function isAzureOpenAIConfigured(): boolean {
   const hasApiKey = !!apiKey;
   
   // Check for specific model deployments (no longer using legacy default)
+  const hasGpt51 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51;
   const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
-  const hasGpt41 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT41;
-  const hasGpt41Mini = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI;
   
-  return hasEndpoint && hasApiKey && (hasGpt52 || hasGpt41 || hasGpt41Mini);
+  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52);
 }
 
 /**
@@ -384,8 +383,8 @@ If the image is not an architecture diagram or is unclear, describe what you can
     store: false,
   };
   
-  // Add reasoning config for reasoning models
-  if (modelConfig.isReasoning) {
+  // Add reasoning config for reasoning models (skip when effort is 'none')
+  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
     requestBody.reasoning = { effort: settings.reasoningEffort };
   }
 

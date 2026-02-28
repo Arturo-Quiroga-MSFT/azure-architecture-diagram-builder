@@ -10,8 +10,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-4.1' | 'gpt-4.1-mini';
-export type ReasoningEffort = 'low' | 'medium' | 'high';
+export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex';
+export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
  * Feature types that can have independent model settings
@@ -80,27 +80,22 @@ export const MODEL_CONFIG: Record<ModelType, {
   isReasoning: boolean;
   maxCompletionTokens: number;
   description: string;
+  defaultReasoningEffort?: ReasoningEffort;
 }> = {
+  'gpt-5.1': {
+    displayName: 'GPT-5.1',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT51',
+    isReasoning: true,
+    maxCompletionTokens: 16000,
+    description: 'Versatile model - fast by default, optional reasoning when needed',
+    defaultReasoningEffort: 'none'
+  },
   'gpt-5.2': {
     displayName: 'GPT-5.2',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT52',
     isReasoning: true,
     maxCompletionTokens: 16000,
     description: 'Most capable reasoning model - best for complex architectures'
-  },
-  'gpt-4.1': {
-    displayName: 'GPT-4.1',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT41',
-    isReasoning: false,
-    maxCompletionTokens: 10000,
-    description: 'Balanced performance and cost'
-  },
-  'gpt-4.1-mini': {
-    displayName: 'GPT-4.1 Mini',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI',
-    isReasoning: false,
-    maxCompletionTokens: 8000,
-    description: 'Fast and economical for simpler tasks'
   },
   'gpt-5.2-codex': {
     displayName: 'GPT-5.2 Codex',
@@ -148,7 +143,7 @@ function loadSettings(): ModelSettings {
       if (parsed.model && MODEL_CONFIG[parsed.model as ModelType]) {
         return {
           model: parsed.model as ModelType,
-          reasoningEffort: ['low', 'medium', 'high'].includes(parsed.reasoningEffort) 
+          reasoningEffort: ['none', 'low', 'medium', 'high'].includes(parsed.reasoningEffort) 
             ? parsed.reasoningEffort 
             : DEFAULT_SETTINGS.reasoningEffort,
           featureOverrides: parsed.featureOverrides || {}

@@ -40,7 +40,9 @@ interface GroupInput {
 }
 
 interface PatternDetectionResult {
-  findings: ValidationFinding[];
+  findings: ValidationFinding[];           // All findings combined
+  patternFindings: ValidationFinding[];    // Architecture-level pattern findings only
+  serviceFindings: ValidationFinding[];    // Per-service best-practice findings
   patternsDetected: string[];
   serviceRulesApplied: number;
   patternRulesApplied: number;
@@ -222,7 +224,8 @@ export function detectWafPatterns(
   _groups?: GroupInput[],
 ): PatternDetectionResult {
   const startTime = performance.now();
-  const findings: ValidationFinding[] = [];
+  const patternFindings: ValidationFinding[] = [];
+  const serviceFindings: ValidationFinding[] = [];
   const patternsDetected: string[] = [];
   let serviceRulesApplied = 0;
   let patternRulesApplied = 0;
@@ -235,7 +238,7 @@ export function detectWafPatterns(
   for (const rule of ARCHITECTURE_PATTERN_RULES) {
     if (rule.pattern && patterns.includes(rule.pattern)) {
       patternRulesApplied++;
-      findings.push({
+      patternFindings.push({
         severity: rule.severity,
         category: rule.category,
         issue: rule.issue,
@@ -256,7 +259,7 @@ export function detectWafPatterns(
 
     for (const rule of applicableRules) {
       serviceRulesApplied++;
-      findings.push({
+      serviceFindings.push({
         severity: rule.severity,
         category: rule.category,
         issue: rule.issue,
@@ -266,6 +269,7 @@ export function detectWafPatterns(
     }
   }
 
+  const findings = [...patternFindings, ...serviceFindings];
   const elapsedMs = Math.round(performance.now() - startTime);
 
   console.log(`⚡ WAF pattern detection: ${findings.length} findings in ${elapsedMs}ms`);
@@ -274,6 +278,8 @@ export function detectWafPatterns(
 
   return {
     findings,
+    patternFindings,
+    serviceFindings,
     patternsDetected,
     serviceRulesApplied,
     patternRulesApplied,
