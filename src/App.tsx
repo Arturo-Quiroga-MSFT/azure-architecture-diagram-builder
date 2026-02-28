@@ -17,7 +17,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -57,6 +57,7 @@ import {
   type LayoutEngineType,
 } from './utils/layoutPresets';
 import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
+import { fitAllGroupsToContent } from './utils/groupUtils';
 import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackARMImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh } from './services/telemetryService';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
@@ -152,6 +153,10 @@ function App() {
   const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
   const modelSettingsRef = useRef<HTMLDivElement | null>(null);
   const [stylePreset, setStylePreset] = useState<'detailed' | 'presentation'>('detailed');
+
+  // Collapse / expand all groups
+  const [allGroupsCollapsed, setAllGroupsCollapsed] = useState(false);
+  const preCollapseGroupSizes = useRef<Map<string, { width: number; height: number }>>(new Map());
 
 
 
@@ -503,6 +508,51 @@ function App() {
     setEdges((eds) => eds.map(edge => ({ ...edge, selected: false })));
     setIsBulkSelectMenuOpen(false);
   }, [setNodes, setEdges]);
+
+  // Toggle collapse / expand all group nodes
+  const toggleCollapseAllGroups = useCallback(() => {
+    if (!allGroupsCollapsed) {
+      // Save current sizes before collapsing
+      const sizeMap = new Map<string, { width: number; height: number }>();
+      nodes.forEach(n => {
+        if (n.type === 'groupNode') {
+          sizeMap.set(n.id, {
+            width: (n.style?.width as number) || (n.width as number) || 400,
+            height: (n.style?.height as number) || (n.height as number) || 300,
+          });
+        }
+      });
+      preCollapseGroupSizes.current = sizeMap;
+
+      // Collapse all groups to fit content
+      const collapsed = fitAllGroupsToContent(nodes);
+      setNodes(collapsed);
+      setAllGroupsCollapsed(true);
+
+      // Zoom out to show the full picture
+      setTimeout(() => {
+        reactFlowInstance?.fitView?.({ padding: 0.3, duration: 300 });
+      }, 50);
+    } else {
+      // Restore saved sizes
+      const sizeMap = preCollapseGroupSizes.current;
+      setNodes(nds =>
+        nds.map(n => {
+          if (n.type === 'groupNode' && sizeMap.has(n.id)) {
+            const { width, height } = sizeMap.get(n.id)!;
+            return { ...n, style: { ...n.style, width, height } };
+          }
+          return n;
+        })
+      );
+      setAllGroupsCollapsed(false);
+      preCollapseGroupSizes.current = new Map();
+
+      setTimeout(() => {
+        reactFlowInstance?.fitView?.({ padding: 0.2, duration: 300 });
+      }, 50);
+    }
+  }, [allGroupsCollapsed, nodes, setNodes, reactFlowInstance]);
 
   // Get unique service types from current diagram
   const getServiceTypes = useCallback(() => {
@@ -2366,6 +2416,16 @@ function App() {
                   <PanelLeftClose size={18} />
                   Focus
                 </button>
+
+                <button
+                  onClick={toggleCollapseAllGroups}
+                  className={`btn btn-secondary${allGroupsCollapsed ? ' btn-active' : ''}`}
+                  title={allGroupsCollapsed ? 'Expand all groups to original size' : 'Collapse all groups to fit their content'}
+                  disabled={nodes.filter(n => n.type === 'groupNode').length === 0}
+                >
+                  {allGroupsCollapsed ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
+                  {allGroupsCollapsed ? 'Expand Groups' : 'Collapse Groups'}
+                </button>
               </div>
 
               <div className="toolbar-group">
@@ -2496,6 +2556,31 @@ function App() {
               >
                 <div className="prompt-text" style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.3px' }}>
                   <strong style={{ fontSize: '1.2rem' }}>⏳ Applying recommendations...</strong> Regenerating architecture with improvements
+                </div>
+              </div>
+            )}
+
+            {/* Loading banner for ARM template parsing */}
+            {isUploadingARM && (
+              <div
+                className="prompt-banner loading-banner"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '10px',
+                  transform: 'translateX(-50%)',
+                  zIndex: 1001,
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)',
+                  border: '2px solid #a78bfa',
+                  padding: '1rem 2.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 0 20px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2)',
+                  maxWidth: '700px',
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              >
+                <div className="prompt-text" style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.3px' }}>
+                  <strong style={{ fontSize: '1.2rem' }}>📄 Parsing ARM Template...</strong> Analyzing resources and generating architecture diagram
                 </div>
               </div>
             )}
