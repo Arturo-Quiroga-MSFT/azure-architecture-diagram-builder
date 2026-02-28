@@ -223,11 +223,17 @@ export function layoutArchitecture(
   // Extract positions from graph
   const positionedServices: PositionedService[] = services.map(service => {
     const node = g.node(service.id);
+    // Guard against NaN (can happen if a service references a removed/unknown group)
+    const sx = isNaN(node?.x) ? 0 : node.x;
+    const sy = isNaN(node?.y) ? 0 : node.y;
+    if (isNaN(node?.x) || isNaN(node?.y)) {
+      console.warn(`  ⚠️ Service "${service.id}" has NaN position from dagre — using fallback`);
+    }
     return {
       ...service,
       position: {
-        x: node.x - (NODE_WIDTH / 2),  // Center the node
-        y: node.y - (NODE_HEIGHT / 2)
+        x: sx - (NODE_WIDTH / 2),  // Center the node
+        y: sy - (NODE_HEIGHT / 2)
       }
     };
   });
@@ -248,14 +254,24 @@ export function layoutArchitecture(
       // Dagre provides x, y (center), width, and height for compound nodes
       const padding = opts.groupPadding;
       
+      // Guard against NaN values from dagre (empty compound nodes produce NaN)
+      const gx = isNaN(groupNode.x) ? 0 : groupNode.x;
+      const gy = isNaN(groupNode.y) ? 0 : groupNode.y;
+      const gw = isNaN(groupNode.width) || groupNode.width <= 0 ? 300 : groupNode.width;
+      const gh = isNaN(groupNode.height) || groupNode.height <= 0 ? 200 : groupNode.height;
+      
+      if (isNaN(groupNode.x) || isNaN(groupNode.y)) {
+        console.warn(`  ⚠️ Group "${group.id}" has NaN position from dagre (likely empty compound node) — using fallback`);
+      }
+      
       return {
         ...group,
         position: {
-          x: groupNode.x - (groupNode.width / 2) - padding,
-          y: groupNode.y - (groupNode.height / 2) - padding
+          x: gx - (gw / 2) - padding,
+          y: gy - (gh / 2) - padding
         },
-        width: groupNode.width + (padding * 2),
-        height: groupNode.height + (padding * 2)
+        width: gw + (padding * 2),
+        height: gh + (padding * 2)
       };
     })
     .filter((g): g is PositionedGroup => g !== null);

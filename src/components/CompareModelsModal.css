@@ -349,6 +349,18 @@
   letter-spacing: 0.03em;
 }
 
+.compare-badge.badge-thorough {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.compare-badge.badge-services {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.compare-badge.badge-detailed {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
 /* Stats grid */
 .compare-result-stats {
   display: grid;

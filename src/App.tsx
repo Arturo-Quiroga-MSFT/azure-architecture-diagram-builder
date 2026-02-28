@@ -1194,11 +1194,33 @@ function App() {
   const handleAIGenerate = useCallback(async (architecture: any, prompt: string, autoSnapshot: boolean = true) => {
     try {
       console.log('Generating architecture from:', architecture);
-      const { services, connections, groups, workflow: workflowSteps } = architecture;
+      const { services, connections, workflow: workflowSteps } = architecture;
+      let { groups } = architecture;
       
       if (!services || services.length === 0) {
         alert('No services were identified in your description. Please try a more detailed description.');
         return;
+      }
+
+      // ── Guard: remove empty groups & reassign orphaned services ──
+      if (groups && Array.isArray(groups) && services && Array.isArray(services)) {
+        const groupIds = new Set((groups as any[]).map((g: any) => g.id));
+        const populated = new Set<string>();
+        for (const s of services) {
+          if (s.groupId && groupIds.has(s.groupId)) populated.add(s.groupId);
+        }
+        const emptyGroupIds = (groups as any[]).filter((g: any) => !populated.has(g.id)).map((g: any) => g.id);
+        if (emptyGroupIds.length > 0) {
+          console.warn(`⚠️ Removing ${emptyGroupIds.length} empty group(s): ${emptyGroupIds.join(', ')}`);
+          groups = (groups as any[]).filter((g: any) => populated.has(g.id));
+          // Clear any service groupId that points to a removed group
+          for (const s of services) {
+            if (s.groupId && !populated.has(s.groupId)) {
+              console.warn(`  → Clearing orphaned groupId "${s.groupId}" on service "${s.id}"`);
+              s.groupId = null;
+            }
+          }
+        }
       }
 
       console.log(`Processing ${services.length} services, ${connections?.length || 0} connections, ${groups?.length || 0} groups`);

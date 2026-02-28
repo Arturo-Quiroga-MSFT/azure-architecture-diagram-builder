@@ -260,11 +260,19 @@ export async function layoutArchitecture(
       console.warn(`  ⚠️ [ELK] Group ${group.id} not found in layout result`);
       continue;
     }
+    // Guard against NaN values (empty compound nodes can produce NaN)
+    const gx = elkNode.x ?? 0;
+    const gy = elkNode.y ?? 0;
+    const gw = elkNode.width ?? 300;
+    const gh = elkNode.height ?? 200;
+    if (isNaN(gx) || isNaN(gy)) {
+      console.warn(`  ⚠️ [ELK] Group "${group.id}" has NaN position — using fallback`);
+    }
     positionedGroups.push({
       ...group,
-      position: { x: elkNode.x ?? 0, y: elkNode.y ?? 0 },
-      width: elkNode.width ?? 300,
-      height: elkNode.height ?? 200,
+      position: { x: isNaN(gx) ? 0 : gx, y: isNaN(gy) ? 0 : gy },
+      width: isNaN(gw) || gw <= 0 ? 300 : gw,
+      height: isNaN(gh) || gh <= 0 ? 200 : gh,
     });
   }
 
@@ -277,18 +285,16 @@ export async function layoutArchitecture(
       continue;
     }
 
-    if (service.groupId) {
-      // ELK gives positions relative to parent compound node already
-      positionedServices.push({
-        ...service,
-        position: { x: elkNode.x ?? 0, y: elkNode.y ?? 0 },
-      });
-    } else {
-      positionedServices.push({
-        ...service,
-        position: { x: elkNode.x ?? 0, y: elkNode.y ?? 0 },
-      });
+    // Guard against NaN
+    const sx = elkNode.x ?? 0;
+    const sy = elkNode.y ?? 0;
+    if (isNaN(sx) || isNaN(sy)) {
+      console.warn(`  ⚠️ [ELK] Service "${service.id}" has NaN position — using fallback`);
     }
+    positionedServices.push({
+      ...service,
+      position: { x: isNaN(sx) ? 0 : sx, y: isNaN(sy) ? 0 : sy },
+    });
   }
 
   // Post-process: resolve any overlapping groups

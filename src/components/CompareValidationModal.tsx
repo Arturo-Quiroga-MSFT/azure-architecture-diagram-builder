@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { X, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, FileJson, Shield, AlertTriangle, Info } from 'lucide-react';
+import { X, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, FileJson, FileText, Shield, AlertTriangle, Info } from 'lucide-react';
 import { isAzureOpenAIConfigured } from '../services/azureOpenAI';
 import { validateArchitecture, ArchitectureValidation, ValidationModelOverride, AIMetrics } from '../services/architectureValidator';
 import {
@@ -171,6 +171,15 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
     a.click();
   };
 
+  /** Download a markdown string as a .md file */
+  const downloadMarkdown = (content: string, filename: string) => {
+    const uri = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(content);
+    const a = document.createElement('a');
+    a.href = uri;
+    a.download = filename;
+    a.click();
+  };
+
   /** Save a single combined comparison report */
   const saveComparisonReport = () => {
     const ts = Date.now();
@@ -203,6 +212,122 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
       };
     }
     downloadJson(report, `validation-comparison-${ts}.json`);
+  };
+
+  /** Format the comparison results as a markdown report */
+  const formatComparisonAsMarkdown = (): string => {
+    const successful = results.filter(r => r.status === 'success');
+    const date = new Date().toLocaleString();
+
+    let md = `# 🔍 Architecture Validation Comparison Report\n\n`;
+    md += `**Generated:** ${date}\n`;
+    md += `**Reasoning Effort:** ${reasoningEffort}\n`;
+    md += `**Models Compared:** ${successful.length}\n\n`;
+
+    if (architectureDescription) {
+      md += `## Architecture\n\n${architectureDescription}\n\n`;
+    }
+    md += `**Services:** ${services.length} | **Connections:** ${connections.length}\n\n`;
+    md += `---\n\n`;
+
+    // Summary table
+    md += `## 📊 Overall Comparison\n\n`;
+    md += `| Model | Score | Findings | Critical | High | Medium | Low | Quick Wins | Time | Tokens |\n`;
+    md += `|-------|-------|----------|----------|------|--------|-----|------------|------|--------|\n`;
+    for (const r of successful) {
+      const name = MODEL_CONFIG[r.model].displayName;
+      const scoreIcon = (r.overallScore || 0) >= 80 ? '🟢' : (r.overallScore || 0) >= 60 ? '🟡' : '🔴';
+      const time = r.metrics ? `${(r.metrics.elapsedTimeMs / 1000).toFixed(1)}s` : '-';
+      const tokens = r.metrics?.totalTokens?.toLocaleString() || '-';
+      const best = r.overallScore === highestScore ? ' ⭐' : '';
+      md += `| ${name}${best} | ${scoreIcon} ${r.overallScore}/100 | ${r.totalFindings} | ${r.criticalCount} | ${r.highCount} | ${r.mediumCount} | ${r.lowCount} | ${r.quickWinCount} | ${time} | ${tokens} |\n`;
+    }
+    md += `\n`;
+
+    // Pillar comparison table
+    const allPillars = successful[0]?.pillarScores?.map(p => p.pillar) || [];
+    if (allPillars.length > 0) {
+      md += `## 🏗️ Pillar Score Comparison\n\n`;
+      md += `| Pillar | ${successful.map(r => MODEL_CONFIG[r.model].displayName).join(' | ')} |\n`;
+      md += `|--------|${successful.map(() => '------').join('|')}|\n`;
+      for (const pillar of allPillars) {
+        const scores = successful.map(r => {
+          const ps = r.pillarScores?.find(p => p.pillar === pillar);
+          const score = ps?.score || 0;
+          const icon = score >= 80 ? '🟢' : score >= 60 ? '🟡' : '🔴';
+          return `${icon} ${score}/100`;
+        });
+        md += `| ${pillar} | ${scores.join(' | ')} |\n`;
+      }
+      md += `\n`;
+    }
+
+    // Performance comparison
+    md += `## ⚡ Performance Comparison\n\n`;
+    md += `| Model | Elapsed Time | Prompt Tokens | Completion Tokens | Total Tokens |\n`;
+    md += `|-------|-------------|---------------|-------------------|--------------|\n`;
+    for (const r of successful) {
+      const name = MODEL_CONFIG[r.model].displayName;
+      const time = r.metrics ? `${(r.metrics.elapsedTimeMs / 1000).toFixed(1)}s` : '-';
+      const prompt = r.metrics?.promptTokens?.toLocaleString() || '-';
+      const completion = r.metrics?.completionTokens?.toLocaleString() || '-';
+      const total = r.metrics?.totalTokens?.toLocaleString() || '-';
+      const fastest = r.metrics?.elapsedTimeMs === fastestTime ? ' 🏆' : '';
+      const cheapest = r.metrics?.totalTokens === leastTokens ? ' 💰' : '';
+      md += `| ${name}${fastest}${cheapest} | ${time} | ${prompt} | ${completion} | ${total} |\n`;
+    }
+    md += `\n`;
+
+    // Detailed findings per model
+    md += `---\n\n`;
+    md += `## 📋 Detailed Findings by Model\n\n`;
+    for (const r of successful) {
+      const name = MODEL_CONFIG[r.model].displayName;
+      md += `### ${name} — Score: ${r.overallScore}/100\n\n`;
+
+      if (r.validation?.summary) {
+        md += `**Summary:** ${r.validation.summary}\n\n`;
+      }
+
+      for (const pillar of (r.validation?.pillars || [])) {
+        if (pillar.findings.length === 0) continue;
+        md += `#### ${pillar.pillar} (${pillar.score}/100)\n\n`;
+        for (const f of pillar.findings) {
+          const emoji: Record<string, string> = { critical: '🔴', high: '🟠', medium: '🟡', low: '🟢' };
+          md += `${emoji[f.severity] || '⚪'} **${f.category}** [${f.severity.toUpperCase()}]\n\n`;
+          md += `- **Issue:** ${f.issue}\n`;
+          md += `- **Recommendation:** ${f.recommendation}\n`;
+          if (f.resources && f.resources.length > 0) {
+            md += `- **Resources:** ${f.resources.join(', ')}\n`;
+          }
+          md += `\n`;
+        }
+      }
+
+      // Quick wins
+      if (r.validation?.quickWins && r.validation.quickWins.length > 0) {
+        md += `#### ⚡ Quick Wins\n\n`;
+        for (const qw of r.validation.quickWins) {
+          md += `- **${qw.category}:** ${qw.recommendation}\n`;
+        }
+        md += `\n`;
+      }
+      md += `---\n\n`;
+    }
+
+    // Footer
+    md += `*Report generated by Azure Architecture Diagram Builder*  \n`;
+    md += `*Powered by Azure OpenAI and Azure Well-Architected Framework*  \n`;
+    md += `*Generated: ${date}*\n`;
+
+    return md;
+  };
+
+  /** Save comparison report as markdown */
+  const saveComparisonReportMd = () => {
+    const ts = Date.now();
+    const md = formatComparisonAsMarkdown();
+    downloadMarkdown(md, `validation-comparison-${ts}.md`);
   };
 
   const completedCount = results.filter(r => r.status === 'success' || r.status === 'error').length;
@@ -345,7 +470,15 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
                       title="Download a single JSON with all validation results for analysis"
                     >
                       <FileJson size={14} />
-                      Save Comparison Report
+                      Save JSON
+                    </button>
+                    <button
+                      className="compare-save-btn compare-save-report-btn"
+                      onClick={saveComparisonReportMd}
+                      title="Download a formatted markdown report of the comparison"
+                    >
+                      <FileText size={14} />
+                      Save Markdown
                     </button>
                   </div>
                 )}

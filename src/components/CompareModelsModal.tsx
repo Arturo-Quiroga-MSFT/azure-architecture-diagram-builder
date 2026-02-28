@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson } from 'lucide-react';
+import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import {
   MODEL_CONFIG,
@@ -176,7 +176,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     }
   };
 
-  /** Save a single combined comparison report */
+  /** Save a single combined comparison report (JSON) */
   const saveComparisonReport = () => {
     const ts = Date.now();
     const successful = results.filter(r => r.status === 'success');
@@ -203,6 +203,146 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     downloadJson(report, `model-comparison-${ts}.json`);
   };
 
+  /** Download a markdown string as a .md file */
+  const downloadMarkdown = (content: string, filename: string) => {
+    const uri = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(content);
+    const a = document.createElement('a');
+    a.href = uri;
+    a.download = filename;
+    a.click();
+  };
+
+  /** Format the comparison results as a rich markdown report */
+  const formatComparisonAsMarkdown = (): string => {
+    const successful = results.filter(r => r.status === 'success');
+    const failed = results.filter(r => r.status === 'error');
+    const fastest = successful.length > 0
+      ? Math.min(...successful.map(r => r.metrics?.elapsedTimeMs || Infinity))
+      : 0;
+    const cheapest = successful.length > 0
+      ? Math.min(...successful.map(r => r.metrics?.totalTokens || Infinity))
+      : 0;
+    const mdMostServices = successful.length > 0
+      ? Math.max(...successful.map(r => r.serviceCount || 0))
+      : 0;
+    const mdMostConnections = successful.length > 0
+      ? Math.max(...successful.map(r => r.connectionCount || 0))
+      : 0;
+    const mdMostThorough = successful.length > 0
+      ? Math.max(...successful.map(r => (r.serviceCount || 0) + (r.connectionCount || 0) + (r.workflowSteps || 0)))
+      : 0;
+
+    let md = '';
+    md += '# Model Comparison Report\n\n';
+    md += `**Generated:** ${new Date().toISOString()}\n\n`;
+    md += `**Prompt:** ${prompt}\n\n`;
+    md += `**Reasoning Effort:** ${reasoningEffort}\n\n`;
+    md += `**Models Compared:** ${successful.length} successful`;
+    if (failed.length > 0) md += `, ${failed.length} failed`;
+    md += '\n\n';
+
+    // Summary table
+    md += '## Summary\n\n';
+    md += '| Model | Time | Tokens | Services | Connections | Groups | Workflow Steps |\n';
+    md += '|-------|------|--------|----------|-------------|--------|----------------|\n';
+    for (const r of successful) {
+      const name = MODEL_CONFIG[r.model].displayName;
+      const time = r.metrics?.elapsedTimeMs ? `${(r.metrics.elapsedTimeMs / 1000).toFixed(1)}s` : 'N/A';
+      const tokens = r.metrics?.totalTokens?.toLocaleString() ?? 'N/A';
+      const badges: string[] = [];
+      if (r.metrics?.elapsedTimeMs === fastest) badges.push('⚡ Fastest');
+      if (r.metrics?.totalTokens === cheapest) badges.push('💰 Cheapest');
+      const thoroughScore = (r.serviceCount || 0) + (r.connectionCount || 0) + (r.workflowSteps || 0);
+      if (thoroughScore === mdMostThorough && successful.length > 1) badges.push('🏆 Most Thorough');
+      if (r.serviceCount === mdMostServices && successful.length > 1) badges.push('📦 Most Services');
+      if (r.connectionCount === mdMostConnections && successful.length > 1) badges.push('🔗 Most Detailed');
+      const badgeStr = badges.length > 0 ? ' ' + badges.join(' ') : '';
+      md += `| **${name}**${badgeStr} | ${time} | ${tokens} | ${r.serviceCount ?? '-'} | ${r.connectionCount ?? '-'} | ${r.groupCount ?? '-'} | ${r.workflowSteps ?? '-'} |\n`;
+    }
+    md += '\n';
+
+    // Token usage breakdown
+    md += '## Token Usage\n\n';
+    md += '| Model | Prompt Tokens | Completion Tokens | Total |\n';
+    md += '|-------|--------------|-------------------|-------|\n';
+    for (const r of successful) {
+      const name = MODEL_CONFIG[r.model].displayName;
+      const pIn = r.metrics?.promptTokens?.toLocaleString() ?? '-';
+      const pOut = r.metrics?.completionTokens?.toLocaleString() ?? '-';
+      const pTotal = r.metrics?.totalTokens?.toLocaleString() ?? '-';
+      md += `| ${name} | ${pIn} | ${pOut} | ${pTotal} |\n`;
+    }
+    md += '\n';
+
+    // Per-model details
+    md += '## Architecture Details\n\n';
+    for (const r of successful) {
+      const name = MODEL_CONFIG[r.model].displayName;
+      md += `### ${name}\n\n`;
+
+      // Services
+      if (r.architecture?.services?.length) {
+        md += '**Services:**\n\n';
+        md += '| Service | Type | Group |\n';
+        md += '|---------|------|-------|\n';
+        for (const s of r.architecture.services) {
+          md += `| ${s.name} | ${s.type || '-'} | ${s.groupId || '-'} |\n`;
+        }
+        md += '\n';
+      }
+
+      // Groups
+      if (r.architecture?.groups?.length) {
+        md += '**Groups:** ';
+        md += r.architecture.groups.map((g: any) => g.label || g.id).join(', ');
+        md += '\n\n';
+      }
+
+      // Connections
+      if (r.architecture?.connections?.length) {
+        md += '**Connections:**\n\n';
+        md += '| From | To | Label | Type |\n';
+        md += '|------|----|-------|------|\n';
+        for (const c of r.architecture.connections) {
+          md += `| ${c.from} | ${c.to} | ${c.label || '-'} | ${c.type || 'sync'} |\n`;
+        }
+        md += '\n';
+      }
+
+      // Workflow
+      if (r.architecture?.workflow?.length) {
+        md += '**Workflow:**\n\n';
+        for (const w of r.architecture.workflow) {
+          md += `${w.step}. ${w.description}`;
+          if (w.services?.length) md += ` _(${w.services.join(', ')})_`;
+          md += '\n';
+        }
+        md += '\n';
+      }
+
+      md += '---\n\n';
+    }
+
+    // Failed models
+    if (failed.length > 0) {
+      md += '## Failed Models\n\n';
+      for (const r of failed) {
+        const name = MODEL_CONFIG[r.model].displayName;
+        md += `- **${name}**: ${r.error || 'Unknown error'}\n`;
+      }
+      md += '\n';
+    }
+
+    return md;
+  };
+
+  /** Save comparison report as Markdown */
+  const saveComparisonReportMd = () => {
+    const ts = Date.now();
+    const md = formatComparisonAsMarkdown();
+    downloadMarkdown(md, `model-comparison-${ts}.md`);
+  };
+
   const completedCount = results.filter(r => r.status === 'success' || r.status === 'error').length;
   const hasResults = results.length > 0;
 
@@ -216,6 +356,12 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     : 0;
   const mostServices = successResults.length > 0
     ? Math.max(...successResults.map(r => r.serviceCount || 0))
+    : 0;
+  const mostConnections = successResults.length > 0
+    ? Math.max(...successResults.map(r => r.connectionCount || 0))
+    : 0;
+  const mostThoroughScore = successResults.length > 0
+    ? Math.max(...successResults.map(r => (r.serviceCount || 0) + (r.connectionCount || 0) + (r.workflowSteps || 0)))
     : 0;
 
   if (!isOpen) return null;
@@ -313,6 +459,22 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                 </button>
               ))}
             </div>
+            <div className="compare-sample-prompts">
+              {[
+                'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
+                'An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication',
+                'A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability'
+              ].map((sample) => (
+                <button
+                  key={sample}
+                  className="compare-sample-chip"
+                  onClick={() => setPrompt(sample)}
+                  disabled={isRunning}
+                >
+                  {sample}
+                </button>
+              ))}
+            </div>
             <textarea
               className="compare-prompt"
               placeholder="Describe the Azure architecture you want to compare across models..."
@@ -364,7 +526,15 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                       title="Download a single JSON with all results for side-by-side analysis"
                     >
                       <FileJson size={14} />
-                      Save Comparison Report
+                      Save JSON
+                    </button>
+                    <button
+                      className="compare-save-btn compare-save-report-btn"
+                      onClick={saveComparisonReportMd}
+                      title="Download a formatted Markdown report for easy reading and sharing"
+                    >
+                      <FileText size={14} />
+                      Save Markdown
                     </button>
                   </div>
                 )}
@@ -414,6 +584,11 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                             <span>{result.metrics.totalTokens?.toLocaleString()} tokens</span>
                             {result.metrics.totalTokens === leastTokens && <span className="compare-badge">Cheapest</span>}
                           </div>
+                          {((result.serviceCount || 0) + (result.connectionCount || 0) + (result.workflowSteps || 0)) === mostThoroughScore && successResults.length > 1 && (
+                            <div className="compare-metric highlight">
+                              <span className="compare-badge badge-thorough">Most Thorough</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Architecture Stats */}
@@ -421,10 +596,12 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                           <div className={`compare-stat ${result.serviceCount === mostServices ? 'highlight' : ''}`}>
                             <span className="compare-stat-value">{result.serviceCount}</span>
                             <span className="compare-stat-label">Services</span>
+                            {result.serviceCount === mostServices && successResults.length > 1 && <span className="compare-badge badge-services">Most</span>}
                           </div>
-                          <div className="compare-stat">
+                          <div className={`compare-stat ${result.connectionCount === mostConnections ? 'highlight' : ''}`}>
                             <span className="compare-stat-value">{result.connectionCount}</span>
                             <span className="compare-stat-label">Connections</span>
+                            {result.connectionCount === mostConnections && successResults.length > 1 && <span className="compare-badge badge-detailed">Most</span>}
                           </div>
                           <div className="compare-stat">
                             <span className="compare-stat-value">{result.groupCount}</span>
