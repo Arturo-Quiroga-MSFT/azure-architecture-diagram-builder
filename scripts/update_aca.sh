@@ -18,9 +18,12 @@
 # Required .env variables:
 # - VITE_AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint URL (build-time)
 # - VITE_AZURE_OPENAI_API_KEY: Azure OpenAI API key (build-time)
+# - VITE_AZURE_OPENAI_DEPLOYMENT_GPT51: GPT-5.1 deployment name (build-time)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT52: GPT-5.2 deployment name (build-time)
-# - VITE_AZURE_OPENAI_DEPLOYMENT_GPT41: GPT-4.1 deployment name (build-time)
-# - VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI: GPT-4.1-mini deployment name (build-time)
+# - VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX: GPT-5.2 Codex deployment name (build-time)
+# - VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX: GPT-5.3 Codex deployment name (build-time)
+# - VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK: DeepSeek V3.2 Speciale deployment name (build-time)
+# - VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST: Grok 4.1 Fast deployment name (build-time)
 # - VITE_APPINSIGHTS_CONNECTION_STRING: Application Insights connection string (build-time, optional)
 # - AZURE_COSMOS_ENDPOINT: Cosmos DB endpoint (runtime)
 # - COSMOS_DATABASE_ID: Cosmos DB database ID (runtime)
@@ -59,11 +62,12 @@ az acr build --registry acrazurediagrams1767583743 \
     --image azure-diagram-builder:latest \
     --build-arg "VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT" \
     --build-arg "VITE_AZURE_OPENAI_API_KEY=$VITE_AZURE_OPENAI_API_KEY" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT51" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52" \
-    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT41=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41" \
-    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=$VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK" \
+    --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST=$VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST" \
     .
 
 echo "🔄 Updating Container App..."
