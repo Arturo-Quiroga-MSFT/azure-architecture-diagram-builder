@@ -1,0 +1,170 @@
+{
+  "groups": [
+    {
+      "id": "group-ingress",
+      "label": "Ingress/Edge"
+    },
+    {
+      "id": "group-app",
+      "label": "Application/Compute"
+    },
+    {
+      "id": "group-data",
+      "label": "Data/Storage"
+    },
+    {
+      "id": "group-identity",
+      "label": "Identity/Security"
+    },
+    {
+      "id": "group-monitoring",
+      "label": "Monitoring/Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "api-management",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway for routing, policies, and throttling",
+      "groupId": "group-ingress"
+    },
+    {
+      "id": "aks",
+      "name": "Azure Kubernetes Service",
+      "type": "Azure Kubernetes Service",
+      "category": "containers",
+      "description": "Hosts microservices and internal APIs",
+      "groupId": "group-app"
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Primary data store for microservices",
+      "groupId": "group-data"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication and token issuance",
+      "groupId": "group-identity"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects platform metrics and logs",
+      "groupId": "group-monitoring"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central log workspace for querying and retention",
+      "groupId": "group-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "api-management",
+      "to": "entra-id",
+      "label": "Validate access tokens for incoming API calls",
+      "type": "sync"
+    },
+    {
+      "from": "api-management",
+      "to": "aks",
+      "label": "Route authenticated requests to microservices",
+      "type": "sync"
+    },
+    {
+      "from": "aks",
+      "to": "cosmos-db",
+      "label": "Read and write service data per request",
+      "type": "sync"
+    },
+    {
+      "from": "aks",
+      "to": "azure-monitor",
+      "label": "Emit service metrics and logs",
+      "type": "sync"
+    },
+    {
+      "from": "azure-monitor",
+      "to": "log-analytics",
+      "label": "Ingest collected telemetry into workspace",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client sends API request through the gateway for policy enforcement",
+      "services": [
+        "api-management",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Gateway forwards authorized request to the appropriate microservice",
+      "services": [
+        "api-management",
+        "aks"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Microservice processes the request and persists domain data",
+      "services": [
+        "aks",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Microservice emits operational metrics and logs",
+      "services": [
+        "aks",
+        "azure-monitor"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Monitoring platform stores telemetry for query and analysis",
+      "services": [
+        "azure-monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 1227,
+    "totalTokens": 2620,
+    "elapsedTimeMs": 23666,
+    "model": "gpt-5.2-codex"
+  },
+  "metadata": {
+    "prompt": "Microservices app with API gateway and auth",
+    "model": "gpt-5.2-codex",
+    "modelDisplayName": "GPT-5.2 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 1227,
+      "totalTokens": 2620,
+      "elapsedTimeMs": 23666,
+      "model": "gpt-5.2-codex"
+    },
+    "savedAt": "2026-02-28T14:42:59.824Z",
+    "source": "model-comparison"
+  }
+}

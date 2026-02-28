@@ -1,0 +1,271 @@
+{
+  "groups": [
+    {
+      "id": "grp-edge",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / Compute"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point for HTTPS routing and edge acceleration",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "svc-apim",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway enforcing policies, throttling, and backend routing",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "svc-aks",
+      "name": "Azure Kubernetes Service",
+      "type": "Azure Kubernetes Service",
+      "category": "containers",
+      "description": "Hosts containerized microservices and internal APIs",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-servicebus",
+      "name": "Service Bus",
+      "type": "Service Bus",
+      "category": "integration",
+      "description": "Asynchronous messaging between microservices",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-sql",
+      "name": "SQL Database",
+      "type": "SQL Database",
+      "category": "databases",
+      "description": "Relational store for transactional microservice data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Low-latency cache for sessions and frequently accessed data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob/object storage for files, payloads, and artifacts",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Identity provider for OAuth2/OpenID Connect authentication",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Centralized secrets, keys, and certificate management",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-azmon",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Telemetry collection hub for platform and application metrics",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Queryable workspace for logs, traces, and diagnostics",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-apim",
+      "label": "Route external HTTPS traffic to managed API gateway endpoints",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-entra",
+      "label": "Validate OAuth2/JWT access tokens using OpenID metadata",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-aks",
+      "label": "Forward authenticated API operations to target microservice routes",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-keyvault",
+      "label": "Load gateway certificates and backend credential secrets",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-keyvault",
+      "label": "Fetch runtime secrets and connection strings via managed identity",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-redis",
+      "label": "Read and update cached session/context data for low-latency responses",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-sql",
+      "label": "Execute transactional reads/writes for core business entities",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-storage",
+      "label": "Store and retrieve blobs for documents and payload attachments",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-servicebus",
+      "label": "Publish domain events and background work messages",
+      "type": "async"
+    },
+    {
+      "from": "svc-servicebus",
+      "to": "svc-aks",
+      "label": "Deliver queued commands to worker microservices for processing",
+      "type": "async"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-azmon",
+      "label": "Emit application logs, traces, and performance metrics",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmon",
+      "to": "svc-loganalytics",
+      "label": "Ingest and index telemetry for centralized querying and retention",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client API calls enter through global edge and are handed to the API gateway.",
+      "services": [
+        "svc-frontdoor",
+        "svc-apim"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API gateway authenticates each request token with the identity provider before policy execution.",
+      "services": [
+        "svc-apim",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Gateway applies routing policies and forwards authorized requests to AKS-hosted microservices.",
+      "services": [
+        "svc-apim",
+        "svc-aks"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Microservices retrieve secrets from Key Vault and use Redis to accelerate session and reference-data access.",
+      "services": [
+        "svc-aks",
+        "svc-keyvault",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Business operations persist transactional records in SQL and store large payloads in Blob storage.",
+      "services": [
+        "svc-aks",
+        "svc-sql",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Services publish asynchronous events to Service Bus, and worker services consume queued tasks.",
+      "services": [
+        "svc-aks",
+        "svc-servicebus"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "AKS sends operational telemetry to Azure Monitor, which forwards logs to Log Analytics for analysis.",
+      "services": [
+        "svc-aks",
+        "svc-azmon",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2532,
+    "totalTokens": 3925,
+    "elapsedTimeMs": 49559,
+    "model": "gpt-5.3-codex"
+  },
+  "metadata": {
+    "prompt": "Microservices app with API gateway and auth",
+    "model": "gpt-5.3-codex",
+    "modelDisplayName": "GPT-5.3 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2532,
+      "totalTokens": 3925,
+      "elapsedTimeMs": 49559,
+      "model": "gpt-5.3-codex"
+    },
+    "savedAt": "2026-02-28T14:42:59.976Z",
+    "source": "model-comparison"
+  }
+}

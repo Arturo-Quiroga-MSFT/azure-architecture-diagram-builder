@@ -1,0 +1,279 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "grp-processing",
+      "label": "Stream Processing & Apps"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data & Dashboards"
+    },
+    {
+      "id": "grp-identity-security",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "grp-monitoring",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-iothub",
+      "name": "Azure IoT Hub",
+      "type": "Azure IoT Hub",
+      "category": "iot",
+      "description": "Secure device connectivity and ingestion of real-time telemetry",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-stream-analytics",
+      "name": "Azure Stream Analytics",
+      "type": "Azure Stream Analytics",
+      "category": "analytics",
+      "description": "Real-time stream processing, filtering, windowing, and anomaly detection",
+      "groupId": "grp-processing"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Event-driven enrichment, business rules, and issuing cloud-to-device commands",
+      "groupId": "grp-processing"
+    },
+    {
+      "id": "svc-cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Low-latency operational store for processed telemetry and aggregates",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-adls",
+      "name": "Azure Data Lake Storage",
+      "type": "Azure Data Lake Storage",
+      "category": "storage",
+      "description": "Durable storage for raw telemetry and long-term historical retention",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-powerbi",
+      "name": "Power BI Embedded",
+      "type": "Power BI Embedded",
+      "category": "analytics",
+      "description": "Real-time dashboards and embedded reporting over telemetry data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User and app authentication/authorization for dashboards and APIs",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Centralized secret and key management for applications",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central monitoring hub for application metrics and logs",
+      "groupId": "grp-monitoring"
+    },
+    {
+      "id": "svc-log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log store and query workspace for troubleshooting and operational insights",
+      "groupId": "grp-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-iothub",
+      "to": "svc-stream-analytics",
+      "label": "Stream device telemetry events into real-time processing job",
+      "type": "async"
+    },
+    {
+      "from": "svc-iothub",
+      "to": "svc-adls",
+      "label": "Persist raw telemetry stream for replay and long-term retention",
+      "type": "async"
+    },
+    {
+      "from": "svc-stream-analytics",
+      "to": "svc-cosmosdb",
+      "label": "Write processed telemetry and rolling aggregates for low-latency querying",
+      "type": "sync"
+    },
+    {
+      "from": "svc-stream-analytics",
+      "to": "svc-adls",
+      "label": "Store enriched/curated stream outputs for historical analytics",
+      "type": "sync"
+    },
+    {
+      "from": "svc-cosmosdb",
+      "to": "svc-functions",
+      "label": "Trigger change-feed processing for alerts and downstream actions",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-cosmosdb",
+      "label": "Upsert alert states, incident records, and enriched entities",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-iothub",
+      "label": "Send cloud-to-device commands or update desired properties",
+      "type": "sync"
+    },
+    {
+      "from": "svc-powerbi",
+      "to": "svc-cosmosdb",
+      "label": "Query near-real-time aggregates and status for dashboards",
+      "type": "sync"
+    },
+    {
+      "from": "svc-entra",
+      "to": "svc-powerbi",
+      "label": "Authenticate users and issue tokens for embedded dashboard access",
+      "type": "sync"
+    },
+    {
+      "from": "svc-entra",
+      "to": "svc-functions",
+      "label": "Validate client identity and authorize API calls for operational actions",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-keyvault",
+      "label": "Retrieve secrets/keys for downstream connections and signing operations",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-azure-monitor",
+      "label": "Emit application logs, custom metrics, and failure signals",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azure-monitor",
+      "to": "svc-log-analytics",
+      "label": "Centralize logs and metrics for querying, alerting, and retention",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Devices publish telemetry securely to the cloud ingestion endpoint.",
+      "services": [
+        "svc-iothub",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Incoming telemetry is streamed into real-time processing for filtering, windowing, and anomaly detection.",
+      "services": [
+        "svc-iothub",
+        "svc-stream-analytics"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Raw telemetry is durably persisted for replay, auditing, and long-term history.",
+      "services": [
+        "svc-iothub",
+        "svc-adls"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Processed outputs and rolling aggregates are written to the operational store for low-latency queries.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-cosmosdb"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Curated/enriched stream outputs are also stored in the data lake for historical analytics and batch exploration.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-adls"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "New/changed records trigger serverless logic to enrich events, calculate alert states, and persist operational entities.",
+      "services": [
+        "svc-cosmosdb",
+        "svc-functions",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "When conditions are met, serverless logic issues cloud-to-device commands or desired property updates back to devices.",
+      "services": [
+        "svc-functions",
+        "svc-iothub"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Authenticated users view near-real-time dashboards powered by operational aggregates while the app emits telemetry for monitoring and troubleshooting.",
+      "services": [
+        "svc-entra",
+        "svc-powerbi",
+        "svc-cosmosdb",
+        "svc-functions",
+        "svc-azure-monitor",
+        "svc-log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2564,
+    "totalTokens": 3957,
+    "elapsedTimeMs": 49832,
+    "model": "gpt-5.2"
+  },
+  "metadata": {
+    "prompt": "Real-time IoT telemetry pipeline with dashboards",
+    "model": "gpt-5.2",
+    "modelDisplayName": "GPT-5.2",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2564,
+      "totalTokens": 3957,
+      "elapsedTimeMs": 49832,
+      "model": "gpt-5.2"
+    },
+    "savedAt": "2026-02-28T14:42:44.431Z",
+    "source": "model-comparison"
+  }
+}

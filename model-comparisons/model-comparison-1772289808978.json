@@ -1,0 +1,1697 @@
+{
+  "prompt": "RAG chatbot with vector search and AI",
+  "timestamp": "2026-02-28T14:43:28.079Z",
+  "reasoningEffort": "low",
+  "modelCount": 6,
+  "results": {
+    "gpt51-low": {
+      "model": "gpt-5.1",
+      "displayName": "GPT-5.1",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 2550,
+        "totalTokens": 3943,
+        "elapsedTimeMs": 14611,
+        "model": "gpt-5.1"
+      },
+      "serviceCount": 9,
+      "connectionCount": 9,
+      "groupCount": 5,
+      "workflowSteps": 10,
+      "architecture": {
+        "groups": [
+          {
+            "id": "group-ingress",
+            "label": "Ingress & Client"
+          },
+          {
+            "id": "group-app",
+            "label": "Application & AI"
+          },
+          {
+            "id": "group-data",
+            "label": "Data & Vector Search"
+          },
+          {
+            "id": "group-identity",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "group-monitoring",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "swa",
+            "name": "Azure Static Web Apps",
+            "type": "Azure Static Web Apps",
+            "category": "web",
+            "description": "Hosts the RAG chatbot frontend and serves the client-side application",
+            "groupId": "group-ingress"
+          },
+          {
+            "id": "appsvc",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Backend API implementing RAG orchestration, embeddings, and chat session management",
+            "groupId": "group-app"
+          },
+          {
+            "id": "aoai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Provides embeddings and chat completion models for the RAG chatbot",
+            "groupId": "group-app"
+          },
+          {
+            "id": "search",
+            "name": "Azure Cognitive Search",
+            "type": "Azure Cognitive Search",
+            "category": "ai + machine learning",
+            "description": "Stores document vectors and performs semantic and vector similarity search",
+            "groupId": "group-data"
+          },
+          {
+            "id": "storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Holds source documents and chunks used for indexing and retrieval",
+            "groupId": "group-data"
+          },
+          {
+            "id": "kv",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores secrets, keys, and credentials for backend and AI services",
+            "groupId": "group-identity"
+          },
+          {
+            "id": "entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Provides user authentication and token issuance for secure chatbot access",
+            "groupId": "group-identity"
+          },
+          {
+            "id": "azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central entry point for metrics and logs from the application backend",
+            "groupId": "group-monitoring"
+          },
+          {
+            "id": "loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Stores and queries logs and telemetry for troubleshooting and insights",
+            "groupId": "group-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "swa",
+            "to": "entra",
+            "label": "Redirect browser to authenticate user and obtain access token via OAuth2/OIDC",
+            "type": "sync"
+          },
+          {
+            "from": "swa",
+            "to": "appsvc",
+            "label": "Send user chat prompts and conversation context to backend over HTTPS",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "search",
+            "label": "Perform vector similarity search using embedded query to retrieve relevant document chunks",
+            "type": "sync"
+          },
+          {
+            "from": "search",
+            "to": "storage",
+            "label": "Pull source documents and metadata from blob containers during indexing via indexers",
+            "type": "async"
+          },
+          {
+            "from": "appsvc",
+            "to": "storage",
+            "label": "Read and write document chunks and metadata for RAG preprocessing and updates",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "aoai",
+            "label": "Call embeddings and chat completion endpoints with retrieved context for answer generation",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "kv",
+            "label": "Retrieve Azure OpenAI keys and connection strings securely at startup",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "azmonitor",
+            "label": "Send application metrics, traces, and dependency telemetry",
+            "type": "async"
+          },
+          {
+            "from": "azmonitor",
+            "to": "loganalytics",
+            "label": "Ingest consolidated platform and application logs for centralized analysis",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User opens the chatbot UI, which initiates authentication through Microsoft Entra ID to obtain an access token.",
+            "services": [
+              "swa",
+              "entra"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "The authenticated user submits a chat message and the frontend posts the prompt and conversation state to the backend API.",
+            "services": [
+              "swa",
+              "appsvc"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "The backend orchestrator queries Azure Cognitive Search with an embedded query to perform vector similarity search over indexed documents.",
+            "services": [
+              "appsvc",
+              "search"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Azure Cognitive Search uses its indexers to pull or refresh document content and metadata from the Storage Account as needed.",
+            "services": [
+              "search",
+              "storage"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "The backend may directly read or update document chunks and metadata in the Storage Account for RAG preprocessing or ingestion workflows.",
+            "services": [
+              "appsvc",
+              "storage"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "The backend calls Azure OpenAI, passing the user prompt along with top-ranked document snippets as context to generate an answer.",
+            "services": [
+              "appsvc",
+              "aoai"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "The backend returns the generated answer and any cited document references back to the frontend for display to the user.",
+            "services": [
+              "appsvc",
+              "swa"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "The backend periodically retrieves secrets such as Azure OpenAI API keys and connection strings from Key Vault.",
+            "services": [
+              "appsvc",
+              "kv"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "The backend emits metrics, logs, and traces to Azure Monitor for observability.",
+            "services": [
+              "appsvc",
+              "azmonitor"
+            ]
+          },
+          {
+            "step": 10,
+            "description": "Azure Monitor forwards collected logs and telemetry to Log Analytics for querying, dashboards, and alerting.",
+            "services": [
+              "azmonitor",
+              "loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 2550,
+          "totalTokens": 3943,
+          "elapsedTimeMs": 14611,
+          "model": "gpt-5.1"
+        }
+      }
+    },
+    "gpt52-low": {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 2362,
+        "totalTokens": 3755,
+        "elapsedTimeMs": 61244,
+        "model": "gpt-5.2"
+      },
+      "serviceCount": 12,
+      "connectionCount": 13,
+      "groupCount": 5,
+      "workflowSteps": 9,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress / Edge"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application / Compute (RAG Orchestration)"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data / Storage (Knowledge + State)"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity / Security"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring / Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point with TLS termination and routing to the chatbot API",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts the chatbot web/API and orchestrates RAG calls",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Ingestion pipeline to chunk documents and push embeddings/index updates",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Publishes document upload events to trigger ingestion",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Generates embeddings and produces grounded chat responses",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-search",
+            "name": "Azure Cognitive Search",
+            "type": "Azure Cognitive Search",
+            "category": "ai + machine learning",
+            "description": "Vector index for similarity search and retrieval for RAG",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores source documents and processed chunks/blobs",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Stores conversation state, user context, and chat transcripts",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates users and issues tokens for the chatbot",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores secrets/keys (e.g., OpenAI/Search credentials) for the app",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central collection point for application metrics and logs",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Queryable log store for troubleshooting and audits",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-appservice",
+            "label": "Route HTTPS chat requests to the chatbot API",
+            "type": "sync"
+          },
+          {
+            "from": "svc-entra",
+            "to": "svc-appservice",
+            "label": "Validate user sign-in and authorize API calls via tokens",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-keyvault",
+            "label": "Retrieve secrets for OpenAI and Search access at runtime",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-search",
+            "label": "Submit vector similarity query and retrieve top-k passages",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-openai",
+            "label": "Generate grounded chat completion using retrieved context",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-cosmos",
+            "label": "Read/write conversation history and user/session context",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-functions",
+            "label": "Invoke ingestion job for newly uploaded or updated documents",
+            "type": "sync"
+          },
+          {
+            "from": "svc-storage",
+            "to": "svc-eventgrid",
+            "label": "Emit event when a document blob is created or updated",
+            "type": "async"
+          },
+          {
+            "from": "svc-eventgrid",
+            "to": "svc-functions",
+            "label": "Trigger ingestion function to process the changed document",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Read source documents and write normalized chunks/metadata",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-search",
+            "label": "Upsert chunk embeddings and metadata into the vector index",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-azmonitor",
+            "label": "Send application logs, request metrics, and dependency telemetry",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmonitor",
+            "to": "svc-loganalytics",
+            "label": "Centralize collected telemetry for querying and retention",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User accesses the chatbot endpoint and requests are routed to the application.",
+            "services": [
+              "svc-frontdoor",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "User is authenticated and the app authorizes the chat request.",
+            "services": [
+              "svc-entra",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "The application loads required secrets to call downstream AI and search services.",
+            "services": [
+              "svc-appservice",
+              "svc-keyvault"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "The app retrieves relevant context by running a vector similarity search.",
+            "services": [
+              "svc-appservice",
+              "svc-search"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "The app sends retrieved context to the LLM to generate a grounded response.",
+            "services": [
+              "svc-appservice",
+              "svc-openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Conversation state and transcripts are persisted for continuity and analytics.",
+            "services": [
+              "svc-appservice",
+              "svc-cosmos"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "When documents are uploaded/changed, events trigger ingestion and index updates.",
+            "services": [
+              "svc-storage",
+              "svc-eventgrid",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Ingestion reads documents, creates chunks/embeddings, and updates the vector index.",
+            "services": [
+              "svc-functions",
+              "svc-storage",
+              "svc-search"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Operational telemetry is collected centrally for troubleshooting and reporting.",
+            "services": [
+              "svc-appservice",
+              "svc-azmonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 2362,
+          "totalTokens": 3755,
+          "elapsedTimeMs": 61244,
+          "model": "gpt-5.2"
+        }
+      }
+    },
+    "gpt52codex-low": {
+      "model": "gpt-5.2-codex",
+      "displayName": "GPT-5.2 Codex",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 1388,
+        "totalTokens": 2781,
+        "elapsedTimeMs": 18991,
+        "model": "gpt-5.2-codex"
+      },
+      "serviceCount": 10,
+      "connectionCount": 10,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-edge",
+            "label": "Ingress / Edge"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application / Compute"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data / Storage"
+          },
+          {
+            "id": "grp-sec",
+            "label": "Identity / Security"
+          },
+          {
+            "id": "grp-mon",
+            "label": "Monitoring / Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point and routing for chatbot UI/API",
+            "groupId": "grp-edge"
+          },
+          {
+            "id": "svc-apim",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway for chatbot endpoints and policies",
+            "groupId": "grp-edge"
+          },
+          {
+            "id": "svc-app",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts RAG chatbot orchestration and API",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Generates responses and embeddings for RAG",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-search",
+            "name": "Azure Cognitive Search",
+            "type": "Azure Cognitive Search",
+            "category": "ai + machine learning",
+            "description": "Vector search index for retrieval",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores source documents for indexing",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "User authentication for chatbot access",
+            "groupId": "grp-sec"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores API keys and secrets",
+            "groupId": "grp-sec"
+          },
+          {
+            "id": "svc-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects metrics and traces from app",
+            "groupId": "grp-mon"
+          },
+          {
+            "id": "svc-log",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Central log store for analysis",
+            "groupId": "grp-mon"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-apim",
+            "label": "Route external chatbot requests to API gateway",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-app",
+            "label": "Forward validated chatbot API calls",
+            "type": "sync"
+          },
+          {
+            "from": "svc-app",
+            "to": "svc-openai",
+            "label": "Send prompts and retrieve completions/embeddings",
+            "type": "sync"
+          },
+          {
+            "from": "svc-app",
+            "to": "svc-search",
+            "label": "Query vector index for relevant passages",
+            "type": "sync"
+          },
+          {
+            "from": "svc-storage",
+            "to": "svc-search",
+            "label": "Provide documents for indexing and enrichment",
+            "type": "async"
+          },
+          {
+            "from": "svc-app",
+            "to": "svc-storage",
+            "label": "Store and fetch conversation context or uploads",
+            "type": "sync"
+          },
+          {
+            "from": "svc-entra",
+            "to": "svc-apim",
+            "label": "Validate user tokens for API access",
+            "type": "sync"
+          },
+          {
+            "from": "svc-app",
+            "to": "svc-keyvault",
+            "label": "Retrieve secrets for downstream calls",
+            "type": "sync"
+          },
+          {
+            "from": "svc-app",
+            "to": "svc-monitor",
+            "label": "Emit application metrics and traces",
+            "type": "sync"
+          },
+          {
+            "from": "svc-monitor",
+            "to": "svc-log",
+            "label": "Persist collected telemetry for analysis",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User requests reach the global edge and are routed to the API gateway",
+            "services": [
+              "svc-frontdoor",
+              "svc-apim"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "API gateway validates user identity before allowing chatbot calls",
+            "services": [
+              "svc-apim",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Validated requests are sent to the chatbot application",
+            "services": [
+              "svc-apim",
+              "svc-app"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Chatbot retrieves relevant content via vector search",
+            "services": [
+              "svc-app",
+              "svc-search"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Chatbot composes prompts and obtains AI-generated responses",
+            "services": [
+              "svc-app",
+              "svc-openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Chatbot stores or retrieves supporting context and uploads",
+            "services": [
+              "svc-app",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Documents are indexed asynchronously into the vector store",
+            "services": [
+              "svc-storage",
+              "svc-search"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Application emits operational telemetry for monitoring and analysis",
+            "services": [
+              "svc-app",
+              "svc-monitor",
+              "svc-log"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 1388,
+          "totalTokens": 2781,
+          "elapsedTimeMs": 18991,
+          "model": "gpt-5.2-codex"
+        }
+      }
+    },
+    "gpt53codex-low": {
+      "model": "gpt-5.3-codex",
+      "displayName": "GPT-5.3 Codex",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 2359,
+        "totalTokens": 3752,
+        "elapsedTimeMs": 45798,
+        "model": "gpt-5.3-codex"
+      },
+      "serviceCount": 11,
+      "connectionCount": 13,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "1) Ingress & API Edge"
+          },
+          {
+            "id": "grp-app-ai",
+            "label": "2) Application & RAG Intelligence"
+          },
+          {
+            "id": "grp-data",
+            "label": "3) Data & Knowledge Storage"
+          },
+          {
+            "id": "grp-identity-security",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "grp-monitoring",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point for chatbot traffic with edge routing.",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-apim",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "Publishes and secures chatbot APIs with policies and throttling.",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts chatbot backend orchestration for retrieval and generation.",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Processes document ingestion, chunking, and indexing workflows.",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Generates embeddings and grounded responses for chatbot queries.",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-search",
+            "name": "Azure Cognitive Search",
+            "type": "Azure Cognitive Search",
+            "category": "ai + machine learning",
+            "description": "Stores and serves vector index for semantic document retrieval.",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Holds raw source documents and optional chat transcript archives.",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates users and issues access tokens for API access.",
+            "groupId": "grp-identity-security"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores API keys, connection strings, and model endpoint secrets.",
+            "groupId": "grp-identity-security"
+          },
+          {
+            "id": "svc-azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects core application metrics and telemetry signals.",
+            "groupId": "grp-monitoring"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Central workspace for queryable logs and operational analysis.",
+            "groupId": "grp-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-apim",
+            "label": "Route chatbot HTTPS requests to managed API endpoint",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-appservice",
+            "label": "Forward authenticated chat calls to RAG orchestration backend",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-entra",
+            "label": "Validate bearer token and user identity claims per request",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-search",
+            "label": "Execute vector and semantic retrieval for top relevant chunks",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-openai",
+            "label": "Submit grounded prompt with retrieved context for final answer generation",
+            "type": "sync"
+          },
+          {
+            "from": "svc-storage",
+            "to": "svc-functions",
+            "label": "Trigger ingestion pipeline when new documents are uploaded",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-openai",
+            "label": "Generate embeddings for parsed document chunks",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-search",
+            "label": "Upsert chunk vectors and metadata into search index",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-keyvault",
+            "label": "Retrieve runtime secrets for model and search service access",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-storage",
+            "label": "Persist conversation transcripts and feedback artifacts",
+            "type": "sync"
+          },
+          {
+            "from": "svc-search",
+            "to": "svc-storage",
+            "label": "Read source document content during index refresh operations",
+            "type": "optional"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-azmonitor",
+            "label": "Emit request latency, token usage, and failure telemetry",
+            "type": "async"
+          },
+          {
+            "from": "svc-azmonitor",
+            "to": "svc-loganalytics",
+            "label": "Stream consolidated metrics and logs to analytics workspace",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User sends a chat message through the global edge endpoint, which is routed to the managed API surface.",
+            "services": [
+              "svc-frontdoor",
+              "svc-apim"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "API layer forwards the request to chatbot orchestration and validates the caller identity token.",
+            "services": [
+              "svc-apim",
+              "svc-appservice",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Backend retrieves secrets needed for downstream AI and retrieval calls from centralized secret storage.",
+            "services": [
+              "svc-appservice",
+              "svc-keyvault"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "RAG retrieval executes vector/semantic search to collect relevant knowledge chunks for the user query.",
+            "services": [
+              "svc-appservice",
+              "svc-search"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Grounded prompt containing retrieved context is sent to the language model to generate the final response.",
+            "services": [
+              "svc-appservice",
+              "svc-openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Response interactions and transcript artifacts are stored for auditability and future tuning.",
+            "services": [
+              "svc-appservice",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "When new files land in storage, serverless ingestion creates embeddings and updates the vector index.",
+            "services": [
+              "svc-storage",
+              "svc-functions",
+              "svc-search"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Operational telemetry from the chatbot backend is collected and centralized for troubleshooting and analysis.",
+            "services": [
+              "svc-appservice",
+              "svc-azmonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 2359,
+          "totalTokens": 3752,
+          "elapsedTimeMs": 45798,
+          "model": "gpt-5.3-codex"
+        }
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-v3.2-speciale",
+      "displayName": "DeepSeek V3.2 Speciale",
+      "metrics": {
+        "promptTokens": 1420,
+        "completionTokens": 1708,
+        "totalTokens": 3128,
+        "elapsedTimeMs": 21509,
+        "model": "deepseek-v3.2-speciale"
+      },
+      "serviceCount": 10,
+      "connectionCount": 13,
+      "groupCount": 5,
+      "workflowSteps": 10,
+      "architecture": {
+        "groups": [
+          {
+            "id": "ingress",
+            "label": "Ingress & Security"
+          },
+          {
+            "id": "compute",
+            "label": "Application & AI Processing"
+          },
+          {
+            "id": "data",
+            "label": "Data Storage"
+          },
+          {
+            "id": "security",
+            "label": "Identity & Secrets"
+          },
+          {
+            "id": "monitoring",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global load balancer with WAF, DDoS protection, and SSL termination",
+            "groupId": "ingress"
+          },
+          {
+            "id": "appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts the web application (RAG frontend and API)",
+            "groupId": "compute"
+          },
+          {
+            "id": "function",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Serverless functions for processing RAG queries and vector search",
+            "groupId": "compute"
+          },
+          {
+            "id": "openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Provides GPT models for generating responses",
+            "groupId": "compute"
+          },
+          {
+            "id": "search",
+            "name": "Azure Cognitive Search",
+            "type": "Azure Cognitive Search",
+            "category": "ai + machine learning",
+            "description": "Vector search index over documents, integrated with OpenAI embeddings",
+            "groupId": "data"
+          },
+          {
+            "id": "storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Blob storage for raw documents and generated embeddings",
+            "groupId": "data"
+          },
+          {
+            "id": "keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores API keys, secrets, and connection strings",
+            "groupId": "security"
+          },
+          {
+            "id": "entraid",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication and authorization for users and services",
+            "groupId": "security"
+          },
+          {
+            "id": "monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects metrics and logs, provides alerts",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Central repository for log data and queries",
+            "groupId": "monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "frontdoor",
+            "to": "appservice",
+            "label": "Routes HTTP/HTTPS traffic",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "function",
+            "label": "Invokes RAG processing via API",
+            "type": "sync"
+          },
+          {
+            "from": "function",
+            "to": "openai",
+            "label": "Calls OpenAI for embeddings and completions",
+            "type": "sync"
+          },
+          {
+            "from": "function",
+            "to": "search",
+            "label": "Performs vector search on indexed documents",
+            "type": "sync"
+          },
+          {
+            "from": "search",
+            "to": "storage",
+            "label": "Retrieves document chunks from blob storage",
+            "type": "sync"
+          },
+          {
+            "from": "function",
+            "to": "storage",
+            "label": "Stores generated embeddings and logs",
+            "type": "async"
+          },
+          {
+            "from": "appservice",
+            "to": "entraid",
+            "label": "Authenticates users via OAuth2",
+            "type": "sync"
+          },
+          {
+            "from": "function",
+            "to": "keyvault",
+            "label": "Retrieves API keys and secrets",
+            "type": "sync"
+          },
+          {
+            "from": "monitor",
+            "to": "loganalytics",
+            "label": "Sends logs and metrics for analysis",
+            "type": "async"
+          },
+          {
+            "from": "appservice",
+            "to": "monitor",
+            "label": "Sends application metrics and logs",
+            "type": "async"
+          },
+          {
+            "from": "function",
+            "to": "monitor",
+            "label": "Sends function metrics and logs",
+            "type": "async"
+          },
+          {
+            "from": "openai",
+            "to": "monitor",
+            "label": "Sends AI service metrics",
+            "type": "async"
+          },
+          {
+            "from": "search",
+            "to": "monitor",
+            "label": "Sends search performance metrics",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User accesses the web application via browser. Azure Front Door routes the request to the App Service, enforcing WAF and DDoS protection.",
+            "services": [
+              "frontdoor",
+              "appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "App Service authenticates the user via Microsoft Entra ID and serves the frontend UI.",
+            "services": [
+              "appservice",
+              "entraid"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "User submits a query. App Service invokes an Azure Function to process the RAG workflow.",
+            "services": [
+              "appservice",
+              "function"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Azure Function retrieves secrets (OpenAI API key, search credentials) from Key Vault.",
+            "services": [
+              "function",
+              "keyvault"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Function calls Azure OpenAI to generate an embedding vector for the query.",
+            "services": [
+              "function",
+              "openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Function uses the embedding to perform a vector search in Azure Cognitive Search, retrieving relevant document chunks.",
+            "services": [
+              "function",
+              "search"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Cognitive Search fetches the actual chunk content from Blob Storage if not stored inline.",
+            "services": [
+              "search",
+              "storage"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Function sends the query and retrieved context to Azure OpenAI to generate a final answer.",
+            "services": [
+              "function",
+              "openai"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Function returns the answer to App Service, which displays it to the user.",
+            "services": [
+              "function",
+              "appservice"
+            ]
+          },
+          {
+            "step": 10,
+            "description": "All services emit logs and metrics to Azure Monitor, which forwards to Log Analytics for centralized observability.",
+            "services": [
+              "appservice",
+              "function",
+              "openai",
+              "search",
+              "monitor",
+              "loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1420,
+          "completionTokens": 1708,
+          "totalTokens": 3128,
+          "elapsedTimeMs": 21509,
+          "model": "deepseek-v3.2-speciale"
+        }
+      }
+    },
+    "grok41fast": {
+      "model": "grok-4.1-fast",
+      "displayName": "Grok 4.1 Fast",
+      "metrics": {
+        "promptTokens": 1366,
+        "completionTokens": 1523,
+        "totalTokens": 2889,
+        "elapsedTimeMs": 8148,
+        "model": "grok-4-1-fast-non-reasoning"
+      },
+      "serviceCount": 11,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 10,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge",
+            "label": "Edge & Networking"
+          },
+          {
+            "id": "ai",
+            "label": "AI & Chatbot"
+          },
+          {
+            "id": "data",
+            "label": "Data & Vector Search"
+          },
+          {
+            "id": "identity",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "group-monitor",
+            "label": "Monitoring"
+          }
+        ],
+        "services": [
+          {
+            "id": "frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point with WAF",
+            "groupId": "edge"
+          },
+          {
+            "id": "appgw",
+            "name": "Application Gateway",
+            "type": "Application Gateway",
+            "category": "networking",
+            "description": "Web app firewall & routing",
+            "groupId": "edge"
+          },
+          {
+            "id": "chatbot",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Generative AI chatbot responses",
+            "groupId": "ai"
+          },
+          {
+            "id": "search",
+            "name": "Azure Cognitive Search",
+            "type": "Azure Cognitive Search",
+            "category": "ai + machine learning",
+            "description": "Vector search & RAG retrieval",
+            "groupId": "data"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "RAG orchestration logic",
+            "groupId": "ai"
+          },
+          {
+            "id": "storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Document storage & embeddings",
+            "groupId": "data"
+          },
+          {
+            "id": "cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Metadata & session storage",
+            "groupId": "data"
+          },
+          {
+            "id": "entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "User authentication",
+            "groupId": "identity"
+          },
+          {
+            "id": "keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secrets & API keys",
+            "groupId": "identity"
+          },
+          {
+            "id": "monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central observability hub",
+            "groupId": "group-monitor"
+          },
+          {
+            "id": "loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log storage & analytics",
+            "groupId": "group-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "frontdoor",
+            "to": "appgw",
+            "label": "Route chat requests via WAF",
+            "type": "sync"
+          },
+          {
+            "from": "appgw",
+            "to": "functions",
+            "label": "Forward authenticated requests",
+            "type": "sync"
+          },
+          {
+            "from": "entra",
+            "to": "functions",
+            "label": "Validate user JWT tokens",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "search",
+            "label": "Query vector index for relevant chunks",
+            "type": "async"
+          },
+          {
+            "from": "search",
+            "to": "storage",
+            "label": "Retrieve document embeddings",
+            "type": "async"
+          },
+          {
+            "from": "search",
+            "to": "chatbot",
+            "label": "Send retrieved context for RAG",
+            "type": "sync"
+          },
+          {
+            "from": "chatbot",
+            "to": "functions",
+            "label": "Return generated response",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "cosmos",
+            "label": "Store chat session history",
+            "type": "async"
+          },
+          {
+            "from": "keyvault",
+            "to": "functions",
+            "label": "Fetch OpenAI API keys",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "monitor",
+            "label": "Send metrics & traces",
+            "type": "async"
+          },
+          {
+            "from": "monitor",
+            "to": "loganalytics",
+            "label": "Aggregate all telemetry",
+            "type": "async"
+          },
+          {
+            "from": "search",
+            "to": "monitor",
+            "label": "Report search query performance",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User submits chat query through global edge entry point",
+            "services": [
+              "frontdoor",
+              "appgw"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Authenticate user and route to RAG orchestrator",
+            "services": [
+              "entra",
+              "appgw",
+              "functions"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Extract secrets for downstream services",
+            "services": [
+              "keyvault",
+              "functions"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Generate query embedding and search vector index",
+            "services": [
+              "functions",
+              "search"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Retrieve relevant document chunks from storage",
+            "services": [
+              "search",
+              "storage"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Augment prompt with RAG context and call LLM",
+            "services": [
+              "search",
+              "chatbot"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Generate and stream AI response back to user",
+            "services": [
+              "chatbot",
+              "functions"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Persist chat history and conversation context",
+            "services": [
+              "functions",
+              "cosmos"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Collect telemetry from primary services",
+            "services": [
+              "functions",
+              "search",
+              "monitor"
+            ]
+          },
+          {
+            "step": 10,
+            "description": "Analyze logs and metrics in observability platform",
+            "services": [
+              "monitor",
+              "loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1366,
+          "completionTokens": 1523,
+          "totalTokens": 2889,
+          "elapsedTimeMs": 8148,
+          "model": "grok-4-1-fast-non-reasoning"
+        }
+      }
+    }
+  }
+}

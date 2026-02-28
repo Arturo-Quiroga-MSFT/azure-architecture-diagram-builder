@@ -1,0 +1,269 @@
+{
+  "groups": [
+    {
+      "id": "edge-iot",
+      "label": "Edge & IoT Ingestion"
+    },
+    {
+      "id": "streaming",
+      "label": "Real-time Streaming"
+    },
+    {
+      "id": "storage",
+      "label": "Data Storage"
+    },
+    {
+      "id": "analytics",
+      "label": "Analytics & Processing"
+    },
+    {
+      "id": "observability",
+      "label": "Monitoring & Dashboards"
+    },
+    {
+      "id": "security",
+      "label": "Identity & Security"
+    }
+  ],
+  "services": [
+    {
+      "id": "iothub",
+      "name": "Azure IoT Hub",
+      "type": "Azure IoT Hub",
+      "category": "iot",
+      "description": "Ingests real-time device telemetry",
+      "groupId": "edge-iot"
+    },
+    {
+      "id": "eventhubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Buffers high-volume telemetry events",
+      "groupId": "streaming"
+    },
+    {
+      "id": "streamanalytics",
+      "name": "Azure Stream Analytics",
+      "type": "Azure Stream Analytics",
+      "category": "analytics",
+      "description": "Processes streaming telemetry in real-time",
+      "groupId": "streaming"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores processed telemetry time-series data",
+      "groupId": "storage"
+    },
+    {
+      "id": "datalake",
+      "name": "Azure Data Lake Storage",
+      "type": "Azure Data Lake Storage",
+      "category": "storage",
+      "description": "Archives raw telemetry for analytics",
+      "groupId": "storage"
+    },
+    {
+      "id": "grafana",
+      "name": "Azure Managed Grafana",
+      "type": "Azure Managed Grafana",
+      "category": "other",
+      "description": "Real-time IoT telemetry dashboards",
+      "groupId": "observability"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Centralized metrics and alerts",
+      "groupId": "observability"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores monitoring and diagnostic logs",
+      "groupId": "observability"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates IoT devices and users",
+      "groupId": "security"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Manages IoT certificates and secrets",
+      "groupId": "security"
+    }
+  ],
+  "connections": [
+    {
+      "from": "iothub",
+      "to": "eventhubs",
+      "label": "Routes device telemetry events",
+      "type": "async"
+    },
+    {
+      "from": "eventhubs",
+      "to": "streamanalytics",
+      "label": "Consumes streaming telemetry for aggregation",
+      "type": "async"
+    },
+    {
+      "from": "streamanalytics",
+      "to": "cosmosdb",
+      "label": "Outputs aggregated metrics to time-series store",
+      "type": "async"
+    },
+    {
+      "from": "streamanalytics",
+      "to": "datalake",
+      "label": "Archives processed telemetry partitions",
+      "type": "async"
+    },
+    {
+      "from": "cosmosdb",
+      "to": "grafana",
+      "label": "Queries live metrics for real-time dashboards",
+      "type": "sync"
+    },
+    {
+      "from": "iothub",
+      "to": "monitor",
+      "label": "Sends device connection metrics",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "loganalytics",
+      "label": "Forwards all platform telemetry",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "grafana",
+      "label": "Provides system health metrics to dashboards",
+      "type": "sync"
+    },
+    {
+      "from": "entra",
+      "to": "iothub",
+      "label": "Authenticates IoT device registrations",
+      "type": "sync"
+    },
+    {
+      "from": "keyvault",
+      "to": "iothub",
+      "label": "Provisions device certificates for telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "entra",
+      "to": "grafana",
+      "label": "Authorizes dashboard user access",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "IoT devices authenticate and send telemetry to IoT Hub",
+      "services": [
+        "entra",
+        "keyvault",
+        "iothub"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "IoT Hub routes high-volume telemetry to Event Hubs buffer",
+      "services": [
+        "iothub",
+        "eventhubs"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Stream Analytics consumes events and performs real-time aggregations",
+      "services": [
+        "eventhubs",
+        "streamanalytics"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Processed metrics written to Cosmos DB for low-latency queries",
+      "services": [
+        "streamanalytics",
+        "cosmosdb"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Raw telemetry archived to Data Lake for historical analysis",
+      "services": [
+        "streamanalytics",
+        "datalake"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Grafana dashboards query live metrics from Cosmos DB and Monitor",
+      "services": [
+        "cosmosdb",
+        "monitor",
+        "grafana"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure Monitor collects telemetry and forwards to Log Analytics",
+      "services": [
+        "iothub",
+        "monitor",
+        "loganalytics"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Entra ID authorizes user access to real-time dashboards",
+      "services": [
+        "entra",
+        "grafana"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1366,
+    "completionTokens": 1497,
+    "totalTokens": 2863,
+    "elapsedTimeMs": 8371,
+    "model": "grok-4-1-fast-non-reasoning"
+  },
+  "metadata": {
+    "prompt": "Real-time IoT telemetry pipeline with dashboards",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1366,
+      "completionTokens": 1497,
+      "totalTokens": 2863,
+      "elapsedTimeMs": 8371,
+      "model": "grok-4-1-fast-non-reasoning"
+    },
+    "savedAt": "2026-02-28T14:42:45.035Z",
+    "source": "model-comparison"
+  }
+}

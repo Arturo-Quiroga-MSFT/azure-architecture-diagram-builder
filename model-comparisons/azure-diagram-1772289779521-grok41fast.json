@@ -1,0 +1,246 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Edge & Ingress"
+    },
+    {
+      "id": "identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "api-gateway",
+      "label": "API Gateway"
+    },
+    {
+      "id": "microservices",
+      "label": "Microservices"
+    },
+    {
+      "id": "data",
+      "label": "Data Layer"
+    },
+    {
+      "id": "observability",
+      "label": "Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "app-gateway",
+      "name": "Application Gateway",
+      "type": "Application Gateway",
+      "category": "networking",
+      "description": "External HTTPS entry point",
+      "groupId": "edge"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "OAuth2/JWT token validation",
+      "groupId": "identity"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets & certificates",
+      "groupId": "identity"
+    },
+    {
+      "id": "api-mgmt",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway & policy enforcement",
+      "groupId": "api-gateway"
+    },
+    {
+      "id": "aks",
+      "name": "Azure Kubernetes Service",
+      "type": "Azure Kubernetes Service",
+      "category": "containers",
+      "description": "Microservices container orchestration",
+      "groupId": "microservices"
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "NoSQL document storage",
+      "groupId": "data"
+    },
+    {
+      "id": "redis-cache",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Session & caching layer",
+      "groupId": "data"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Application performance monitoring",
+      "groupId": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log aggregation",
+      "groupId": "observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "app-gateway",
+      "to": "api-mgmt",
+      "label": "Route external HTTPS traffic",
+      "type": "sync"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "entra-id",
+      "label": "Validate JWT bearer tokens",
+      "type": "sync"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "aks",
+      "label": "Proxy authenticated API requests to microservices",
+      "type": "sync"
+    },
+    {
+      "from": "entra-id",
+      "to": "key-vault",
+      "label": "Managed identity access to secrets",
+      "type": "sync"
+    },
+    {
+      "from": "aks",
+      "to": "cosmos-db",
+      "label": "Read/write multi-tenant documents",
+      "type": "sync"
+    },
+    {
+      "from": "aks",
+      "to": "redis-cache",
+      "label": "Cache session data & API responses",
+      "type": "sync"
+    },
+    {
+      "from": "aks",
+      "to": "app-insights",
+      "label": "Send metrics, traces, & exceptions",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "log-analytics",
+      "label": "Forward telemetry to central logs",
+      "type": "async"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "key-vault",
+      "label": "Retrieve backend TLS certificates",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client sends HTTPS request to Application Gateway",
+      "services": [
+        "app-gateway"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Application Gateway routes to API Management for JWT validation",
+      "services": [
+        "app-gateway",
+        "api-mgmt"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "API Management validates token with Microsoft Entra ID",
+      "services": [
+        "api-mgmt",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "API Management proxies authenticated request to AKS microservices",
+      "services": [
+        "api-mgmt",
+        "aks"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Microservices read/write data from Cosmos DB and Redis cache",
+      "services": [
+        "aks",
+        "cosmos-db",
+        "redis-cache"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Microservices emit telemetry to Application Insights",
+      "services": [
+        "aks",
+        "app-insights"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Application Insights forwards logs to Log Analytics workspace",
+      "services": [
+        "app-insights",
+        "log-analytics"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "API Management retrieves secrets from Key Vault for backend auth",
+      "services": [
+        "api-mgmt",
+        "key-vault"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1366,
+    "completionTokens": 1309,
+    "totalTokens": 2675,
+    "elapsedTimeMs": 7067,
+    "model": "grok-4-1-fast-non-reasoning"
+  },
+  "metadata": {
+    "prompt": "Microservices app with API gateway and auth",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1366,
+      "completionTokens": 1309,
+      "totalTokens": 2675,
+      "elapsedTimeMs": 7067,
+      "model": "grok-4-1-fast-non-reasoning"
+    },
+    "savedAt": "2026-02-28T14:43:00.278Z",
+    "source": "model-comparison"
+  }
+}

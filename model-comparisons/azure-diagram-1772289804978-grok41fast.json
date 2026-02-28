@@ -1,0 +1,294 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Edge & Networking"
+    },
+    {
+      "id": "ai",
+      "label": "AI & Chatbot"
+    },
+    {
+      "id": "data",
+      "label": "Data & Vector Search"
+    },
+    {
+      "id": "identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "group-monitor",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point with WAF",
+      "groupId": "edge"
+    },
+    {
+      "id": "appgw",
+      "name": "Application Gateway",
+      "type": "Application Gateway",
+      "category": "networking",
+      "description": "Web app firewall & routing",
+      "groupId": "edge"
+    },
+    {
+      "id": "chatbot",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generative AI chatbot responses",
+      "groupId": "ai"
+    },
+    {
+      "id": "search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Vector search & RAG retrieval",
+      "groupId": "data"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "RAG orchestration logic",
+      "groupId": "ai"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Document storage & embeddings",
+      "groupId": "data"
+    },
+    {
+      "id": "cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Metadata & session storage",
+      "groupId": "data"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication",
+      "groupId": "identity"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets & API keys",
+      "groupId": "identity"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central observability hub",
+      "groupId": "group-monitor"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log storage & analytics",
+      "groupId": "group-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "appgw",
+      "label": "Route chat requests via WAF",
+      "type": "sync"
+    },
+    {
+      "from": "appgw",
+      "to": "functions",
+      "label": "Forward authenticated requests",
+      "type": "sync"
+    },
+    {
+      "from": "entra",
+      "to": "functions",
+      "label": "Validate user JWT tokens",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "search",
+      "label": "Query vector index for relevant chunks",
+      "type": "async"
+    },
+    {
+      "from": "search",
+      "to": "storage",
+      "label": "Retrieve document embeddings",
+      "type": "async"
+    },
+    {
+      "from": "search",
+      "to": "chatbot",
+      "label": "Send retrieved context for RAG",
+      "type": "sync"
+    },
+    {
+      "from": "chatbot",
+      "to": "functions",
+      "label": "Return generated response",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "cosmos",
+      "label": "Store chat session history",
+      "type": "async"
+    },
+    {
+      "from": "keyvault",
+      "to": "functions",
+      "label": "Fetch OpenAI API keys",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "monitor",
+      "label": "Send metrics & traces",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "loganalytics",
+      "label": "Aggregate all telemetry",
+      "type": "async"
+    },
+    {
+      "from": "search",
+      "to": "monitor",
+      "label": "Report search query performance",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User submits chat query through global edge entry point",
+      "services": [
+        "frontdoor",
+        "appgw"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Authenticate user and route to RAG orchestrator",
+      "services": [
+        "entra",
+        "appgw",
+        "functions"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Extract secrets for downstream services",
+      "services": [
+        "keyvault",
+        "functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Generate query embedding and search vector index",
+      "services": [
+        "functions",
+        "search"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Retrieve relevant document chunks from storage",
+      "services": [
+        "search",
+        "storage"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Augment prompt with RAG context and call LLM",
+      "services": [
+        "search",
+        "chatbot"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Generate and stream AI response back to user",
+      "services": [
+        "chatbot",
+        "functions"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Persist chat history and conversation context",
+      "services": [
+        "functions",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Collect telemetry from primary services",
+      "services": [
+        "functions",
+        "search",
+        "monitor"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Analyze logs and metrics in observability platform",
+      "services": [
+        "monitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1366,
+    "completionTokens": 1523,
+    "totalTokens": 2889,
+    "elapsedTimeMs": 8148,
+    "model": "grok-4-1-fast-non-reasoning"
+  },
+  "metadata": {
+    "prompt": "RAG chatbot with vector search and AI",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1366,
+      "completionTokens": 1523,
+      "totalTokens": 2889,
+      "elapsedTimeMs": 8148,
+      "model": "grok-4-1-fast-non-reasoning"
+    },
+    "savedAt": "2026-02-28T14:43:25.736Z",
+    "source": "model-comparison"
+  }
+}

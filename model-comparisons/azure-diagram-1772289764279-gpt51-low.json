@@ -1,0 +1,293 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress & IoT Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application & Stream Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-iot-hub",
+      "name": "Azure IoT Hub",
+      "type": "Azure IoT Hub",
+      "category": "iot",
+      "description": "Ingests real-time telemetry from IoT devices",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-stream-analytics",
+      "name": "Azure Stream Analytics",
+      "type": "Azure Stream Analytics",
+      "category": "analytics",
+      "description": "Performs real-time stream processing, aggregations, and routing",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless processing for event-driven enrichment and alerts",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Web application hosting dashboards and API endpoints",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-sql-db",
+      "name": "SQL Database",
+      "type": "SQL Database",
+      "category": "databases",
+      "description": "Hot-path operational store for recent telemetry and aggregates",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-data-lake",
+      "name": "Azure Data Lake Storage",
+      "type": "Azure Data Lake Storage",
+      "category": "storage",
+      "description": "Cold-path storage for historical telemetry and batch analytics",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-powerbi",
+      "name": "Power BI Embedded",
+      "type": "Power BI Embedded",
+      "category": "analytics",
+      "description": "Interactive dashboards and visualizations embedded into the web app",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication and access control for dashboards and APIs",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secure storage for connection strings, API keys, and secrets",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-az-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central monitoring for application performance and health",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central log and metric analytics workspace",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-iot-hub",
+      "to": "svc-stream-analytics",
+      "label": "Forward real-time device telemetry streams for processing",
+      "type": "async"
+    },
+    {
+      "from": "svc-iot-hub",
+      "to": "svc-functions",
+      "label": "Trigger serverless processing on device events and alerts",
+      "type": "async"
+    },
+    {
+      "from": "svc-stream-analytics",
+      "to": "svc-sql-db",
+      "label": "Write aggregated real-time metrics into hot-path database",
+      "type": "sync"
+    },
+    {
+      "from": "svc-stream-analytics",
+      "to": "svc-data-lake",
+      "label": "Persist raw and windowed telemetry to data lake for historical analysis",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-sql-db",
+      "label": "Store enriched device events and computed KPIs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-sql-db",
+      "label": "Query latest telemetry and aggregates for dashboards",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-powerbi",
+      "label": "Embed interactive Power BI reports into web dashboard",
+      "type": "sync"
+    },
+    {
+      "from": "svc-powerbi",
+      "to": "svc-sql-db",
+      "label": "Retrieve telemetry datasets and aggregates for report visuals",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-entra",
+      "label": "Authenticate dashboard users and obtain access tokens",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-keyvault",
+      "label": "Retrieve database and Power BI API credentials securely",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-az-monitor",
+      "label": "Send application performance and availability telemetry",
+      "type": "async"
+    },
+    {
+      "from": "svc-az-monitor",
+      "to": "svc-log-analytics",
+      "label": "Aggregate logs and metrics for centralized analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "IoT devices send real-time telemetry messages that are ingested by Azure IoT Hub.",
+      "services": [
+        "svc-iot-hub"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure IoT Hub forwards telemetry streams to Azure Stream Analytics for real-time processing and aggregation.",
+      "services": [
+        "svc-iot-hub",
+        "svc-stream-analytics"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "In parallel, Azure IoT Hub triggers Azure Functions for event-driven enrichment, alerting, or device state updates.",
+      "services": [
+        "svc-iot-hub",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Stream Analytics writes aggregated metrics and computed windows into SQL Database as the hot-path store.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-sql-db"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Stream Analytics also archives raw and windowed telemetry into Azure Data Lake Storage for long-term retention and offline analysis.",
+      "services": [
+        "svc-stream-analytics",
+        "svc-data-lake"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Functions performs additional business logic and stores enriched device events or KPIs into SQL Database.",
+      "services": [
+        "svc-functions",
+        "svc-sql-db"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Users access the dashboard hosted on App Service, which authenticates them via Microsoft Entra ID before granting access.",
+      "services": [
+        "svc-app-service",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "The App Service backend securely retrieves connection strings and API keys from Key Vault to reach data and visualization services.",
+      "services": [
+        "svc-app-service",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "The dashboard in App Service queries SQL Database for latest telemetry and embeds interactive Power BI reports based on that data.",
+      "services": [
+        "svc-app-service",
+        "svc-sql-db",
+        "svc-powerbi"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Azure Monitor collects performance and availability telemetry from App Service and forwards it to Log Analytics for centralized observability.",
+      "services": [
+        "svc-app-service",
+        "svc-az-monitor",
+        "svc-log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2453,
+    "totalTokens": 3846,
+    "elapsedTimeMs": 13086,
+    "model": "gpt-5.1"
+  },
+  "metadata": {
+    "prompt": "Real-time IoT telemetry pipeline with dashboards",
+    "model": "gpt-5.1",
+    "modelDisplayName": "GPT-5.1",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2453,
+      "totalTokens": 3846,
+      "elapsedTimeMs": 13086,
+      "model": "gpt-5.1"
+    },
+    "savedAt": "2026-02-28T14:42:44.279Z",
+    "source": "model-comparison"
+  }
+}

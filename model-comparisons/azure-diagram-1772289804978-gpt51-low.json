@@ -1,0 +1,258 @@
+{
+  "groups": [
+    {
+      "id": "group-ingress",
+      "label": "Ingress & Client"
+    },
+    {
+      "id": "group-app",
+      "label": "Application & AI"
+    },
+    {
+      "id": "group-data",
+      "label": "Data & Vector Search"
+    },
+    {
+      "id": "group-identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "group-monitoring",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "swa",
+      "name": "Azure Static Web Apps",
+      "type": "Azure Static Web Apps",
+      "category": "web",
+      "description": "Hosts the RAG chatbot frontend and serves the client-side application",
+      "groupId": "group-ingress"
+    },
+    {
+      "id": "appsvc",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Backend API implementing RAG orchestration, embeddings, and chat session management",
+      "groupId": "group-app"
+    },
+    {
+      "id": "aoai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Provides embeddings and chat completion models for the RAG chatbot",
+      "groupId": "group-app"
+    },
+    {
+      "id": "search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Stores document vectors and performs semantic and vector similarity search",
+      "groupId": "group-data"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Holds source documents and chunks used for indexing and retrieval",
+      "groupId": "group-data"
+    },
+    {
+      "id": "kv",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets, keys, and credentials for backend and AI services",
+      "groupId": "group-identity"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Provides user authentication and token issuance for secure chatbot access",
+      "groupId": "group-identity"
+    },
+    {
+      "id": "azmonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central entry point for metrics and logs from the application backend",
+      "groupId": "group-monitoring"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores and queries logs and telemetry for troubleshooting and insights",
+      "groupId": "group-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "swa",
+      "to": "entra",
+      "label": "Redirect browser to authenticate user and obtain access token via OAuth2/OIDC",
+      "type": "sync"
+    },
+    {
+      "from": "swa",
+      "to": "appsvc",
+      "label": "Send user chat prompts and conversation context to backend over HTTPS",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "search",
+      "label": "Perform vector similarity search using embedded query to retrieve relevant document chunks",
+      "type": "sync"
+    },
+    {
+      "from": "search",
+      "to": "storage",
+      "label": "Pull source documents and metadata from blob containers during indexing via indexers",
+      "type": "async"
+    },
+    {
+      "from": "appsvc",
+      "to": "storage",
+      "label": "Read and write document chunks and metadata for RAG preprocessing and updates",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "aoai",
+      "label": "Call embeddings and chat completion endpoints with retrieved context for answer generation",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "kv",
+      "label": "Retrieve Azure OpenAI keys and connection strings securely at startup",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "azmonitor",
+      "label": "Send application metrics, traces, and dependency telemetry",
+      "type": "async"
+    },
+    {
+      "from": "azmonitor",
+      "to": "loganalytics",
+      "label": "Ingest consolidated platform and application logs for centralized analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User opens the chatbot UI, which initiates authentication through Microsoft Entra ID to obtain an access token.",
+      "services": [
+        "swa",
+        "entra"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The authenticated user submits a chat message and the frontend posts the prompt and conversation state to the backend API.",
+      "services": [
+        "swa",
+        "appsvc"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The backend orchestrator queries Azure Cognitive Search with an embedded query to perform vector similarity search over indexed documents.",
+      "services": [
+        "appsvc",
+        "search"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Cognitive Search uses its indexers to pull or refresh document content and metadata from the Storage Account as needed.",
+      "services": [
+        "search",
+        "storage"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The backend may directly read or update document chunks and metadata in the Storage Account for RAG preprocessing or ingestion workflows.",
+      "services": [
+        "appsvc",
+        "storage"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "The backend calls Azure OpenAI, passing the user prompt along with top-ranked document snippets as context to generate an answer.",
+      "services": [
+        "appsvc",
+        "aoai"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "The backend returns the generated answer and any cited document references back to the frontend for display to the user.",
+      "services": [
+        "appsvc",
+        "swa"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "The backend periodically retrieves secrets such as Azure OpenAI API keys and connection strings from Key Vault.",
+      "services": [
+        "appsvc",
+        "kv"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "The backend emits metrics, logs, and traces to Azure Monitor for observability.",
+      "services": [
+        "appsvc",
+        "azmonitor"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Azure Monitor forwards collected logs and telemetry to Log Analytics for querying, dashboards, and alerting.",
+      "services": [
+        "azmonitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2550,
+    "totalTokens": 3943,
+    "elapsedTimeMs": 14611,
+    "model": "gpt-5.1"
+  },
+  "metadata": {
+    "prompt": "RAG chatbot with vector search and AI",
+    "model": "gpt-5.1",
+    "modelDisplayName": "GPT-5.1",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2550,
+      "totalTokens": 3943,
+      "elapsedTimeMs": 14611,
+      "model": "gpt-5.1"
+    },
+    "savedAt": "2026-02-28T14:43:24.978Z",
+    "source": "model-comparison"
+  }
+}

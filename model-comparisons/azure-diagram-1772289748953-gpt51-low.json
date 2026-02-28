@@ -1,0 +1,302 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress & Web Frontend"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application & Business Logic"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data, Caching & Search"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point routing e-commerce traffic to storefront",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-staticweb",
+      "name": "Azure Static Web Apps",
+      "type": "Azure Static Web Apps",
+      "category": "web",
+      "description": "Static storefront UI hosting and edge API gateway for SPA",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Core e-commerce backend APIs for catalog, cart, checkout, and orders",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless payment callbacks and asynchronous order workflows",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-sqldb",
+      "name": "SQL Database",
+      "type": "SQL Database",
+      "category": "databases",
+      "description": "Relational store for products, customers, orders, and payments",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Low-latency cache for sessions, product listings, and cart data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for product images, assets, and receipts",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Full-text search index for products and categories",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Customer authentication and token issuance for secure access",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secure storage for payment gateway secrets and connection strings",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-azmonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central monitoring and metrics for the e-commerce backend",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log query and analysis workspace for operational insights",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-staticweb",
+      "label": "Route customer HTTPS storefront requests to static web app",
+      "type": "sync"
+    },
+    {
+      "from": "svc-staticweb",
+      "to": "svc-entra",
+      "label": "Redirect customers to Microsoft Entra ID for sign-in and token acquisition",
+      "type": "sync"
+    },
+    {
+      "from": "svc-staticweb",
+      "to": "svc-appservice",
+      "label": "Call backend e-commerce APIs with customer JWT tokens",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-sqldb",
+      "label": "Execute transactional queries for catalog, carts, orders, and payments",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-redis",
+      "label": "Read and update cached product lists, sessions, and cart data",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-storage",
+      "label": "Retrieve and store product images and digital receipt files",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-search",
+      "label": "Submit product search queries and push index update operations",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-functions",
+      "label": "Invoke payment orchestration and webhook handlers for checkout",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-sqldb",
+      "label": "Update order and payment status after external gateway callbacks",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-keyvault",
+      "label": "Fetch payment gateway keys and database connection secrets at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-azmonitor",
+      "label": "Emit application metrics and request telemetry for backend APIs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmonitor",
+      "to": "svc-loganalytics",
+      "label": "Ingest consolidated logs and metrics into workspace for analysis",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Customer accesses the e-commerce storefront over HTTPS and is routed to the static web UI.",
+      "services": [
+        "svc-frontdoor",
+        "svc-staticweb"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Customer signs in or registers using Microsoft Entra ID, and the UI obtains an access token.",
+      "services": [
+        "svc-staticweb",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Authenticated SPA calls backend APIs on App Service to load catalog, cart, and account data.",
+      "services": [
+        "svc-staticweb",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Backend APIs query SQL Database for authoritative product, customer, and order information.",
+      "services": [
+        "svc-appservice",
+        "svc-sqldb"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "To optimize performance, backend reads from and writes to Azure Cache for Redis for hot data such as product lists and cart state.",
+      "services": [
+        "svc-appservice",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Product images and static assets are retrieved from the Storage Account and returned to the UI.",
+      "services": [
+        "svc-appservice",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "When customers search the catalog, the backend issues queries to Azure Cognitive Search and returns ranked results.",
+      "services": [
+        "svc-appservice",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "During checkout, App Service securely retrieves payment and database secrets from Key Vault before calling external payment providers.",
+      "services": [
+        "svc-appservice",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Payment confirmations and webhooks are processed by Azure Functions, which update order and payment status in SQL Database.",
+      "services": [
+        "svc-appservice",
+        "svc-functions",
+        "svc-sqldb"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "App Service emits operational telemetry to Azure Monitor, which aggregates data and forwards it into Log Analytics for querying and dashboards.",
+      "services": [
+        "svc-appservice",
+        "svc-azmonitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1392,
+    "completionTokens": 2552,
+    "totalTokens": 3944,
+    "elapsedTimeMs": 13457,
+    "model": "gpt-5.1"
+  },
+  "metadata": {
+    "prompt": "E-commerce platform with payments and search",
+    "model": "gpt-5.1",
+    "modelDisplayName": "GPT-5.1",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1392,
+      "completionTokens": 2552,
+      "totalTokens": 3944,
+      "elapsedTimeMs": 13457,
+      "model": "gpt-5.1"
+    },
+    "savedAt": "2026-02-28T14:42:28.953Z",
+    "source": "model-comparison"
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Edge Devices"
+    },
+    {
+      "id": "ingestion",
+      "label": "Ingestion & Stream Processing"
+    },
+    {
+      "id": "storage",
+      "label": "Storage & Analytics"
+    },
+    {
+      "id": "visualization",
+      "label": "Visualization"
+    },
+    {
+      "id": "security",
+      "label": "Security & Identity"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "iot-devices",
+      "name": "IoT Devices",
+      "type": "IoT Devices",
+      "category": "iot",
+      "description": "Physical sensors generating telemetry",
+      "groupId": "edge"
+    },
+    {
+      "id": "iot-hub",
+      "name": "Azure IoT Hub",
+      "type": "Azure IoT Hub",
+      "category": "iot",
+      "description": "Ingest device telemetry, device management",
+      "groupId": "ingestion"
+    },
+    {
+      "id": "stream-analytics",
+      "name": "Azure Stream Analytics",
+      "type": "Azure Stream Analytics",
+      "category": "analytics",
+      "description": "Real-time processing, aggregation, anomaly detection",
+      "groupId": "ingestion"
+    },
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Buffering and high-throughput ingestion",
+      "groupId": "ingestion"
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Store processed telemetry for dashboards",
+      "groupId": "storage"
+    },
+    {
+      "id": "data-lake",
+      "name": "Azure Data Lake Storage",
+      "type": "Azure Data Lake Storage",
+      "category": "storage",
+      "description": "Raw telemetry archive for batch analytics",
+      "groupId": "storage"
+    },
+    {
+      "id": "synapse",
+      "name": "Azure Synapse Analytics",
+      "type": "Azure Synapse Analytics",
+      "category": "analytics",
+      "description": "Batch processing, machine learning",
+      "groupId": "storage"
+    },
+    {
+      "id": "powerbi",
+      "name": "Power BI Embedded",
+      "type": "Power BI Embedded",
+      "category": "analytics",
+      "description": "Interactive dashboards and reports",
+      "groupId": "visualization"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and authorization",
+      "groupId": "security"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets, keys, certificates",
+      "groupId": "security"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collect metrics and logs",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log storage and query",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "iot-devices",
+      "to": "iot-hub",
+      "label": "Send telemetry via MQTT/AMQP",
+      "type": "async"
+    },
+    {
+      "from": "iot-hub",
+      "to": "event-hubs",
+      "label": "Route raw events to Event Hubs",
+      "type": "async"
+    },
+    {
+      "from": "event-hubs",
+      "to": "stream-analytics",
+      "label": "Process streaming data",
+      "type": "async"
+    },
+    {
+      "from": "stream-analytics",
+      "to": "cosmos-db",
+      "label": "Write aggregated results",
+      "type": "sync"
+    },
+    {
+      "from": "stream-analytics",
+      "to": "data-lake",
+      "label": "Archive raw data (optional)",
+      "type": "optional"
+    },
+    {
+      "from": "data-lake",
+      "to": "synapse",
+      "label": "Batch processing and ML",
+      "type": "sync"
+    },
+    {
+      "from": "cosmos-db",
+      "to": "powerbi",
+      "label": "Query data for dashboards",
+      "type": "sync"
+    },
+    {
+      "from": "entra-id",
+      "to": "powerbi",
+      "label": "Authenticate dashboard users",
+      "type": "sync"
+    },
+    {
+      "from": "key-vault",
+      "to": "iot-hub",
+      "label": "Store device credentials",
+      "type": "sync"
+    },
+    {
+      "from": "key-vault",
+      "to": "stream-analytics",
+      "label": "Access storage keys",
+      "type": "sync"
+    },
+    {
+      "from": "iot-hub",
+      "to": "monitor",
+      "label": "Send metrics and diagnostics",
+      "type": "async"
+    },
+    {
+      "from": "stream-analytics",
+      "to": "monitor",
+      "label": "Send job metrics",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "log-analytics",
+      "label": "Store logs for analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "IoT devices send telemetry to IoT Hub using MQTT/AMQP.",
+      "services": [
+        "iot-devices",
+        "iot-hub"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "IoT Hub routes raw telemetry to Event Hubs for high-throughput buffering.",
+      "services": [
+        "iot-hub",
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Stream Analytics ingests events from Event Hubs, processes in real-time (aggregation, anomaly detection).",
+      "services": [
+        "event-hubs",
+        "stream-analytics"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Processed data is written to Cosmos DB for low-latency dashboard queries.",
+      "services": [
+        "stream-analytics",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Raw telemetry is optionally archived to Data Lake Storage for historical analysis.",
+      "services": [
+        "stream-analytics",
+        "data-lake"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Batch processing and machine learning jobs in Synapse Analytics read from Data Lake.",
+      "services": [
+        "data-lake",
+        "synapse"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Power BI Embedded queries Cosmos DB to display real-time dashboards, with user authentication via Microsoft Entra ID.",
+      "services": [
+        "cosmos-db",
+        "powerbi",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "All services send metrics and logs to Azure Monitor, which forwards to Log Analytics for storage and query.",
+      "services": [
+        "iot-hub",
+        "stream-analytics",
+        "monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1421,
+    "completionTokens": 1434,
+    "totalTokens": 2855,
+    "elapsedTimeMs": 14821,
+    "model": "deepseek-v3.2-speciale"
+  },
+  "metadata": {
+    "prompt": "Real-time IoT telemetry pipeline with dashboards",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1421,
+      "completionTokens": 1434,
+      "totalTokens": 2855,
+      "elapsedTimeMs": 14821,
+      "model": "deepseek-v3.2-speciale"
+    },
+    "savedAt": "2026-02-28T14:42:44.884Z",
+    "source": "model-comparison"
+  }
+}

@@ -1,0 +1,294 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Ingress & Security"
+    },
+    {
+      "id": "compute",
+      "label": "Application & AI Processing"
+    },
+    {
+      "id": "data",
+      "label": "Data Storage"
+    },
+    {
+      "id": "security",
+      "label": "Identity & Secrets"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global load balancer with WAF, DDoS protection, and SSL termination",
+      "groupId": "ingress"
+    },
+    {
+      "id": "appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the web application (RAG frontend and API)",
+      "groupId": "compute"
+    },
+    {
+      "id": "function",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless functions for processing RAG queries and vector search",
+      "groupId": "compute"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Provides GPT models for generating responses",
+      "groupId": "compute"
+    },
+    {
+      "id": "search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Vector search index over documents, integrated with OpenAI embeddings",
+      "groupId": "data"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for raw documents and generated embeddings",
+      "groupId": "data"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores API keys, secrets, and connection strings",
+      "groupId": "security"
+    },
+    {
+      "id": "entraid",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and authorization for users and services",
+      "groupId": "security"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects metrics and logs, provides alerts",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central repository for log data and queries",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "appservice",
+      "label": "Routes HTTP/HTTPS traffic",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "function",
+      "label": "Invokes RAG processing via API",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "openai",
+      "label": "Calls OpenAI for embeddings and completions",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "search",
+      "label": "Performs vector search on indexed documents",
+      "type": "sync"
+    },
+    {
+      "from": "search",
+      "to": "storage",
+      "label": "Retrieves document chunks from blob storage",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "storage",
+      "label": "Stores generated embeddings and logs",
+      "type": "async"
+    },
+    {
+      "from": "appservice",
+      "to": "entraid",
+      "label": "Authenticates users via OAuth2",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "keyvault",
+      "label": "Retrieves API keys and secrets",
+      "type": "sync"
+    },
+    {
+      "from": "monitor",
+      "to": "loganalytics",
+      "label": "Sends logs and metrics for analysis",
+      "type": "async"
+    },
+    {
+      "from": "appservice",
+      "to": "monitor",
+      "label": "Sends application metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "function",
+      "to": "monitor",
+      "label": "Sends function metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "openai",
+      "to": "monitor",
+      "label": "Sends AI service metrics",
+      "type": "async"
+    },
+    {
+      "from": "search",
+      "to": "monitor",
+      "label": "Sends search performance metrics",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the web application via browser. Azure Front Door routes the request to the App Service, enforcing WAF and DDoS protection.",
+      "services": [
+        "frontdoor",
+        "appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service authenticates the user via Microsoft Entra ID and serves the frontend UI.",
+      "services": [
+        "appservice",
+        "entraid"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "User submits a query. App Service invokes an Azure Function to process the RAG workflow.",
+      "services": [
+        "appservice",
+        "function"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Function retrieves secrets (OpenAI API key, search credentials) from Key Vault.",
+      "services": [
+        "function",
+        "keyvault"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Function calls Azure OpenAI to generate an embedding vector for the query.",
+      "services": [
+        "function",
+        "openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Function uses the embedding to perform a vector search in Azure Cognitive Search, retrieving relevant document chunks.",
+      "services": [
+        "function",
+        "search"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Cognitive Search fetches the actual chunk content from Blob Storage if not stored inline.",
+      "services": [
+        "search",
+        "storage"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Function sends the query and retrieved context to Azure OpenAI to generate a final answer.",
+      "services": [
+        "function",
+        "openai"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Function returns the answer to App Service, which displays it to the user.",
+      "services": [
+        "function",
+        "appservice"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "All services emit logs and metrics to Azure Monitor, which forwards to Log Analytics for centralized observability.",
+      "services": [
+        "appservice",
+        "function",
+        "openai",
+        "search",
+        "monitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1420,
+    "completionTokens": 1708,
+    "totalTokens": 3128,
+    "elapsedTimeMs": 21509,
+    "model": "deepseek-v3.2-speciale"
+  },
+  "metadata": {
+    "prompt": "RAG chatbot with vector search and AI",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1420,
+      "completionTokens": 1708,
+      "totalTokens": 3128,
+      "elapsedTimeMs": 21509,
+      "model": "deepseek-v3.2-speciale"
+    },
+    "savedAt": "2026-02-28T14:43:25.586Z",
+    "source": "model-comparison"
+  }
+}

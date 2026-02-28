@@ -1,0 +1,214 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress & API Gateway"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application & Microservices"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "grp-identity-security",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "grp-monitoring",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point routing external API traffic to the gateway",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-apimgmt",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway providing routing, throttling, and policy enforcement for microservices APIs",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-aks",
+      "name": "Azure Kubernetes Service",
+      "type": "Azure Kubernetes Service",
+      "category": "containers",
+      "description": "Hosts the containerized microservices and internal APIs",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Primary database for microservices to store and query application data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Provides OAuth2/OpenID Connect authentication and token issuance",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Securely stores secrets, certificates, and connection strings for the microservices",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-azmonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects metrics and traces from the microservices platform",
+      "groupId": "grp-monitoring"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central workspace for querying and analyzing logs and telemetry",
+      "groupId": "grp-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-apimgmt",
+      "label": "Route external HTTPS API calls to API gateway endpoint",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apimgmt",
+      "to": "svc-entra",
+      "label": "Validate incoming JWT access tokens using OpenID Connect",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apimgmt",
+      "to": "svc-aks",
+      "label": "Forward authenticated API requests to appropriate microservice",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-cosmos",
+      "label": "Perform CRUD operations on microservice data collections",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-keyvault",
+      "label": "Retrieve secrets and database connection strings at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-azmonitor",
+      "label": "Emit application metrics, logs, and distributed traces",
+      "type": "optional"
+    },
+    {
+      "from": "svc-azmonitor",
+      "to": "svc-loganalytics",
+      "label": "Ingest collected telemetry into centralized log workspace",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client sends an HTTPS API request which is received by Azure Front Door and routed to API Management.",
+      "services": [
+        "svc-frontdoor",
+        "svc-apimgmt"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API Management validates the bearer token with Microsoft Entra ID using OpenID Connect and authorization policies.",
+      "services": [
+        "svc-apimgmt",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "After successful authentication and policy checks, API Management forwards the request to the appropriate microservice hosted on Azure Kubernetes Service.",
+      "services": [
+        "svc-apimgmt",
+        "svc-aks"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "The targeted microservice retrieves required secrets and connection strings from Key Vault before processing the request.",
+      "services": [
+        "svc-aks",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The microservice performs read or write operations against Azure Cosmos DB to handle domain data.",
+      "services": [
+        "svc-aks",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Kubernetes Service emits metrics, logs, and traces to Azure Monitor for observability.",
+      "services": [
+        "svc-aks",
+        "svc-azmonitor"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure Monitor forwards consolidated telemetry to Log Analytics for centralized querying, alerting, and analysis.",
+      "services": [
+        "svc-azmonitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 1950,
+    "totalTokens": 3343,
+    "elapsedTimeMs": 10535,
+    "model": "gpt-5.1"
+  },
+  "metadata": {
+    "prompt": "Microservices app with API gateway and auth",
+    "model": "gpt-5.1",
+    "modelDisplayName": "GPT-5.1",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 1950,
+      "totalTokens": 3343,
+      "elapsedTimeMs": 10535,
+      "model": "gpt-5.1"
+    },
+    "savedAt": "2026-02-28T14:42:59.521Z",
+    "source": "model-comparison"
+  }
+}

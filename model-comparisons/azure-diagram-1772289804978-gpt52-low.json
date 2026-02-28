@@ -1,0 +1,301 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / Compute (RAG Orchestration)"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage (Knowledge + State)"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point with TLS termination and routing to the chatbot API",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the chatbot web/API and orchestrates RAG calls",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Ingestion pipeline to chunk documents and push embeddings/index updates",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Publishes document upload events to trigger ingestion",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates embeddings and produces grounded chat responses",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Vector index for similarity search and retrieval for RAG",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores source documents and processed chunks/blobs",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores conversation state, user context, and chat transcripts",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates users and issues tokens for the chatbot",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets/keys (e.g., OpenAI/Search credentials) for the app",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-azmonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central collection point for application metrics and logs",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Queryable log store for troubleshooting and audits",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-appservice",
+      "label": "Route HTTPS chat requests to the chatbot API",
+      "type": "sync"
+    },
+    {
+      "from": "svc-entra",
+      "to": "svc-appservice",
+      "label": "Validate user sign-in and authorize API calls via tokens",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-keyvault",
+      "label": "Retrieve secrets for OpenAI and Search access at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-search",
+      "label": "Submit vector similarity query and retrieve top-k passages",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-openai",
+      "label": "Generate grounded chat completion using retrieved context",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-cosmos",
+      "label": "Read/write conversation history and user/session context",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-functions",
+      "label": "Invoke ingestion job for newly uploaded or updated documents",
+      "type": "sync"
+    },
+    {
+      "from": "svc-storage",
+      "to": "svc-eventgrid",
+      "label": "Emit event when a document blob is created or updated",
+      "type": "async"
+    },
+    {
+      "from": "svc-eventgrid",
+      "to": "svc-functions",
+      "label": "Trigger ingestion function to process the changed document",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-storage",
+      "label": "Read source documents and write normalized chunks/metadata",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-search",
+      "label": "Upsert chunk embeddings and metadata into the vector index",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-azmonitor",
+      "label": "Send application logs, request metrics, and dependency telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmonitor",
+      "to": "svc-loganalytics",
+      "label": "Centralize collected telemetry for querying and retention",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the chatbot endpoint and requests are routed to the application.",
+      "services": [
+        "svc-frontdoor",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "User is authenticated and the app authorizes the chat request.",
+      "services": [
+        "svc-entra",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The application loads required secrets to call downstream AI and search services.",
+      "services": [
+        "svc-appservice",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "The app retrieves relevant context by running a vector similarity search.",
+      "services": [
+        "svc-appservice",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The app sends retrieved context to the LLM to generate a grounded response.",
+      "services": [
+        "svc-appservice",
+        "svc-openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Conversation state and transcripts are persisted for continuity and analytics.",
+      "services": [
+        "svc-appservice",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "When documents are uploaded/changed, events trigger ingestion and index updates.",
+      "services": [
+        "svc-storage",
+        "svc-eventgrid",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Ingestion reads documents, creates chunks/embeddings, and updates the vector index.",
+      "services": [
+        "svc-functions",
+        "svc-storage",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Operational telemetry is collected centrally for troubleshooting and reporting.",
+      "services": [
+        "svc-appservice",
+        "svc-azmonitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2362,
+    "totalTokens": 3755,
+    "elapsedTimeMs": 61244,
+    "model": "gpt-5.2"
+  },
+  "metadata": {
+    "prompt": "RAG chatbot with vector search and AI",
+    "model": "gpt-5.2",
+    "modelDisplayName": "GPT-5.2",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2362,
+      "totalTokens": 3755,
+      "elapsedTimeMs": 61244,
+      "model": "gpt-5.2"
+    },
+    "savedAt": "2026-02-28T14:43:25.130Z",
+    "source": "model-comparison"
+  }
+}
