@@ -5,7 +5,9 @@
 ![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoft-azure&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![GPT-5.2](https://img.shields.io/badge/GPT--5.2-412991?style=for-the-badge&logo=openai&logoColor=white)
+![GPT-5.x](https://img.shields.io/badge/GPT--5.x-412991?style=for-the-badge&logo=openai&logoColor=white)
+![DeepSeek](https://img.shields.io/badge/DeepSeek-4D6BFF?style=for-the-badge&logoColor=white)
+![Grok](https://img.shields.io/badge/Grok-000000?style=for-the-badge&logoColor=white)
 
 **A professional AI-powered tool for designing, validating, and deploying Azure cloud architectures**
 
@@ -24,7 +26,7 @@
 
 ## 📖 Overview
 
-Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **GPT-5.2, GPT-5.2 Codex, GPT-4.1, and GPT-4.1 Mini** (Azure OpenAI), it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, and Infrastructure as Code generation.
+Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **6 AI models** — **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** (via Azure OpenAI) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
 
 ### Why This Tool?
 
@@ -38,7 +40,7 @@ Azure Architecture Diagram Builder is an enterprise-grade web application that e
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Architecture Generation
-Describe your architecture in plain English and let GPT-5.2 (or GPT-4.1/GPT-4.1 Mini) automatically create a complete, professionally organized diagram with logical service groupings.
+Describe your architecture in plain English and let any of 6 AI models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, or Grok 4.1 Fast) automatically create a complete, professionally organized diagram with logical service groupings.
 
 **13 curated example prompts** included — from simple web apps to complex enterprise scenarios:
 - Zero Trust enterprise networks with security segmentation
@@ -53,17 +55,29 @@ Describe your architecture in plain English and let GPT-5.2 (or GPT-4.1/GPT-4.1 
 Upload an existing architecture diagram image (screenshot, whiteboard photo, or exported PNG) and let AI analyze it to recreate the architecture as an editable, interactive diagram with proper Azure service mapping.
 
 ### 📋 ARM Template Import
-Import existing ARM templates and automatically visualize your current infrastructure. The AI parses resource dependencies and creates meaningful diagrams.
+Import existing ARM templates and automatically visualize your current infrastructure. The AI parses resource dependencies and creates meaningful diagrams. A **glowing purple banner** provides visual feedback during parsing.
 
 ### 🎯 Well-Architected Framework Validation
 Validate your architecture against all five WAF pillars:
-- **Security** - Identity, encryption, network isolation
-- **Reliability** - High availability, disaster recovery
-- **Performance** - Scaling, caching, optimization
-- **Cost Optimization** - Right-sizing, reserved instances
-- **Operational Excellence** - Monitoring, automation
+- **Security** — Identity, encryption, network isolation
+- **Reliability** — High availability, disaster recovery
+- **Performance** — Scaling, caching, optimization
+- **Cost Optimization** — Right-sizing, reserved instances
+- **Operational Excellence** — Monitoring, automation
 
 Select specific recommendations and automatically regenerate an improved architecture.
+
+### 🔀 Multi-Model Comparison
+Compare AI output side-by-side across all 6 models:
+
+- **Architecture Comparison** — Run the same prompt through multiple models and compare service counts, connection counts, groups, workflow steps, token usage, and latency
+- **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins
+- **Save All Diagrams** — Download each model's architecture as a separate JSON file
+- **Save Comparison Report** — Download a combined JSON report for offline analysis
+- **Apply Winner** — Pick the best result and apply it to the canvas with one click
+
+### 🗂️ Collapse All Groups
+Toggle button to collapse or expand all groups at once for a bird's-eye view of the architecture. Restores original group sizes on expand.
 
 ### 🔄 Workflow Animation & Data Flow
 Visualize how data flows through your architecture step-by-step:
@@ -154,7 +168,7 @@ flowchart TD
         G[Image Upload] --> H[Vision Analyzer]
     end
 
-    subgraph AI["🤖 AI Services (GPT-5.2)"]
+    subgraph AI["🤖 AI Services (6 Models)"]
         B --> I[Architecture Generation]
         D --> I
         H --> I
@@ -207,7 +221,7 @@ sequenceDiagram
 
     U->>UI: Describe architecture
     UI->>MS: Get model selection
-    MS-->>UI: GPT-5.2/4.1/4.1-Mini + settings
+    MS-->>UI: Selected model + settings
     UI->>AI: Generate request (selected model)
     AI-->>UI: Diagram specification (JSON)
     UI->>UI: Render nodes & connections
@@ -333,12 +347,15 @@ VITE_AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key-here
 VITE_AZURE_OPENAI_DEPLOYMENT=your-default-deployment
 
-# Multi-model deployments
+# Multi-model deployments (6 models)
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=your-gpt51-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT41=your-gpt41-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI=your-gpt41mini-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT52_CODEX=your-gpt52-codex-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT53_CODEX=your-gpt53-codex-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=your-deepseek-v32-speciale-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GROK=your-grok-41-fast-deployment
 
-# Reasoning model configuration (GPT-5.2 only)
+# Reasoning model configuration (GPT-5.x models)
 VITE_REASONING_EFFORT=medium  # none | low | medium | high
 
 # Optional: Cloud storage for sharing
@@ -427,7 +444,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 #### Method 1: AI Generation (Recommended)
 1. Click **"AI Generate"** in the toolbar
 2. Describe your architecture in natural language, or pick from **13 curated example prompts**
-3. Select your AI model (GPT-5.2 / GPT-4.1 / GPT-4.1 Mini) and reasoning level
+3. Select your AI model (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek, or Grok) and reasoning level
 4. Click **Generate** — the architecture is created with auto-layout and workflow animation
 
 #### Method 2: Image Import
@@ -450,10 +467,27 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 ### Validating Architecture
 
 1. Design or generate your architecture
-2. Click **"Validate"** in the toolbar
+2. Click **"Validate Architecture"** in the toolbar
 3. Review recommendations by WAF pillar
 4. Check the improvements you want to implement
 5. Click **"Regenerate with Selected"** to apply
+
+### Comparing Models
+
+#### Architecture Comparison
+1. Click **"Compare Models"** in the toolbar
+2. Select which models to include and set reasoning effort
+3. Enter a prompt (or pick from sample prompts)
+4. Click **Compare** — all models run in parallel
+5. Review side-by-side results (service count, tokens, latency)
+6. Click **"Use This Architecture"** on the best result
+
+#### Validation Comparison
+1. Generate an architecture first
+2. Click **"Compare Validation"** in the toolbar
+3. Select models and click **Compare**
+4. Compare WAF scores, pillar breakdowns, severity counts
+5. Click **"Use This Validation"** on the preferred result
 
 ### Generating Deployment Guide
 
@@ -480,7 +514,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 | Category | Technologies |
 |----------|-------------|
 | **Frontend** | React 18, TypeScript, React Flow, Vite |
-| **AI** | Azure OpenAI (GPT-5.2, GPT-4.1, GPT-4.1 Mini), Reasoning Models |
+| **AI** | Azure OpenAI (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, Grok 4.1 Fast), Dual API (Responses + Chat Completions) |
 | **Styling** | CSS3, html-to-image |
 | **Serving** | nginx:alpine (Docker), Vite dev server (local) |
 | **APIs** | Azure Retail Prices API |
@@ -496,36 +530,40 @@ azure-diagrams/
 ├── src/
 │   ├── components/           # React components
 │   │   ├── AIArchitectureGenerator.tsx  # AI generation modal
-│   │   ├── ImageUploader.tsx  # Diagram image import (180 lines)
-│   │   ├── WorkflowPanel.tsx  # Workflow animation (68 lines)
+│   │   ├── ImageUploader.tsx  # Diagram image import
+│   │   ├── WorkflowPanel.tsx  # Workflow animation
 │   │   ├── ValidationModal.tsx  # WAF validation
+│   │   ├── CompareModelsModal.tsx  # Multi-model architecture comparison
+│   │   ├── CompareValidationModal.tsx  # Multi-model validation comparison
 │   │   ├── DeploymentGuideModal.tsx  # Deployment guides
-│   │   ├── ModelSettingsPopover.tsx  # Model selector (242 lines)
+│   │   ├── ModelSettingsPopover.tsx  # Model selector
 │   │   ├── IconPalette.tsx
 │   │   ├── AzureNode.tsx / GroupNode.tsx
 │   │   ├── Legend.tsx / TitleBlock.tsx
 │   │   └── ...
 │   ├── services/             # Business logic
-│   │   ├── azureOpenAI.ts    # AI integration (565 lines)
-│   │   ├── architectureValidator.ts  # WAF validation (355 lines)
-│   │   ├── deploymentGuideGenerator.ts  # Guides & Bicep (396 lines)
-│   │   ├── costEstimationService.ts  # Pricing (401 lines)
-│   │   ├── drawioExporter.ts  # Draw.io export (414 lines)
-│   │   ├── regionalPricingService.ts  # Multi-region (352 lines)
-│   │   ├── versionStorageService.ts  # Version history (177 lines)
-│   │   └── ...
+│   │   ├── azureOpenAI.ts    # AI integration (Responses + Chat Completions API)
+│   │   ├── architectureValidator.ts  # WAF validation with ModelOverride support
+│   │   ├── deploymentGuideGenerator.ts  # Guides & Bicep generation
+│   │   ├── costEstimationService.ts  # Pricing engine
+│   │   ├── drawioExporter.ts  # Draw.io export
+│   │   ├── regionalPricingService.ts  # Multi-region pricing
+│   │   ├── apiHelper.ts      # Dual API format builder (Responses/Chat Completions)
+│   │   ├── versionStorageService.ts  # Version history
+│   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
-│   │   └── modelSettingsStore.ts  # Multi-model settings (271 lines)
+│   │   └── modelSettingsStore.ts  # Multi-model settings (6 models)
 │   ├── data/                 # Static data
 │   │   ├── pricing/          # Regional pricing data (235 files)
-│   │   ├── azurePricing.ts   # Service mappings (1,059 lines)
-│   │   └── serviceIconMapping.ts  # Icon mappings (885 lines)
+│   │   ├── azurePricing.ts   # Service mappings
+│   │   └── serviceIconMapping.ts  # Icon mappings
 │   ├── utils/                # Utilities
-│   │   ├── iconLoader.ts     # Icon matching (113 lines)
-│   │   ├── layoutEngine.ts   # Dagre layout + overlap resolution (345 lines)
-│   │   ├── layoutPresets.ts  # Reference architectures (460 lines)
-│   │   └── modelNaming.ts    # Model display names (76 lines)
-│   └── App.tsx               # Main application (2,735 lines)
+│   │   ├── iconLoader.ts     # Icon matching
+│   │   ├── layoutEngine.ts   # Dagre layout + overlap resolution
+│   │   ├── layoutPresets.ts  # Reference architectures
+│   │   ├── groupUtils.ts     # Shared group collapse/fit utilities
+│   │   └── modelNaming.ts    # Model display names
+│   └── App.tsx               # Main application
 ├── scripts/                  # Deployment scripts
 │   ├── deploy_aca.sh         # Configurable ACA deployment (reads from .env)
 │   └── update_aca.sh         # Author's ACA deployment (hardcoded resources)
@@ -547,6 +585,18 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### February 28, 2026 — Multi-Model Expansion & Comparison
+- **6-Model Support** — Added GPT-5.1, GPT-5.3 Codex, DeepSeek V3.2 Speciale, and Grok 4.1 Fast alongside existing GPT-5.2 and GPT-5.2 Codex
+- **Chat Completions API Adapter** — Dual API support: Responses API for GPT models, Chat Completions API for third-party models (DeepSeek, Grok)
+- **Multi-Model Validation Comparison** — Compare WAF validation results across all 6 models with score, pillar, severity, and finding breakdowns
+- **Collapse All Groups** — Toggle button to collapse/expand all groups for bird's-eye view, with size persistence
+- **ARM Parsing Banner** — Glowing purple gradient banner during ARM template parsing
+- **Six-Model Comparison Report** — Formal analysis document ranking all 6 models across 4 prompts
+- **Save All Diagrams** — Download each model's architecture comparison result as individual JSON files
+- **Save Comparison Report** — Download combined comparison results as a single JSON for offline analysis
+- **Shared Group Utilities** — Extracted `fitGroupToContent` into reusable `groupUtils.ts`
+- **Bug Fixes** — Fixed Grok 404/string-groups crash, DeepSeek circular parent crash, `kbStats.serviceCount` typo
 
 ### February 14, 2026 — UI Polish, Auth & Deployment
 - **Entra ID Authentication** — ACA built-in auth with per-user assignment (no code changes needed)
@@ -571,12 +621,12 @@ azure-diagrams/
 ### February 2026 — Core Features
 - **Architecture Image Import** — Upload diagram images for AI-powered recreation
 - **Workflow Animation Panel** — Step-by-step data flow visualization with service highlighting
-- **Multi-Model Support** — GPT-5.2, GPT-5.2 Codex, GPT-4.1, GPT-4.1 Mini with per-feature overrides
-- **Responses API Migration** — All API calls migrated from Chat Completions to Responses API
+- **Multi-Model Support** — GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, Grok 4.1 Fast with per-feature overrides
+- **Dual API Support** — Responses API for GPT models, Chat Completions API for third-party models
 - **Model Selector UI** — Toolbar dropdown with reasoning effort configuration
-- **Model Comparison Reports** — Side-by-side architecture quality analysis across all models
+- **Model Comparison** — Side-by-side architecture and validation comparison across all models
 - **Bicep Templates** — IaC generation in deployment guides
-- **Reasoning Effort** — Configurable AI thinking depth (GPT-5.2: low/medium/high)
+- **Reasoning Effort** — Configurable AI thinking depth (GPT-5.x: none/low/medium/high)
 - **Smart Layout Engine** — Dagre-based auto-layout with group overlap resolution
 - **ELK.js Layout Engine** — Alternative layout with toggle
 - **Microsoft Logo** — Added to header banner
