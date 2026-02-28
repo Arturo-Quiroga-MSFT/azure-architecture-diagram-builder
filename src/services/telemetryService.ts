@@ -64,6 +64,8 @@ export function initTelemetry(): void {
 
 /**
  * Track a custom event with optional properties and measurements.
+ * Properties go to customDimensions (strings), measurements go to
+ * customMeasurements (numerics) so KQL toint()/todouble() work correctly.
  */
 export function trackEvent(
   name: string,
@@ -71,7 +73,9 @@ export function trackEvent(
   measurements?: Record<string, number>
 ): void {
   if (!appInsights) return;
-  appInsights.trackEvent({ name }, { ...properties, ...measurements } as ICustomProperties);
+  appInsights.trackEvent(
+    { name, properties, measurements },
+  );
 }
 
 /**
@@ -223,6 +227,32 @@ export function trackRegionChange(region: string): void {
  */
 export function trackStartFresh(): void {
   trackEvent('Start_Fresh');
+}
+
+/**
+ * Track AI model usage — fires on every Azure OpenAI call with full
+ * model identity and token breakdown. This is the central telemetry
+ * event for model/token analytics.
+ */
+export function trackAIModelUsage(params: {
+  model: string;
+  operation: string;
+  reasoningEffort?: string;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  elapsedTimeMs?: number;
+}): void {
+  trackEvent('AI_Model_Usage', {
+    model: params.model || 'unknown',
+    operation: params.operation,
+    reasoningEffort: params.reasoningEffort || 'none',
+  }, {
+    promptTokens: params.promptTokens ?? 0,
+    completionTokens: params.completionTokens ?? 0,
+    totalTokens: params.totalTokens ?? 0,
+    elapsedTimeMs: params.elapsedTimeMs ?? 0,
+  });
 }
 
 /**

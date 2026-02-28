@@ -10,6 +10,7 @@
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import { detectWafPatterns, calculatePreliminaryScore, type PatternDetectionResult } from './wafPatternDetector';
 import { getKnowledgeBaseStats } from '../data/wafRules';
+import { trackAIModelUsage } from './telemetryService';
 
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
 const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
@@ -125,6 +126,17 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000): Promi
   console.log('📦 API Response:', content.length, 'chars |',
     `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) |`,
     `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+  
+  // Track model usage telemetry
+  trackAIModelUsage({
+    model: modelConfig.displayName,
+    operation: 'architecture_validation',
+    reasoningEffort: modelConfig.isReasoning ? settings.reasoningEffort : undefined,
+    promptTokens: metrics.promptTokens,
+    completionTokens: metrics.completionTokens,
+    totalTokens: metrics.totalTokens,
+    elapsedTimeMs: metrics.elapsedTimeMs,
+  });
   
   return { content, metrics };
 }
