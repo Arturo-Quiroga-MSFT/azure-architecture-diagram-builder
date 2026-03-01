@@ -17,7 +17,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -60,7 +60,8 @@ import {
 } from './utils/layoutPresets';
 import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
 import { fitAllGroupsToContent } from './utils/groupUtils';
-import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackARMImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh } from './services/telemetryService';
+import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh } from './services/telemetryService';
+import type { IaCFormat } from './services/azureOpenAI';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
@@ -92,7 +93,8 @@ function App() {
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  const [isUploadingARM, setIsUploadingARM] = useState(false);
+  const [isImportingTemplate, setIsImportingTemplate] = useState(false);
+  const [importFormatLabel, setImportFormatLabel] = useState('Template');
   const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   
@@ -1695,40 +1697,110 @@ function App() {
     }
   }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow]);
 
-  const uploadARMTemplate = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  /** Detect IaC format from file extension and content */
+  const detectIaCFormat = useCallback((filename: string, text: string): { format: IaCFormat; label: string } | null => {
+    const ext = filename.split('.').pop()?.toLowerCase();
 
-    setIsUploadingARM(true);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const armTemplate = JSON.parse(e.target?.result as string);
-        
-        // Validate it's an ARM template
-        if (!armTemplate.$schema || !armTemplate.resources) {
-          alert('Invalid ARM template. Must contain $schema and resources.');
-          setIsUploadingARM(false);
-          return;
-        }
-
-        // Import the ARM parsing function
-        const { generateArchitectureFromARM } = await import('./services/azureOpenAI');
-        const result = await generateArchitectureFromARM(armTemplate);
-        
-        clearSourceModel();
-        trackARMImport(file.name, armTemplate.resources?.length);
-        handleAIGenerate(result, `ARM Template: ${file.name}`);
-      } catch (error: any) {
-        console.error('ARM template parsing error:', error);
-        alert(`Failed to parse ARM template: ${error.message}`);
-      } finally {
-        setIsUploadingARM(false);
-        event.target.value = '';
+    if (ext === 'bicep') {
+      if (/\b(resource|module)\b/.test(text)) {
+        return { format: 'bicep', label: 'Bicep' };
       }
-    };
-    reader.readAsText(file);
-  }, [handleAIGenerate]);
+      alert(`Invalid Bicep file: "${filename}" does not contain resource or module declarations.`);
+      return null;
+    }
+
+    if (ext === 'tf') {
+      if (/\b(resource|provider|module|data)\b/.test(text)) {
+        return { format: 'terraform-hcl', label: 'Terraform' };
+      }
+      alert(`Invalid Terraform file: "${filename}" does not contain resource or provider blocks.`);
+      return null;
+    }
+
+    if (ext === 'json') {
+      try {
+        const json = JSON.parse(text);
+        // Terraform state file
+        if (json.version !== undefined && json.resources && json.terraform_version) {
+          return { format: 'terraform-state', label: 'Terraform State' };
+        }
+        // ARM template
+        if (json.$schema && json.resources) {
+          return { format: 'arm', label: 'ARM' };
+        }
+        alert(`Unrecognized JSON file: "${filename}". Expected an ARM template ($schema + resources) or Terraform state file.`);
+        return null;
+      } catch {
+        alert(`Invalid JSON in "${filename}".`);
+        return null;
+      }
+    }
+
+    alert(`Unsupported file type: .${ext}. Supported formats: .bicep, .tf, .json`);
+    return null;
+  }, []);
+
+  const uploadTemplate = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsImportingTemplate(true);
+
+    try {
+      // Read all selected files
+      const fileContents: { name: string; text: string }[] = [];
+      for (const file of Array.from(files)) {
+        const text = await file.text();
+        fileContents.push({ name: file.name, text });
+      }
+
+      // Detect format from the first file
+      const detection = detectIaCFormat(fileContents[0].name, fileContents[0].text);
+      if (!detection) {
+        setIsImportingTemplate(false);
+        event.target.value = '';
+        return;
+      }
+
+      setImportFormatLabel(detection.label);
+      const filenames = fileContents.map(f => f.name);
+
+      let content: string | object;
+      if (detection.format === 'arm') {
+        content = JSON.parse(fileContents[0].text);
+      } else if (detection.format === 'terraform-state') {
+        content = JSON.parse(fileContents[0].text);
+      } else {
+        // Bicep or Terraform HCL — concatenate multiple files with headers
+        content = fileContents
+          .map(f => `// === ${f.name} ===\n${f.text}`)
+          .join('\n\n');
+      }
+
+      const { generateArchitectureFromIaC } = await import('./services/azureOpenAI');
+      const result = await generateArchitectureFromIaC({
+        format: detection.format,
+        content,
+        filenames,
+      });
+
+      clearSourceModel();
+
+      // Build descriptive prompt label
+      const extraCount = filenames.length > 1 ? ` (+${filenames.length - 1} files)` : '';
+      const promptLabel = `${detection.label} Template: ${filenames[0]}${extraCount}`;
+
+      trackTemplateImport(detection.format, filenames[0], filenames.length);
+      handleAIGenerate(result, promptLabel);
+    } catch (error: any) {
+      console.error('Template import error:', error);
+      alert(`Failed to import template: ${error.message}`);
+    } finally {
+      setIsImportingTemplate(false);
+      setImportFormatLabel('Template');
+      event.target.value = '';
+    }
+  }, [handleAIGenerate, detectIaCFormat]);
 
   const handleAlign = useCallback((type: string) => {
     const selectedNodes = nodes.filter(n => n.selected);
@@ -2027,15 +2099,16 @@ function App() {
                   <GitCompare size={18} />
                   Compare Models
                 </button>
-                <label className={`btn btn-secondary${isUploadingARM ? ' btn-parsing' : ''}`} title="Upload ARM template to generate diagram">
-                  {isUploadingARM ? <Loader size={18} className="spin-icon" /> : <Upload size={18} />}
-                  {isUploadingARM ? 'Parsing...' : 'Import ARM'}
+                <label className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`} title="Import Bicep, Terraform, or ARM template to generate diagram">
+                  {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <FileCode size={18} />}
+                  {isImportingTemplate ? 'Parsing...' : 'Import Template'}
                   <input
                     type="file"
-                    accept=".json"
-                    onChange={uploadARMTemplate}
+                    accept=".json,.bicep,.tf"
+                    multiple
+                    onChange={uploadTemplate}
                     style={{ display: 'none' }}
-                    disabled={isUploadingARM}
+                    disabled={isImportingTemplate}
                   />
                 </label>
               </div>
@@ -2596,8 +2669,8 @@ function App() {
               </div>
             )}
 
-            {/* Loading banner for ARM template parsing */}
-            {isUploadingARM && (
+            {/* Loading banner for template parsing */}
+            {isImportingTemplate && (
               <div
                 className="prompt-banner loading-banner"
                 style={{
@@ -2616,7 +2689,7 @@ function App() {
                 }}
               >
                 <div className="prompt-text" style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.3px' }}>
-                  <strong style={{ fontSize: '1.2rem' }}>📄 Parsing ARM Template...</strong> Analyzing resources and generating architecture diagram
+                  <strong style={{ fontSize: '1.2rem' }}>📄 Parsing {importFormatLabel} Template...</strong> Analyzing resources and generating architecture diagram
                 </div>
               </div>
             )}

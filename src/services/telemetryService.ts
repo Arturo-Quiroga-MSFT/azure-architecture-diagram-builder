@@ -168,12 +168,26 @@ export function trackExport(format: string, serviceCount?: number): void {
 }
 
 /**
- * Track ARM template import.
+ * Track ARM template import (legacy wrapper).
  */
 export function trackARMImport(fileName: string, resourceCount?: number): void {
-  trackEvent('ARM_Template_Imported', {
+  trackTemplateImport('arm', fileName, 1, resourceCount);
+}
+
+/**
+ * Track IaC template import (Bicep, Terraform, or ARM).
+ */
+export function trackTemplateImport(
+  format: string,
+  fileName: string,
+  fileCount: number,
+  resourceCount?: number
+): void {
+  trackEvent('Template_Imported', {
+    format,
     fileName,
   }, {
+    fileCount,
     resourceCount: resourceCount ?? 0,
   });
 }

@@ -496,24 +496,20 @@ If the image is not an architecture diagram or is unclear, describe what you can
   }
 }
 
-export async function generateArchitectureFromARM(armTemplate: any) {
-  // Extract key information from ARM template
-  const resources = armTemplate.resources || [];
-  
-  // Create a summary of the template
-  const resourceSummary = resources.map((r: any) => ({
-    type: r.type,
-    name: r.name,
-    location: r.location,
-    dependsOn: r.dependsOn || [],
-    properties: Object.keys(r.properties || {})
-  }));
+// ─── IaC Template Import (Bicep, Terraform, ARM) ─────────────────────
 
-  const systemPrompt = `You are an expert Azure cloud architect specializing in reverse engineering ARM templates into architecture diagrams.
+export type IaCFormat = 'arm' | 'bicep' | 'terraform-hcl' | 'terraform-state';
 
-Your task is to analyze an Azure ARM template JSON and convert it into a visual architecture diagram specification with logical groupings.
+export interface IaCImportInput {
+  format: IaCFormat;
+  /** For ARM/tfstate: parsed JSON object. For Bicep/HCL: raw text content. */
+  content: string | object;
+  /** Original filename(s) for context in the prompt */
+  filenames: string[];
+}
 
-Return ONLY a valid JSON object (no markdown, no explanations) with this exact structure:
+/** Shared output schema instruction block reused by all format prompts */
+const IAC_SHARED_OUTPUT_SCHEMA = `Return ONLY a valid JSON object (no markdown, no explanations) with this exact structure:
 {
   "groups": [
     {
@@ -527,7 +523,7 @@ Return ONLY a valid JSON object (no markdown, no explanations) with this exact s
   "services": [
     {
       "id": "unique-id",
-      "name": "Service Display Name (from ARM template)",
+      "name": "Service Display Name",
       "type": "Azure service type",
       "category": "icon category",
       "description": "Role in architecture",
@@ -560,7 +556,14 @@ Icon category mapping (MUST use these exact values):
 - "iot": IoT Hub, IoT Central
 - "integration": Service Bus, Event Grid
 - "security": Key Vault, Security Center
-- "web": Static Web Apps, CDN, Front Door
+- "web": Static Web Apps, CDN, Front Door`;
+
+function buildARMSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering ARM templates into architecture diagrams.
+
+Your task is to analyze an Azure ARM template JSON and convert it into a visual architecture diagram specification with logical groupings.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
 
 ARM Resource Type to Service Mapping:
 - Microsoft.Web/sites → App Service (app services)
@@ -590,9 +593,162 @@ Instructions:
 5. Create realistic connection labels based on resource relationships
 6. Use sync/async/optional connection types appropriately
 7. Extract meaningful names from resource names (remove template expressions)`;
+}
 
-  try {
-    const userMessage = `Parse this ARM template and generate an architecture diagram:
+function buildBicepSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering Bicep templates into architecture diagrams.
+
+Your task is to analyze Bicep (.bicep) Infrastructure-as-Code files and convert them into a visual architecture diagram specification with logical groupings.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+Bicep Resource Type to Service Mapping (the API version after @ should be ignored):
+- Microsoft.Web/sites → App Service (app services)
+- Microsoft.Web/sites (kind: 'functionapp') → Function App (app services)
+- Microsoft.ApiManagement/service → API Management (app services)
+- Microsoft.Web/sites (kind: 'app,linux') → App Service (app services)
+- Microsoft.DocumentDB/databaseAccounts → Cosmos DB (databases)
+- Microsoft.Sql/servers → SQL Server (databases)
+- Microsoft.Sql/servers/databases → SQL Database (databases)
+- Microsoft.DBforPostgreSQL/flexibleServers → PostgreSQL (databases)
+- Microsoft.DBforMySQL/flexibleServers → MySQL (databases)
+- Microsoft.Cache/redis → Azure Cache for Redis (databases)
+- Microsoft.Storage/storageAccounts → Storage Account (storage)
+- Microsoft.Network/virtualNetworks → Virtual Network (networking)
+- Microsoft.Network/applicationGateways → Application Gateway (networking)
+- Microsoft.Network/loadBalancers → Load Balancer (networking)
+- Microsoft.Network/frontDoors → Front Door (web)
+- Microsoft.Cdn/profiles → CDN (web)
+- Microsoft.Network/privateDnsZones → Private DNS Zone (networking)
+- Microsoft.Network/privateEndpoints → Private Endpoint (networking)
+- Microsoft.Network/networkSecurityGroups → NSG (networking)
+- Microsoft.Compute/virtualMachines → Virtual Machine (compute)
+- Microsoft.Compute/virtualMachineScaleSets → VM Scale Set (compute)
+- Microsoft.ContainerRegistry/registries → Container Registry (containers)
+- Microsoft.ContainerService/managedClusters → AKS (containers)
+- Microsoft.App/managedEnvironments → Container Apps Environment (containers)
+- Microsoft.App/containerApps → Container App (containers)
+- Microsoft.KeyVault/vaults → Key Vault (identity)
+- Microsoft.ManagedIdentity/userAssignedIdentities → Managed Identity (identity)
+- Microsoft.Insights/components → Application Insights (monitor)
+- Microsoft.OperationalInsights/workspaces → Log Analytics (monitor)
+- Microsoft.Insights/diagnosticSettings → Monitor Diagnostics (monitor)
+- Microsoft.ServiceBus/namespaces → Service Bus (integration)
+- Microsoft.EventGrid/topics → Event Grid (integration)
+- Microsoft.EventHub/namespaces → Event Hubs (analytics)
+- Microsoft.CognitiveServices/accounts → Cognitive Services (ai + machine learning)
+- Microsoft.MachineLearningServices/workspaces → Machine Learning (ai + machine learning)
+- Microsoft.Search/searchServices → Azure AI Search (ai + machine learning)
+- Microsoft.SignalRService/signalR → SignalR (web)
+- Microsoft.Web/staticSites → Static Web App (web)
+
+Instructions:
+1. Parse all resource declarations (resource keyword with type string and API version)
+2. Parse module declarations to understand modular structure
+3. Identify resource types and map to Azure services using the table above
+4. Infer connections from: dependsOn, parameter passing between modules, property references (e.g., storageAccount.properties.primaryEndpoints)
+5. Group related resources logically by module or by tier (web, data, networking, etc.)
+6. Extract meaningful display names from resource symbolic names
+7. Use sync/async/optional connection types appropriately based on the relationship`;
+}
+
+function buildTerraformHCLSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering Terraform configurations into architecture diagrams.
+
+Your task is to analyze Terraform (.tf) HCL files using the AzureRM provider and convert them into a visual architecture diagram specification with logical groupings.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+Terraform AzureRM Resource Type to Service Mapping:
+- azurerm_resource_group → Resource Group (use as a grouping container, not as a service node)
+- azurerm_linux_web_app / azurerm_windows_web_app → App Service (app services)
+- azurerm_linux_function_app / azurerm_windows_function_app → Function App (app services)
+- azurerm_api_management → API Management (app services)
+- azurerm_logic_app_workflow → Logic App (app services)
+- azurerm_service_plan → App Service Plan (app services) — group with its web/function apps
+- azurerm_cosmosdb_account → Cosmos DB (databases)
+- azurerm_mssql_server → SQL Server (databases)
+- azurerm_mssql_database → SQL Database (databases)
+- azurerm_postgresql_flexible_server → PostgreSQL (databases)
+- azurerm_mysql_flexible_server → MySQL (databases)
+- azurerm_redis_cache → Azure Cache for Redis (databases)
+- azurerm_storage_account → Storage Account (storage)
+- azurerm_storage_container → Blob Container (storage) — group with its storage account
+- azurerm_virtual_network → Virtual Network (networking)
+- azurerm_subnet → Subnet (networking) — group with its VNet
+- azurerm_application_gateway → Application Gateway (networking)
+- azurerm_lb → Load Balancer (networking)
+- azurerm_frontdoor → Front Door (web)
+- azurerm_cdn_profile → CDN (web)
+- azurerm_private_dns_zone → Private DNS Zone (networking)
+- azurerm_private_endpoint → Private Endpoint (networking)
+- azurerm_network_security_group → NSG (networking)
+- azurerm_linux_virtual_machine / azurerm_windows_virtual_machine → Virtual Machine (compute)
+- azurerm_virtual_machine_scale_set → VM Scale Set (compute)
+- azurerm_container_registry → Container Registry (containers)
+- azurerm_kubernetes_cluster → AKS (containers)
+- azurerm_container_app → Container App (containers)
+- azurerm_container_app_environment → Container Apps Environment (containers)
+- azurerm_key_vault → Key Vault (identity)
+- azurerm_user_assigned_identity → Managed Identity (identity)
+- azurerm_application_insights → Application Insights (monitor)
+- azurerm_log_analytics_workspace → Log Analytics (monitor)
+- azurerm_servicebus_namespace → Service Bus (integration)
+- azurerm_eventgrid_topic → Event Grid (integration)
+- azurerm_eventhub_namespace → Event Hubs (analytics)
+- azurerm_cognitive_account → Cognitive Services (ai + machine learning)
+- azurerm_machine_learning_workspace → Machine Learning (ai + machine learning)
+- azurerm_search_service → Azure AI Search (ai + machine learning)
+- azurerm_signalr_service → SignalR (web)
+- azurerm_static_web_app → Static Web App (web)
+
+Instructions:
+1. Parse all resource blocks (resource "azurerm_*" "name" { ... })
+2. Identify resource types and map to Azure services using the table above
+3. Infer connections from: depends_on blocks, implicit references (e.g., azurerm_subnet.main.id), and attribute references between resources
+4. Use azurerm_resource_group as logical grouping containers
+5. Group related resources by tier (web, data, networking) or by resource group
+6. Extract meaningful display names from resource labels (the second string in resource declarations)
+7. Collapse child resources with their parents (e.g., storage_container inside storage_account)
+8. Use sync/async/optional connection types based on the relationship`;
+}
+
+function buildTerraformStateSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering Terraform state files into architecture diagrams.
+
+Your task is to analyze a Terraform state file (terraform.tfstate) JSON and convert it into a visual architecture diagram specification with logical groupings. The state file represents actually deployed infrastructure.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+The Terraform state file has this structure:
+- resources[]: Array of resource objects
+  - type: The Terraform resource type (e.g., "azurerm_linux_web_app")
+  - name: The Terraform resource label
+  - provider: The provider path
+  - instances[]: Array of deployed instances with attributes
+
+Use the same resource type mapping as Terraform HCL (azurerm_* types).
+
+Instructions:
+1. Parse the resources array from the state file
+2. Map each resource type to an Azure service
+3. Infer connections from attribute values that reference other resource IDs
+4. Group resources by resource group (look for resource_group_name attribute in instances)
+5. Extract display names from the name field or from instance attributes
+6. Use sync/async/optional connection types appropriately`;
+}
+
+function buildARMUserMessage(armTemplate: any): string {
+  const resources = armTemplate.resources || [];
+  const resourceSummary = resources.map((r: any) => ({
+    type: r.type,
+    name: r.name,
+    location: r.location,
+    dependsOn: r.dependsOn || [],
+    properties: Object.keys(r.properties || {})
+  }));
+
+  return `Parse this ARM template and generate an architecture diagram:
 
 Template Summary:
 - Total Resources: ${resources.length}
@@ -603,78 +759,167 @@ ${JSON.stringify(resourceSummary, null, 2)}
 
 Full ARM Template:
 ${JSON.stringify(armTemplate, null, 2)}`;
+}
 
+function buildBicepUserMessage(content: string, filenames: string[]): string {
+  return `Parse this Bicep template and generate an architecture diagram:
+
+Files: ${filenames.join(', ')}
+File Count: ${filenames.length}
+
+Bicep Source:
+${content}`;
+}
+
+function buildTerraformHCLUserMessage(content: string, filenames: string[]): string {
+  return `Parse this Terraform configuration and generate an architecture diagram:
+
+Files: ${filenames.join(', ')}
+File Count: ${filenames.length}
+
+Terraform HCL Source:
+${content}`;
+}
+
+function buildTerraformStateUserMessage(stateJson: any): string {
+  const resources = stateJson.resources || [];
+  return `Parse this Terraform state file and generate an architecture diagram:
+
+State Summary:
+- Terraform Version: ${stateJson.terraform_version || 'unknown'}
+- Total Resources: ${resources.length}
+- Resource Types: ${[...new Set(resources.map((r: any) => r.type))].join(', ')}
+
+Full State:
+${JSON.stringify(stateJson, null, 2)}`;
+}
+
+/** Post-process the architecture response to normalize groups and resolve conflicts */
+function normalizeArchitectureResponse(architecture: any): any {
+  // Validate response structure
+  if (!architecture.services || !Array.isArray(architecture.services)) {
+    throw new Error('Invalid response: missing services array');
+  }
+
+  if (!architecture.connections) {
+    architecture.connections = [];
+  }
+
+  if (!architecture.groups) {
+    architecture.groups = [];
+  }
+
+  // Normalize groups: some models return plain strings instead of objects
+  architecture.groups = architecture.groups.map((g: any) => {
+    if (typeof g === 'string') {
+      return {
+        id: g,
+        label: g.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      };
+    }
+    // Strip groupId from group objects to prevent circular parent refs
+    const { groupId, ...cleanGroup } = g;
+    return cleanGroup;
+  });
+
+  // Build valid group ID set and resolve conflicts
+  const groupIds = new Set(architecture.groups.map((g: any) => g.id));
+  const serviceIds = new Set(architecture.services.map((s: any) => s.id));
+
+  // Prevent ID collisions between groups and services (causes ReactFlow circular refs)
+  for (const gid of groupIds) {
+    if (serviceIds.has(gid)) {
+      console.warn(`⚠️ Group ID "${gid}" collides with a service ID — prefixing group`);
+      const group = architecture.groups.find((g: any) => g.id === gid);
+      const newId = `group-${gid}`;
+      group.id = newId;
+      architecture.services.forEach((s: any) => {
+        if (s.groupId === gid) s.groupId = newId;
+      });
+    }
+  }
+
+  // Clear invalid groupId references on services to prevent "parent not found" crashes
+  const validGroupIds = new Set(architecture.groups.map((g: any) => g.id));
+  architecture.services.forEach((s: any) => {
+    if (s.groupId && !validGroupIds.has(s.groupId)) {
+      console.warn(`⚠️ Service "${s.id}" references unknown group "${s.groupId}" — clearing`);
+      s.groupId = null;
+    }
+  });
+
+  return architecture;
+}
+
+const FORMAT_LABELS: Record<IaCFormat, string> = {
+  'arm': 'ARM',
+  'bicep': 'Bicep',
+  'terraform-hcl': 'Terraform',
+  'terraform-state': 'Terraform State',
+};
+
+/**
+ * Unified IaC template import: generates an architecture diagram from
+ * Bicep, Terraform HCL, Terraform state, or ARM template files.
+ */
+export async function generateArchitectureFromIaC(input: IaCImportInput) {
+  const label = FORMAT_LABELS[input.format];
+  console.log(`📄 Parsing ${label} template (${input.filenames.length} file(s))...`);
+
+  let systemPrompt: string;
+  let userMessage: string;
+
+  switch (input.format) {
+    case 'arm':
+      systemPrompt = buildARMSystemPrompt();
+      userMessage = buildARMUserMessage(input.content);
+      break;
+    case 'bicep':
+      systemPrompt = buildBicepSystemPrompt();
+      userMessage = buildBicepUserMessage(input.content as string, input.filenames);
+      break;
+    case 'terraform-hcl':
+      systemPrompt = buildTerraformHCLSystemPrompt();
+      userMessage = buildTerraformHCLUserMessage(input.content as string, input.filenames);
+      break;
+    case 'terraform-state':
+      systemPrompt = buildTerraformStateSystemPrompt();
+      userMessage = buildTerraformStateUserMessage(input.content);
+      break;
+    default:
+      throw new Error(`Unsupported IaC format: ${input.format}`);
+  }
+
+  try {
     const messages = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage }
     ];
 
     const { content, metrics } = await callAzureOpenAI(messages);
-    
+
     if (!content) {
       throw new Error('No response from Azure OpenAI');
     }
 
     const architecture = JSON.parse(content);
-    
-    // Add AI metrics to the response
     architecture.metrics = metrics;
-    
-    // Validate response structure
-    if (!architecture.services || !Array.isArray(architecture.services)) {
-      throw new Error('Invalid response: missing services array');
-    }
-    
-    if (!architecture.connections) {
-      architecture.connections = [];
-    }
 
-    if (!architecture.groups) {
-      architecture.groups = [];
-    }
-
-    // Normalize groups: some models return plain strings instead of objects
-    architecture.groups = architecture.groups.map((g: any) => {
-      if (typeof g === 'string') {
-        return {
-          id: g,
-          label: g.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-        };
-      }
-      // Strip groupId from group objects to prevent circular parent refs
-      const { groupId, ...cleanGroup } = g;
-      return cleanGroup;
-    });
-
-    // Build valid group ID set and resolve conflicts
-    const groupIds = new Set(architecture.groups.map((g: any) => g.id));
-    const serviceIds = new Set(architecture.services.map((s: any) => s.id));
-
-    // Prevent ID collisions between groups and services (causes ReactFlow circular refs)
-    for (const gid of groupIds) {
-      if (serviceIds.has(gid)) {
-        console.warn(`⚠️ Group ID "${gid}" collides with a service ID — prefixing group`);
-        const group = architecture.groups.find((g: any) => g.id === gid);
-        const newId = `group-${gid}`;
-        group.id = newId;
-        architecture.services.forEach((s: any) => {
-          if (s.groupId === gid) s.groupId = newId;
-        });
-      }
-    }
-
-    // Clear invalid groupId references on services to prevent "parent not found" crashes
-    const validGroupIds = new Set(architecture.groups.map((g: any) => g.id));
-    architecture.services.forEach((s: any) => {
-      if (s.groupId && !validGroupIds.has(s.groupId)) {
-        console.warn(`⚠️ Service "${s.id}" references unknown group "${s.groupId}" — clearing`);
-        s.groupId = null;
-      }
-    });
-
-    return architecture;
+    return normalizeArchitectureResponse(architecture);
   } catch (error: any) {
-    console.error('ARM parsing error:', error);
-    throw new Error(`Failed to parse ARM template: ${error.message}`);
+    console.error(`${label} parsing error:`, error);
+    throw new Error(`Failed to parse ${label} template: ${error.message}`);
   }
+}
+
+/**
+ * Legacy wrapper — kept for backward compatibility.
+ * Delegates to the unified generateArchitectureFromIaC().
+ */
+export async function generateArchitectureFromARM(armTemplate: any) {
+  return generateArchitectureFromIaC({
+    format: 'arm',
+    content: armTemplate,
+    filenames: ['template.json'],
+  });
 }
