@@ -20,7 +20,7 @@ const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
     <div className={`legend ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="legend-header" onClick={() => setIsCollapsed(!isCollapsed)}>
         <span className="legend-title">LEGEND</span>
-        <span className="legend-toggle">{isCollapsed ? '▼' : '▲'}</span>
+        <span className="legend-toggle">{isCollapsed ? '▲' : '▼'}</span>
       </div>
       
       {!isCollapsed && (
@@ -29,8 +29,8 @@ const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
             <div className="legend-section-title">Connection Types</div>
             
             <div className="legend-item">
-              <svg width="60" height="20" className="legend-line">
-                <line x1="5" y1="10" x2="55" y2="10" stroke="#0078d4" strokeWidth="2" />
+              <svg width="40" height="16" className="legend-line">
+                <line x1="4" y1="8" x2="36" y2="8" stroke="#0078d4" strokeWidth="2" />
               </svg>
               <div className="legend-description">
                 <strong>Synchronous</strong>
@@ -39,8 +39,8 @@ const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
             </div>
             
             <div className="legend-item">
-              <svg width="60" height="20" className="legend-line">
-                <line x1="5" y1="10" x2="55" y2="10" stroke="#0078d4" strokeWidth="2" strokeDasharray="5, 5" />
+              <svg width="40" height="16" className="legend-line">
+                <line x1="4" y1="8" x2="36" y2="8" stroke="#0078d4" strokeWidth="2" strokeDasharray="5, 5" />
               </svg>
               <div className="legend-description">
                 <strong>Asynchronous</strong>
@@ -49,8 +49,8 @@ const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
             </div>
             
             <div className="legend-item">
-              <svg width="60" height="20" className="legend-line">
-                <line x1="5" y1="10" x2="55" y2="10" stroke="#0078d4" strokeWidth="2" strokeDasharray="2, 4" opacity="0.6" />
+              <svg width="40" height="16" className="legend-line">
+                <line x1="4" y1="8" x2="36" y2="8" stroke="#0078d4" strokeWidth="2" strokeDasharray="2, 4" opacity="0.6" />
               </svg>
               <div className="legend-description">
                 <strong>Optional</strong>

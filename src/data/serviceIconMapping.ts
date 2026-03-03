@@ -859,6 +859,19 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   },
   
   // ========================================
+  // Data Governance
+  // ========================================
+  'Microsoft Purview': {
+    displayName: 'Microsoft Purview',
+    aliases: ['Purview', 'Azure Purview', 'Data Governance', 'Data Catalog'],
+    iconFile: '10314-icon-service-Azure-Purview-Accounts',
+    category: 'management + governance',
+    hasPricingData: true,
+    pricingServiceName: 'Microsoft Purview',
+    costRange: '$0.50-240/mo'
+  },
+  
+  // ========================================
   // Storage (additional)
   // ========================================
   'Data Lake Storage': {

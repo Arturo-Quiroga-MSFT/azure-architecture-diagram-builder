@@ -264,7 +264,7 @@ body.dark-mode .modal-description {
   border: 1px solid #e5e7eb;
   border-left: 3px solid #e5e7eb;
   border-radius: 6px;
-  font-size: 0.8125rem;
+  font-size: 0.9rem;
   color: #4b5563;
   cursor: pointer;
   transition: all 0.15s;
@@ -505,14 +505,18 @@ body.dark-mode .example-button:hover:not(:disabled) {
 }
 
 body.dark-mode .form-textarea {
-  background: #2a2040;
-  border-color: #4c3a6e;
-  color: #f3f4f6;
+  background: #0f1b2d;
+  border-color: #1e3a5f;
+  color: #e8f0fe;
+}
+
+body.dark-mode .form-textarea::placeholder {
+  color: #5a7ea4;
 }
 
 body.dark-mode .form-textarea:focus {
-  border-color: #8B5CF6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 body.dark-mode .form-group label {

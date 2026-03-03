@@ -207,6 +207,12 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'FHIR Service': 'Azure API for FHIR',
   'Health Data Services': 'Azure API for FHIR',
   'Azure Health Data Services': 'Azure API for FHIR',
+  
+  // Data Governance
+  'Microsoft Purview': 'Microsoft Purview',
+  'Purview': 'Microsoft Purview',
+  'Azure Purview': 'Microsoft Purview',
+  'Data Governance': 'Microsoft Purview',
 };
 
 /**
@@ -393,6 +399,10 @@ export const DEFAULT_TIERS: Record<string, string> = {
   // Healthcare
   'Azure API for FHIR': 'Standard',
   'FHIR': 'Standard',
+  // Data Governance
+  'Microsoft Purview': 'Data Catalog Standard',
+  'Purview': 'Data Catalog Standard',
+  'Azure Purview': 'Data Catalog Standard',
 };
 
 /**
@@ -1090,6 +1100,25 @@ export const FALLBACK_PRICING: Record<string, {
     standard: 125.00,
     premium: 500.00,
     unit: 'per service/month'
+  },
+  // Data Governance
+  'Microsoft Purview': {
+    basic: 0.50,   // Data Catalog Standard (~$0.0165/day)
+    standard: 60.00,  // Data Management Standard Processing Unit
+    premium: 240.00,  // Data Management Advanced Processing Unit
+    unit: 'per resource/month'
+  },
+  'Purview': {
+    basic: 0.50,
+    standard: 60.00,
+    premium: 240.00,
+    unit: 'per resource/month'
+  },
+  'Azure Purview': {
+    basic: 0.50,
+    standard: 60.00,
+    premium: 240.00,
+    unit: 'per resource/month'
   },
 };
 
