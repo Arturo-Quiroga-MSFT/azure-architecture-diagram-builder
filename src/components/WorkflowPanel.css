@@ -107,9 +107,15 @@
 }
 
 .workflow-step:hover {
+  background: #fef9c3;
   box-shadow: 0 4px 12px rgba(0, 120, 212, 0.15);
   transform: translateX(4px);
-  border-left-color: #005a9e;
+  border-left-color: #eab308;
+}
+
+body.dark-mode .workflow-step:hover {
+  background: #fef9c3;
+  border-left-color: #eab308;
 }
 
 .step-number {
