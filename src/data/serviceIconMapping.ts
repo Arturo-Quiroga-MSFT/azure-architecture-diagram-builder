@@ -307,8 +307,8 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   
   'PostgreSQL': {
     displayName: 'Azure Database for PostgreSQL',
-    aliases: ['PostgreSQL', 'Postgres', 'Azure PostgreSQL'],
-    iconFile: '10131-icon-service-Azure-Database-PostgreSQL-Server',
+    aliases: ['PostgreSQL', 'Postgres', 'Azure PostgreSQL', 'Azure Database for PostgreSQL', 'Azure Database for PostgreSQL Flexible Server', 'PostgreSQL Flexible Server', 'Azure PostgreSQL Flexible Server', 'PostgreSQL Server'],
+    iconFile: '02827-icon-service-Azure-Database-PostgreSQL-Server-Group',
     category: 'databases',
     hasPricingData: true,
     pricingServiceName: 'Azure Database for PostgreSQL',
