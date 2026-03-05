@@ -117,7 +117,7 @@ Features include:
 - Cloud sync with shareable URLs
 
 ### 🎨 Professional Diagramming
-- **713 Official Azure Icons** — Complete service library across 29 categories
+- **714 Official Azure Icons** — Complete service library across 29 categories
 - **68 AI-mapped services** — with pricing, categories, and icon resolution
 - **Smart Grouping** — Logical organization (Frontend, Backend, Data, Security)
 - **Editable Connections** — Labels, animations, custom styling
@@ -264,6 +264,8 @@ graph TB
         App --> Palette[Icon Palette]
         App --> AIGen[AI Generator Modal]
         App --> ImgUpload[Image Uploader]
+        App --> CompareM[Compare Models Modal]
+        App --> CompareV[Compare Validation Modal]
         App --> Validation[Validation Modal]
         App --> Deploy[Deployment Guide Modal]
         App --> Version[Version History]
@@ -274,6 +276,8 @@ graph TB
         Canvas --> EditableEdge[Editable Edge]
         Canvas --> Legend[Cost Legend]
         Canvas --> TitleBlock[Title Block]
+        Canvas --> ModelBadge[Model Badge]
+        Canvas --> RefViewer[Reference Image Viewer]
         Canvas --> Layout[Layout Engine + Overlap Resolution]
     end
 
@@ -281,15 +285,17 @@ graph TB
         azureOpenAI[azureOpenAI.ts]
         costService[costEstimationService.ts]
         validator[architectureValidator.ts]
+        wafDetector[wafPatternDetector.ts]
         deployGen[deploymentGuideGenerator.ts]
         pricing[regionalPricingService.ts]
         drawio[drawioExporter.ts]
         modelStore[modelSettingsStore.ts]
         telemetry[telemetryService.ts]
+        apiHelper[apiHelper.ts]
     end
 
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI API]
+        OpenAI[Azure OpenAI API<br/>6 Models]
         PricingAPI[Azure Retail Prices API]
         AppInsights[Application Insights]
     end
@@ -383,9 +389,12 @@ Navigate to `http://localhost:3000`
 docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_ENDPOINT="..." \
   --build-arg VITE_AZURE_OPENAI_API_KEY="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT51="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT41MINI="..." .
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST="..." .
 
 # Optional: include App Insights telemetry
 #   --build-arg VITE_APPINSIGHTS_CONNECTION_STRING="..." \
@@ -550,11 +559,12 @@ azure-diagrams/
 │   │   ├── regionalPricingService.ts  # Multi-region pricing
 │   │   ├── apiHelper.ts      # Dual API format builder (Responses/Chat Completions)
 │   │   ├── versionStorageService.ts  # Version history
+│   │   ├── wafPatternDetector.ts  # Rule-based WAF pattern checks
 │   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
 │   │   └── modelSettingsStore.ts  # Multi-model settings (6 models)
 │   ├── data/                 # Static data
-│   │   ├── pricing/          # Regional pricing data (235 files)
+│   │   ├── pricing/          # Regional pricing data (245 files: 49 services × 5 regions)
 │   │   ├── azurePricing.ts   # Service mappings
 │   │   └── serviceIconMapping.ts  # Icon mappings
 │   ├── utils/                # Utilities
@@ -567,7 +577,7 @@ azure-diagrams/
 ├── scripts/                  # Deployment scripts
 │   ├── deploy_aca.sh         # Configurable ACA deployment (reads from .env)
 │   └── update_aca.sh         # Author's ACA deployment (hardcoded resources)
-├── Azure_Public_Service_Icons/  # 713 official Azure icons (29 categories)
+├── Azure_Public_Service_Icons/  # 714 official Azure icons (29 categories)
 ├── DOCS/                     # Documentation
 └── Dockerfile               # Container configuration
 ```
