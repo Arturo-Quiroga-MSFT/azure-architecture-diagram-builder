@@ -396,6 +396,21 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
             </div>
           </div>
 
+          {/* WAF Pillars Info */}
+          <div className="cv-waf-info">
+            <p className="cv-waf-intro">
+              Each model validates your architecture against the <strong>Azure Well-Architected Framework</strong> — 
+              Microsoft's set of guiding tenets for improving the quality of cloud workloads across five pillars:
+            </p>
+            <div className="cv-waf-pillars">
+              <span className="cv-waf-pillar"><strong>Cost Optimization</strong></span>
+              <span className="cv-waf-pillar"><strong>Operational Excellence</strong></span>
+              <span className="cv-waf-pillar"><strong>Performance Efficiency</strong></span>
+              <span className="cv-waf-pillar"><strong>Reliability</strong></span>
+              <span className="cv-waf-pillar"><strong>Security</strong></span>
+            </div>
+          </div>
+
           {/* Model Selection */}
           <div className="compare-section">
             <h3 className="compare-section-title">Select Models to Compare</h3>

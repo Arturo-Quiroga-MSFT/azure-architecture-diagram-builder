@@ -377,6 +377,7 @@ azure-diagrams/
 - **Output**: Overall score (0-100), per-pillar scores, severity-classified findings, quick wins
 - **Apply recommendations**: Select findings and regenerate an improved architecture automatically
 - **Download report**: Markdown report with embedded diagram snapshot (PNG)
+- **Dismiss hint**: During analysis, users see a message confirming they can close the panel and return via the Validation Score button
 
 ### 7. Deployment Guide Generation
 - **Bicep templates**: Infrastructure-as-Code generation from diagrams
@@ -394,7 +395,7 @@ azure-diagrams/
 - **Reasoning effort**: Configurable (none/low/medium/high) for reasoning-capable models
 - **Per-feature overrides**: Different models for generation vs. validation vs. deployment guides
 - **Architecture comparison**: Run the same prompt through multiple models in parallel; compare service counts, tokens, latency; apply the best result
-- **Validation comparison**: Run WAF validation across models in parallel; compare scores, pillar breakdowns, severity distributions
+- **Validation comparison**: Run WAF validation across models in parallel; compare scores, pillar breakdowns, severity distributions. An inline WAF info box describes the five pillars being assessed before the run starts
 - **Export**: Save all diagrams as individual JSON files or a combined comparison report
 
 ### 10. IaC Template Import

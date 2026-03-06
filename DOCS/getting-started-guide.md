@@ -178,11 +178,12 @@ Use **Export > Export Costs** to download a CSV file with per-service pricing de
    - Performance Efficiency
    - Cost Optimization
    - Operational Excellence
-3. Each pillar receives a score (0-100), and the overall score is displayed with a color-coded indicator.
-4. Findings are listed by severity (critical, high, medium, low), each with a specific recommendation.
-5. Select the findings you want to act on using the checkboxes.
-6. Click **Apply Recommendations** to regenerate an improved architecture that incorporates the selected changes (for example, adding a private endpoint, enabling multi-region failover, or introducing a WAF gateway).
-7. Download the validation report as a markdown file with an embedded diagram snapshot.
+3. While the analysis runs, a hint at the bottom confirms you can close the panel at any time. Once complete, reopen results using the **Validation Score** button that appears in the toolbar.
+4. Each pillar receives a score (0-100), and the overall score is displayed with a color-coded indicator.
+5. Findings are listed by severity (critical, high, medium, low), each with a specific recommendation.
+6. Select the findings you want to act on using the checkboxes.
+7. Click **Apply Recommendations** to regenerate an improved architecture that incorporates the selected changes (for example, adding a private endpoint, enabling multi-region failover, or introducing a WAF gateway).
+8. Download the validation report as a markdown file with an embedded diagram snapshot.
 
 ---
 
@@ -218,9 +219,10 @@ Two comparison modes let you evaluate which model produces the best results for 
 ### Validation Comparison
 
 1. Click **"Compare Validation"** in the toolbar (requires an existing diagram on the canvas).
-2. Select models and run WAF validation across all of them in parallel.
-3. Compare overall scores, pillar breakdowns, severity distributions, and quick wins.
-4. Apply any result to view its full details.
+2. An info box explains that each model validates against the **Azure Well-Architected Framework** and lists the five pillars being assessed.
+3. Select models and run WAF validation across all of them in parallel.
+4. Compare overall scores, pillar breakdowns, severity distributions, and quick wins.
+5. Apply any result to view its full details.
 
 ---
 

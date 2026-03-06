@@ -65,13 +65,13 @@ Validate your architecture against all five WAF pillars:
 - **Cost Optimization** — Right-sizing, reserved instances
 - **Operational Excellence** — Monitoring, automation
 
-Select specific recommendations and automatically regenerate an improved architecture.
+Select specific recommendations and automatically regenerate an improved architecture. During analysis, a dismiss hint lets you close the panel and return later via the **Validation Score** button in the toolbar.
 
 ### 🔀 Multi-Model Comparison
 Compare AI output side-by-side across all 7 models:
 
 - **Architecture Comparison** — Run the same prompt through multiple models and compare service counts, connection counts, groups, workflow steps, token usage, and latency
-- **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins
+- **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins. An inline WAF info box explains the five pillars being assessed
 - **Save All Diagrams** — Download each model's architecture as a separate JSON file
 - **Save Comparison Report** — Download a combined JSON report for offline analysis
 - **Apply Winner** — Pick the best result and apply it to the canvas with one click

@@ -185,6 +185,9 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
                   </li>
                 </ul>
               </div>
+              <p className="validation-dismiss-hint">
+                You may close this panel at any time — once complete, reopen your results using the <strong>Validation Score</strong> button in the toolbar.
+              </p>
             </div>
           </div>
         ) : validation ? (
