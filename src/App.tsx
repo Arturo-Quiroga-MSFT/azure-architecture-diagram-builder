@@ -1057,7 +1057,10 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const fileName = generateModelFilename('azure-cost-breakdown', 'csv');
+    const baseName = generateModelFilename('azure-cost-breakdown', 'csv');
+    // Insert region before the extension for cost exports
+    const region = getActiveRegion();
+    const fileName = baseName.replace('.csv', `-${region}.csv`);
     link.download = fileName;
     link.click();
     URL.revokeObjectURL(url);
@@ -1500,27 +1503,15 @@ function App() {
       }
 
       const dx = tgtPos.x - srcPos.x;
-      const dy = tgtPos.y - srcPos.y;
 
-      // Use the dominant axis to pick handles
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        // Primarily horizontal
-        if (dx >= 0) {
-          // Target is to the right → standard L-R flow
-          return { sourceHandle: 'right', targetHandle: 'left' };
-        } else {
-          // Target is to the left → reverse direction
-          return { sourceHandle: 'left-source', targetHandle: 'right-target' };
-        }
+      // Azure architecture convention: LEFT = input, RIGHT = output
+      // Always exit from the right side and enter from the left side
+      if (dx >= 0) {
+        // Target is to the right → standard flow
+        return { sourceHandle: 'right', targetHandle: 'left' };
       } else {
-        // Primarily vertical
-        if (dy >= 0) {
-          // Target is below
-          return { sourceHandle: 'bottom', targetHandle: 'top' };
-        } else {
-          // Target is above
-          return { sourceHandle: 'top-source', targetHandle: 'bottom-target' };
-        }
+        // Target is to the left → reverse flow
+        return { sourceHandle: 'left-source', targetHandle: 'right-target' };
       }
     };
 

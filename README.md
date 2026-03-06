@@ -26,7 +26,7 @@
 
 ## 📖 Overview
 
-Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **6 AI models** — **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** (via Azure OpenAI) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
+Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **7 AI models** — **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** (via Azure OpenAI) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
 
 ### Why This Tool?
 
@@ -40,7 +40,7 @@ Azure Architecture Diagram Builder is an enterprise-grade web application that e
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Architecture Generation
-Describe your architecture in plain English and let any of 6 AI models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, or Grok 4.1 Fast) automatically create a complete, professionally organized diagram with logical service groupings.
+Describe your architecture in plain English and let any of 7 AI models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, or Grok 4.1 Fast) automatically create a complete, professionally organized diagram with logical service groupings.
 
 **13 curated example prompts** included — from simple web apps to complex enterprise scenarios:
 - Zero Trust enterprise networks with security segmentation
@@ -68,7 +68,7 @@ Validate your architecture against all five WAF pillars:
 Select specific recommendations and automatically regenerate an improved architecture.
 
 ### 🔀 Multi-Model Comparison
-Compare AI output side-by-side across all 6 models:
+Compare AI output side-by-side across all 7 models:
 
 - **Architecture Comparison** — Run the same prompt through multiple models and compare service counts, connection counts, groups, workflow steps, token usage, and latency
 - **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins
@@ -168,7 +168,7 @@ flowchart TD
         G[Image Upload] --> H[Vision Analyzer]
     end
 
-    subgraph AI["🤖 AI Services (6 Models)"]
+    subgraph AI["🤖 AI Services (7 Models)"]
         B --> I[Architecture Generation]
         D --> I
         H --> I
@@ -295,7 +295,7 @@ graph TB
     end
 
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI API<br/>6 Models]
+        OpenAI[Azure OpenAI API<br/>7 Models]
         PricingAPI[Azure Retail Prices API]
         AppInsights[Application Insights]
     end
@@ -353,11 +353,12 @@ VITE_AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key-here
 VITE_AZURE_OPENAI_DEPLOYMENT=your-default-deployment
 
-# Multi-model deployments (6 models)
+# Multi-model deployments (7 models)
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=your-gpt51-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT52_CODEX=your-gpt52-codex-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT53_CODEX=your-gpt53-codex-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT54=your-gpt54-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=your-deepseek-v32-speciale-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GROK=your-grok-41-fast-deployment
 
@@ -393,6 +394,7 @@ docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT54="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST="..." .
 
@@ -562,7 +564,7 @@ azure-diagrams/
 │   │   ├── wafPatternDetector.ts  # Rule-based WAF pattern checks
 │   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
-│   │   └── modelSettingsStore.ts  # Multi-model settings (6 models)
+│   │   └── modelSettingsStore.ts  # Multi-model settings (7 models)
 │   ├── data/                 # Static data
 │   │   ├── pricing/          # Regional pricing data (245 files: 49 services × 5 regions)
 │   │   ├── azurePricing.ts   # Service mappings
@@ -597,12 +599,12 @@ azure-diagrams/
 ## 🌟 What's New
 
 ### February 28, 2026 — Multi-Model Expansion & Comparison
-- **6-Model Support** — Added GPT-5.1, GPT-5.3 Codex, DeepSeek V3.2 Speciale, and Grok 4.1 Fast alongside existing GPT-5.2 and GPT-5.2 Codex
+- **7-Model Support** — Added GPT-5.1, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast alongside existing GPT-5.2 and GPT-5.2 Codex
 - **Chat Completions API Adapter** — Dual API support: Responses API for GPT models, Chat Completions API for third-party models (DeepSeek, Grok)
-- **Multi-Model Validation Comparison** — Compare WAF validation results across all 6 models with score, pillar, severity, and finding breakdowns
+- **Multi-Model Validation Comparison** — Compare WAF validation results across all 7 models with score, pillar, severity, and finding breakdowns
 - **Collapse All Groups** — Toggle button to collapse/expand all groups for bird's-eye view, with size persistence
 - **ARM Parsing Banner** — Glowing purple gradient banner during ARM template parsing
-- **Six-Model Comparison Report** — Formal analysis document ranking all 6 models across 4 prompts
+- **Seven-Model Comparison Report** — Formal analysis document ranking all 7 models across 4 prompts
 - **Save All Diagrams** — Download each model's architecture comparison result as individual JSON files
 - **Save Comparison Report** — Download combined comparison results as a single JSON for offline analysis
 - **Shared Group Utilities** — Extracted `fitGroupToContent` into reusable `groupUtils.ts`

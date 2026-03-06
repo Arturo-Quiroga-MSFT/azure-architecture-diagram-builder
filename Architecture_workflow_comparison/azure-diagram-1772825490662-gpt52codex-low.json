@@ -1,0 +1,246 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress/Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application/Compute"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data/Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity/Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring/Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "API for document upload and search queries",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-docint",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "OCR and document extraction",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Summarization and enrichment of extracted text",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Indexing and search over document content",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for document retention",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Document metadata and processing status",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication and access control",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central telemetry collection",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-log",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log storage and querying",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-entra",
+      "to": "svc-appservice",
+      "label": "Authenticate users for upload and search APIs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-storage",
+      "label": "Upload raw documents to blob storage",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-docint",
+      "label": "Submit document for OCR and extraction",
+      "type": "sync"
+    },
+    {
+      "from": "svc-docint",
+      "to": "svc-storage",
+      "label": "Retrieve document content for OCR processing",
+      "type": "sync"
+    },
+    {
+      "from": "svc-docint",
+      "to": "svc-openai",
+      "label": "Send extracted text for summarization",
+      "type": "sync"
+    },
+    {
+      "from": "svc-openai",
+      "to": "svc-search",
+      "label": "Provide summaries for search enrichment",
+      "type": "sync"
+    },
+    {
+      "from": "svc-docint",
+      "to": "svc-search",
+      "label": "Provide extracted fields for indexing",
+      "type": "sync"
+    },
+    {
+      "from": "svc-search",
+      "to": "svc-storage",
+      "label": "Index documents and blobs as data source",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-cosmos",
+      "label": "Persist metadata and processing status",
+      "type": "sync"
+    },
+    {
+      "from": "svc-search",
+      "to": "svc-appservice",
+      "label": "Return ranked search results to clients",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-monitor",
+      "label": "Emit API telemetry and metrics",
+      "type": "sync"
+    },
+    {
+      "from": "svc-monitor",
+      "to": "svc-log",
+      "label": "Store collected logs for analysis",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User authenticates and submits documents through the API",
+      "services": [
+        "svc-entra",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API stores raw documents and metadata",
+      "services": [
+        "svc-appservice",
+        "svc-storage",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Document Intelligence retrieves documents and performs OCR",
+      "services": [
+        "svc-docint",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Extracted text is summarized and enriched",
+      "services": [
+        "svc-docint",
+        "svc-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Search index is updated with extracted fields and summaries",
+      "services": [
+        "svc-docint",
+        "svc-openai",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Clients query the API and receive search results",
+      "services": [
+        "svc-appservice",
+        "svc-search"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1429,
+    "completionTokens": 2012,
+    "totalTokens": 3441,
+    "elapsedTimeMs": 36353,
+    "model": "gpt-5.2-codex"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "gpt-5.2-codex",
+    "modelDisplayName": "GPT-5.2 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1429,
+      "completionTokens": 2012,
+      "totalTokens": 3441,
+      "elapsedTimeMs": 36353,
+      "model": "gpt-5.2-codex"
+    },
+    "savedAt": "2026-03-06T19:31:30.966Z",
+    "source": "model-comparison"
+  }
+}

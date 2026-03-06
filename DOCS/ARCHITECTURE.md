@@ -1,10 +1,10 @@
 # Azure Architecture Diagram Builder - System Architecture
 
-**Last Updated**: March 4, 2026
+**Last Updated**: March 6, 2026
 
 ## Overview
 
-The Azure Architecture Diagram Builder is a web-based tool that uses AI to generate Azure architecture diagrams with real-time pricing estimates. Built with React, TypeScript, and Vite, it leverages **6 AI models** via Azure OpenAI: **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** for intelligent diagram generation, validation, and Infrastructure as Code generation. The Azure Retail Prices API provides cost estimation across 5 regions. A lightweight Express.js backend (port 8787) supports version storage and server-side operations. The app is deployed on Azure Container Apps and instrumented with Application Insights for telemetry.
+The Azure Architecture Diagram Builder is a web-based tool that uses AI to generate Azure architecture diagrams with real-time pricing estimates. Built with React, TypeScript, and Vite, it leverages **7 AI models** via Azure OpenAI: **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** for intelligent diagram generation, validation, and Infrastructure as Code generation. The Azure Retail Prices API provides cost estimation across 5 regions. A lightweight Express.js backend (port 8787) supports version storage and server-side operations. The app is deployed on Azure Container Apps and instrumented with Application Insights for telemetry.
 
 ## High-Level Architecture
 
@@ -40,7 +40,7 @@ graph TB
     end
     
     subgraph "External APIs"
-        OpenAI[Azure OpenAI API<br/>6 Models via Azure AI Foundry]
+        OpenAI[Azure OpenAI API<br/>7 Models via Azure AI Foundry]
         AzureAPI[Azure Retail Prices API]
         AppInsightsAPI[Application Insights]
     end
@@ -129,7 +129,7 @@ graph LR
     telemetry --> AppInsights
     
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI API<br/>6 Models]
+        OpenAI[Azure OpenAI API<br/>7 Models]
         PricingAPI[Azure Retail Prices API]
         AppInsights[Application Insights]
     end
@@ -301,6 +301,7 @@ azure-diagrams/
 - **GPT-5.2** - Reasoning model with configurable effort (none/low/medium/high)
 - **GPT-5.2 Codex** - Code-optimized reasoning model
 - **GPT-5.3 Codex** - Latest code-optimized reasoning model
+- **GPT-5.4** - Most capable frontier model for professional work, coding, and tool use
 - **DeepSeek V3.2 Speciale** - Third-party model via Azure AI Foundry
 - **Grok 4.1 Fast** - Third-party model via Azure AI Foundry
 - Selectable per-generation via **ModelSelector** dropdown
@@ -328,7 +329,7 @@ azure-diagrams/
 
 ### 1. AI-Powered Diagram Generation
 - **Input**: Natural language architecture description, or uploaded image, or IaC template (ARM/Bicep/Terraform)
-- **Model Selection**: Choose from 6 models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, Grok 4.1 Fast) with optional reasoning effort
+- **Model Selection**: Choose from 7 models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, Grok 4.1 Fast) with optional reasoning effort
 - **Processing**: Azure OpenAI analyzes requirements and generates structured JSON
 - **Post-processing**: Service names normalized against `serviceIconMapping`, categories corrected, icons resolved
 - **Output**: Services, connections (sync/async/optional/bidirectional), groups, and workflow steps
@@ -389,7 +390,7 @@ azure-diagrams/
 - **Restore**: Roll back to any previous version
 
 ### 9. Model Selection & Comparison
-- **6 models**: GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, Grok 4.1 Fast
+- **7 models**: GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, Grok 4.1 Fast
 - **Reasoning effort**: Configurable (none/low/medium/high) for reasoning-capable models
 - **Per-feature overrides**: Different models for generation vs. validation vs. deployment guides
 - **Architecture comparison**: Run the same prompt through multiple models in parallel; compare service counts, tokens, latency; apply the best result
