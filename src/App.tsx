@@ -16,8 +16,8 @@ import ReactFlow, {
   MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import html2canvas from 'html2canvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2 } from 'lucide-react';
+import { captureDiagramAsPng, captureDiagramAsSvg } from './utils/captureCanvas';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -51,6 +51,7 @@ import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG } from './stores/modelSettingsStore';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import { exportAndDownloadDrawio } from './services/drawioExporter';
+import { exportDiagramAsPptx } from './services/pptxExporter';
 import {
   applyLayoutPreset,
   type LayoutPreset,
@@ -74,7 +75,7 @@ const edgeTypes = {
   editableEdge: EditableEdge,
 };
 
-type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json' | 'drawio';
+type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json' | 'drawio' | 'pptx';
 
 type ExportHistoryItem = {
   id: string;
@@ -906,39 +907,24 @@ function App() {
     // Fit all nodes into view with no animation for immediate rendering
     reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    // Wait longer for complete rendering including edges
+    // Wait for fitView to settle, then capture
     setTimeout(async () => {
       try {
-        const canvas = await html2canvas(reactFlowWrapper.current as HTMLElement, {
+        const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: '#ffffff',
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          foreignObjectRendering: false,
-          ignoreElements: (element) => {
-            // Only exclude controls and minimap, KEEP title block and legend
-            return (
-              element.classList?.contains('react-flow__minimap') ||
-              element.classList?.contains('react-flow__controls') ||
-              element.classList?.contains('react-flow__attribution')
-            );
-          },
         });
 
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            const fileName = generateModelFilename('azure-diagram', 'png');
-            link.download = fileName;
-            link.href = url;
-            link.click();
-            URL.revokeObjectURL(url);
-            recordExport('png', fileName);
-            trackExport('png', nodes.filter(n => n.type === 'azureNode').length);
-          }
-        });
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const fileName = generateModelFilename('azure-diagram', 'png');
+        link.download = fileName;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('png', fileName);
+        trackExport('png', nodes.filter(n => n.type === 'azureNode').length);
       } catch (err) {
         console.error('Error exporting diagram:', err);
         alert('Failed to export diagram. Please try again.');
@@ -954,42 +940,17 @@ function App() {
     // Fit all nodes into view with no animation for immediate rendering
     reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    // Wait longer for complete rendering including edges
+    // Wait for fitView to settle, then capture
     setTimeout(async () => {
       try {
-        // Use html2canvas to capture the diagram as an image first
-        const canvas = await html2canvas(reactFlowWrapper.current as HTMLElement, {
+        // captureDiagramAsSvg serialises the DOM natively — SVG edge paths
+        // (curves, dashes, orthogonal bends) are preserved as vector data.
+        const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: '#f8fafc',
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          foreignObjectRendering: false,
-          ignoreElements: (element) => {
-            // Exclude controls, minimap, and panels
-            return (
-              element.classList?.contains('react-flow__minimap') ||
-              element.classList?.contains('react-flow__controls') ||
-              element.classList?.contains('react-flow__attribution') ||
-              element.classList?.contains('info-panel') ||
-              element.classList?.contains('workflow-panel') ||
-              element.classList?.contains('alignment-toolbar') ||
-              element.classList?.contains('icon-palette')
-            );
-          },
+          excludePanels: true,
         });
 
-        // Convert canvas to data URL
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Create SVG with embedded image
-        const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">
-  <image width="${canvas.width}" height="${canvas.height}" xlink:href="${imgData}"/>
-</svg>`;
-
-        // Create blob and download
-        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -1017,6 +978,34 @@ function App() {
       alert('Failed to export Draw.io file. Please try again.');
     }
   }, [nodes, edges, titleBlockData.architectureName, recordExport]);
+
+  const exportAsPptx = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) return;
+
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+    setTimeout(async () => {
+      try {
+        const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+          excludePanels: true,
+        });
+
+        const fileName = await exportDiagramAsPptx(imageDataUrl, {
+          diagramName: titleBlockData.architectureName || 'Azure Architecture',
+          author: titleBlockData.author || 'Azure Architect',
+          date: titleBlockData.date || new Date().toLocaleDateString(),
+          isDarkMode,
+        });
+
+        recordExport('pptx', fileName);
+        trackExport('pptx', nodes.filter(n => n.type === 'azureNode').length);
+      } catch (err) {
+        console.error('Error exporting PPTX:', err);
+        alert('Failed to export PowerPoint slide. Please try again.');
+      }
+    }, 800);
+  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData]);
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
@@ -1900,22 +1889,9 @@ function App() {
         // Brief delay for fitView to settle before capture
         await new Promise(resolve => setTimeout(resolve, 400));
         const isDark = document.body.classList.contains('dark-mode');
-        const canvas = await html2canvas(reactFlowWrapper.current, {
+        diagramImageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
           backgroundColor: isDark ? '#1a1a2e' : '#f8fafc',
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          foreignObjectRendering: false,
-          ignoreElements: (element) => {
-            return (
-              element.classList?.contains('react-flow__minimap') ||
-              element.classList?.contains('react-flow__controls') ||
-              element.classList?.contains('react-flow__attribution')
-            );
-          },
         });
-        diagramImageDataUrl = canvas.toDataURL('image/png');
         console.log('\uD83D\uDCF8 Diagram snapshot captured for validation report');
       } catch (err) {
         console.warn('Could not capture diagram snapshot:', err);
@@ -2161,6 +2137,18 @@ function App() {
                       >
                         <Download size={18} />
                         Export SVG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportAsPptx();
+                        }}
+                        title="Export current diagram as a PowerPoint slide (.pptx)"
+                      >
+                        <Presentation size={18} />
+                        Export PPTX Slide
                       </button>
                       <button
                         className="toolbar-dropdown-item"

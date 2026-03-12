@@ -128,7 +128,8 @@ Features include:
 | Format | Use Case |
 |--------|----------|
 | **PNG** | Documentation, presentations |
-| **SVG** | Scalable vector graphics |
+| **SVG** | Scalable vector graphics (true vector — edges preserved as paths) |
+| **PPTX Slide** | Single PowerPoint slide, dark or light theme matching the canvas |
 | **Draw.io** | Edit in diagrams.net |
 | **JSON** | Backup, version control |
 | **CSV** | Cost analysis in Excel |
@@ -529,7 +530,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 | **Styling** | CSS3, html-to-image |
 | **Serving** | nginx:alpine (Docker), Vite dev server (local) |
 | **APIs** | Azure Retail Prices API |
-| **Export** | JSZip, Draw.io XML format |
+| **Export** | JSZip, Draw.io XML format, PptxGenJS (client-side PPTX) |
 | **Deployment** | Docker, Azure Container Apps |
 
 ---
@@ -558,6 +559,7 @@ azure-diagrams/
 │   │   ├── deploymentGuideGenerator.ts  # Guides & Bicep generation
 │   │   ├── costEstimationService.ts  # Pricing engine
 │   │   ├── drawioExporter.ts  # Draw.io export
+│   │   ├── pptxExporter.ts   # PowerPoint slide export (PptxGenJS, dark/light theme)
 │   │   ├── regionalPricingService.ts  # Multi-region pricing
 │   │   ├── apiHelper.ts      # Dual API format builder (Responses/Chat Completions)
 │   │   ├── versionStorageService.ts  # Version history
@@ -574,6 +576,7 @@ azure-diagrams/
 │   │   ├── layoutEngine.ts   # Dagre layout + overlap resolution
 │   │   ├── layoutPresets.ts  # Reference architectures
 │   │   ├── groupUtils.ts     # Shared group collapse/fit utilities
+│   │   ├── captureCanvas.ts  # html-to-image capture with SVG edge pre-inlining
 │   │   └── modelNaming.ts    # Model display names
 │   └── App.tsx               # Main application
 ├── scripts/                  # Deployment scripts
@@ -597,6 +600,31 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### March 12, 2026 — PPTX Export & SVG Edge Rendering Fix
+
+#### 🖼️ Export Diagram as PowerPoint Slide (new)
+- **"Export PPTX Slide"** added to the Export dropdown menu
+- Generates a single widescreen 16:9 `.pptx` file via **PptxGenJS** — entirely client-side, no backend required
+- Slide theme automatically mirrors the current canvas mode:
+  - **Dark mode** → slate-900 background, white title, Azure-blue accent bars
+  - **Light mode** → slate-50 background, dark title, same accent
+- Slide includes: diagram name, author, date (from the Architecture Diagram title block), the diagram image (aspect-ratio preserved), and a footer
+- Export is recorded in the Recent Exports history like all other formats
+
+#### 🔧 SVG Edge Rendering Fix — all exports (PNG, SVG, PPTX, validation snapshots)
+
+**The problem:** ReactFlow edges (smooth, bezier, orthogonal, dashed) were invisible in all exported images.
+
+**Root cause:** ReactFlow draws edges as SVG `<path>` elements whose `stroke` colour comes solely from the `reactflow/dist/style.css` stylesheet via the `.react-flow__edge-path` CSS class. The previous `html2canvas` library dropped SVG content almost entirely. After switching to `html-to-image`, the DOM is serialised correctly — but inside the resulting SVG `<foreignObject>`, the page's external stylesheets are no longer in scope, so every path renders with no stroke (invisible).
+
+**Fix — `src/utils/captureCanvas.ts`:**
+1. `html2canvas` replaced with `html-to-image` across all four capture call sites (PNG export, SVG export, PPTX export, validation snapshot)
+2. A new `prepareEdgesForCapture()` helper runs synchronously before every capture. It iterates every `svg path/line/polyline/circle` inside the ReactFlow wrapper, reads each element's **computed CSS** via `window.getComputedStyle()`, and writes the results back as **SVG presentation attributes** (`stroke`, `stroke-width`, `stroke-dasharray`, `fill`, `opacity`, `marker-end`, etc.) directly on the element. Presentation attributes survive serialisation regardless of whether stylesheets are present
+3. After capture completes (or throws), all attributes are restored to their original values so the live canvas is unaffected
+4. Transparent fills are normalised to `none` (SVG convention) to avoid invisible filled areas
+
+All edge types now render correctly: solid sync edges, dashed async edges, dotted optional edges, animated directional-flow edges, and bidirectional pulse edges.
 
 ### February 28, 2026 — Multi-Model Expansion & Comparison
 - **7-Model Support** — Added GPT-5.1, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast alongside existing GPT-5.2 and GPT-5.2 Codex
