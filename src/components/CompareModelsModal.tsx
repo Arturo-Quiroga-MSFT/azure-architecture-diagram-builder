@@ -96,7 +96,8 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const presenterRef = useRef<AvatarPresenter | null>(null);
-  const isSpeechConfigured = !!(import.meta.env.VITE_SPEECH_KEY && import.meta.env.VITE_SPEECH_REGION);
+  // Speech region is the only build-time signal needed; keyless auth via /api/speech-token
+  const isSpeechConfigured = !!import.meta.env.VITE_SPEECH_REGION;
 
   // Disconnect avatar when the modal closes
   useEffect(() => {

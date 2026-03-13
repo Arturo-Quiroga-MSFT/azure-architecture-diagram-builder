@@ -49,10 +49,24 @@ RUN if [ -f .env.appinsights ]; then \
 # Production stage
 FROM nginx:alpine
 
+# Install Node.js for the speech token server (uses DefaultAzureCredential / managed identity)
+RUN apk add --no-cache nodejs npm
+
+# Set up the speech token server
+WORKDIR /srv/token-server
+COPY server/package.json ./
+RUN npm install --omit=dev
+COPY server/token-server.js ./
+
+# Copy static build output
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY --from=build /app/Azure_Public_Service_Icons /usr/share/nginx/html/Azure_Public_Service_Icons
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Startup: token server in background + nginx in foreground
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/start.sh"]

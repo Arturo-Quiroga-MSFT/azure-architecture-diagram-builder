@@ -4,7 +4,11 @@
 /**
  * AvatarPresenter — wraps the Azure TTS Avatar JS SDK for the "Present Critique"
  * feature in CompareModelsModal. The avatar session runs entirely client-side via
- * WebRTC; the Speech SDK handles ICE relay when using API key auth.
+ * WebRTC.
+ *
+ * Auth: keyless — a short-lived Speech STS token is fetched from /api/speech-token,
+ * which uses DefaultAzureCredential server-side (az login in dev, managed identity
+ * in ACA). No API key is ever embedded in the browser bundle.
  *
  * Usage:
  *   const presenter = new AvatarPresenter({ onStatus, onError });
@@ -44,22 +48,16 @@ export class AvatarPresenter {
    * provided media elements once the connection is ready.
    */
   async connect(videoEl: HTMLVideoElement, audioEl: HTMLAudioElement): Promise<void> {
-    const key = import.meta.env.VITE_SPEECH_KEY as string | undefined;
-    const region = import.meta.env.VITE_SPEECH_REGION as string | undefined;
-
-    if (!key || !region) {
-      const msg = 'VITE_SPEECH_KEY and VITE_SPEECH_REGION must be set to use the avatar presenter.';
-      this.options.onError(msg);
-      this.options.onStatus('error');
-      throw new Error(msg);
-    }
-
     this.options.onStatus('connecting');
 
     // Dynamic import keeps the ~10 MB SDK out of the initial bundle
     const SpeechSDK = await import('microsoft-cognitiveservices-speech-sdk');
 
-    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(key, region);
+    // Fetch a short-lived Speech token from the server-side token endpoint.
+    // The server uses DefaultAzureCredential so no key is ever in the browser.
+    const { token, region } = await this.fetchSpeechToken();
+
+    const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
     speechConfig.speechSynthesisVoiceName = this.options.voice;
 
     const avatarConfig = new SpeechSDK.AvatarConfig(
@@ -135,6 +133,16 @@ export class AvatarPresenter {
         () => this.options.onStatus('ready'),
       );
     }
+  }
+
+  /** Fetch a short-lived Speech STS token from the server-side token endpoint. */
+  private async fetchSpeechToken(): Promise<{ token: string; region: string }> {
+    const res = await fetch('/api/speech-token');
+    if (!res.ok) {
+      const data: { error?: string } = await res.json().catch(() => ({}));
+      throw new Error(`Speech token error (${res.status}): ${data.error ?? 'unknown'}`);
+    }
+    return res.json();
   }
 
   /** Close the WebRTC session and release all resources. */
