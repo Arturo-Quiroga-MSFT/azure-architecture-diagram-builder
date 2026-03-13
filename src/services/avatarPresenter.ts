@@ -124,7 +124,24 @@ export class AvatarPresenter {
       }
     };
 
-    const result = await this.synthesizer.startAvatarAsync(this.peerConnection);
+    // Log ICE connection state changes for diagnostics
+    this.peerConnection.oniceconnectionstatechange = () => {
+      const state = this.peerConnection?.iceConnectionState;
+      console.log('[avatar] ICE state:', state);
+      if (state === 'failed') {
+        this.options.onError('WebRTC ICE connection failed. Check network/firewall.');
+        this.options.onStatus('error');
+      }
+    };
+
+    // Wrap startAvatarAsync with a 30s timeout — it can hang silently on network issues
+    const timeoutMs = 30_000;
+    const result = await Promise.race([
+      this.synthesizer.startAvatarAsync(this.peerConnection),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Avatar connection timed out after ${timeoutMs / 1000}s`)), timeoutMs),
+      ),
+    ]);
 
     if (result.reason !== SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
       const detail = result.errorDetails ?? 'Unknown error';

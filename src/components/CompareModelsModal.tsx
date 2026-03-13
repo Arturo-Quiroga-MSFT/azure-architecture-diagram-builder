@@ -155,8 +155,11 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       setCaptionWords(spokenText.split(/\s+/).filter(Boolean));
       setCaptionWordIdx(-1);
       await presenterRef.current!.speak(spokenText);
-    } catch {
-      // Errors surfaced via onError / onStatus callbacks
+    } catch (err: unknown) {
+      // Surface timeout / unexpected errors that bypass onError callbacks
+      const msg = err instanceof Error ? err.message : String(err);
+      setAvatarError(msg);
+      setAvatarStatus('error');
     }
   };
 
