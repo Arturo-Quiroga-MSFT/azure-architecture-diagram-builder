@@ -715,9 +715,9 @@ body.dark-mode .compare-critique-text {
 /* Floating video panel — positioned inside .compare-modal */
 .compare-avatar-panel {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   right: 20px;
-  width: 280px;
+  width: 380px;
   background: #1e1e2e;
   border: 1px solid #334155;
   border-radius: 12px;
@@ -766,8 +766,8 @@ body.dark-mode .compare-critique-text {
 
 .compare-avatar-video-wrap {
   position: relative;
-  width: 280px;
-  height: 180px;
+  width: 380px;
+  height: 260px;
   background: #0a0a0f;
   display: flex;
   align-items: center;
@@ -779,6 +779,8 @@ body.dark-mode .compare-critique-text {
   height: 100%;
   object-fit: cover;
   display: block;
+  position: relative;
+  z-index: 1;
 }
 
 .compare-avatar-connecting,
@@ -854,3 +856,34 @@ body:not(.dark-mode) .compare-avatar-connecting {
   color: #64748b;
 }
 
+/* ── Closed captions ── */
+.compare-avatar-captions {
+  padding: 10px 14px 4px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  max-height: 90px;
+  overflow-y: auto;
+  border-top: 1px solid #334155;
+  scrollbar-width: none;
+}
+.compare-avatar-captions::-webkit-scrollbar { display: none; }
+
+.compare-avatar-caption-word {
+  display: inline;
+  transition: color 0.1s, background 0.1s;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.compare-avatar-caption-word.active {
+  color: #ffffff;
+  background: rgba(99, 102, 241, 0.45);
+}
+body:not(.dark-mode) .compare-avatar-captions {
+  border-color: #e2e8f0;
+  color: #475569;
+}
+body:not(.dark-mode) .compare-avatar-caption-word.active {
+  color: #1e293b;
+  background: rgba(99, 102, 241, 0.2);
+}

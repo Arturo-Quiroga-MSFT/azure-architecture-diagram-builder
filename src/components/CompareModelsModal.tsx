@@ -93,6 +93,8 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   // Avatar presenter state
   const [avatarStatus, setAvatarStatus] = useState<AvatarStatus>('idle');
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [captionWords, setCaptionWords] = useState<string[]>([]);
+  const [captionWordIdx, setCaptionWordIdx] = useState<number>(-1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const presenterRef = useRef<AvatarPresenter | null>(null);
@@ -106,7 +108,9 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       presenterRef.current = null;
       setAvatarStatus('idle');
       setAvatarError(null);
-    }
+      setCaptionWords([]);
+      setCaptionWordIdx(-1);
+    };
   }, [isOpen]);
 
   /** Strip markdown syntax so TTS reads cleanly */
@@ -128,7 +132,12 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   };
 
   const handlePresent = async () => {
-    if (!videoRef.current || !audioRef.current || !critiqueText) return;
+    if (!critiqueText) return;
+    // Set status to 'connecting' first so the panel renders and refs become populated
+    setAvatarStatus('connecting');
+    // Wait one tick for React to mount the panel and populate the refs
+    await new Promise(resolve => setTimeout(resolve, 0));
+    if (!videoRef.current || !audioRef.current) return;
     try {
       if (!presenterRef.current?.isConnected) {
         const presenter = new AvatarPresenter({
@@ -137,11 +146,15 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
           voice: import.meta.env.VITE_AVATAR_VOICE || 'en-US-AvaMultilingualNeural',
           onStatus: setAvatarStatus,
           onError: (msg) => setAvatarError(msg),
+          onWord: (idx) => setCaptionWordIdx(idx),
         });
         presenterRef.current = presenter;
         await presenter.connect(videoRef.current, audioRef.current);
       }
-      await presenterRef.current!.speak(extractPresentationText(critiqueText));
+      const spokenText = extractPresentationText(critiqueText);
+      setCaptionWords(spokenText.split(/\s+/).filter(Boolean));
+      setCaptionWordIdx(-1);
+      await presenterRef.current!.speak(spokenText);
     } catch {
       // Errors surfaced via onError / onStatus callbacks
     }
@@ -154,6 +167,8 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     presenterRef.current = null;
     setAvatarStatus('idle');
     setAvatarError(null);
+    setCaptionWords([]);
+    setCaptionWordIdx(-1);
   };
 
   const toggleModel = (model: ModelType) => {
@@ -876,9 +891,9 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
           )}
         </div>
 
-        {/* Floating Avatar Presenter Panel */}
-        {avatarStatus !== 'idle' && (
-          <div className="compare-avatar-panel">
+        {/* Floating Avatar Presenter Panel — always in DOM so refs are populated */}
+        {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+        <div className="compare-avatar-panel" style={avatarStatus === 'idle' ? { display: 'none' } : undefined}>
             <div className="compare-avatar-panel-header">
               <span className="compare-avatar-panel-title">
                 {avatarStatus === 'connecting' && <Loader2 size={12} className="spinner" />}
@@ -904,11 +919,23 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                 ref={videoRef}
                 autoPlay
                 playsInline
+                muted
                 className="compare-avatar-video"
-                style={{ display: (avatarStatus === 'ready' || avatarStatus === 'speaking') ? 'block' : 'none' }}
+                style={{ display: avatarStatus === 'connecting' ? 'none' : 'block' }}
               />
               <audio ref={audioRef} autoPlay style={{ display: 'none' }} />
             </div>
+            {/* Live closed captions — word-by-word highlight */}
+            {captionWords.length > 0 && avatarStatus === 'speaking' && (
+              <div className="compare-avatar-captions">
+                {captionWords.map((word, i) => (
+                  <span
+                    key={i}
+                    className={`compare-avatar-caption-word${i === captionWordIdx ? ' active' : ''}`}
+                  >{word}{' '}</span>
+                ))}
+              </div>
+            )}
             {(avatarStatus === 'ready' || avatarStatus === 'speaking') && critiqueText && (
               <div className="compare-avatar-panel-controls">
                 {avatarStatus === 'speaking'
@@ -917,7 +944,6 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
               </div>
             )}
           </div>
-        )}
       </div>
     </div>
   );
