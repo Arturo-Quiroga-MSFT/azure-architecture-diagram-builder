@@ -33,14 +33,15 @@ export function buildRequestBody(params: {
   apiFormat: ApiFormat;
   isReasoning: boolean;
   reasoningEffort: string;
+  jsonOutput?: boolean;
 }): any {
-  const { deployment, messages, maxTokens, apiFormat, isReasoning, reasoningEffort } = params;
+  const { deployment, messages, maxTokens, apiFormat, isReasoning, reasoningEffort, jsonOutput = true } = params;
 
   if (apiFormat === 'chat-completions') {
     return {
       messages,
       max_tokens: maxTokens,
-      response_format: { type: 'json_object' },
+      ...(jsonOutput ? { response_format: { type: 'json_object' } } : {}),
       temperature: 0.7,
     };
   }
@@ -50,7 +51,7 @@ export function buildRequestBody(params: {
     model: deployment,
     input: messages,
     max_output_tokens: maxTokens,
-    text: { format: { type: 'json_object' } },
+    ...(jsonOutput ? { text: { format: { type: 'json_object' } } } : {}),
     store: false,
   };
 

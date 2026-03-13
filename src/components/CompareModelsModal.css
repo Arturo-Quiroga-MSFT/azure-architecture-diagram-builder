@@ -554,3 +554,137 @@ body.dark-mode .compare-save-report-btn:hover {
   background: rgba(96, 165, 250, 0.12);
   border-color: rgba(96, 165, 250, 0.5);
 }
+
+/* ── AI Critique section ────────────────────────────────────── */
+.compare-critique-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.compare-critique-label {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.compare-critique-model-select {
+  font-size: 0.83rem;
+  padding: 4px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background: #fff;
+  color: #1e293b;
+  cursor: pointer;
+  outline: none;
+}
+
+.compare-critique-model-select:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+}
+
+.compare-critique-btn {
+  border-color: rgba(124, 58, 237, 0.35) !important;
+  background: rgba(124, 58, 237, 0.06) !important;
+  color: #7c3aed !important;
+}
+
+.compare-critique-btn:hover:not(:disabled) {
+  background: rgba(124, 58, 237, 0.14) !important;
+  border-color: rgba(124, 58, 237, 0.55) !important;
+}
+
+.compare-critique-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.compare-critique-error {
+  font-size: 0.83rem;
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.compare-critique-output {
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.compare-critique-reviewer {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.06);
+  padding: 6px 14px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.15);
+  letter-spacing: 0.02em;
+}
+
+.compare-critique-text {
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #1e293b;
+  background: rgba(248, 250, 252, 0.8);
+  padding: 14px 16px;
+  margin: 0;
+}
+
+/* Dark mode — critique */
+body.dark-mode .compare-critique-label {
+  color: #94a3b8;
+}
+
+body.dark-mode .compare-critique-model-select {
+  background: rgba(17, 24, 39, 0.7);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+body.dark-mode .compare-critique-model-select:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+}
+
+body.dark-mode .compare-critique-btn {
+  border-color: rgba(167, 139, 250, 0.35) !important;
+  background: rgba(167, 139, 250, 0.08) !important;
+  color: #a78bfa !important;
+}
+
+body.dark-mode .compare-critique-btn:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.16) !important;
+  border-color: rgba(167, 139, 250, 0.55) !important;
+}
+
+body.dark-mode .compare-critique-error {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+body.dark-mode .compare-critique-output {
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+body.dark-mode .compare-critique-reviewer {
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.08);
+  border-bottom-color: rgba(167, 139, 250, 0.18);
+}
+
+body.dark-mode .compare-critique-text {
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.6);
+}

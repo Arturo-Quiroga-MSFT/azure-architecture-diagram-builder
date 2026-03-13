@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText } from 'lucide-react';
-import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
+import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain } from 'lucide-react';
+import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import {
   MODEL_CONFIG,
   ModelType,
@@ -25,6 +25,26 @@ function abbreviateModelForFile(model: ModelType): string {
 function modelSuffix(model: ModelType, effort: ReasoningEffort): string {
   const abbr = abbreviateModelForFile(model);
   return MODEL_CONFIG[model].isReasoning ? `${abbr}-${effort}` : abbr;
+}
+
+/** Derive a short PascalCase slug from a prompt for use in filenames */
+function promptToSlug(prompt: string): string {
+  const stop = new Set([
+    'a','an','the','and','or','but','for','with','to','of','in','on','at','by',
+    'from','as','is','are','was','were','be','been','have','has','had','do',
+    'use','used','using','into','via','per','each','also','only','some','any',
+    'all','more','most','other','real','time','based','support','that','this',
+    'these','those','its','their','both','such','about','across','through',
+  ]);
+  return (
+    prompt
+      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 2 && !stop.has(w.toLowerCase()))
+      .slice(0, 4)
+      .map(w => w.length <= 3 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join('') || 'Architecture'
+  );
 }
 import './CompareModelsModal.css';
 
@@ -60,6 +80,14 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   const [prompt, setPrompt] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<ComparisonResult[]>([]);
+  const [criticModel, setCriticModel] = useState<ModelType>(() => {
+    const avail = getAvailableModels();
+    return (avail.includes('gpt-5.4' as ModelType) ? 'gpt-5.4' : avail[avail.length - 1]) as ModelType;
+  });
+  const [critiqueText, setCritiqueText] = useState<string | null>(null);
+  const [critiqueByModel, setCritiqueByModel] = useState<ModelType | null>(null);
+  const [isCritiquing, setIsCritiquing] = useState(false);
+  const [critiqueError, setCritiqueError] = useState<string | null>(null);
 
   const toggleModel = (model: ModelType) => {
     setSelectedModels(prev => {
@@ -138,6 +166,49 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     }
   };
 
+  const buildCritiqueSummary = (): string => {
+    const successful = results.filter(r => r.status === 'success');
+    return successful.map(r => {
+      const name = MODEL_CONFIG[r.model].displayName;
+      const services = r.architecture?.services?.map((s: any) => s.name).join(', ') || 'none';
+      const groups = r.architecture?.groups?.map((g: any) => g.label || g.id).join(', ') || 'none';
+      const syncCount = r.architecture?.connections?.filter((c: any) => !c.type || c.type === 'sync').length || 0;
+      const asyncCount = r.architecture?.connections?.filter((c: any) => c.type === 'async').length || 0;
+      const optionalCount = r.architecture?.connections?.filter((c: any) => c.type === 'optional').length || 0;
+      const workflowLines = r.architecture?.workflow
+        ?.map((w: any) => `  ${w.step}. ${w.description}`).join('\n') || '';
+      return [
+        `### ${name}`,
+        `Services (${r.serviceCount}): ${services}`,
+        `Groups (${r.groupCount}): ${groups}`,
+        `Connections: ${r.connectionCount} total (${syncCount} sync, ${asyncCount} async, ${optionalCount} optional)`,
+        `Workflow:`,
+        workflowLines,
+      ].join('\n');
+    }).join('\n\n');
+  };
+
+  const runCritique = async () => {
+    setCritiqueText(null);
+    setCritiqueError(null);
+    setIsCritiquing(true);
+    const chosenModel = criticModel;
+    try {
+      const summary = buildCritiqueSummary();
+      const override: ModelOverride = {
+        model: chosenModel,
+        reasoningEffort: MODEL_CONFIG[chosenModel].isReasoning ? reasoningEffort : 'medium',
+      };
+      const { content } = await generateCritique(summary, prompt, override);
+      setCritiqueText(content);
+      setCritiqueByModel(chosenModel);
+    } catch (err: any) {
+      setCritiqueError(err.message || 'Failed to generate critique');
+    } finally {
+      setIsCritiquing(false);
+    }
+  };
+
   /** Download a single JSON blob */
   const downloadJson = (data: object, filename: string) => {
     const json = JSON.stringify(data, null, 2);
@@ -178,7 +249,6 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
 
   /** Save a single combined comparison report (JSON) */
   const saveComparisonReport = () => {
-    const ts = Date.now();
     const successful = results.filter(r => r.status === 'success');
     const report: Record<string, any> = {
       prompt,
@@ -200,7 +270,8 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
         architecture: r.architecture,
       };
     }
-    downloadJson(report, `model-comparison-${ts}.json`);
+    const slug = promptToSlug(prompt);
+    downloadJson(report, `${slug}-Model-Comparison.json`);
   };
 
   /** Download a markdown string as a .md file */
@@ -333,14 +404,48 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       md += '\n';
     }
 
+    // AI Critique (appended when generated)
+    if (critiqueText && critiqueByModel) {
+      md += '---\n\n';
+      md += '## AI Critique\n\n';
+      md += `*Reviewer: ${MODEL_CONFIG[critiqueByModel].displayName} — AI-generated analysis, verify independently.*\n\n`;
+      md += critiqueText;
+      md += '\n';
+    }
+
     return md;
   };
 
   /** Save comparison report as Markdown */
   const saveComparisonReportMd = () => {
-    const ts = Date.now();
     const md = formatComparisonAsMarkdown();
-    downloadMarkdown(md, `model-comparison-${ts}.md`);
+    const slug = promptToSlug(prompt);
+    downloadMarkdown(md, `${slug}-Model-Comparison.md`);
+  };
+
+  /** Save only the AI critique as a standalone Markdown file */
+  const saveCritiqueAsMd = () => {
+    if (!critiqueText || !critiqueByModel) return;
+    const slug = promptToSlug(prompt);
+    const reviewer = MODEL_CONFIG[critiqueByModel].displayName;
+    const title = prompt.charAt(0).toUpperCase() + prompt.slice(1);
+    let md = `# AI Critique — ${title}\n\n`;
+    md += `**Generated:** ${new Date().toISOString()}
+
+`;
+    md += `**Original Prompt:** ${prompt}
+
+`;
+    md += `**Reviewer Model:** ${reviewer}
+
+`;
+    md += `*AI-generated analysis — verify independently.*
+
+---
+
+`;
+    md += critiqueText;
+    downloadMarkdown(md, `${slug}-AI-Critique-by-${reviewer.replace(/[^a-zA-Z0-9]/g, '')}.md`);
   };
 
   const completedCount = results.filter(r => r.status === 'success' || r.status === 'error').length;
@@ -541,7 +646,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                 {!isRunning && (
                   <button
                     className="compare-rerun-btn"
-                    onClick={() => { setResults([]); }}
+                    onClick={() => { setResults([]); setCritiqueText(null); setCritiqueError(null); setCritiqueByModel(null); }}
                     title="Clear results and try again"
                   >
                     New Comparison
@@ -633,6 +738,58 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* AI Critique section */}
+          {!isRunning && successResults.length >= 2 && (
+            <div className="compare-section">
+              <h3 className="compare-section-title">
+                <Brain size={16} style={{ marginRight: 6 }} />
+                AI Critique
+              </h3>
+              <div className="compare-critique-controls">
+                <span className="compare-critique-label">Critic model:</span>
+                <select
+                  className="compare-critique-model-select"
+                  value={criticModel}
+                  onChange={e => setCriticModel(e.target.value as ModelType)}
+                  disabled={isCritiquing}
+                >
+                  {availableModels.map(m => (
+                    <option key={m} value={m}>{MODEL_CONFIG[m].displayName}</option>
+                  ))}
+                </select>
+                <button
+                  className="compare-save-btn compare-critique-btn"
+                  onClick={runCritique}
+                  disabled={isCritiquing}
+                >
+                  {isCritiquing ? <Loader2 size={14} className="spinner" /> : <Brain size={14} />}
+                  {isCritiquing ? 'Analyzing...' : (critiqueText ? 'Regenerate Critique' : 'Generate AI Critique')}
+                </button>
+                {critiqueText && !isCritiquing && (
+                  <button
+                    className="compare-save-btn compare-save-report-btn"
+                    onClick={saveCritiqueAsMd}
+                    title="Save the AI critique as a standalone Markdown file"
+                  >
+                    <FileText size={14} />
+                    Save Critique
+                  </button>
+                )}
+              </div>
+              {critiqueError && (
+                <div className="compare-critique-error">{critiqueError}</div>
+              )}
+              {critiqueText && critiqueByModel && (
+                <div className="compare-critique-output">
+                  <div className="compare-critique-reviewer">
+                    Reviewed by {MODEL_CONFIG[critiqueByModel].displayName}
+                  </div>
+                  <pre className="compare-critique-text">{critiqueText}</pre>
+                </div>
+              )}
             </div>
           )}
         </div>

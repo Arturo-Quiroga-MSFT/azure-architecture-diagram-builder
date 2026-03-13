@@ -28,7 +28,7 @@ export interface ModelOverride {
   reasoningEffort: ReasoningEffort;
 }
 
-async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): Promise<CallResult> {
+async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride, jsonOutput = true): Promise<CallResult> {
   // Use explicit model override if provided, otherwise read from store
   const storeSettings = getModelSettingsForFeature('architectureGeneration');
   const rawStore = getModelSettings();
@@ -68,6 +68,7 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride): 
     apiFormat,
     isReasoning: modelConfig.isReasoning,
     reasoningEffort: settings.reasoningEffort,
+    jsonOutput,
   });
   
   console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
@@ -298,6 +299,50 @@ LAYOUT READABILITY — CRITICAL:
     
     throw new Error(`Failed to generate architecture: ${error.message || 'Unknown error'}`);
   }
+}
+
+/**
+ * Generate an AI critique of multiple architecture comparison results.
+ * Passes a condensed summary (not raw JSON) to stay within token limits.
+ * Returns plain-text / markdown content (not parsed as JSON).
+ */
+export async function generateCritique(
+  summaryText: string,
+  originalPrompt: string,
+  modelOverride: ModelOverride
+): Promise<{ content: string; metrics: AIMetrics }> {
+  const systemPrompt = `You are an expert Azure cloud architect and impartial technical reviewer. \
+You will evaluate multiple AI-generated Azure architecture proposals for the same requirements \
+and produce a structured critique.
+
+Your critique MUST use these exact markdown headings in order:
+
+## Overall Ranking
+Rank all architectures from best to worst. For each rank, give the model name in **bold** and \
+one sentence explaining why.
+
+## Per-Model Analysis
+For each model, provide a brief analysis with exactly two bullet points:
+- **Best feature:** one specific, concrete architectural decision that is correct or adds clear value
+- **Notable gap or concern:** one specific issue — missing component, incorrect design choice, or \
+mismatch with requirements
+
+## Recommendation
+State which architecture you recommend as the best starting point. Provide 2–3 sentences citing \
+specific architectural decisions that make it the right choice for these requirements.
+
+---
+*This critique is AI-generated and may reflect the reviewer model's own architectural preferences. \
+Verify findings independently.*`;
+
+  const userMessage = `Original requirements:\n${originalPrompt}\n\n---\n\n${summaryText}`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userMessage },
+  ];
+
+  return callAzureOpenAI(messages, modelOverride, false);
 }
 
 export function isAzureOpenAIConfigured(): boolean {
