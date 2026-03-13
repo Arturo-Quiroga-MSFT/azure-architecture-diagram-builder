@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, VideoOff, StopCircle } from 'lucide-react';
 import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
+import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
 import {
   MODEL_CONFIG,
   ModelType,
@@ -88,6 +89,71 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   const [critiqueByModel, setCritiqueByModel] = useState<ModelType | null>(null);
   const [isCritiquing, setIsCritiquing] = useState(false);
   const [critiqueError, setCritiqueError] = useState<string | null>(null);
+
+  // Avatar presenter state
+  const [avatarStatus, setAvatarStatus] = useState<AvatarStatus>('idle');
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const presenterRef = useRef<AvatarPresenter | null>(null);
+  const isSpeechConfigured = !!(import.meta.env.VITE_SPEECH_KEY && import.meta.env.VITE_SPEECH_REGION);
+
+  // Disconnect avatar when the modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      presenterRef.current?.disconnect();
+      presenterRef.current = null;
+      setAvatarStatus('idle');
+      setAvatarError(null);
+    }
+  }, [isOpen]);
+
+  /** Strip markdown syntax so TTS reads cleanly */
+  const stripMd = (s: string) =>
+    s.replace(/\*\*([^*]+)\*\*/g, '$1')
+     .replace(/\*([^*]+)\*/g, '$1')
+     .replace(/^#+\s*/gm, '')
+     .replace(/^[-*]\s/gm, '')
+     .trim();
+
+  /** Extract Ranking + Recommendation sections from the critique for TTS */
+  const extractPresentationText = (critique: string): string => {
+    const rankingMatch = critique.match(/##\s*Overall Ranking\s*([\s\S]*?)(?=\n##|$)/);
+    const recommendationMatch = critique.match(/##\s*Recommendation\s*([\s\S]*?)(?=\n##|$)/);
+    const parts: string[] = [];
+    if (rankingMatch) parts.push('Overall ranking. ' + stripMd(rankingMatch[1]));
+    if (recommendationMatch) parts.push('My recommendation: ' + stripMd(recommendationMatch[1]));
+    return parts.length > 0 ? parts.join('\n\n') : stripMd(critique.slice(0, 800));
+  };
+
+  const handlePresent = async () => {
+    if (!videoRef.current || !audioRef.current || !critiqueText) return;
+    try {
+      if (!presenterRef.current?.isConnected) {
+        const presenter = new AvatarPresenter({
+          character: import.meta.env.VITE_AVATAR_CHARACTER || 'lisa',
+          style: import.meta.env.VITE_AVATAR_STYLE || 'casual-sitting',
+          voice: import.meta.env.VITE_AVATAR_VOICE || 'en-US-AvaMultilingualNeural',
+          onStatus: setAvatarStatus,
+          onError: (msg) => setAvatarError(msg),
+        });
+        presenterRef.current = presenter;
+        await presenter.connect(videoRef.current, audioRef.current);
+      }
+      await presenterRef.current!.speak(extractPresentationText(critiqueText));
+    } catch {
+      // Errors surfaced via onError / onStatus callbacks
+    }
+  };
+
+  const handleStopPresenting = () => presenterRef.current?.stopSpeaking();
+
+  const handleDismissAvatar = () => {
+    presenterRef.current?.disconnect();
+    presenterRef.current = null;
+    setAvatarStatus('idle');
+    setAvatarError(null);
+  };
 
   const toggleModel = (model: ModelType) => {
     setSelectedModels(prev => {
@@ -646,7 +712,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                 {!isRunning && (
                   <button
                     className="compare-rerun-btn"
-                    onClick={() => { setResults([]); setCritiqueText(null); setCritiqueError(null); setCritiqueByModel(null); }}
+                    onClick={() => { setResults([]); setCritiqueText(null); setCritiqueError(null); setCritiqueByModel(null); handleDismissAvatar(); }}
                     title="Clear results and try again"
                   >
                     New Comparison
@@ -778,6 +844,21 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                     Save Critique
                   </button>
                 )}
+                {critiqueText && !isCritiquing && isSpeechConfigured && (
+                  <button
+                    className={`compare-save-btn compare-avatar-btn${avatarStatus === 'speaking' ? ' active' : ''}`}
+                    onClick={avatarStatus === 'speaking' ? handleStopPresenting : handlePresent}
+                    disabled={avatarStatus === 'connecting'}
+                    title={avatarStatus === 'speaking' ? 'Stop the avatar presentation' : 'Have an AI avatar present the ranking and recommendation'}
+                  >
+                    {avatarStatus === 'connecting'
+                      ? <Loader2 size={14} className="spinner" />
+                      : avatarStatus === 'speaking'
+                      ? <StopCircle size={14} />
+                      : <MonitorPlay size={14} />}
+                    {avatarStatus === 'connecting' ? 'Connecting...' : avatarStatus === 'speaking' ? 'Stop' : 'Present'}
+                  </button>
+                )}
               </div>
               {critiqueError && (
                 <div className="compare-critique-error">{critiqueError}</div>
@@ -793,6 +874,49 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
             </div>
           )}
         </div>
+
+        {/* Floating Avatar Presenter Panel */}
+        {avatarStatus !== 'idle' && (
+          <div className="compare-avatar-panel">
+            <div className="compare-avatar-panel-header">
+              <span className="compare-avatar-panel-title">
+                {avatarStatus === 'connecting' && <Loader2 size={12} className="spinner" />}
+                {avatarStatus === 'connecting' ? ' Connecting...' :
+                 avatarStatus === 'speaking' ? '▶ Presenting' :
+                 avatarStatus === 'error' ? 'Error' : 'Ready'}
+              </span>
+              <button className="compare-avatar-dismiss" onClick={handleDismissAvatar} title="Dismiss avatar">
+                <VideoOff size={13} />
+              </button>
+            </div>
+            <div className="compare-avatar-video-wrap">
+              {avatarStatus === 'connecting' && (
+                <div className="compare-avatar-connecting">
+                  <Loader2 size={28} className="spinner" />
+                  <span>Starting avatar session…</span>
+                </div>
+              )}
+              {avatarStatus === 'error' && (
+                <div className="compare-avatar-error-display">{avatarError}</div>
+              )}
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="compare-avatar-video"
+                style={{ display: (avatarStatus === 'ready' || avatarStatus === 'speaking') ? 'block' : 'none' }}
+              />
+              <audio ref={audioRef} autoPlay style={{ display: 'none' }} />
+            </div>
+            {(avatarStatus === 'ready' || avatarStatus === 'speaking') && critiqueText && (
+              <div className="compare-avatar-panel-controls">
+                {avatarStatus === 'speaking'
+                  ? <button className="compare-avatar-action-btn stop" onClick={handleStopPresenting}><StopCircle size={13} /> Stop</button>
+                  : <button className="compare-avatar-action-btn" onClick={handlePresent}><MonitorPlay size={13} /> Re-present</button>}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

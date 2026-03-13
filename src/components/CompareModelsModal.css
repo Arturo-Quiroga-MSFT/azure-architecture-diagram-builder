@@ -10,6 +10,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
 .compare-modal-body {
@@ -688,3 +689,168 @@ body.dark-mode .compare-critique-text {
   color: #e2e8f0;
   background: rgba(15, 23, 42, 0.6);
 }
+
+/* ── Avatar Presenter ── */
+
+/* "Present" button in critique controls */
+.compare-avatar-btn {
+  background: #0f766e;
+  color: #fff;
+  border: none;
+}
+.compare-avatar-btn:hover:not(:disabled) {
+  background: #0d9488;
+}
+.compare-avatar-btn.active {
+  background: #b91c1c;
+}
+.compare-avatar-btn.active:hover {
+  background: #dc2626;
+}
+.compare-avatar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Floating video panel — positioned inside .compare-modal */
+.compare-avatar-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 280px;
+  background: #1e1e2e;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.compare-avatar-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.compare-avatar-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.compare-avatar-dismiss {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.compare-avatar-dismiss:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.compare-avatar-video-wrap {
+  position: relative;
+  width: 280px;
+  height: 180px;
+  background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compare-avatar-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.compare-avatar-connecting,
+.compare-avatar-error-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 12px;
+}
+
+.compare-avatar-error-display {
+  color: #f87171;
+  font-size: 0.75rem;
+}
+
+.compare-avatar-panel-controls {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  gap: 8px;
+  background: #0f172a;
+  border-top: 1px solid #1e293b;
+}
+
+.compare-avatar-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #1d4ed8;
+  color: #fff;
+  transition: background 0.15s;
+}
+.compare-avatar-action-btn:hover {
+  background: #2563eb;
+}
+.compare-avatar-action-btn.stop {
+  background: #b91c1c;
+}
+.compare-avatar-action-btn.stop:hover {
+  background: #dc2626;
+}
+
+/* Dark mode — panel already dark-first, light mode adjustments */
+body:not(.dark-mode) .compare-avatar-panel {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body:not(.dark-mode) .compare-avatar-panel-header,
+body:not(.dark-mode) .compare-avatar-panel-controls {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+body:not(.dark-mode) .compare-avatar-panel-title {
+  color: #475569;
+}
+body:not(.dark-mode) .compare-avatar-dismiss {
+  color: #94a3b8;
+}
+body:not(.dark-mode) .compare-avatar-video-wrap {
+  background: #e2e8f0;
+}
+body:not(.dark-mode) .compare-avatar-connecting {
+  color: #64748b;
+}
+
