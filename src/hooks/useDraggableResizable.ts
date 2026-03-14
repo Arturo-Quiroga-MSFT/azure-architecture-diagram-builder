@@ -43,9 +43,11 @@ export function useDraggableResizable({
 
   // ── Drag to move ──────────────────────────────────────────────────────────
   const onDragStart = useCallback((e: React.PointerEvent<HTMLElement>) => {
-    // Only left-button; allow button clicks inside the header to propagate first
     if (e.button !== 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    // Capture BEFORE React nullifies e.currentTarget after the handler returns
+    const el = e.currentTarget;
+    const pointerId = e.pointerId;
+    el.setPointerCapture(pointerId);
     const startX = e.clientX;
     const startY = e.clientY;
     const startGeom = { ...geomRef.current };
@@ -65,19 +67,23 @@ export function useDraggableResizable({
     };
 
     const onUp = () => {
-      e.currentTarget.removeEventListener('pointermove', onMove);
-      e.currentTarget.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
     };
 
-    e.currentTarget.addEventListener('pointermove', onMove);
-    e.currentTarget.addEventListener('pointerup', onUp);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
   }, []);
 
   // ── Drag to resize ────────────────────────────────────────────────────────
   const onResizeStart = useCallback((e: React.PointerEvent<HTMLElement>) => {
     if (e.button !== 0) return;
     e.stopPropagation();
-    e.currentTarget.setPointerCapture(e.pointerId);
+    const el = e.currentTarget;
+    const pointerId = e.pointerId;
+    el.setPointerCapture(pointerId);
     const startX = e.clientX;
     const startY = e.clientY;
     const startGeom = { ...geomRef.current };
@@ -95,12 +101,14 @@ export function useDraggableResizable({
     };
 
     const onUp = () => {
-      e.currentTarget.removeEventListener('pointermove', onMove);
-      e.currentTarget.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
     };
 
-    e.currentTarget.addEventListener('pointermove', onMove);
-    e.currentTarget.addEventListener('pointerup', onUp);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
   }, [minW, minH, maxW, maxH]);
 
   /** Call this when you want to reset back to default position/size */
