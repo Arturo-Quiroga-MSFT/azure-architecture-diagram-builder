@@ -715,9 +715,7 @@ body.dark-mode .compare-critique-text {
 /* Floating video panel — positioned inside .compare-modal */
 .compare-avatar-panel {
   position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 380px;
+  /* left / top / width / height set via inline style from useDraggableResizable */
   background: #1e1e2e;
   border: 1px solid #334155;
   border-radius: 12px;
@@ -726,6 +724,7 @@ body.dark-mode .compare-critique-text {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  will-change: transform;
 }
 
 .compare-avatar-panel-header {
@@ -733,6 +732,12 @@ body.dark-mode .compare-critique-text {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  cursor: grab;
+  user-select: none;
+}
+.compare-avatar-panel-header:active { cursor: grabbing; }
   background: #0f172a;
   border-bottom: 1px solid #334155;
 }
@@ -766,12 +771,13 @@ body.dark-mode .compare-critique-text {
 
 .compare-avatar-video-wrap {
   position: relative;
-  width: 380px;
-  height: 260px;
+  flex: 1;          /* fill remaining height */
+  min-height: 0;
   background: #0a0a0f;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .compare-avatar-video {

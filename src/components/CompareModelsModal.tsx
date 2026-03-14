@@ -3,6 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, VideoOff, StopCircle } from 'lucide-react';
+import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
 import {
@@ -101,6 +102,12 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   // Speech region is the only build-time signal needed; keyless auth via /api/speech-token
   const isSpeechConfigured = !!import.meta.env.VITE_SPEECH_REGION;
 
+  // Draggable + resizable avatar panel
+  const { geom: avatarGeom, onDragStart, onResizeStart, reset: resetAvatarGeom } = useDraggableResizable({
+    initial: { x: Math.max(0, window.innerWidth - 420), y: Math.max(0, window.innerHeight - 420), w: 380, h: 360 },
+    minW: 260, minH: 220, maxW: 640, maxH: 600,
+  });
+
   // Disconnect avatar when the modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -172,6 +179,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     setAvatarError(null);
     setCaptionWords([]);
     setCaptionWordIdx(-1);
+    resetAvatarGeom();
   };
 
   const toggleModel = (model: ModelType) => {
@@ -896,8 +904,16 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
 
         {/* Floating Avatar Presenter Panel — always in DOM so refs are populated */}
         {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
-        <div className="compare-avatar-panel" style={avatarStatus === 'idle' ? { display: 'none' } : undefined}>
-            <div className="compare-avatar-panel-header">
+        <div
+          className="compare-avatar-panel"
+          style={avatarStatus === 'idle' ? { display: 'none' } : {
+            left: avatarGeom.x,
+            top: avatarGeom.y,
+            width: avatarGeom.w,
+            height: avatarGeom.h,
+          }}
+        >
+            <div className="compare-avatar-panel-header" onPointerDown={onDragStart}>
               <span className="compare-avatar-panel-title">
                 {avatarStatus === 'connecting' && <Loader2 size={12} className="spinner" />}
                 {avatarStatus === 'connecting' ? ' Connecting...' :
@@ -946,6 +962,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                   : <button className="compare-avatar-action-btn" onClick={handlePresent}><MonitorPlay size={13} /> Re-present</button>}
               </div>
             )}
+            <div className="avatar-resize-handle" onPointerDown={onResizeStart} title="Drag to resize" />
           </div>
       </div>
     </div>

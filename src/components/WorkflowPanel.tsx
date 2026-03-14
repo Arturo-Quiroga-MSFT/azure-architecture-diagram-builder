@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ListOrdered, MonitorPlay, StopCircle, VideoOff, Loader2 } from 'lucide-react';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
+import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import './WorkflowPanel.css';
 
 interface WorkflowStep {
@@ -36,6 +37,12 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const presenterRef = useRef<AvatarPresenter | null>(null);
   const isSpeechConfigured = !!import.meta.env.VITE_SPEECH_REGION;
+
+  // Draggable + resizable avatar panel
+  const { geom: avatarGeom, onDragStart, onResizeStart, reset: resetAvatarGeom } = useDraggableResizable({
+    initial: { x: Math.max(0, window.innerWidth - 800), y: Math.max(0, window.innerHeight - 480), w: 360, h: 330 },
+    minW: 260, minH: 220, maxW: 640, maxH: 600,
+  });
 
   React.useEffect(() => {
     if (forceCollapsed) setIsExpanded(false);
@@ -94,6 +101,7 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
     setAvatarError(null);
     setCaptionWords([]);
     setCaptionWordIdx(-1);
+    resetAvatarGeom();
   };
 
   if (!workflow || workflow.length === 0) return null;
@@ -157,8 +165,16 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
       </div>
 
       {/* Floating Avatar Panel — always in DOM so refs are populated as soon as status changes */}
-      <div className="workflow-avatar-panel" style={avatarStatus === 'idle' ? { display: 'none' } : undefined}>
-        <div className="workflow-avatar-panel-header">
+      <div
+        className="workflow-avatar-panel"
+        style={avatarStatus === 'idle' ? { display: 'none' } : {
+          left: avatarGeom.x,
+          top: avatarGeom.y,
+          width: avatarGeom.w,
+          height: avatarGeom.h,
+        }}
+      >
+        <div className="workflow-avatar-panel-header" onPointerDown={onDragStart}>
           <span className="workflow-avatar-panel-title">
             {avatarStatus === 'connecting' && <Loader2 size={12} className="spinner" />}
             {avatarStatus === 'connecting' ? ' Connecting...' :
@@ -206,6 +222,7 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
               : <button className="workflow-avatar-action-btn" onClick={() => void startNarration()}><MonitorPlay size={13} /> Re-narrate</button>}
           </div>
         )}
+        <div className="avatar-resize-handle" onPointerDown={onResizeStart} title="Drag to resize" />
       </div>
     </>
   );

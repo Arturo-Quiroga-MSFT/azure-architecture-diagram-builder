@@ -228,9 +228,7 @@ body.dark-mode .workflow-step:hover {
 
 .workflow-avatar-panel {
   position: fixed;
-  bottom: 80px;
-  right: 420px; /* 400px panel + 20px gap */
-  width: 360px;
+  /* left / top / width / height set via inline style from useDraggableResizable */
   background: #1e1e2e;
   border: 1px solid #334155;
   border-radius: 12px;
@@ -239,6 +237,8 @@ body.dark-mode .workflow-step:hover {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Smooth resize */
+  will-change: transform;
 }
 
 .workflow-avatar-panel-header {
@@ -248,7 +248,10 @@ body.dark-mode .workflow-step:hover {
   padding: 8px 12px;
   background: #0f172a;
   border-bottom: 1px solid #334155;
+  cursor: grab;
+  user-select: none;
 }
+.workflow-avatar-panel-header:active { cursor: grabbing; }
 
 .workflow-avatar-panel-title {
   display: flex;
@@ -279,12 +282,13 @@ body.dark-mode .workflow-step:hover {
 
 .workflow-avatar-video-wrap {
   position: relative;
-  width: 360px;
-  height: 246px;
+  flex: 1;          /* fill remaining height */
+  min-height: 0;
   background: #0a0a0f;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .workflow-avatar-video {
@@ -385,6 +389,43 @@ body:not(.dark-mode) .workflow-avatar-captions {
 body:not(.dark-mode) .workflow-avatar-caption-word.active {
   color: #1e293b;
   background: rgba(99, 102, 241, 0.2);
+}
+
+/* ── Shared resize handle (used by both avatar panels) ── */
+.avatar-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: se-resize;
+  /* Subtle diagonal lines */
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(148, 163, 184, 0.35) 30%,
+    rgba(148, 163, 184, 0.35) 45%,
+    transparent 45%,
+    transparent 60%,
+    rgba(148, 163, 184, 0.35) 60%,
+    rgba(148, 163, 184, 0.35) 75%,
+    transparent 75%
+  );
+  border-bottom-right-radius: 12px;
+  z-index: 10;
+}
+.avatar-resize-handle:hover {
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(99, 102, 241, 0.55) 30%,
+    rgba(99, 102, 241, 0.55) 45%,
+    transparent 45%,
+    transparent 60%,
+    rgba(99, 102, 241, 0.55) 60%,
+    rgba(99, 102, 241, 0.55) 75%,
+    transparent 75%
+  );
 }
 
 /* Spinner keyframe (shared with compare panel) */
