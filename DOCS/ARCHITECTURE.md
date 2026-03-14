@@ -1,6 +1,6 @@
 # Azure Architecture Diagram Builder - System Architecture
 
-**Last Updated**: March 13, 2026
+**Last Updated**: March 14, 2026
 
 ## Overview
 
@@ -109,6 +109,7 @@ graph LR
         TEL[telemetryService.ts<br/>App Insights Telemetry]
         API[apiHelper.ts<br/>HTTP Retry Logic]
         AVP[avatarPresenter.ts<br/>Speech Avatar + ICE Relay]
+        DRH[useDraggableResizable.ts<br/>Drag + Resize Hook]
     end
     
     Canvas --> AzureNode

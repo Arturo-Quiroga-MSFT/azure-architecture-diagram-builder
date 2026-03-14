@@ -78,11 +78,11 @@ Compare AI output side-by-side across all 7 models:
 - **Apply Winner** — Pick the best result and apply it to the canvas with one click
 
 ### 🎙️ Avatar Presenter
-After completing a model comparison, use **Present Critique** to have a photorealistic talking avatar narrate the AI ranking results aloud:
-- A 3D avatar appears in a floating panel (bottom-right of the canvas) and speaks the critique in a natural voice
+After completing a model comparison, use **Present Critique** to have a photorealistic talking avatar narrate the AI ranking results aloud — or click **Narrate** in the Workflow Panel to have the avatar walk through every architecture step:
+- A 3D avatar appears in a **draggable, resizable** floating panel — grab the header to reposition anywhere on screen, drag the bottom-right corner to resize
 - Live **word-by-word closed captions** highlight each spoken word in real time, synchronized via the Speech SDK `wordBoundary` event
 - **Keyless authentication** — no API keys stored; a lightweight Express.js token server runs co-located with nginx inside the container, acquiring an AAD token via `DefaultAzureCredential` (Azure Managed Identity) and returning it as `aad#{resourceId}#{aadToken}` on each request
-- The "Present" button is only visible when `VITE_SPEECH_REGION` is configured at image build time; no UI impact when not set
+- The "Present" / "Narrate" buttons are only visible when `VITE_SPEECH_REGION` is configured at image build time; no UI impact when not set
 
 ### 🗂️ Collapse All Groups
 Toggle button to collapse or expand all groups at once for a bird's-eye view of the architecture. Restores original group sizes on expand.
@@ -93,6 +93,7 @@ Visualize how data flows through your architecture step-by-step:
 - Service highlighting — each step highlights the involved services on the canvas
 - Animated connections showing data flow direction
 - AI-generated descriptions for each workflow step
+- **Narrate** button (when Speech is configured) — avatar speaks all steps aloud with live closed captions in a draggable, resizable panel
 
 ### 📄 Deployment Guide Generation with Bicep
 Generate comprehensive deployment documentation including:
@@ -594,6 +595,8 @@ azure-diagrams/
 │   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
 │   │   └── modelSettingsStore.ts  # Multi-model settings (7 models)
+│   ├── hooks/                # Shared React hooks
+│   │   └── useDraggableResizable.ts  # Pointer-capture drag-to-move + drag-to-resize hook
 │   ├── data/                 # Static data
 │   │   ├── pricing/          # Regional pricing data (245 files: 49 services × 5 regions)
 │   │   ├── azurePricing.ts   # Service mappings
@@ -629,6 +632,27 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### March 14, 2026 — Workflow Avatar Narrator & Draggable/Resizable Panels
+
+#### 🎙️ Narrate Workflow (new)
+The Workflow Panel (right side of canvas) now has a **Narrate** button in its header. Click it to have a talking avatar speak every architecture step aloud:
+- Narration text is built from the existing workflow steps — `"Step 1: … Step 2: … "` — no extra AI call
+- Same avatar session, closed-caption, and token-server infrastructure as the Compare Models presenter
+- Button is only rendered when `VITE_SPEECH_REGION` is set
+
+#### 🖱️ Draggable & Resizable Avatar Panels
+Both avatar panels (Workflow Narrator and Compare Models Presenter) are now fully interactive:
+- **Drag** the panel header to reposition anywhere on the viewport
+- **Resize** by dragging the diagonal-stripe handle in the bottom-right corner
+- Position and size are clamped to the viewport so the panel can never be dragged off-screen
+- Panel resets to its default position/size when dismissed
+
+#### 🔧 Infrastructure
+- `src/hooks/useDraggableResizable.ts` — new shared hook using pointer capture (`el.setPointerCapture`) for smooth, lag-free drag and resize; React `currentTarget` captured into locals before closures to avoid the synthetic-event nullification bug
+- `pointercancel` listener added to both drag and resize handlers for clean-up on focus-loss or touch cancel
+
+---
 
 ### March 13, 2026 — Talking Avatar Presenter
 

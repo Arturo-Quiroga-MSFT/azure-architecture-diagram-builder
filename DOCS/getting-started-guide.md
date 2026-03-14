@@ -221,10 +221,11 @@ Two comparison modes let you evaluate which model produces the best results for 
 After the comparison completes, a **"Present"** button appears in the results panel (visible when the app is configured with an Azure Speech resource):
 
 1. Click **"Present"** in the comparison results panel.
-2. A photorealistic talking avatar appears in a floating panel at the bottom-right of the canvas.
+2. A photorealistic talking avatar appears in a floating panel.
 3. The avatar narrates the model ranking and critique aloud in a natural voice.
 4. **Live closed captions** — each word highlights in the caption bar in real time as it is spoken, synchronized with the audio.
-5. Close the avatar panel at any time using the ✕ button.
+5. **Drag** the panel header to reposition it anywhere on screen. **Drag the bottom-right corner** to resize the panel.
+6. Close the avatar panel at any time using the ✕ button.
 
 ### Validation Comparison
 
@@ -348,6 +349,10 @@ Both the title block and legend are included in PNG and SVG exports.
 ### Talking Avatar for Demos
 
 Use the **Present Critique** feature (available in the Compare Models results panel) to narrate a model ranking to an audience using a photorealistic talking avatar — no screen-sharing awkwardness, no reading from notes. Closed captions display word by word for accessibility.
+
+Use the **Narrate** button in the Workflow Panel header to have the avatar walk through every architecture step aloud — useful for live demos or for users who find the diagram hard to read visually.
+
+Both avatar panels are **draggable** (grab the header) and **resizable** (drag the bottom-right corner), so you can position them wherever they work best on your screen.
 
 ---
 
