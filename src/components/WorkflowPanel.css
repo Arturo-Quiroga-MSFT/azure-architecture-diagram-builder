@@ -43,6 +43,43 @@
   background: linear-gradient(135deg, #005a9e 0%, #004578 100%);
 }
 
+/* Right-side cluster: narrate button + collapse toggle */
+.workflow-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Narrate button in the workflow header */
+.workflow-narrate-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.workflow-narrate-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.workflow-narrate-btn.active {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+.workflow-narrate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .workflow-title {
   display: flex;
   align-items: center;
@@ -184,4 +221,177 @@ body.dark-mode .workflow-step:hover {
 
 .workflow-content::-webkit-scrollbar-thumb:hover {
   background: #005a9e;
+}
+
+/* ── Workflow Avatar Panel ─────────────────────────────────────────────────── */
+/* Floats to the left of the (400px wide) workflow panel so both are visible.  */
+
+.workflow-avatar-panel {
+  position: fixed;
+  bottom: 80px;
+  right: 420px; /* 400px panel + 20px gap */
+  width: 360px;
+  background: #1e1e2e;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-avatar-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.workflow-avatar-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.workflow-avatar-dismiss {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.workflow-avatar-dismiss:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.workflow-avatar-video-wrap {
+  position: relative;
+  width: 360px;
+  height: 246px;
+  background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workflow-avatar-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.workflow-avatar-connecting,
+.workflow-avatar-error-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 12px;
+}
+
+.workflow-avatar-error-display {
+  color: #f87171;
+  font-size: 0.75rem;
+}
+
+.workflow-avatar-panel-controls {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  gap: 8px;
+  background: #0f172a;
+  border-top: 1px solid #1e293b;
+}
+
+.workflow-avatar-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #1d4ed8;
+  color: #fff;
+  transition: background 0.15s;
+}
+.workflow-avatar-action-btn:hover { background: #2563eb; }
+.workflow-avatar-action-btn.stop { background: #b91c1c; }
+.workflow-avatar-action-btn.stop:hover { background: #dc2626; }
+
+/* ── Closed captions ── */
+.workflow-avatar-captions {
+  padding: 10px 14px 4px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  max-height: 90px;
+  overflow-y: auto;
+  border-top: 1px solid #334155;
+  scrollbar-width: none;
+}
+.workflow-avatar-captions::-webkit-scrollbar { display: none; }
+
+.workflow-avatar-caption-word {
+  display: inline;
+  transition: color 0.1s, background 0.1s;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.workflow-avatar-caption-word.active {
+  color: #ffffff;
+  background: rgba(99, 102, 241, 0.45);
+}
+
+/* Light-mode adjustments — panel is dark-first */
+body:not(.dark-mode) .workflow-avatar-panel {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body:not(.dark-mode) .workflow-avatar-panel-header,
+body:not(.dark-mode) .workflow-avatar-panel-controls {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+body:not(.dark-mode) .workflow-avatar-panel-title { color: #475569; }
+body:not(.dark-mode) .workflow-avatar-dismiss { color: #94a3b8; }
+body:not(.dark-mode) .workflow-avatar-video-wrap { background: #e2e8f0; }
+body:not(.dark-mode) .workflow-avatar-connecting { color: #64748b; }
+body:not(.dark-mode) .workflow-avatar-captions {
+  border-color: #e2e8f0;
+  color: #475569;
+}
+body:not(.dark-mode) .workflow-avatar-caption-word.active {
+  color: #1e293b;
+  background: rgba(99, 102, 241, 0.2);
+}
+
+/* Spinner keyframe (shared with compare panel) */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.workflow-panel .spinner,
+.workflow-avatar-panel .spinner {
+  animation: spin 0.8s linear infinite;
 }
