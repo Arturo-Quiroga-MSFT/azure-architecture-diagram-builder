@@ -24,7 +24,7 @@ estimated_reading_time: 12
 
 ## What Is It?
 
-The Azure Architecture Diagram Builder is a web application that lets you design, validate, and deploy Azure cloud architectures. You describe what you need in plain English, and one of six AI models generates a professional diagram with official Azure icons, logical groupings, data-flow connections, real-time cost estimates, and Infrastructure as Code templates.
+The Azure Architecture Diagram Builder is a web application that lets you design, validate, and deploy Azure cloud architectures. You describe what you need in plain English, and one of **seven** AI models generates a professional diagram with official Azure icons, logical groupings, data-flow connections, real-time cost estimates, and Infrastructure as Code templates.
 
 No installs required. Open the link in any modern browser and start building.
 
@@ -207,7 +207,7 @@ Two comparison modes let you evaluate which model produces the best results for 
 ### Architecture Comparison
 
 1. Click **"Compare Models"** in the toolbar.
-2. Select two or more models from the six available options.
+2. Select two or more models from the seven available options.
 3. Enter your architecture prompt and click **Compare**.
 4. All selected models run in parallel. Results appear side by side showing:
    - Service count, connection count, group count, workflow steps
@@ -215,6 +215,16 @@ Two comparison modes let you evaluate which model produces the best results for 
 5. Click **Apply** on the result you prefer to load that architecture onto the canvas.
 6. Use **Save All Diagrams** to download each result as an individual JSON file.
 7. Use **Save Comparison Report** to download a combined analysis.
+
+### Present Critique with Avatar
+
+After the comparison completes, a **"Present"** button appears in the results panel (visible when the app is configured with an Azure Speech resource):
+
+1. Click **"Present"** in the comparison results panel.
+2. A photorealistic talking avatar appears in a floating panel at the bottom-right of the canvas.
+3. The avatar narrates the model ranking and critique aloud in a natural voice.
+4. **Live closed captions** — each word highlights in the caption bar in real time as it is spoken, synchronized with the audio.
+5. Close the avatar panel at any time using the ✕ button.
 
 ### Validation Comparison
 
@@ -230,7 +240,7 @@ Two comparison modes let you evaluate which model produces the best results for 
 
 Click the **AI Model** dropdown in the toolbar to open the settings popover.
 
-- Choose a global model from six options: GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, or Grok 4.1 Fast.
+- Choose a global model from seven options: GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, or Grok 4.1 Fast.
 - Set reasoning effort (none, low, medium, high) for models that support it.
 - Override the model independently for three features:
   - Architecture Generation
@@ -335,6 +345,10 @@ The **Legend** (bottom-right) explains connection types, flow animations, and co
 
 Both the title block and legend are included in PNG and SVG exports.
 
+### Talking Avatar for Demos
+
+Use the **Present Critique** feature (available in the Compare Models results panel) to narrate a model ranking to an audience using a photorealistic talking avatar — no screen-sharing awkwardness, no reading from notes. Closed captions display word by word for accessibility.
+
 ---
 
 ## Quick Reference: Keyboard Shortcuts
@@ -352,6 +366,8 @@ Both the title block and legend are included in PNG and SVG exports.
 ```text
 Describe → Generate → Review costs → Validate (WAF) → Apply recommendations →
 Generate deployment guide → Export diagram + Bicep templates → Deploy to Azure
+
+Optionally: Compare Models → Present Critique with talking avatar
 ```
 
 Every step in this chain is available from a single browser tab with no additional tooling. Go from an idea to a deployable, validated, costed Azure architecture in minutes.

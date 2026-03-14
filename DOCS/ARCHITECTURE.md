@@ -1,10 +1,10 @@
 # Azure Architecture Diagram Builder - System Architecture
 
-**Last Updated**: March 6, 2026
+**Last Updated**: March 13, 2026
 
 ## Overview
 
-The Azure Architecture Diagram Builder is a web-based tool that uses AI to generate Azure architecture diagrams with real-time pricing estimates. Built with React, TypeScript, and Vite, it leverages **7 AI models** via Azure OpenAI: **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** for intelligent diagram generation, validation, and Infrastructure as Code generation. The Azure Retail Prices API provides cost estimation across 5 regions. A lightweight Express.js backend (port 8787) supports version storage and server-side operations. The app is deployed on Azure Container Apps and instrumented with Application Insights for telemetry.
+The Azure Architecture Diagram Builder is a web-based tool that uses AI to generate Azure architecture diagrams with real-time pricing estimates. Built with React, TypeScript, and Vite, it leverages **7 AI models** via Azure OpenAI: **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** for intelligent diagram generation, validation, and Infrastructure as Code generation. The Azure Retail Prices API provides cost estimation across 5 regions. A lightweight Express.js **token server** (port 3001) runs co-located with nginx inside the container, handling keyless Azure Speech authentication for the **Talking Avatar Presenter** feature via `DefaultAzureCredential` (Managed Identity). The app is deployed on Azure Container Apps and instrumented with Application Insights for telemetry.
 
 ## High-Level Architecture
 
@@ -36,13 +36,14 @@ graph TB
     end
     
     subgraph "Backend Layer"
-        Server[Express.js Server<br/>Port 8787]
+        TokenServer[Express.js Token Server<br/>Port 3001<br/>speech-token + ice-token]
     end
     
     subgraph "External APIs"
         OpenAI[Azure OpenAI API<br/>7 Models via Azure AI Foundry]
         AzureAPI[Azure Retail Prices API]
         AppInsightsAPI[Application Insights]
+        SpeechAPI[Azure Speech Service<br/>TTS Avatar]
     end
     
     UI --> RF
@@ -59,7 +60,8 @@ graph TB
     Pricing --> Mappings
     Validator --> OpenAI
     DeployGen --> OpenAI
-    State --> Server
+    State --> TokenServer
+    TokenServer --> SpeechAPI
     UI --> AppInsightsAPI
 ```
 
@@ -106,6 +108,7 @@ graph LR
         VSS[versionStorageService.ts<br/>Version Persistence]
         TEL[telemetryService.ts<br/>App Insights Telemetry]
         API[apiHelper.ts<br/>HTTP Retry Logic]
+        AVP[avatarPresenter.ts<br/>Speech Avatar + ICE Relay]
     end
     
     Canvas --> AzureNode

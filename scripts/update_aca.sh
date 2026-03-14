@@ -26,9 +26,12 @@
 # - VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK: DeepSeek V3.2 Speciale deployment name (build-time)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST: Grok 4.1 Fast deployment name (build-time)
 # - VITE_APPINSIGHTS_CONNECTION_STRING: Application Insights connection string (build-time, optional)
+# - VITE_SPEECH_REGION: Azure Speech region (build-time, enables avatar Present button)
 # - AZURE_COSMOS_ENDPOINT: Cosmos DB endpoint (runtime)
 # - COSMOS_DATABASE_ID: Cosmos DB database ID (runtime)
 # - COSMOS_CONTAINER_ID: Cosmos DB container ID (runtime)
+# - AZURE_SPEECH_REGION: Azure Speech region (runtime, used by token-server.js)
+# - AZURE_SPEECH_RESOURCE_ID: Azure Speech resource ID (runtime, used by token-server.js)
 #
 # Note: Vite environment variables must be passed as build arguments because they are
 # embedded at build time via import.meta.env, not available at runtime.
@@ -70,6 +73,7 @@ az acr build --registry acrazurediagrams1767583743 \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT54=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT54" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=$VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST=$VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST" \
+    --build-arg "VITE_SPEECH_REGION=$VITE_SPEECH_REGION" \
     .
 
 echo "🔄 Updating Container App..."
@@ -81,6 +85,8 @@ az containerapp update --name azure-diagram-builder \
         "COSMOS_DATABASE_ID=$COSMOS_DATABASE_ID" \
         "COSMOS_CONTAINER_ID=$COSMOS_CONTAINER_ID" \
         "PUBLIC_URL=https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io" \
+        "AZURE_SPEECH_REGION=$AZURE_SPEECH_REGION" \
+        "AZURE_SPEECH_RESOURCE_ID=$AZURE_SPEECH_RESOURCE_ID" \
     --revision-suffix "v$(date +%s)"
 
 echo "✅ Deployment complete!"

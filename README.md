@@ -74,7 +74,15 @@ Compare AI output side-by-side across all 7 models:
 - **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins. An inline WAF info box explains the five pillars being assessed
 - **Save All Diagrams** — Download each model's architecture as a separate JSON file
 - **Save Comparison Report** — Download a combined JSON report for offline analysis
+- **Present Critique** — Click "Present" to have a talking avatar narrate the AI ranking with live word-by-word closed captions (requires `VITE_SPEECH_REGION`)
 - **Apply Winner** — Pick the best result and apply it to the canvas with one click
+
+### 🎙️ Avatar Presenter
+After completing a model comparison, use **Present Critique** to have a photorealistic talking avatar narrate the AI ranking results aloud:
+- A 3D avatar appears in a floating panel (bottom-right of the canvas) and speaks the critique in a natural voice
+- Live **word-by-word closed captions** highlight each spoken word in real time, synchronized via the Speech SDK `wordBoundary` event
+- **Keyless authentication** — no API keys stored; a lightweight Express.js token server runs co-located with nginx inside the container, acquiring an AAD token via `DefaultAzureCredential` (Azure Managed Identity) and returning it as `aad#{resourceId}#{aadToken}` on each request
+- The "Present" button is only visible when `VITE_SPEECH_REGION` is configured at image build time; no UI impact when not set
 
 ### 🗂️ Collapse All Groups
 Toggle button to collapse or expand all groups at once for a bird's-eye view of the architecture. Restores original group sizes on expand.
@@ -151,6 +159,7 @@ Features include:
   | `Version_Operation` | save / restore |
   | `Region_Changed` | region ID |
   | `Start_Fresh` | — |
+  | `Avatar_Presentation_Started` | model count, critique length |
 - **Zero-impact when disabled** — if `VITE_APPINSIGHTS_CONNECTION_STRING` is not set, all tracking calls are no-ops
 - **Privacy-friendly** — no PII collected; anonymous user IDs via cookies
 
@@ -293,12 +302,14 @@ graph TB
         modelStore[modelSettingsStore.ts]
         telemetry[telemetryService.ts]
         apiHelper[apiHelper.ts]
+        avatarPresenter[avatarPresenter.ts]
     end
 
     subgraph External["External APIs"]
         OpenAI[Azure OpenAI API<br/>7 Models]
         PricingAPI[Azure Retail Prices API]
         AppInsights[Application Insights]
+        SpeechAPI[Azure Speech Service<br/>TTS Avatar]
     end
 
     AIGen --> azureOpenAI
@@ -315,6 +326,8 @@ graph TB
     azureOpenAI --> OpenAI
     pricing --> PricingAPI
     telemetry --> AppInsights
+    avatarPresenter --> SpeechAPI
+    CompareM --> avatarPresenter
 
     style Frontend fill:#61DAFB,color:#000
     style Services fill:#3178C6,color:#fff
@@ -374,11 +387,22 @@ COSMOS_CONTAINER_ID=diagrams
 # Optional: Application Insights telemetry
 # Create an App Insights resource in Azure Portal and paste the connection string
 VITE_APPINSIGHTS_CONNECTION_STRING=InstrumentationKey=...;IngestionEndpoint=...
+
+# Optional: Avatar Presenter (enables "Present Critique" button in Compare Models)
+# Requires an Azure Speech resource with Custom Subdomain enabled and
+# the ACA managed identity assigned the "Cognitive Services Speech User" RBAC role
+VITE_SPEECH_REGION=westus2                 # Build-time: controls visibility of the "Present" button
+AZURE_SPEECH_REGION=westus2               # Runtime: read by the co-located token server
+AZURE_SPEECH_RESOURCE_ID=/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<speech-account-name>
 ```
 
 4. **Start the development server**
 ```bash
+# Standard (no avatar)
 npm run dev
+
+# With avatar presenter: starts token server + Vite concurrently
+npm run dev:avatar
 ```
 
 5. **Open your browser**
@@ -397,7 +421,8 @@ docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT54="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST="..." .
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST="..." \
+  --build-arg VITE_SPEECH_REGION="westus2" .
 
 # Optional: include App Insights telemetry
 #   --build-arg VITE_APPINSIGHTS_CONNECTION_STRING="..." \
@@ -531,6 +556,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 | **Serving** | nginx:alpine (Docker), Vite dev server (local) |
 | **APIs** | Azure Retail Prices API |
 | **Export** | JSZip, Draw.io XML format, PptxGenJS (client-side PPTX) |
+| **Avatar** | Azure Cognitive Services Speech SDK (TTS Avatar), `DefaultAzureCredential` (keyless), Express.js token server |
 | **Deployment** | Docker, Azure Container Apps |
 
 ---
@@ -564,6 +590,7 @@ azure-diagrams/
 │   │   ├── apiHelper.ts      # Dual API format builder (Responses/Chat Completions)
 │   │   ├── versionStorageService.ts  # Version history
 │   │   ├── wafPatternDetector.ts  # Rule-based WAF pattern checks
+│   │   ├── avatarPresenter.ts   # Talking avatar: Speech SDK, ICE relay, word-boundary captions
 │   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
 │   │   └── modelSettingsStore.ts  # Multi-model settings (7 models)
@@ -579,6 +606,8 @@ azure-diagrams/
 │   │   ├── captureCanvas.ts  # html-to-image capture with SVG edge pre-inlining
 │   │   └── modelNaming.ts    # Model display names
 │   └── App.tsx               # Main application
+├── server/                   # Token server (co-located with nginx in the container)
+│   └── token-server.js       # Express.js: /api/speech-token + /api/ice-token (Managed Identity, keyless)
 ├── scripts/                  # Deployment scripts
 │   ├── deploy_aca.sh         # Configurable ACA deployment (reads from .env)
 │   └── update_aca.sh         # Author's ACA deployment (hardcoded resources)
@@ -600,6 +629,26 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### March 13, 2026 — Talking Avatar Presenter
+
+#### 🎙️ Present Critique (new)
+Compare AI model critiques, then click **"Present"** to have a photorealistic **talking avatar** narrate the ranked results aloud, right in the browser:
+
+- **Floating avatar panel** — 3D avatar appears at bottom-right inside the Compare Models modal while speaking
+- **Word-by-word closed captions** — each word highlights in real time as the avatar speaks, driven by the Speech SDK `wordBoundary` event
+- **Keyless authentication** — no API keys stored: `server/token-server.js` (Express.js, port 3001) runs co-located with nginx. On each `/api/speech-token` request it acquires an AAD token via `DefaultAzureCredential` and returns `aad#{resourceId}#{aadToken}` directly to the Speech SDK
+- **ICE relay** — `/api/ice-token` endpoint fetches WebRTC relay credentials from Azure so avatar video works through corporate firewalls
+- **Build-time feature flag** — the "Present" button is only rendered when `VITE_SPEECH_REGION` is set at image build time
+
+#### 🔧 Infrastructure
+- `server/token-server.js` — new Express.js token server started by `start.sh` before nginx
+- `src/services/avatarPresenter.ts` — Speech SDK avatar session, ICE relay, word-boundary callback
+- `Dockerfile` — extended build stage with `ARG/ENV VITE_SPEECH_REGION`; production stage installs token server deps
+- `scripts/update_aca.sh` — adds `VITE_SPEECH_REGION` build arg and `AZURE_SPEECH_REGION` / `AZURE_SPEECH_RESOURCE_ID` runtime env vars
+- ACA managed identity assigned `Cognitive Services Speech User` role on the Speech resource (no stored credentials)
+
+---
 
 ### March 12, 2026 — PPTX Export & SVG Edge Rendering Fix
 
