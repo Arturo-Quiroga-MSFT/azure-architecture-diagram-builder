@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ListOrdered, MonitorPlay, StopCircle, VideoOff, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ListOrdered, MonitorPlay, StopCircle, Loader2 } from 'lucide-react';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import './WorkflowPanel.css';
@@ -181,8 +181,13 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
              avatarStatus === 'speaking' ? '▶ Narrating' :
              avatarStatus === 'error' ? 'Error' : 'Ready'}
           </span>
-          <button className="workflow-avatar-dismiss" onClick={handleDismissAvatar} title="Dismiss avatar">
-            <VideoOff size={13} />
+          <button
+            className="workflow-avatar-dismiss"
+            onClick={handleDismissAvatar}
+            onPointerDown={e => e.stopPropagation()}
+            title="Close"
+          >
+            ✕
           </button>
         </div>
         <div className="workflow-avatar-video-wrap">

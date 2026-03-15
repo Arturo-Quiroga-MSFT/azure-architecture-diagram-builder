@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, VideoOff, StopCircle } from 'lucide-react';
+import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, StopCircle } from 'lucide-react';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
@@ -920,8 +920,13 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                  avatarStatus === 'speaking' ? '▶ Presenting' :
                  avatarStatus === 'error' ? 'Error' : 'Ready'}
               </span>
-              <button className="compare-avatar-dismiss" onClick={handleDismissAvatar} title="Dismiss avatar">
-                <VideoOff size={13} />
+              <button
+                className="compare-avatar-dismiss"
+                onClick={handleDismissAvatar}
+                onPointerDown={e => e.stopPropagation()}
+                title="Close"
+              >
+                ✕
               </button>
             </div>
             <div className="compare-avatar-video-wrap">
