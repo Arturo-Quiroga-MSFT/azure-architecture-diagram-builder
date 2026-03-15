@@ -2,10 +2,12 @@
 
 # Fetch Azure pricing for multiple regions
 # Downloads pricing data for specified services across 5 regions
-# Last updated: January 2026
+# Last updated: March 2026
 
-# Target regions - 5 regions for the Azure Architecture Diagram Builder
-REGIONS=("eastus2" "swedencentral" "westeurope" "canadacentral" "brazilsouth")
+# Target regions - 8 regions for the Azure Architecture Diagram Builder
+# HERO: primary showcase regions (East US 2, Australia East)
+# HUB:  regional coverage regions
+REGIONS=("eastus2" "swedencentral" "westeurope" "canadacentral" "brazilsouth" "australiaeast" "southeastasia" "mexicocentral")
 
 # =============================================================================
 # COMPREHENSIVE SERVICE LIST - 62+ Services
