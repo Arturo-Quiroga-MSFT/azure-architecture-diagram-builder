@@ -337,6 +337,61 @@ graph TB
 
 ---
 
+## ⚡ One-command deploy with Azure Developer CLI (azd)
+
+The fastest way to provision all Azure resources and deploy the app is with [`azd`](https://aka.ms/azd):
+
+```bash
+# 1. Install azd (once)
+winget install microsoft.azd   # Windows
+brew tap azure/azd && brew install azd   # macOS
+
+# 2. Clone and enter the repo
+git clone https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder
+cd azure-architecture-diagram-builder
+
+# 3. Log in
+azd auth login
+
+# 4. Set your Azure OpenAI details (bring-your-own resource)
+azd env set AZURE_OPENAI_ENDPOINT       "https://your-resource.openai.azure.com/"
+azd env set AZURE_OPENAI_API_KEY        "your-key"
+azd env set AZURE_OPENAI_DEPLOYMENT_NAME "gpt-5.1"         # adjust to your deployments
+azd env set AZURE_SPEECH_REGION        "westus2"
+
+# 5. Provision infrastructure + build + deploy  (≈ 8 min first run)
+azd up
+```
+
+`azd up` provisions (via Bicep in `infra/`):
+
+| Resource | Purpose |
+|---|---|
+| Azure Container Registry | Stores the Docker image |
+| Azure Container Apps | Runs the app (nginx + token server) |
+| Log Analytics + App Insights | Monitoring and telemetry |
+| Azure Speech (S0) | Avatar Presenter feature (keyless auth via managed identity) |
+| Cosmos DB *(optional)* | Diagram persistence — set `deployCosmos=true` in `infra/main.parameters.json` |
+
+After `azd up` completes, the app URL is printed and captured in `SERVICE_APP_URL`.
+
+### GitHub Actions CI/CD
+
+[`.github/workflows/azure-dev.yml`](.github/workflows/azure-dev.yml) re-deploys on every push to `main`.
+Required GitHub secrets/variables:
+
+| Secret | Value |
+|---|---|
+| `AZURE_CLIENT_ID` | Service principal / federated credential client ID |
+| `AZURE_TENANT_ID` | Entra ID tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Subscription ID |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint |
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key |
+
+Set `AZURE_ENV_NAME` and `AZURE_LOCATION` as **variables** (not secrets).
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites

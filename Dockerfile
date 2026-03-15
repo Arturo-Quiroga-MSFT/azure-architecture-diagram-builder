@@ -41,10 +41,19 @@ ENV VITE_SPEECH_REGION=$VITE_SPEECH_REGION
 # as shell command separators. Instead, the deploy script (scripts/update_aca.sh) extracts
 # the value into .env.appinsights, which is COPY'd here and sourced at build time.
 # The glob pattern (appinsights*) ensures the build doesn't fail if the file is absent.
-COPY .env.appinsights* ./
+# .env.build  — written by scripts/azd-prepackage.sh before 'azd package';
+#               contains all VITE_* vars as KEY=VALUE lines.
+# .env.appinsights — App Insights connection string workaround (see below).
+# Both globs are optional so the build doesn't fail in environments that
+# don't create them (e.g. direct docker build with --build-arg).
+COPY .env.build* .env.appinsights* ./
 
-# Build the app (source App Insights env if present, then build)
-RUN if [ -f .env.appinsights ]; then \
+# Build the app — source the optional env files first so their values are
+# available to Vite, then fall back to the ARG/ENV values set above.
+RUN if [ -f .env.build ]; then \
+      export $(grep -v '^#' .env.build | grep -v '^\s*$' | xargs); \
+    fi && \
+    if [ -f .env.appinsights ]; then \
       export $(cat .env.appinsights) && echo "App Insights: $VITE_APPINSIGHTS_CONNECTION_STRING" | cut -c1-60; \
     fi && npm run build
 

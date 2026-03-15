@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: azure-architecture-diagram-builder
+metadata:
+  template: azure-architecture-diagram-builder@1.0.0
+
+# Pre-package hook: runs before 'azd package' (docker build).
+# Writes .env.build (all VITE_ model/endpoint vars) and .env.appinsights
+# (App Insights connection string — semicolons prevent --build-arg use).
+# The Dockerfile sources these files in the same RUN layer as 'npm run build'.
+hooks:
+  prepackage:
+    shell: sh
+    run: scripts/azd-prepackage.sh
+    interactive: false
+    continueOnError: true
+
+services:
+  app:
+    project: .
+    language: ts
+    host: containerapp
+    docker:
+      path: ./Dockerfile

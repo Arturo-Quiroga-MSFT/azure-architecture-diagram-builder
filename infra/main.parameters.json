@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "azureOpenAiEndpoint": {
+      "value": "${AZURE_OPENAI_ENDPOINT}"
+    },
+    "azureOpenAiApiKey": {
+      "value": "${AZURE_OPENAI_API_KEY}"
+    },
+    "openAiDeploymentGpt51": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_NAME}"
+    },
+    "openAiDeploymentGpt52": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_GPT52}"
+    },
+    "openAiDeploymentGpt52Codex": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_GPT52CODEX}"
+    },
+    "openAiDeploymentGpt53Codex": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_GPT53CODEX}"
+    },
+    "openAiDeploymentGpt54": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_GPT54}"
+    },
+    "openAiDeploymentDeepSeek": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_DEEPSEEK}"
+    },
+    "openAiDeploymentGrokFast": {
+      "value": "${AZURE_OPENAI_DEPLOYMENT_GROK4FAST}"
+    },
+    "deploySpeech": {
+      "value": true
+    },
+    "speechRegion": {
+      "value": "${AZURE_SPEECH_REGION}"
+    },
+    "deployCosmos": {
+      "value": false
+    }
+  }
+}

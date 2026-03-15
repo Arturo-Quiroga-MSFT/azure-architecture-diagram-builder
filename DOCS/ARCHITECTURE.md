@@ -1,6 +1,6 @@
 # Azure Architecture Diagram Builder - System Architecture
 
-**Last Updated**: March 14, 2026
+**Last Updated**: March 14, 2026 (azd template + CI/CD pipeline)
 
 ## Overview
 
@@ -273,17 +273,28 @@ azure-diagrams/
 │   └── store.js                       # Data persistence
 │
 ├── Azure_Public_Service_Icons/        # 714 SVG files in 29 categories
+├── infra/                             # Bicep infrastructure (azd template)
+│   ├── main.bicep                     # Subscription-scoped entry; creates RG, emits outputs
+│   ├── resources.bicep                # All Azure resources (ACR, ACA, Log Analytics, Speech, Cosmos)
+│   ├── main.parameters.json           # Parameter defaults with azd ${ENV} tokens
+│   └── abbreviations.json             # Azure resource naming conventions
+├── .github/
+│   └── workflows/
+│       ├── azure-dev.yml              # azd CI/CD: provision + deploy on push to main
+│       └── validate-azd.yml           # Gallery standard validation (Azure-Samples submission)
+├── azure.yaml                         # azd config: service declaration + prepackage hook
 ├── scripts/                           # Utility & deployment scripts
+│   ├── azd-prepackage.sh              # azd hook: writes .env.build + .env.appinsights before docker build
 │   ├── fetch-multi-region-pricing.sh  # Download pricing data
 │   ├── download-pricing.js            # Node.js pricing fetcher
-│   ├── rename-icons.sh               # Icon file management
+│   ├── rename-icons.sh                # Icon file management
 │   ├── deploy.sh                      # Local deployment
-│   ├── deploy_aca.sh                  # ACA initial deployment
-│   └── update_aca.sh                  # ACA build & update (ACR + Container App)
+│   ├── deploy_aca.sh                  # ACA initial deployment (manual)
+│   └── update_aca.sh                  # ACA build & update (ACR + Container App, manual)
 ├── DOCS/                              # Documentation
 │   ├── ARCHITECTURE.md                # This file
 │   └── getting-started-guide.md       # Step-by-step feature walkthrough
-├── Dockerfile                         # Multi-stage container build (Node + nginx)
+├── Dockerfile                         # Multi-stage container build (Node 20 + nginx)
 └── nginx.conf                         # Production serving
 ```
 
@@ -324,8 +335,10 @@ azure-diagrams/
 - **localStorage** - Model settings, per-feature overrides, version history, export history
 
 ### Deployment
-- **Azure Container Apps** - Production hosting (min 2, max 5 replicas)
-- **Azure Container Registry** - Image builds via `az acr build`
+- **Azure Container Apps** - Production hosting (min 1, max 3 replicas)
+- **Azure Container Registry** - Image storage; built by azd or `az acr build`
+- **Azure Developer CLI (azd)** - One-command provision + deploy via `infra/` Bicep
+- **GitHub Actions** - CI/CD pipeline (`.github/workflows/azure-dev.yml`) on push to `main`
 - **nginx** - Static file serving in production container
 - **Dockerfile** - Multi-stage build (Node 20 Alpine + nginx)
 
@@ -541,6 +554,83 @@ COSMOS_CONTAINER_ID=<Cosmos DB container ID>
 5. **Collaborative Editing**: Multi-user diagram editing
 6. **Template Library**: Pre-built reference architectures
 
+## Azure Developer CLI (azd) Template
+
+The repo is structured as a fully compliant `azd` template, enabling one-command provisioning and deployment and qualifying it for the [Azure-Samples](https://github.com/Azure-Samples) gallery.
+
+### How `azd up` works
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant azd as azd CLI
+    participant Bicep as infra/main.bicep
+    participant ACR as Azure Container Registry
+    participant ACA as Azure Container Apps
+    participant Hook as scripts/azd-prepackage.sh
+
+    Dev->>azd: azd up
+    azd->>Bicep: provision (ARM deployment)
+    Bicep-->>azd: outputs (ACR endpoint, ACA name, Speech ID, App Insights conn string …)
+    azd->>Hook: prepackage hook
+    Hook->>Hook: write .env.build + .env.appinsights
+    azd->>ACR: docker build (sources .env.build inside RUN layer)
+    ACR-->>azd: image digest
+    azd->>ACA: update container image
+    ACA-->>Dev: SERVICE_APP_URL
+```
+
+### Provisioned resources
+
+| Resource | SKU | Purpose |
+|---|---|---|
+| Azure Container Registry | Basic | Stores Docker image |
+| Container Apps Environment | Consumption | Hosts the app |
+| Azure Container App | 0.5 vCPU / 1 GiB | Runs nginx + token server |
+| Log Analytics Workspace | PerGB2018, 30d | Container & app logs |
+| Application Insights | workspace-based | Usage telemetry |
+| Azure Speech (optional) | S0 | Avatar Presenter (keyless via RBAC) |
+| Cosmos DB (optional) | Free tier | Diagram persistence |
+
+### Managed Identity & RBAC
+
+A **user-assigned managed identity** is created at provision time and assigned:
+
+- `AcrPull` on the Container Registry — lets ACA pull images without admin credentials
+- `Cognitive Services Speech User` on the Speech resource — keyless avatar auth via `DefaultAzureCredential`
+- `Cosmos DB Built-in Data Contributor` on the Cosmos account — keyless diagram reads/writes (when enabled)
+
+### Build-time vs runtime environment variables
+
+Vite bakes `VITE_*` variables into the JS bundle at **build time**; they cannot be injected at runtime. Two files are written by the pre-package hook and sourced inside the Dockerfile `RUN` layer:
+
+| File | Contents | Written by |
+|---|---|---|
+| `.env.build` | All `VITE_AZURE_OPENAI_*`, `VITE_SPEECH_REGION` | `scripts/azd-prepackage.sh` |
+| `.env.appinsights` | `VITE_APPINSIGHTS_CONNECTION_STRING` | `scripts/azd-prepackage.sh` |
+
+Both files are gitignored and never committed.
+
+Runtime variables (`AZURE_SPEECH_REGION`, `AZURE_SPEECH_RESOURCE_ID`, `AZURE_COSMOS_ENDPOINT`, etc.) are set as Container App environment variables by Bicep.
+
+### CI/CD (GitHub Actions)
+
+`.github/workflows/azure-dev.yml` provisions and deploys on every push to `main`. Required GitHub secrets and variables:
+
+| Name | Kind | Value |
+|---|---|---|
+| `AZURE_CLIENT_ID` | Secret | Federated credential client ID |
+| `AZURE_TENANT_ID` | Secret | Entra ID tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Secret | Azure subscription ID |
+| `AZURE_OPENAI_ENDPOINT` | Secret | Azure OpenAI endpoint URL |
+| `AZURE_OPENAI_API_KEY` | Secret | Azure OpenAI API key |
+| `AZURE_ENV_NAME` | Variable | azd environment name (e.g. `prod`) |
+| `AZURE_LOCATION` | Variable | Azure region (e.g. `eastus2`) |
+| `AZURE_SPEECH_REGION` | Variable | Speech region (e.g. `westus2`) |
+| `AZURE_OPENAI_DEPLOYMENT_NAME` | Variable | GPT-5.1 deployment name |
+
+---
+
 ## Development Workflow
 
 ### Adding a New Service
@@ -587,15 +677,19 @@ COSMOS_CONTAINER_ID=<Cosmos DB container ID>
 The Azure Architecture Diagram Builder demonstrates a sophisticated integration of AI, real-time pricing data, and dynamic UI rendering to create an intelligent architecture design tool. The modular architecture separates concerns effectively, enabling easy maintenance and feature additions.
 
 Key architectural decisions:
-- **6-model AI support** with reactive model selection via `useModelSettings()` hook and per-feature overrides
+
+- **7-model AI support** with reactive model selection via `useModelSettings()` hook and per-feature overrides
 - **File-based pricing cache** for reliability and performance across 5 regions (245 pricing files)
 - **Two-path icon resolution** for flexible service name handling (945-line mapping + 1,163-line normalization)
 - **Layered service mappings** to bridge AI outputs with Azure reality
 - **React Flow canvas** for professional diagram rendering with 21 custom components
 - **Hybrid WAF validation** combining 65+ rule-based patterns with AI contextual analysis
 - **Multi-model comparison** for architecture and validation side-by-side analysis
+- **Talking Avatar Presenter** (`avatarPresenter.ts`) for narrated demos — draggable, resizable panel with WebRTC + Speech SDK, keyless auth via managed identity
+- **`useDraggableResizable` hook** — pointer-capture drag + resize with viewport clamping, shared by both avatar panels
 - **IaC template import** for ARM, Bicep, and Terraform files
 - **Application Insights telemetry** for usage analytics and feature tracking
-- **Azure Container Apps deployment** with ACR builds and auto-scaling (2-5 replicas)
+- **azd template** (`azure.yaml` + `infra/`) for one-command provision and deploy, qualifying for Azure-Samples gallery
+- **Azure Container Apps deployment** with ACR builds and auto-scaling (1–3 replicas)
 
-The system successfully handles the complexity of 714 icons, 245 pricing files, 6 AI models, and variable service naming conventions to deliver a seamless user experience.
+The system successfully handles the complexity of 714 icons, 245 pricing files, 7 AI models, and variable service naming conventions to deliver a seamless user experience.

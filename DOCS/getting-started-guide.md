@@ -366,6 +366,54 @@ Both avatar panels are **draggable** (grab the header) and **resizable** (drag t
 
 ---
 
+## Self-Hosting: Deploy to Azure with One Command
+
+If you want to run your own instance of the app, the repo ships as a fully compliant **Azure Developer CLI (`azd`) template**. A single command provisions all required Azure resources and deploys the container.
+
+### Prerequisites
+
+- [Azure Developer CLI](https://aka.ms/azd) installed (`winget install microsoft.azd` / `brew install azd`)
+- Azure subscription with an existing **Azure OpenAI** resource and at least one model deployment
+- `az login` or `azd auth login` completed
+
+### One-command deploy
+
+```bash
+git clone https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder
+cd azure-architecture-diagram-builder
+
+# Set your bring-your-own Azure OpenAI resource
+azd env set AZURE_OPENAI_ENDPOINT       "https://your-resource.openai.azure.com/"
+azd env set AZURE_OPENAI_API_KEY        "your-key"
+azd env set AZURE_OPENAI_DEPLOYMENT_NAME "gpt-5.1"
+azd env set AZURE_SPEECH_REGION        "westus2"   # enables Avatar Presenter
+
+azd up   # provision + build + deploy (~8 min first run)
+```
+
+### What gets provisioned
+
+| Resource | Purpose |
+|---|---|
+| Azure Container Registry | Stores the Docker image |
+| Azure Container Apps | Runs the app |
+| Log Analytics + App Insights | Monitoring |
+| Azure Speech (S0) | Avatar Presenter (keyless via managed identity) |
+| Cosmos DB *(opt-in)* | Diagram persistence across sessions |
+
+Set `deployCosmos=true` in `infra/main.parameters.json` to enable Cosmos DB.
+
+After `azd up` completes, the app URL is printed as `SERVICE_APP_URL`.
+
+### CI/CD
+
+The included `.github/workflows/azure-dev.yml` re-provisions and re-deploys on every push to `main`. Add the following to your GitHub repo's **Secrets** and **Variables**:
+
+- Secrets: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`
+- Variables: `AZURE_ENV_NAME`, `AZURE_LOCATION`, `AZURE_SPEECH_REGION`, `AZURE_OPENAI_DEPLOYMENT_NAME`
+
+---
+
 ## Summary of the End-to-End Workflow
 
 ```text
