@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
-    "dev:avatar": "concurrently --names \"token,vite\" --prefix-colors \"cyan,blue\" \"bash scripts/start-token-server.sh\" \"vite\""
+    "dev:avatar": "concurrently --names \"token,vite\" --prefix-colors \"cyan,blue\" \"bash scripts/start-token-server.sh\" \"vite\"",
+    "demo:record": "node scripts/demo-recording.mjs"
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",
@@ -27,6 +28,7 @@
     "reactflow": "^11.10.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/dom-to-image": "^2.6.7",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
@@ -37,6 +39,7 @@
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "playwright": "^1.58.2",
     "typescript": "^5.2.2",
     "vite": "^5.0.8"
   }
