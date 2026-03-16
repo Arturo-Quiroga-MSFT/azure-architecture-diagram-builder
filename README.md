@@ -80,6 +80,13 @@ Compare AI output side-by-side across all 7 models:
 ### 🎙️ Avatar Presenter
 After completing a model comparison, use **Present Critique** to have a photorealistic talking avatar narrate the AI ranking results aloud — or click **Narrate** in the Workflow Panel to have the avatar walk through every architecture step:
 - A 3D avatar appears in a **draggable, resizable** floating panel — grab the header to reposition anywhere on screen, drag the bottom-right corner to resize
+
+### 🖼️ Draggable Reference Image Viewer
+When a sketch or image is uploaded for AI generation, the reference image stays visible as a floating panel:
+- **Drag** by the header bar to reposition anywhere on the canvas
+- **Resize** by dragging the purple corner handle — scales from 160 × 110 px up to 700 × 700 px
+- **Expand** to full-screen overlay for detail
+- **Collapse** to a small pill to stay out of the way
 - Live **word-by-word closed captions** highlight each spoken word in real time, synchronized via the Speech SDK `wordBoundary` event
 - **Keyless authentication** — no API keys stored; a lightweight Express.js token server runs co-located with nginx inside the container, acquiring an AAD token via `DefaultAzureCredential` (Azure Managed Identity) and returning it as `aad#{resourceId}#{aadToken}` on each request
 - The "Present" / "Narrate" buttons are only visible when `VITE_SPEECH_REGION` is configured at image build time; no UI impact when not set
@@ -104,13 +111,19 @@ Generate comprehensive deployment documentation including:
 - Security configuration recommendations
 
 ### 💰 Real-Time Multi-Region Cost Estimation
-Get instant cost estimates across **5 Azure regions**:
-- East US 2, Canada Central, Brazil South, West Europe, Sweden Central
+Get instant cost estimates across **8 Azure regions**:
+- 🇺🇸 East US 2 · 🇦🇺 Australia East · 🇨🇦 Canada Central · 🇧🇷 Brazil South · 🇲🇽 Mexico Central · 🇳🇱 West Europe · 🇸🇪 Sweden Central · 🇸🇬 Southeast Asia
 
 Features include:
 - Color-coded legend (green/yellow/red based on cost thresholds)
-- Export cost breakdown to CSV
 - SKU and tier information for each service
+- **Export Costs (CSV)** — per-service cost breakdown spreadsheet for the active region
+- **Export Costs (All Formats)** — downloads a ZIP containing:
+  - `.csv` — spreadsheet for Excel
+  - `.json` — structured breakdown for programmatic use
+  - `-summary.txt` — plain-text summary
+  - `-analysis.txt` — intelligent report: top cost drivers with bar charts, fixed vs usage-based split, Reserved Instance flags, and a **ranked multi-region comparison table** showing cheapest/most expensive region and potential savings
+  - `-multiregion-comparison.csv` — per-service pricing across all 8 regions for side-by-side comparison
 
 ### 🧠 Smart Layout Engine
 - **Dagre-based hierarchical layout** with compound node support
@@ -141,7 +154,8 @@ Features include:
 | **PPTX Slide** | Single PowerPoint slide, dark or light theme matching the canvas |
 | **Draw.io** | Edit in diagrams.net |
 | **JSON** | Backup, version control |
-| **CSV** | Cost analysis in Excel |
+| **CSV** | Cost analysis in Excel (single region) |
+| **ZIP (All Formats)** | CSV + JSON + TXT summary + intelligent analysis + multi-region comparison |
 
 ### 📊 Application Insights Telemetry
 
@@ -238,7 +252,7 @@ sequenceDiagram
     UI->>UI: Render nodes & connections
     UI->>UI: Auto-layout with Dagre + overlap resolution
     UI->>P: Fetch regional pricing
-    P-->>UI: Cost data (5 regions)
+    P-->>UI: Cost data (8 regions)
     UI->>UI: Display cost legend
     
     U->>UI: Upload architecture image
@@ -653,7 +667,7 @@ azure-diagrams/
 │   ├── hooks/                # Shared React hooks
 │   │   └── useDraggableResizable.ts  # Pointer-capture drag-to-move + drag-to-resize hook
 │   ├── data/                 # Static data
-│   │   ├── pricing/          # Regional pricing data (245 files: 49 services × 5 regions)
+│   │   ├── pricing/          # Regional pricing data (568 files: 71 services × 8 regions)
 │   │   ├── azurePricing.ts   # Service mappings
 │   │   └── serviceIconMapping.ts  # Icon mappings
 │   ├── utils/                # Utilities
@@ -809,12 +823,18 @@ All edge types now render correctly: solid sync edges, dashed async edges, dotte
 - **Chat Completions Fallback** — Automatic fallback for models not supporting Responses API
 - **Two-Row Toolbar** — Split toolbar for better fit on normal-width windows
 
+### March 2026
+- **8 Azure Regions** — Expanded from 5 to 8 regions: added Australia East (HERO), Southeast Asia (Singapore), Mexico Central (Querétaro) with full pricing data (568 JSON files)
+- **Export Costs (All Formats)** — One-click ZIP: CSV + JSON + plain-text summary + intelligent analysis report
+- **Multi-Region Cost Comparison** — Ranked table across all 8 regions in the analysis report, with cheapest/priciest callouts, potential savings estimate, and per-service regional variance
+- **Draggable & Resizable Reference Image** — Reference sketch panel can now be dragged anywhere and resized via a corner handle
+- **azd Template** — `azure.yaml` + Bicep infra for one-command `azd up` deployment (Azure-Samples ready)
+
 ### January 2026
 - **WAF Validation** — Well-Architected Framework checks across all 5 pillars
 - **Iterative Improvement** — Select and apply WAF recommendations
 - **Version History** — Named snapshots with time travel
 - **Draw.io Export** — Edit in diagrams.net
-- **5 Azure Regions** — Multi-region cost comparison
 
 ---
 
