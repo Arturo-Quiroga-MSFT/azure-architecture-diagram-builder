@@ -1,10 +1,8 @@
-/* Reference Image Viewer — floating thumbnail + expanded overlay */
+/* Reference Image Viewer — draggable, resizable floating thumbnail + expanded overlay */
 
 /* ─── Shared base ─────────────────────────────────────────────────── */
 .ref-image-viewer {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+  /* position/left/top set via inline style */
   z-index: 1000;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
@@ -33,14 +31,16 @@
 
 /* ─── Thumbnail card ──────────────────────────────────────────────── */
 .ref-image-thumbnail {
-  width: 200px;
+  /* width set via inline style */
   background: rgba(30, 30, 30, 0.92);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  /* relative so resize handle can be absolutely positioned */
+  position: relative;
 }
 
 .ref-image-thumbnail:hover {
@@ -92,13 +92,48 @@
   color: #f87171;
 }
 
+.ref-image-drag-handle {
+  cursor: grab;
+  user-select: none;
+}
+
+.ref-image-drag-handle:active {
+  cursor: grabbing;
+}
+
 .ref-image-thumb {
   width: 100%;
-  height: 140px;
+  /* height set via inline style */
   object-fit: cover;
   cursor: pointer;
   display: block;
   transition: opacity 0.15s ease;
+}
+
+/* ─── Resize handle ───────────────────────────────────────────────── */
+.ref-image-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  /* Draw a subtle corner triangle */
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(139, 92, 246, 0.5) 50%
+  );
+  border-radius: 0 0 8px 0;
+  transition: background 0.15s ease;
+}
+
+.ref-image-resize-handle:hover {
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(139, 92, 246, 0.85) 50%
+  );
 }
 
 .ref-image-thumb:hover {

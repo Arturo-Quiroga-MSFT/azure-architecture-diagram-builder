@@ -41,9 +41,10 @@ import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
 import { layoutArchitecture as elkLayoutArchitecture } from './utils/elkLayoutEngine';
-import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV } from './services/costEstimationService';
+import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryText, refreshAllNodePricing } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
-import { preloadCommonServices, getActiveRegion, AzureRegion } from './services/regionalPricingService';
+import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS, RegionInfo } from './services/regionalPricingService';
+import JSZip from 'jszip';
 import { formatMonthlyCost } from './utils/pricingHelpers';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
@@ -1055,6 +1056,233 @@ function App() {
     URL.revokeObjectURL(url);
     recordExport('costs', fileName);
     trackExport('csv', nodes.filter(n => n.type === 'azureNode').length);
+  }, [nodes, recordExport]);
+
+  const exportCostBreakdownZip = useCallback(async () => {
+    const breakdown = calculateCostBreakdown(nodes);
+    if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
+      alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
+      return;
+    }
+
+    // ── Multi-region comparison ──────────────────────────────────────────────
+    type RegionResult = { info: RegionInfo; total: number; annual: number; breakdown: ReturnType<typeof calculateCostBreakdown> };
+    const regionResults: RegionResult[] = [];
+    for (const rInfo of AVAILABLE_REGIONS) {
+      try {
+        const repricedNodes = await refreshAllNodePricing(nodes, rInfo.id);
+        const rb = calculateCostBreakdown(repricedNodes, rInfo.id);
+        regionResults.push({ info: rInfo, total: rb.totalMonthlyCost, annual: rb.totalMonthlyCost * 12, breakdown: rb });
+      } catch {
+        // If a region fails to reprice (e.g. missing data), skip it gracefully
+      }
+    }
+    regionResults.sort((a, b) => a.total - b.total);
+    const cheapest = regionResults[0];
+    const mostExpensive = regionResults[regionResults.length - 1];
+
+    // Build intelligent analysis text
+    const region = getActiveRegion();
+    const regionInfo = AVAILABLE_REGIONS.find(r => r.id === region);
+    const annual = breakdown.totalMonthlyCost * 12;
+    const sortedServices = [...breakdown.byService].sort((a, b) => b.cost - a.cost);
+    const topDrivers = sortedServices.slice(0, 5);
+    const topService = sortedServices[0];
+    const topServicePct = breakdown.totalMonthlyCost > 0 ? (topService.cost / breakdown.totalMonthlyCost) * 100 : 0;
+    const azureServiceNodes = nodes.filter(n => n.type === 'azureNode');
+    const usageBasedCount = breakdown.byService.filter(svc => {
+      const node = azureServiceNodes.find(n => n.id === svc.nodeId);
+      return (node?.data?.pricing as any)?.isUsageBased;
+    }).length;
+    const fixedCost = breakdown.byService
+      .filter(svc => { const node = azureServiceNodes.find(n => n.id === svc.nodeId); return !(node?.data?.pricing as any)?.isUsageBased; })
+      .reduce((sum, svc) => sum + svc.cost, 0);
+    const usageCost = breakdown.totalMonthlyCost - fixedCost;
+
+    const analysisLines: string[] = [
+      '╔══════════════════════════════════════════════════════════╗',
+      '║        AZURE ARCHITECTURE COST INTELLIGENCE REPORT       ║',
+      '╚══════════════════════════════════════════════════════════╝',
+      '',
+      `Generated: ${new Date().toLocaleString()}`,
+      `Region: ${regionInfo ? `${regionInfo.displayName} (${regionInfo.id})` : region}`,
+      `Services on diagram: ${azureServiceNodes.length}`,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '  COST SUMMARY',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `  Monthly estimate :  $${breakdown.totalMonthlyCost.toFixed(2)}`,
+      `  Annual projection:  $${annual.toFixed(2)}`,
+      `  Fixed costs      :  $${fixedCost.toFixed(2)}/mo  (${breakdown.totalMonthlyCost > 0 ? ((fixedCost / breakdown.totalMonthlyCost) * 100).toFixed(1) : 0}%)`,
+      `  Usage-based costs:  $${usageCost.toFixed(2)}/mo  (${breakdown.totalMonthlyCost > 0 ? ((usageCost / breakdown.totalMonthlyCost) * 100).toFixed(1) : 0}%) — actual may vary`,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '  TOP COST DRIVERS',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    ];
+
+    topDrivers.forEach((svc, i) => {
+      const pct = breakdown.totalMonthlyCost > 0 ? ((svc.cost / breakdown.totalMonthlyCost) * 100).toFixed(1) : '0.0';
+      const bar = '█'.repeat(Math.round(Number(pct) / 5)).padEnd(20, '░');
+      analysisLines.push(`  ${i + 1}. ${svc.serviceName.padEnd(32)} $${svc.cost.toFixed(2).padStart(9)}/mo  ${bar} ${pct}%`);
+    });
+
+    analysisLines.push('');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    analysisLines.push('  COST BY CATEGORY');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    breakdown.byCategory.forEach(cat => {
+      const bar = '█'.repeat(Math.round(cat.percentage / 5)).padEnd(20, '░');
+      analysisLines.push(`  ${cat.category.padEnd(32)} $${cat.cost.toFixed(2).padStart(9)}/mo  ${bar} ${cat.percentage.toFixed(1)}%`);
+    });
+
+    analysisLines.push('');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    analysisLines.push('  FLAGS & RECOMMENDATIONS');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    if (topServicePct > 50) {
+      analysisLines.push(`  ⚠  Cost concentration: "${topService.serviceName}" is ${topServicePct.toFixed(0)}% of total.`);
+      analysisLines.push(`     Consider reviewing tier/quantity or splitting workload.`);
+    }
+    if (usageBasedCount > 0) {
+      analysisLines.push(`  ℹ  ${usageBasedCount} usage-based service(s) detected (e.g. Functions, OpenAI).`);
+      analysisLines.push(`     Actual monthly spend may differ significantly from estimates.`);
+    }
+    if (annual > 100000) {
+      analysisLines.push(`  💡 Annual spend >$100k — consider Azure Reserved Instances/Savings Plans`);
+      analysisLines.push(`     (typically 30–40% savings on compute with 1- or 3-year commitment).`);
+    } else if (annual > 12000) {
+      analysisLines.push(`  💡 Azure Reserved Instances may offer savings on compute-heavy services.`);
+    }
+
+    analysisLines.push('');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    analysisLines.push('  MULTI-REGION COST COMPARISON (all 8 regions)');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    if (regionResults.length === 0) {
+      analysisLines.push('  (Regional pricing data unavailable for comparison)');
+    } else {
+      const colRegion = 30;
+      const header = `  ${'Rank'.padEnd(5)} ${'Region'.padEnd(colRegion)} ${'Monthly'.padStart(10)}  ${'Annual'.padStart(12)}  ${'vs Cheapest'.padStart(12)}  ${'vs Current'.padStart(11)}`;
+      analysisLines.push(header);
+      analysisLines.push('  ' + '─'.repeat(header.length - 2));
+      regionResults.forEach((r, idx) => {
+        const isCurrent = r.info.id === region;
+        const isCheapestRegion = idx === 0;
+        const vsCheapest = isCheapestRegion ? 'baseline  ' : `+${(((r.total - cheapest.total) / cheapest.total) * 100).toFixed(1)}%`.padStart(10);
+        const currentTotal = breakdown.totalMonthlyCost;
+        const vsCurrent = isCurrent
+          ? 'current   '
+          : r.total < currentTotal
+            ? `-${(((currentTotal - r.total) / currentTotal) * 100).toFixed(1)}%`.padStart(10) + ' 💰'
+            : `+${(((r.total - currentTotal) / currentTotal) * 100).toFixed(1)}%`.padStart(10);
+        const rankLabel = `${idx + 1}${isCheapestRegion ? ' ★' : isCurrent ? ' ◀' : '  '}`;
+        const regionLabel = `${r.info.flag} ${r.info.displayName} (${r.info.id})`;
+        analysisLines.push(`  ${rankLabel.padEnd(5)} ${regionLabel.padEnd(colRegion)} $${r.total.toFixed(2).padStart(9)}  $${r.annual.toFixed(2).padStart(11)}  ${vsCheapest.padStart(12)}  ${vsCurrent.padStart(11)}`);
+      });
+      analysisLines.push('');
+      if (cheapest) {
+        analysisLines.push(`  ★ CHEAPEST  : ${cheapest.info.flag} ${cheapest.info.displayName} — $${cheapest.total.toFixed(2)}/mo ($${cheapest.annual.toFixed(2)}/yr)`);
+      }
+      if (mostExpensive) {
+        const premiumPct = cheapest && cheapest.total > 0 ? (((mostExpensive.total - cheapest.total) / cheapest.total) * 100).toFixed(1) : '0.0';
+        analysisLines.push(`  🔥 PRICIEST  : ${mostExpensive.info.flag} ${mostExpensive.info.displayName} — $${mostExpensive.total.toFixed(2)}/mo (+${premiumPct}% above cheapest)`);
+      }
+      const currentResult = regionResults.find(r => r.info.id === region);
+      if (currentResult && cheapest && currentResult.info.id !== cheapest.info.id) {
+        const savingsMonthly = currentResult.total - cheapest.total;
+        const savingsAnnual = savingsMonthly * 12;
+        analysisLines.push(`  💡 POTENTIAL SAVINGS: Switching from ${currentResult.info.displayName} → ${cheapest.info.displayName}`);
+        analysisLines.push(`     saves ~$${savingsMonthly.toFixed(2)}/mo ($${savingsAnnual.toFixed(2)}/yr) — verify service availability before migrating.`);
+      } else if (currentResult && cheapest && currentResult.info.id === cheapest.info.id) {
+        analysisLines.push(`  ✅ You are already on the cheapest available region for this architecture.`);
+      }
+
+      // Per-service regional variance — find top 3 services with biggest price spread
+      if (regionResults.length >= 2) {
+        analysisLines.push('');
+        analysisLines.push('  TOP SERVICES BY REGIONAL PRICE VARIANCE:');
+        const serviceVariance: { name: string; min: number; max: number; spread: number }[] = [];
+        breakdown.byService.forEach(svc => {
+          const prices = regionResults
+            .map(r => r.breakdown.byService.find(s => s.nodeId === svc.nodeId)?.cost ?? 0)
+            .filter(p => p > 0);
+          if (prices.length > 1) {
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+            serviceVariance.push({ name: svc.serviceName, min: minP, max: maxP, spread: maxP - minP });
+          }
+        });
+        serviceVariance.sort((a, b) => b.spread - a.spread);
+        serviceVariance.slice(0, 3).forEach(sv => {
+          const spreadPct = sv.min > 0 ? (((sv.max - sv.min) / sv.min) * 100).toFixed(1) : '0.0';
+          analysisLines.push(`    • ${sv.name.padEnd(34)} min $${sv.min.toFixed(2)}  max $${sv.max.toFixed(2)}  spread ${spreadPct}%`);
+        });
+      }
+    }
+    analysisLines.push('');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    analysisLines.push('  COST BY GROUP');
+    analysisLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    if (breakdown.byGroup.length === 0) {
+      analysisLines.push('  No groups defined in this diagram.');
+    } else {
+      breakdown.byGroup.forEach(grp => {
+        const pct = breakdown.totalMonthlyCost > 0 ? ((grp.cost / breakdown.totalMonthlyCost) * 100).toFixed(1) : '0.0';
+        analysisLines.push(`  ${grp.groupLabel.padEnd(32)} $${grp.cost.toFixed(2).padStart(9)}/mo  ${grp.serviceCount} service(s)  ${pct}%`);
+      });
+    }
+    analysisLines.push('');
+    analysisLines.push('Generated by Azure Architecture Diagram Builder');
+
+    // Build ZIP
+    const zip = new JSZip();
+    const baseName = generateModelFilename('azure-cost', 'zip').replace('.zip', '');
+    const fileBase = `${baseName}-${region}`;
+
+    zip.file(`${fileBase}.csv`, exportCostBreakdownCSV(breakdown, nodes));
+    zip.file(`${fileBase}.json`, exportCostBreakdownJSON(breakdown));
+    zip.file(`${fileBase}-summary.txt`, getCostSummaryText(breakdown));
+    zip.file(`${fileBase}-analysis.txt`, analysisLines.join('\n'));
+
+    // Multi-region comparison CSV
+    if (regionResults.length > 0) {
+      const mrLines: string[] = [
+        'Region,Region ID,Geography,Flag,Type,Monthly Cost (USD),Annual Cost (USD),vs Cheapest (%),vs Current Region (%)',
+      ];
+      const currentTotal = breakdown.totalMonthlyCost;
+      regionResults.forEach(r => {
+        const vsCheapest = cheapest && cheapest.total > 0
+          ? r.info.id === cheapest.info.id ? '0.00' : (((r.total - cheapest.total) / cheapest.total) * 100).toFixed(2)
+          : '';
+        const vsCurrent = currentTotal > 0
+          ? r.info.id === region ? '0.00' : (((r.total - currentTotal) / currentTotal) * 100).toFixed(2)
+          : '';
+        mrLines.push(`"${r.info.displayName}",${r.info.id},"${r.info.geography}",${r.info.flag},${r.info.regionType},${r.total.toFixed(2)},${r.annual.toFixed(2)},${vsCheapest},${vsCurrent}`);
+      });
+      // Per-service per-region detail sheet
+      mrLines.push('');
+      mrLines.push('Service,Node ID,' + regionResults.map(r => r.info.displayName).join(','));
+      breakdown.byService.forEach(svc => {
+        const prices = regionResults.map(r => {
+          const match = r.breakdown.byService.find(s => s.nodeId === svc.nodeId);
+          return match ? match.cost.toFixed(2) : '';
+        });
+        mrLines.push(`"${svc.serviceName}",${svc.nodeId},${prices.join(',')}`);
+      });
+      zip.file(`${fileBase}-multiregion-comparison.csv`, mrLines.join('\n'));
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fileBase}-all-formats.zip`;
+    link.click();
+    URL.revokeObjectURL(url);
+    recordExport('costs', `${fileBase}-all-formats.zip`);
+    trackExport('csv', azureServiceNodes.length);
   }, [nodes, recordExport]);
 
   const applyFlowObject = useCallback(
@@ -2171,10 +2399,23 @@ function App() {
                           setIsExportMenuOpen(false);
                           exportCostBreakdown();
                         }}
-                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown'}
+                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown as CSV'}
                       >
                         <DollarSign size={18} />
-                        Export Costs
+                        Export Costs (CSV)
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={totalMonthlyCost === 0}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportCostBreakdownZip();
+                        }}
+                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export CSV, JSON, summary and intelligent analysis as a ZIP'}
+                      >
+                        <DollarSign size={18} />
+                        Export Costs (All Formats)
                       </button>
 
                       <div className="toolbar-dropdown-separator" role="separator" />
