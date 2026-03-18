@@ -40,6 +40,8 @@ function abbreviateModel(model: ModelType): string {
       return 'gpt53codex';
     case 'gpt-5.4':
       return 'gpt54';
+    case 'gpt-5.4-mini':
+      return 'gpt54mini';
     case 'deepseek-v3.2-speciale':
       return 'deepseek';
     case 'grok-4.1-fast':

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-5.4' | 'deepseek-v3.2-speciale' | 'grok-4.1-fast';
+export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-5.4' | 'gpt-5.4-mini' | 'deepseek-v3.2-speciale' | 'grok-4.1-fast';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -119,6 +119,13 @@ export const MODEL_CONFIG: Record<ModelType, {
     isReasoning: true,
     maxCompletionTokens: 32000,
     description: 'Most capable frontier model - best knowledge work, coding, and tool use'
+  },
+  'gpt-5.4-mini': {
+    displayName: 'GPT-5.4 Mini',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Compact frontier model - fast and cost-efficient with strong reasoning'
   },
   'deepseek-v3.2-speciale': {
     displayName: 'DeepSeek V3.2 Speciale',

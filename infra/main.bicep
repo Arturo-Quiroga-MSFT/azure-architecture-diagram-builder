@@ -36,6 +36,9 @@ param openAiDeploymentGpt53Codex string = ''
 @description('GPT-5.4 deployment name.')
 param openAiDeploymentGpt54 string = ''
 
+@description('GPT-5.4 Mini deployment name.')
+param openAiDeploymentGpt54Mini string = ''
+
 @description('DeepSeek deployment name.')
 param openAiDeploymentDeepSeek string = ''
 
@@ -84,6 +87,7 @@ module resources './resources.bicep' = {
     openAiDeploymentGpt52Codex: openAiDeploymentGpt52Codex
     openAiDeploymentGpt53Codex: openAiDeploymentGpt53Codex
     openAiDeploymentGpt54: openAiDeploymentGpt54
+    openAiDeploymentGpt54Mini: openAiDeploymentGpt54Mini
     openAiDeploymentDeepSeek: openAiDeploymentDeepSeek
     openAiDeploymentGrokFast: openAiDeploymentGrokFast
   }
@@ -114,6 +118,7 @@ output AZURE_OPENAI_DEPLOYMENT_GPT52 string = openAiDeploymentGpt52
 output AZURE_OPENAI_DEPLOYMENT_GPT52CODEX string = openAiDeploymentGpt52Codex
 output AZURE_OPENAI_DEPLOYMENT_GPT53CODEX string = openAiDeploymentGpt53Codex
 output AZURE_OPENAI_DEPLOYMENT_GPT54 string = openAiDeploymentGpt54
+output AZURE_OPENAI_DEPLOYMENT_GPT54MINI string = openAiDeploymentGpt54Mini
 output AZURE_OPENAI_DEPLOYMENT_DEEPSEEK string = openAiDeploymentDeepSeek
 output AZURE_OPENAI_DEPLOYMENT_GROK4FAST string = openAiDeploymentGrokFast
 

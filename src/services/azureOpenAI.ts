@@ -353,10 +353,11 @@ export function isAzureOpenAIConfigured(): boolean {
   // Check for specific model deployments (no longer using legacy default)
   const hasGpt51 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51;
   const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
+  const hasGpt54Mini = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI;
   const hasDeepSeek = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK;
   const hasGrok = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST;
   
-  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52 || hasDeepSeek || hasGrok);
+  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasDeepSeek || hasGrok);
 }
 
 /**

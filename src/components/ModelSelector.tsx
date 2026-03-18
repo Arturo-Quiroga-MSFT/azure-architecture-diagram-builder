@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { Settings, Brain, ChevronDown, ChevronRight, RotateCcw, Cpu, Layers, Zap } from 'lucide-react';
+import { Settings, Brain, ChevronDown, ChevronRight, RotateCcw, Cpu, Layers, Sparkles, Zap } from 'lucide-react';
 import { 
   useModelSettings, 
   MODEL_CONFIG, 
@@ -81,6 +81,8 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
         return <Layers size={16} />;
       case 'grok-4.1-fast':
         return <Zap size={16} />;
+      case 'gpt-5.4-mini':
+        return <Sparkles size={16} />;
 
       default:
         return <Settings size={16} />;

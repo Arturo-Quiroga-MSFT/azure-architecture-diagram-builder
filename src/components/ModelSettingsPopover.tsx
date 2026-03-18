@@ -8,7 +8,7 @@
  */
 
 import { forwardRef } from 'react';
-import { Brain, RotateCcw, ChevronDown, Code, Cpu, Layers, Zap } from 'lucide-react';
+import { Brain, RotateCcw, ChevronDown, Code, Cpu, Layers, Sparkles, Zap } from 'lucide-react';
 import {
   useModelSettings,
   MODEL_CONFIG,
@@ -95,6 +95,8 @@ const ModelSettingsPopover = forwardRef<HTMLDivElement, ModelSettingsPopoverProp
           return <Layers size={14} />;
         case 'grok-4.1-fast':
           return <Zap size={14} />;
+        case 'gpt-5.4-mini':
+          return <Sparkles size={14} />;
       }
     };
 

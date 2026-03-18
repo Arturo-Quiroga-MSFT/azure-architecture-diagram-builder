@@ -20,6 +20,7 @@ param openAiDeploymentGpt52 string
 param openAiDeploymentGpt52Codex string
 param openAiDeploymentGpt53Codex string
 param openAiDeploymentGpt54 string
+param openAiDeploymentGpt54Mini string
 param openAiDeploymentDeepSeek string
 param openAiDeploymentGrokFast string
 
