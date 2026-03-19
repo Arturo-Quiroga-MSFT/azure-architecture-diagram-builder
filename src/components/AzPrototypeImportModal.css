@@ -1,0 +1,153 @@
+/* Copyright (c) Microsoft Corporation. Licensed under the MIT License. */
+
+/* Reuses .azp-modal-* from AzPrototypeExportModal.css — import-specific additions only */
+
+/* ── Drop zone ───────────────────────────────────────────────────────────── */
+
+.azp-import-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 20px;
+  border: 2px dashed #444;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+
+.azp-import-dropzone:hover {
+  border-color: #0078d4;
+  background: rgba(0, 120, 212, 0.06);
+}
+
+.azp-import-dropzone svg {
+  color: #555;
+}
+
+.azp-import-dropzone:hover svg {
+  color: #0078d4;
+}
+
+.azp-import-dropzone-text {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.azp-import-dropzone-text code {
+  color: #4fc3f7;
+  background: #263238;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+.azp-import-dropzone-hint {
+  font-size: 11px;
+  color: #777;
+}
+
+/* ── Success banner ──────────────────────────────────────────────────────── */
+
+.azp-import-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(0, 178, 148, 0.1);
+  border: 1px solid rgba(0, 178, 148, 0.3);
+  border-radius: 8px;
+  color: #00b294;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ── Project info grid ───────────────────────────────────────────────────── */
+
+.azp-import-project-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.azp-import-project-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.azp-import-project-key {
+  color: #999;
+}
+
+.azp-import-project-val {
+  color: #e0e0e0;
+  font-weight: 500;
+}
+
+.azp-import-project-val--green {
+  color: #00b294;
+}
+
+/* ── Service chips ───────────────────────────────────────────────────────── */
+
+.azp-import-services-preview {
+  margin-top: 4px;
+}
+
+.azp-import-services-title {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.azp-import-services-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.azp-import-service-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 14px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+
+.azp-import-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.azp-import-error svg {
+  color: #f85149;
+}
+
+.azp-import-error strong {
+  color: #f85149;
+  font-size: 15px;
+}
+
+.azp-import-error p {
+  color: #b0b0b0;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
