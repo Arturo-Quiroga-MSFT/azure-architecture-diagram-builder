@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "dev:avatar": "concurrently --names \"token,vite\" --prefix-colors \"cyan,blue\" \"bash scripts/start-token-server.sh\" \"vite\"",
-    "demo:record": "node scripts/demo-recording.mjs"
+    "demo:record": "node scripts/demo-recording.mjs",
+    "mcp:build": "cd mcp-server && npm run build",
+    "mcp:start": "node mcp-server/dist/index.js"
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",
