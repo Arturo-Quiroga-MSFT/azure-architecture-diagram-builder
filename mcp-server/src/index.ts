@@ -13,6 +13,7 @@
  *   3. Estimate monthly costs for a set of Azure services
  *   4. Generate an az prototype interchange manifest from services & connections
  *   5. Query WAF rules by pillar or service type
+ *   6. Render professional architecture diagrams (SVG/HTML) replacing Mermaid
  *
  * Transport: stdio (JSON-RPC over stdin/stdout) — the standard for
  * local MCP integrations.
@@ -38,6 +39,10 @@ import {
   getWafRules,
   groupFindingsByPillar,
 } from './wafDetector.js';
+
+import { computeLayout } from './layoutEngine.js';
+import { renderSvg } from './svgRenderer.js';
+import { renderHtml } from './htmlRenderer.js';
 
 // ── Server initialization ──────────────────────────────────────────────
 
@@ -419,6 +424,84 @@ server.tool(
             null,
             2,
           ),
+        },
+      ],
+    };
+  },
+);
+
+// ── Tool 6: render_diagram ──────────────────────────────────────────────
+
+server.tool(
+  'render_diagram',
+  'Render a professional Azure architecture diagram as SVG (for embedding in markdown/SpecKit docs) or as self-contained interactive HTML (with pan, zoom, hover tooltips). Replaces Mermaid text diagrams with Azure-branded visuals using official category colors, dagre layout, and directional edges.',
+  {
+    title: z
+      .string()
+      .optional()
+      .describe('Diagram title (displayed at the top)'),
+    format: z
+      .enum(['svg', 'html'])
+      .optional()
+      .describe('Output format: svg (static, for markdown embedding) or html (interactive viewer). Default: svg'),
+    direction: z
+      .enum(['TB', 'LR'])
+      .optional()
+      .describe('Layout direction: TB (top-to-bottom) or LR (left-to-right). Default: TB'),
+    services: z
+      .array(
+        z.object({
+          name: z.string().describe('Service instance name'),
+          type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+          description: z.string().optional().describe('Service description (shown in tooltips for HTML format)'),
+          groupId: z.string().optional().describe('Group ID this service belongs to'),
+        }),
+      )
+      .describe('List of Azure services in the architecture'),
+    connections: z
+      .array(
+        z.object({
+          from: z.string().describe('Source service name'),
+          to: z.string().describe('Target service name'),
+          label: z.string().optional().describe('Connection label'),
+          type: z
+            .enum(['sync', 'async', 'optional'])
+            .optional()
+            .describe('Connection type: sync (solid), async (dashed purple), optional (dotted gray)'),
+        }),
+      )
+      .optional()
+      .describe('Connections between services'),
+    groups: z
+      .array(
+        z.object({
+          id: z.string().describe('Group identifier (referenced by services\' groupId)'),
+          label: z.string().describe('Display label for the group'),
+        }),
+      )
+      .optional()
+      .describe('Logical service groups (rendered as dashed containers)'),
+  },
+  async ({ title, format, direction, services, connections, groups }) => {
+    const fmt = format ?? 'svg';
+    const dir = direction ?? 'TB';
+
+    const layout = computeLayout(
+      services.map(s => ({ name: s.name, type: s.type, description: s.description, groupId: s.groupId })),
+      (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type })),
+      groups ?? [],
+      dir,
+    );
+
+    const output = fmt === 'html'
+      ? renderHtml(layout, title)
+      : renderSvg(layout, title);
+
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: output,
         },
       ],
     };
