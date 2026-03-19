@@ -53,6 +53,7 @@ import { MODEL_CONFIG } from './stores/modelSettingsStore';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import { exportAndDownloadDrawio } from './services/drawioExporter';
 import { exportDiagramAsPptx } from './services/pptxExporter';
+import { exportDiagramAsHtml } from './services/htmlDiagramExporter';
 import {
   applyLayoutPreset,
   type LayoutPreset,
@@ -79,7 +80,7 @@ const edgeTypes = {
   editableEdge: EditableEdge,
 };
 
-type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json' | 'drawio' | 'pptx';
+type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json' | 'drawio' | 'pptx' | 'html';
 
 type ExportHistoryItem = {
   id: string;
@@ -982,6 +983,19 @@ function App() {
     } catch (err) {
       console.error('Error exporting Draw.io:', err);
       alert('Failed to export Draw.io file. Please try again.');
+    }
+  }, [nodes, edges, titleBlockData.architectureName, recordExport]);
+
+  const exportAsHtml = useCallback(() => {
+    try {
+      const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      exportDiagramAsHtml(nodes, edges, diagramName);
+      const fileName = `${diagramName.replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-').toLowerCase()}.html`;
+      recordExport('html', fileName);
+      trackExport('html', nodes.filter(n => n.type === 'azureNode').length);
+    } catch (err) {
+      console.error('Error exporting HTML diagram:', err);
+      alert('Failed to export HTML diagram. Please try again.');
     }
   }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
@@ -2443,6 +2457,19 @@ function App() {
                       >
                         <Download size={18} />
                         Export Draw.io
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportAsHtml();
+                        }}
+                        title="Export as interactive HTML with pan, zoom, and tooltips"
+                      >
+                        <FileCode size={18} />
+                        Export Interactive HTML
                       </button>
                       <button
                         className="toolbar-dropdown-item"
