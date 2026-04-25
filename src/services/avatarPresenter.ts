@@ -34,6 +34,8 @@ export interface AvatarPresenterOptions {
 export class AvatarPresenter {
   private synthesizer: any = null;
   private peerConnection: RTCPeerConnection | null = null;
+  private videoStream: MediaStream | null = null;
+  private audioStream: MediaStream | null = null;
   private options: Required<AvatarPresenterOptions>;
   private words: string[] = [];
 
@@ -54,6 +56,8 @@ export class AvatarPresenter {
    */
   async connect(videoEl: HTMLVideoElement, audioEl: HTMLAudioElement): Promise<void> {
     this.options.onStatus('connecting');
+    this.videoStream = new MediaStream();
+    this.audioStream = new MediaStream();
 
     // Dynamic import keeps the ~10 MB SDK out of the initial bundle
     const SpeechSDK = await import('microsoft-cognitiveservices-speech-sdk');
@@ -68,15 +72,27 @@ export class AvatarPresenter {
     speechConfig.authorizationToken = token;
     speechConfig.speechSynthesisVoiceName = this.options.voice;
 
-    // Fetch ICE relay credentials server-side (CORS prevents direct browser fetch)
+    // Fetch ICE relay credentials server-side (CORS prevents direct browser fetch).
+    // Some networks (corp firewalls, VPNs, residential ISPs) block UDP/3478, so we
+    // build BOTH the standard UDP entry and a TCP/443 entry and force iceTransportPolicy
+    // to 'relay'. This mirrors the `useTcpForWebRTC` workaround in Microsoft's TTS
+    // Avatar reference sample. Override at runtime via window.__AVATAR_FORCE_TCP__ = false
+    // if you want to test plain UDP.
     let iceServers: RTCIceServer[] = [];
+    const forceTcp = (typeof window !== 'undefined' && (window as any).__AVATAR_FORCE_TCP__ !== false);
     try {
       const iceRes = await fetch('/api/ice-token');
       if (iceRes.ok) {
         const ice = await iceRes.json();
-        iceServers = [{ urls: [ice.Urls[0]], username: ice.Username, credential: ice.Password }];
+        const baseUrl: string = ice.Urls[0];
+        const tcpUrl = baseUrl.replace(':3478', ':443?transport=tcp');
+        const urls = forceTcp ? [tcpUrl, baseUrl] : [baseUrl, tcpUrl];
+        iceServers = [{ urls, username: ice.Username, credential: ice.Password }];
+        console.log('[avatar] ICE servers:', urls, '(forceTcp=' + forceTcp + ')');
       }
-    } catch { /* non-fatal — connection may still work on good networks */ }
+    } catch (err) {
+      console.warn('[avatar] /api/ice-token failed:', err);
+    }
 
     const avatarConfig = new SpeechSDK.AvatarConfig(
       this.options.character,
@@ -89,27 +105,63 @@ export class AvatarPresenter {
       (avatarConfig as any).remoteIceServers = iceServers;
     }
 
-    // Create the peer connection with ICE relay servers
-    this.peerConnection = new RTCPeerConnection({ iceServers, iceTransportPolicy: 'all' });
+    // Create the peer connection. 'relay' (when forceTcp) ensures all media goes
+    // through the TURN server, avoiding host/srflx candidates that get filtered.
+    this.peerConnection = new RTCPeerConnection({
+      iceServers,
+      iceTransportPolicy: forceTcp ? 'relay' : 'all',
+    });
 
     // Add sendrecv transceivers so Azure can deliver the video/audio tracks
     this.peerConnection.addTransceiver('video', { direction: 'sendrecv' });
     this.peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
 
-    // Wire incoming tracks to the media elements and explicitly play.
-    // autoPlay attribute alone can silently fail on media streams in Chrome.
+    videoEl.autoplay = true;
+    videoEl.playsInline = true;
+    videoEl.muted = true;
+    audioEl.autoplay = true;
+
+    const playMedia = (element: HTMLMediaElement) => {
+      element.play().catch((err) => {
+        console.warn(`[avatar] ${element.tagName.toLowerCase()}.play() rejected:`, err);
+      });
+    };
+
+    // Mirror Microsoft's reference TTS Avatar sample: prefer event.streams[0]
+    // (the SDK always populates it for the avatar service) and fall back to a
+    // synthesized MediaStream only when the implementation omits it.
     this.peerConnection.ontrack = (event: RTCTrackEvent) => {
-      if (event.track.kind === 'video' && event.streams[0]) {
-        videoEl.srcObject = event.streams[0];
-        videoEl.muted = true; // required for autoplay policy
-        videoEl.play().catch(() => {
-          // If muted play fails, try unmuted (user already interacted)
-          videoEl.muted = false;
-          videoEl.play().catch(() => {});
-        });
-      } else if (event.track.kind === 'audio' && event.streams[0]) {
-        audioEl.srcObject = event.streams[0];
-        audioEl.play().catch(() => {});
+      console.log('[avatar] ontrack:', event.track.kind, {
+        id: event.track.id,
+        readyState: event.track.readyState,
+        muted: event.track.muted,
+        streams: event.streams.length,
+      });
+
+      const stream = event.streams[0] ?? (() => {
+        const s = new MediaStream();
+        s.addTrack(event.track);
+        return s;
+      })();
+
+      if (event.track.kind === 'video') {
+        this.videoStream = stream;
+        videoEl.srcObject = stream;
+        const tryPlay = () => {
+          console.log('[avatar] video metadata:', videoEl.videoWidth, 'x', videoEl.videoHeight);
+          playMedia(videoEl);
+        };
+        videoEl.onloadedmetadata = tryPlay;
+        videoEl.onloadeddata = tryPlay;
+        event.track.onunmute = () => { console.log('[avatar] video unmuted'); playMedia(videoEl); };
+        event.track.onended = () => console.log('[avatar] video track ended');
+        playMedia(videoEl);
+      } else if (event.track.kind === 'audio') {
+        this.audioStream = stream;
+        audioEl.srcObject = stream;
+        audioEl.onloadedmetadata = () => playMedia(audioEl);
+        event.track.onunmute = () => playMedia(audioEl);
+        playMedia(audioEl);
       }
     };
 
@@ -134,6 +186,10 @@ export class AvatarPresenter {
       }
     };
 
+    this.peerConnection.onconnectionstatechange = () => {
+      console.log('[avatar] peer state:', this.peerConnection?.connectionState);
+    };
+
     // Wrap startAvatarAsync with a 30s timeout — it can hang silently on network issues
     const timeoutMs = 30_000;
     const result = await Promise.race([
@@ -150,6 +206,9 @@ export class AvatarPresenter {
       this.disconnect();
       throw new Error(detail);
     }
+
+    playMedia(videoEl);
+    playMedia(audioEl);
 
     this.options.onStatus('ready');
   }
@@ -220,6 +279,10 @@ export class AvatarPresenter {
       this.peerConnection.close();
       this.peerConnection = null;
     }
+    this.videoStream?.getTracks().forEach(track => track.stop());
+    this.audioStream?.getTracks().forEach(track => track.stop());
+    this.videoStream = null;
+    this.audioStream = null;
     if (this.synthesizer) {
       try { this.synthesizer.close(); } catch { /* ignore */ }
       this.synthesizer = null;

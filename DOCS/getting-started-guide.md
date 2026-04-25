@@ -227,6 +227,8 @@ After the comparison completes, a **"Present"** button appears in the results pa
 5. **Drag** the panel header to reposition it anywhere on screen. **Drag the bottom-right corner** to resize the panel.
 6. Close the avatar panel at any time using the ✕ button.
 
+> **Avatar appears blank?** The talking avatar streams over WebRTC. Some networks (corporate firewalls, VPNs, residential ISPs) block UDP traffic to `relay.communication.microsoft.com:3478`, which leaves the video panel empty. The app automatically falls back to TCP on port 443 (`turn:relay.communication.microsoft.com:443?transport=tcp`) and forces ICE relay-only. If you still see `[avatar] ICE state: failed` in the browser console, your network is also blocking outbound 443 to that host — try a different network or escalate to your network team. To test plain UDP, run `window.__AVATAR_FORCE_TCP__ = false` in DevTools before clicking Narrate.
+
 ### Validation Comparison
 
 1. Click **"Compare Validation"** in the toolbar (requires an existing diagram on the canvas).

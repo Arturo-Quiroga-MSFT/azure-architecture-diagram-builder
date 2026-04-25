@@ -473,7 +473,31 @@ npm run dev
 
 # With avatar presenter: starts token server + Vite concurrently
 npm run dev:avatar
+
+# Recommended for end-to-end local testing before pushing to GitHub.
+# Loads .env, verifies required AZURE_SPEECH_* vars, checks `az login`
+# (warns if not on the expected subscription), confirms ports 3000/3001
+# are free, installs deps if missing, starts the speech token server,
+# probes `/api/speech-token`, then runs Vite in the foreground.
+# Single Ctrl-C cleans up all child processes. Logs land in `.dev-logs/`.
+./scripts/dev-all.sh                # token server + Vite
+./scripts/dev-all.sh --with-mcp     # also build & start the MCP server
+./scripts/dev-all.sh --skip-az-check  # skip the Azure CLI verification
 ```
+
+#### Avatar narrator troubleshooting
+
+If the avatar panel opens but the video stays blank (audio may also fail), open DevTools and look for `[avatar] ICE state: failed`. That means the WebRTC peer connection cannot reach `relay.communication.microsoft.com:3478` (UDP) — common on corporate networks, VPNs, and some home ISPs.
+
+The app already mitigates this: it offers both the UDP candidate and a TCP/443 fallback (`turn:relay.communication.microsoft.com:443?transport=tcp`) and forces `iceTransportPolicy: 'relay'`. If you still see ICE failures, your network is also blocking outbound 443 to that host — escalate to your network team or test from a different network.
+
+To experiment with the legacy UDP-only path, run this in the browser console **before** clicking Narrate:
+
+```js
+window.__AVATAR_FORCE_TCP__ = false;
+```
+
+Microsoft Edge with **Strict** Tracking Prevention may log warnings such as `Tracking Prevention blocked access to storage for …tts.speech.microsoft.com…`. These are harmless — the Speech SDK does not need site storage for the WebRTC flow.
 
 5. **Open your browser**
 Navigate to `http://localhost:3000`

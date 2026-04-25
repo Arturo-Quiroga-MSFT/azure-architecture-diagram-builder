@@ -108,7 +108,7 @@ graph LR
         VSS[versionStorageService.ts<br/>Version Persistence]
         TEL[telemetryService.ts<br/>App Insights Telemetry]
         API[apiHelper.ts<br/>HTTP Retry Logic]
-        AVP[avatarPresenter.ts<br/>Speech Avatar + ICE Relay]
+        AVP[avatarPresenter.ts<br/>Speech Avatar + ICE Relay<br/>TCP/443 fallback]
         DRH[useDraggableResizable.ts<br/>Drag + Resize Hook]
     end
     
