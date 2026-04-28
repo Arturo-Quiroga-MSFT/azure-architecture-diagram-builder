@@ -1,0 +1,17 @@
+{
+  "// description": "Microsoft 365 Copilot declarative agent — references the Diagram Builder MCP server as an Agent Action. Requires a publicly reachable HTTPS URL (run the server behind Azure Container Apps / API Management with HTTPS termination). Schema: https://aka.ms/json-schemas/copilot-extensibility/v1.4/declarative-agent.schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.4/schema.json",
+  "version": "v1.4",
+  "name": "Azure Architecture Diagram Builder",
+  "description": "Generates Azure architecture diagrams, validates designs against the Well-Architected Framework, estimates costs, and emits az prototype manifests.",
+  "instructions": "When the user describes an Azure workload, call list_services to discover available services, render_diagram to produce an SVG, validate_architecture for WAF findings, and estimate_costs for monthly cost ranges. Prefer SVG output for embedding in chat responses.",
+  "actions": [
+    {
+      "id": "azureDiagramBuilderMcp",
+      "type": "declarative-mcp",
+      "name": "AzureDiagramBuilder",
+      "description": "Azure Architecture Diagram Builder MCP server (HTTP transport).",
+      "spec_url": "https://YOUR-PUBLIC-HOST.example.com/mcp"
+    }
+  ]
+}

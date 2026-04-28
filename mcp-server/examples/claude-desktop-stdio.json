@@ -1,0 +1,11 @@
+{
+  "// description": "Claude Desktop MCP config — stdio transport. Merge into ~/Library/Application Support/Claude/claude_desktop_config.json (macOS) or %APPDATA%/Claude/claude_desktop_config.json (Windows). Replace ABSOLUTE_PATH with your checkout location.",
+  "mcpServers": {
+    "azure-diagram-builder": {
+      "command": "node",
+      "args": [
+        "ABSOLUTE_PATH/azure-architecture-diagram-builder/mcp-server/dist/index.js"
+      ]
+    }
+  }
+}

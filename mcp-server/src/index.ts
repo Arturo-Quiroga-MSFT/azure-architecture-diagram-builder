@@ -23,8 +23,13 @@
  *   npx azure-diagram-mcp       # via npx
  */
 
+import { createServer as createHttpServer, IncomingMessage, ServerResponse } from 'node:http';
+import { randomUUID } from 'node:crypto';
+
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import {
@@ -44,8 +49,13 @@ import { computeLayout } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
 
-// ── Server initialization ──────────────────────────────────────────────
+// ── Server factory ─────────────────────────────────────────────────────
+//
+// Tool registrations are wrapped in createServer() so each transport
+// (stdio for local clients; streamable-HTTP for remote clients like
+// M365 Copilot or hosted agents) can spin up its own server instance.
 
+export function createServer(): McpServer {
 const server = new McpServer({
   name: 'azure-diagram-builder',
   version: '1.0.0',
@@ -508,12 +518,155 @@ server.tool(
   },
 );
 
-// ── Start server ───────────────────────────────────────────────────────
+  return server;
+}
 
-async function main() {
+// ── Transport selection ────────────────────────────────────────────────
+//
+// MCP_TRANSPORT=stdio   (default) — local clients
+// MCP_TRANSPORT=http    — remote clients via streamable HTTP + SSE
+//   MCP_HTTP_PORT=3030  (default)
+//   MCP_HTTP_HOST=0.0.0.0 (default)
+//   MCP_HTTP_PATH=/mcp  (default)
+//
+// CLI flags --http / --stdio override the env var.
+
+function resolveTransportMode(): 'stdio' | 'http' {
+  const argv = process.argv.slice(2);
+  if (argv.includes('--http')) return 'http';
+  if (argv.includes('--stdio')) return 'stdio';
+  const env = (process.env.MCP_TRANSPORT ?? '').toLowerCase();
+  if (env === 'http' || env === 'streamable-http') return 'http';
+  return 'stdio';
+}
+
+async function startStdio(): Promise<void> {
+  const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  // Server is running — stdio transport handles the lifecycle
+  // stdio transport drives lifecycle; nothing else to do
+}
+
+async function readJsonBody(req: IncomingMessage): Promise<unknown | undefined> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+    req.on('error', reject);
+    req.on('end', () => {
+      if (chunks.length === 0) {
+        resolve(undefined);
+        return;
+      }
+      const raw = Buffer.concat(chunks).toString('utf8');
+      if (!raw.trim()) {
+        resolve(undefined);
+        return;
+      }
+      try {
+        resolve(JSON.parse(raw));
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
+}
+
+function writeJson(res: ServerResponse, status: number, body: unknown): void {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
+}
+
+async function startHttp(): Promise<void> {
+  const port = Number.parseInt(process.env.MCP_HTTP_PORT ?? '3030', 10);
+  const host = process.env.MCP_HTTP_HOST ?? '0.0.0.0';
+  const mcpPath = process.env.MCP_HTTP_PATH ?? '/mcp';
+
+  // Stateful sessions: one transport per MCP session id.
+  const transports = new Map<string, StreamableHTTPServerTransport>();
+
+  const httpServer = createHttpServer(async (req, res) => {
+    try {
+      const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+
+      // Health probe — handy for ACA / container probes.
+      if (req.method === 'GET' && url.pathname === '/healthz') {
+        writeJson(res, 200, { status: 'ok', transport: 'streamable-http', sessions: transports.size });
+        return;
+      }
+
+      if (url.pathname !== mcpPath) {
+        writeJson(res, 404, { error: 'not_found', path: url.pathname });
+        return;
+      }
+
+      const sessionId = req.headers['mcp-session-id'];
+      const sid = Array.isArray(sessionId) ? sessionId[0] : sessionId;
+
+      let transport: StreamableHTTPServerTransport | undefined = sid ? transports.get(sid) : undefined;
+      let body: unknown | undefined;
+
+      if (req.method === 'POST') {
+        body = await readJsonBody(req);
+      }
+
+      if (!transport) {
+        // Only POST with an initialize request can create a new session.
+        if (req.method !== 'POST' || !isInitializeRequest(body)) {
+          writeJson(res, 400, {
+            jsonrpc: '2.0',
+            error: { code: -32000, message: 'No valid session. Send an initialize request first.' },
+            id: null,
+          });
+          return;
+        }
+
+        transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          onsessioninitialized: (newSid: string) => {
+            transports.set(newSid, transport!);
+          },
+        });
+        transport.onclose = () => {
+          if (transport && transport.sessionId) {
+            transports.delete(transport.sessionId);
+          }
+        };
+        const server = createServer();
+        await server.connect(transport);
+      }
+
+      await transport.handleRequest(req, res, body);
+    } catch (err) {
+      console.error('[mcp-http] request error:', err);
+      if (!res.headersSent) {
+        writeJson(res, 500, { error: 'internal_error', message: (err as Error).message });
+      } else {
+        try { res.end(); } catch { /* ignore */ }
+      }
+    }
+  });
+
+  httpServer.listen(port, host, () => {
+    console.error(`[mcp-http] azure-diagram-builder listening on http://${host}:${port}${mcpPath}`);
+    console.error(`[mcp-http] health: http://${host}:${port}/healthz`);
+  });
+
+  const shutdown = (signal: string) => {
+    console.error(`[mcp-http] received ${signal}, shutting down`);
+    httpServer.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 5000).unref();
+  };
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+}
+
+async function main(): Promise<void> {
+  const mode = resolveTransportMode();
+  if (mode === 'http') {
+    await startHttp();
+  } else {
+    await startStdio();
+  }
 }
 
 main().catch((err) => {
