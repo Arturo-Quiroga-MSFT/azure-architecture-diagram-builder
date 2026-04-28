@@ -118,5 +118,7 @@ az containerapp update \
 echo ""
 echo "✅ Deployment complete!"
 if [[ -n "$FQDN" ]]; then
-    echo "   URL: https://$FQDN"
+    echo "   App URL:        https://$FQDN"
+    echo "   MCP endpoint:   https://$FQDN/mcp           (streamable HTTP + SSE)"
+    echo "   MCP health:     https://$FQDN/mcp/healthz"
 fi
