@@ -120,11 +120,24 @@ export function computeLayout(
 ): LayoutResult {
   const g = new dagre.graphlib.Graph({ compound: true });
 
+  // Adaptive spacing: scale up for larger graphs and longer edge labels so
+  // label backgrounds don't collide and edges have room to route cleanly.
+  const svcCount = services.length;
+  const maxLabelLen = connections.reduce(
+    (m, c) => Math.max(m, (c.label ?? '').length),
+    0,
+  );
+  const sizeBoost = svcCount >= 16 ? 1.4 : svcCount >= 10 ? 1.2 : 1.0;
+  const labelBoost = maxLabelLen >= 40 ? 1.3 : maxLabelLen >= 25 ? 1.15 : 1.0;
+  const nodesep = Math.round(80 * sizeBoost * labelBoost);
+  const ranksep = Math.round(110 * sizeBoost * labelBoost);
+  const edgesep = Math.round(40 * labelBoost);
+
   g.setGraph({
     rankdir: direction,
-    nodesep: 60,
-    ranksep: 80,
-    edgesep: 30,
+    nodesep,
+    ranksep,
+    edgesep,
     marginx: PADDING,
     marginy: PADDING,
   });

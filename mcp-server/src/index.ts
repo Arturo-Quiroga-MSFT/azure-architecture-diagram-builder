@@ -25,6 +25,9 @@
 
 import { createServer as createHttpServer, IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve as resolvePath } from 'node:path';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -48,6 +51,43 @@ import {
 import { computeLayout } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
+
+// Web app icon mapping (generated from src/data/serviceIconMapping.ts via
+// scripts/sync-icon-map.mjs). Used by export_reactflow_scene to emit icon
+// paths that match what the React Flow web app expects.
+// Loaded at runtime via fs to avoid Node ESM JSON-import-attribute issues.
+const __thisDir = dirname(fileURLToPath(import.meta.url));
+const iconMap: Record<string, { iconFile: string; category: string }> = JSON.parse(
+  readFileSync(resolvePath(__thisDir, 'iconMap.generated.json'), 'utf8'),
+);
+
+type IconEntry = { iconFile: string; category: string };
+const ICON_MAP = iconMap as Record<string, IconEntry>;
+
+function resolveIconPath(serviceType: string): { iconPath: string; category: string } {
+  const canonical = resolveServiceName(serviceType);
+  const entry = canonical ? ICON_MAP[canonical] : undefined;
+  if (entry) {
+    return {
+      iconPath: `/Azure_Public_Service_Icons/Icons/${entry.category}/${entry.iconFile}.svg`,
+      category: entry.category,
+    };
+  }
+  // Fallback: unknown service — use a generic icon path slot
+  return {
+    iconPath: '/Azure_Public_Service_Icons/Icons/other/generic-service.svg',
+    category: 'other',
+  };
+}
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
 
 // ── Server factory ─────────────────────────────────────────────────────
 //
@@ -193,9 +233,9 @@ server.tool(
           name: z.string().describe('Service instance name'),
           type: z.string().describe('Azure service type'),
           tier: z
-            .enum(['basic', 'standard', 'premium'])
+            .string()
             .optional()
-            .describe('Pricing tier (default: standard)'),
+            .describe('Pricing tier. Allowed values: basic, standard, premium. Default: standard'),
           quantity: z.number().optional().describe('Number of instances (default: 1)'),
         }),
       )
@@ -281,7 +321,8 @@ server.tool(
     projectName: z.string().describe('Project name for the architecture'),
     location: z.string().optional().describe('Azure region (default: eastus2)'),
     iacTool: z
-      .enum(['bicep', 'terraform'])
+      .string()
+      .describe('Output IaC format. Allowed values: bicep, terraform')
       .optional()
       .describe('Infrastructure as Code tool (default: bicep)'),
     services: z
@@ -301,9 +342,9 @@ server.tool(
           to: z.string().describe('Target service name'),
           label: z.string().optional().describe('Connection label'),
           type: z
-            .enum(['sync', 'async', 'optional'])
+            .string()
             .optional()
-            .describe('Connection type'),
+            .describe('Connection type. Allowed values: sync, async, optional'),
         }),
       )
       .optional()
@@ -375,15 +416,9 @@ server.tool(
   'Get Azure Well-Architected Framework rules from the Diagram Builder knowledge base. Returns architecture-wide pattern rules and per-service best practices. Optionally filter by WAF pillar.',
   {
     pillar: z
-      .enum([
-        'Reliability',
-        'Security',
-        'Cost Optimization',
-        'Operational Excellence',
-        'Performance Efficiency',
-      ])
+      .string()
       .optional()
-      .describe('Filter rules by WAF pillar'),
+      .describe('Filter rules by WAF pillar. Allowed values: Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency'),
     serviceType: z
       .string()
       .optional()
@@ -392,7 +427,7 @@ server.tool(
       ),
   },
   async ({ pillar, serviceType }) => {
-    let rules = getWafRules(pillar);
+    let rules = getWafRules(pillar as any);
 
     if (serviceType) {
       const lower = serviceType.toLowerCase().trim();
@@ -451,11 +486,13 @@ server.tool(
       .optional()
       .describe('Diagram title (displayed at the top)'),
     format: z
-      .enum(['svg', 'html'])
+      .string()
+      .describe('Output format. Allowed values: svg, html')
       .optional()
       .describe('Output format: svg (static, for markdown embedding) or html (interactive viewer). Default: svg'),
     direction: z
-      .enum(['TB', 'LR'])
+      .string()
+      .describe('Diagram direction. Allowed values: TB (top-to-bottom), LR (left-to-right)')
       .optional()
       .describe('Layout direction: TB (top-to-bottom) or LR (left-to-right). Default: TB'),
     services: z
@@ -475,9 +512,9 @@ server.tool(
           to: z.string().describe('Target service name'),
           label: z.string().optional().describe('Connection label'),
           type: z
-            .enum(['sync', 'async', 'optional'])
+            .string()
             .optional()
-            .describe('Connection type: sync (solid), async (dashed purple), optional (dotted gray)'),
+            .describe('Connection type. Allowed values: sync (solid), async (dashed purple), optional (dotted gray)'),
         }),
       )
       .optional()
@@ -498,9 +535,9 @@ server.tool(
 
     const layout = computeLayout(
       services.map(s => ({ name: s.name, type: s.type, description: s.description, groupId: s.groupId })),
-      (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type })),
+      (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
-      dir,
+      dir as any,
     );
 
     const output = fmt === 'html'
@@ -513,6 +550,272 @@ server.tool(
           type: 'text' as const,
           text: output,
         },
+      ],
+    };
+  },
+);
+
+// ── Tool 7: export_reactflow_scene ─────────────────────────────────────
+
+server.tool(
+  'export_reactflow_scene',
+  'Export an Azure architecture as a React Flow scene JSON compatible with the Azure Architecture Diagram Builder web app. Reuses the dagre layout engine for positions and the web app icon catalog for icon paths. The result can be imported directly into the web app (Open / Import Architecture).',
+  {
+    architectureName: z.string().optional().describe('Display name shown in the architecture metadata block. Default: "MCP Generated Architecture"'),
+    architecturePrompt: z.string().optional().describe('Original natural-language prompt the diagram was generated from (preserved in the JSON for provenance)'),
+    author: z.string().optional().describe('Author shown in the metadata. Default: "Azure Architect"'),
+    direction: z.string().optional().describe('Layout direction: TB (top-to-bottom), LR (left-to-right), or auto. Default: auto (picks LR for 4+ groups or dense graphs, TB otherwise).'),
+    services: z.array(z.object({
+      name: z.string().describe('Service instance name (becomes the node label)'),
+      type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+      description: z.string().optional().describe('Optional description'),
+      groupId: z.string().optional().describe('Optional group ID this service belongs to'),
+    })).describe('List of Azure services in the architecture'),
+    connections: z.array(z.object({
+      from: z.string().describe('Source service name'),
+      to: z.string().describe('Target service name'),
+      label: z.string().optional().describe('Edge label'),
+      type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional'),
+    })).optional().describe('Connections between services'),
+    groups: z.array(z.object({
+      id: z.string().describe('Group identifier (referenced by services\' groupId)'),
+      label: z.string().describe('Display label for the group'),
+    })).optional().describe('Logical service groups (rendered as group containers)'),
+    workflow: z.array(z.object({
+      step: z.number().describe('1-based step number'),
+      description: z.string().describe('Human-readable description of this step'),
+      services: z.array(z.string()).describe('Service names involved in this step'),
+    })).optional().describe('Optional ordered workflow narrative shown in the web app'),
+  },
+  async ({ architectureName, architecturePrompt, author, direction, services, connections, groups, workflow }) => {
+    // ── Auto direction heuristic ────────────────────────────────────────
+    // 'auto' (default) picks LR when many groups would stack too tall in TB:
+    //   - 4+ groups OR
+    //   - average group has 4+ services AND total > 12 services
+    // Otherwise TB. Explicit 'TB'/'LR' wins.
+    const grpsForDir = groups ?? [];
+    const svcsPerGroup = grpsForDir.length
+      ? services.filter(s => s.groupId).length / grpsForDir.length
+      : 0;
+    const dir: 'TB' | 'LR' =
+      direction === 'TB' || direction === 'LR'
+        ? direction
+        : (grpsForDir.length >= 4 || (svcsPerGroup >= 4 && services.length > 12))
+          ? 'LR'
+          : 'TB';
+
+    const conns = (connections ?? []).map(c => ({
+      from: c.from,
+      to: c.to,
+      label: c.label,
+      type: (c.type as 'sync' | 'async' | 'optional' | undefined),
+    }));
+    const grps = groups ?? [];
+
+    const layout = computeLayout(
+      services.map(s => ({ name: s.name, type: s.type, description: s.description, groupId: s.groupId })),
+      conns,
+      grps,
+      dir,
+    );
+
+    // Build deterministic node IDs from service names
+    const nodeIdByName = new Map<string, string>();
+    for (const s of services) {
+      const slug = slugify(s.name) || `node-${nodeIdByName.size + 1}`;
+      let candidate = `svc-${slug}`;
+      let n = 2;
+      while ([...nodeIdByName.values()].includes(candidate)) {
+        candidate = `svc-${slug}-${n++}`;
+      }
+      nodeIdByName.set(s.name, candidate);
+    }
+    const groupIdToNodeId = new Map<string, string>();
+    for (const g of grps) {
+      groupIdToNodeId.set(g.id, `grp-${slugify(g.id) || g.label.toLowerCase().replace(/\W+/g, '-')}`);
+    }
+
+    // ── Group padding ───────────────────────────────────────────────────
+    // Inflate dagre's tight cluster bounds so child nodes don't crowd the
+    // group title bar. Top gets extra padding for the label; sides/bottom
+    // are symmetric.
+    const GROUP_PAD_TOP = 50;
+    const GROUP_PAD_SIDE = 30;
+    const GROUP_PAD_BOTTOM = 30;
+    const paddedGroupBounds = new Map<string, { x: number; y: number; width: number; height: number; label: string; color: string }>();
+    for (const g of layout.groups) {
+      paddedGroupBounds.set(g.id, {
+        x: g.x - GROUP_PAD_SIDE,
+        y: g.y - GROUP_PAD_TOP,
+        width: g.width + GROUP_PAD_SIDE * 2,
+        height: g.height + GROUP_PAD_TOP + GROUP_PAD_BOTTOM,
+        label: g.label,
+        color: g.color,
+      });
+    }
+
+    // ── Group nodes (React Flow) ─────────────────────────────────────────
+    const groupNodes = layout.groups.map(g => {
+      const id = groupIdToNodeId.get(g.id)!;
+      const b = paddedGroupBounds.get(g.id)!;
+      return {
+        id,
+        type: 'groupNode',
+        position: { x: b.x, y: b.y },
+        data: { label: g.label, stylePreset: 'presentation' },
+        style: { width: b.width, height: b.height },
+        width: b.width,
+        height: b.height,
+      };
+    });
+
+    // ── Service nodes (React Flow) ───────────────────────────────────────
+    // Track absolute positions per service id for per-edge handle picking.
+    const absoluteByNodeId = new Map<string, { x: number; y: number; width: number; height: number }>();
+    const serviceNodes = layout.nodes.map(n => {
+      const id = nodeIdByName.get(n.name)!;
+      const { iconPath } = resolveIconPath(n.type);
+      const parentBounds = n.groupId ? paddedGroupBounds.get(n.groupId) : undefined;
+      const parentNodeId = n.groupId ? groupIdToNodeId.get(n.groupId) : undefined;
+
+      // React Flow expects child positions RELATIVE to the parent group;
+      // positionAbsolute remains in canvas coordinates.
+      const position = parentBounds
+        ? { x: n.x - parentBounds.x, y: n.y - parentBounds.y }
+        : { x: n.x, y: n.y };
+      const positionAbsolute = { x: n.x, y: n.y };
+      absoluteByNodeId.set(id, { x: n.x, y: n.y, width: n.width, height: n.height });
+
+      const node: Record<string, unknown> = {
+        id,
+        type: 'azureNode',
+        position,
+        positionAbsolute,
+        data: {
+          label: n.name,
+          iconPath,
+          stylePreset: 'presentation',
+          ...(n.description ? { description: n.description } : {}),
+        },
+        width: n.width,
+        height: n.height,
+      };
+      if (parentNodeId) {
+        node.parentNode = parentNodeId;
+        node.extent = 'parent';
+      }
+      return node;
+    });
+
+    const nodes = [...groupNodes, ...serviceNodes];
+
+    // ── Edges (React Flow editableEdge) ──────────────────────────────────
+    // Per-edge handle selection: pick handles from the dominant axis between
+    // source and target node centers, so back-edges don't U-turn.
+    function pickHandles(srcId: string, tgtId: string): { sourceHandle: string; targetHandle: string } {
+      const s = absoluteByNodeId.get(srcId);
+      const t = absoluteByNodeId.get(tgtId);
+      if (!s || !t) {
+        return dir === 'TB'
+          ? { sourceHandle: 'bottom', targetHandle: 'top' }
+          : { sourceHandle: 'right',  targetHandle: 'left' };
+      }
+      const sx = s.x + s.width / 2, sy = s.y + s.height / 2;
+      const tx = t.x + t.width / 2, ty = t.y + t.height / 2;
+      const dx = tx - sx;
+      const dy = ty - sy;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        return dx >= 0
+          ? { sourceHandle: 'right', targetHandle: 'left' }
+          : { sourceHandle: 'left',  targetHandle: 'right' };
+      }
+      return dy >= 0
+        ? { sourceHandle: 'bottom', targetHandle: 'top' }
+        : { sourceHandle: 'top',    targetHandle: 'bottom' };
+    }
+
+    const validConns = conns.filter(c => nodeIdByName.has(c.from) && nodeIdByName.has(c.to));
+
+    // ── Edge label de-collision ─────────────────────────────────────────
+    // Bucket each edge's midpoint into a coarse grid; assign alternating
+    // labelOffsetY values so labels in the same bucket don't stack.
+    const BUCKET_W = 140;
+    const BUCKET_H = 70;
+    const bucketCounters = new Map<string, number>();
+    function offsetForMidpoint(mx: number, my: number): { dx: number; dy: number } {
+      const key = `${Math.round(mx / BUCKET_W)}|${Math.round(my / BUCKET_H)}`;
+      const idx = bucketCounters.get(key) ?? 0;
+      bucketCounters.set(key, idx + 1);
+      if (idx === 0) return { dx: 0, dy: 0 };
+      // Sequence: -22, +22, -44, +44, -66, +66, ...
+      const step = Math.ceil(idx / 2) * 22;
+      const sign = idx % 2 === 1 ? -1 : 1;
+      return { dx: 0, dy: sign * step };
+    }
+
+    const edges = validConns.map((c, idx) => {
+      const sourceId = nodeIdByName.get(c.from)!;
+      const targetId = nodeIdByName.get(c.to)!;
+      const connectionType = c.type ?? 'sync';
+      const { sourceHandle, targetHandle } = pickHandles(sourceId, targetId);
+
+      const s = absoluteByNodeId.get(sourceId)!;
+      const t = absoluteByNodeId.get(targetId)!;
+      const mx = (s.x + s.width / 2 + t.x + t.width / 2) / 2;
+      const my = (s.y + s.height / 2 + t.y + t.height / 2) / 2;
+      const { dx, dy } = offsetForMidpoint(mx, my);
+
+      return {
+        id: `edge-${idx}`,
+        source: sourceId,
+        target: targetId,
+        sourceHandle,
+        targetHandle,
+        animated: false,
+        type: 'editableEdge',
+        label: c.label ?? '',
+        markerEnd: { type: 'arrowclosed', color: '#0078d4' },
+        labelStyle: { fontSize: 13, fill: '#333', fontWeight: '600', opacity: 1 },
+        labelBgStyle: { fill: 'white', fillOpacity: 0.95, stroke: '#000', strokeWidth: 1.5, rx: 6 },
+        style: { strokeWidth: 2 },
+        data: {
+          connectionType,
+          direction: 'forward',
+          baseFlowAnimated: connectionType !== 'optional',
+          flowAnimated: connectionType !== 'optional',
+          flowMode: connectionType === 'async' ? 'pulse' : 'directional',
+          labelOffsetX: dx,
+          labelOffsetY: dy,
+        },
+      };
+    });
+
+    // ── Viewport: center the bounding box at zoom 0.65 ───────────────────
+    const viewport = {
+      x: -layout.width  / 2 + 600,
+      y: -layout.height / 2 + 400,
+      zoom: 0.65,
+    };
+
+    const today = new Date().toISOString().split('T')[0];
+    const scene = {
+      nodes,
+      edges,
+      viewport,
+      metadata: {
+        architectureName: architectureName ?? 'MCP Generated Architecture',
+        author: author ?? 'Azure Architect',
+        version: '1.0',
+        date: today,
+        savedAt: new Date().toISOString(),
+      },
+      workflow: workflow ?? [],
+      ...(architecturePrompt ? { architecturePrompt } : {}),
+    };
+
+    return {
+      content: [
+        { type: 'text' as const, text: JSON.stringify(scene, null, 2) },
       ],
     };
   },

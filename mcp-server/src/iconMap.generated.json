@@ -1,0 +1,294 @@
+{
+  "Azure OpenAI": {
+    "iconFile": "azure-openai",
+    "category": "ai + machine learning"
+  },
+  "Cognitive Services": {
+    "iconFile": "cognitive-services",
+    "category": "ai + machine learning"
+  },
+  "Computer Vision": {
+    "iconFile": "computer-vision",
+    "category": "ai + machine learning"
+  },
+  "Custom Vision": {
+    "iconFile": "custom-vision",
+    "category": "ai + machine learning"
+  },
+  "Speech Services": {
+    "iconFile": "azure-speech",
+    "category": "ai + machine learning"
+  },
+  "Translator": {
+    "iconFile": "translator",
+    "category": "ai + machine learning"
+  },
+  "Language": {
+    "iconFile": "language",
+    "category": "ai + machine learning"
+  },
+  "Document Intelligence": {
+    "iconFile": "document-intelligence",
+    "category": "ai + machine learning"
+  },
+  "Azure Machine Learning": {
+    "iconFile": "azure-machine-learning",
+    "category": "ai + machine learning"
+  },
+  "AML Online Endpoint": {
+    "iconFile": "azure-machine-learning",
+    "category": "ai + machine learning"
+  },
+  "AML Batch Endpoint": {
+    "iconFile": "azure-machine-learning",
+    "category": "ai + machine learning"
+  },
+  "AML Deployment": {
+    "iconFile": "azure-machine-learning",
+    "category": "ai + machine learning"
+  },
+  "AML Managed Compute": {
+    "iconFile": "virtual-machines",
+    "category": "compute"
+  },
+  "Batch Compute Pool": {
+    "iconFile": "10031-icon-service-Batch-Accounts",
+    "category": "compute"
+  },
+  "Azure Cognitive Search": {
+    "iconFile": "azure-cognitive-search",
+    "category": "ai + machine learning"
+  },
+  "Virtual Machines": {
+    "iconFile": "virtual-machines",
+    "category": "compute"
+  },
+  "App Service": {
+    "iconFile": "app-service",
+    "category": "app services"
+  },
+  "Functions": {
+    "iconFile": "azure-functions",
+    "category": "compute"
+  },
+  "Container Instances": {
+    "iconFile": "container-instances",
+    "category": "containers"
+  },
+  "Kubernetes Service": {
+    "iconFile": "azure-kubernetes-service",
+    "category": "containers"
+  },
+  "Container Registry": {
+    "iconFile": "container-registry",
+    "category": "containers"
+  },
+  "Azure Cosmos DB": {
+    "iconFile": "azure-cosmos-db",
+    "category": "databases"
+  },
+  "SQL Database": {
+    "iconFile": "sql-database",
+    "category": "databases"
+  },
+  "PostgreSQL": {
+    "iconFile": "02827-icon-service-Azure-Database-PostgreSQL-Server-Group",
+    "category": "databases"
+  },
+  "MySQL": {
+    "iconFile": "azure-database-mysql",
+    "category": "databases"
+  },
+  "Redis Cache": {
+    "iconFile": "redis-cache",
+    "category": "databases"
+  },
+  "Storage Account": {
+    "iconFile": "storage-account",
+    "category": "storage"
+  },
+  "Application Gateway": {
+    "iconFile": "application-gateway",
+    "category": "networking"
+  },
+  "Azure Front Door": {
+    "iconFile": "azure-front-door",
+    "category": "networking"
+  },
+  "CDN": {
+    "iconFile": "00056-icon-service-CDN-Profiles",
+    "category": "networking"
+  },
+  "Data Factory": {
+    "iconFile": "data-factory",
+    "category": "analytics"
+  },
+  "Azure Synapse Analytics": {
+    "iconFile": "azure-synapse-analytics",
+    "category": "analytics"
+  },
+  "Stream Analytics": {
+    "iconFile": "stream-analytics",
+    "category": "analytics"
+  },
+  "Event Hubs": {
+    "iconFile": "event-hubs",
+    "category": "analytics"
+  },
+  "Service Bus": {
+    "iconFile": "service-bus",
+    "category": "integration"
+  },
+  "Logic Apps": {
+    "iconFile": "logic-apps",
+    "category": "integration"
+  },
+  "Key Vault": {
+    "iconFile": "key-vault",
+    "category": "security"
+  },
+  "Application Insights": {
+    "iconFile": "application-insights",
+    "category": "monitor"
+  },
+  "Log Analytics": {
+    "iconFile": "log-analytics",
+    "category": "monitor"
+  },
+  "API Management": {
+    "iconFile": "api-management",
+    "category": "integration"
+  },
+  "Azure Managed Grafana": {
+    "iconFile": "02905-icon-service-Azure-Managed-Grafana",
+    "category": "other"
+  },
+  "Power BI Embedded": {
+    "iconFile": "03332-icon-service-Power-BI-Embedded",
+    "category": "analytics"
+  },
+  "Azure Dashboard": {
+    "iconFile": "02488-icon-service-Azure-Monitor-Dashboard",
+    "category": "other"
+  },
+  "Azure Workbooks": {
+    "iconFile": "02189-icon-service-Azure-Workbooks",
+    "category": "analytics"
+  },
+  "IoT Hub": {
+    "iconFile": "10182-icon-service-IoT-Hub",
+    "category": "iot"
+  },
+  "IoT Central": {
+    "iconFile": "10184-icon-service-IoT-Central-Applications",
+    "category": "iot"
+  },
+  "Digital Twins": {
+    "iconFile": "01030-icon-service-Digital-Twins",
+    "category": "iot"
+  },
+  "Container Apps": {
+    "iconFile": "02989-icon-service-Container-Apps-Environments",
+    "category": "other"
+  },
+  "Virtual Network": {
+    "iconFile": "10061-icon-service-Virtual-Networks",
+    "category": "networking"
+  },
+  "Load Balancer": {
+    "iconFile": "10062-icon-service-Load-Balancers",
+    "category": "networking"
+  },
+  "Azure Firewall": {
+    "iconFile": "10084-icon-service-Firewalls",
+    "category": "networking"
+  },
+  "VPN Gateway": {
+    "iconFile": "10063-icon-service-Virtual-Network-Gateways",
+    "category": "networking"
+  },
+  "ExpressRoute": {
+    "iconFile": "10079-icon-service-ExpressRoute-Circuits",
+    "category": "networking"
+  },
+  "Traffic Manager": {
+    "iconFile": "10065-icon-service-Traffic-Manager-Profiles",
+    "category": "networking"
+  },
+  "Event Grid": {
+    "iconFile": "10206-icon-service-Event-Grid-Topics",
+    "category": "integration"
+  },
+  "SignalR Service": {
+    "iconFile": "10052-icon-service-SignalR",
+    "category": "web"
+  },
+  "Notification Hubs": {
+    "iconFile": "10045-icon-service-Notification-Hubs",
+    "category": "iot"
+  },
+  "Static Web Apps": {
+    "iconFile": "01007-icon-service-Static-Apps",
+    "category": "web"
+  },
+  "Azure Monitor": {
+    "iconFile": "00001-icon-service-Monitor",
+    "category": "monitor"
+  },
+  "Microsoft Defender for Cloud": {
+    "iconFile": "10241-icon-service-Microsoft-Defender-for-Cloud",
+    "category": "security"
+  },
+  "Microsoft Entra ID": {
+    "iconFile": "10340-icon-service-Entra-Identity-Roles-and-Administrators",
+    "category": "identity"
+  },
+  "Backup": {
+    "iconFile": "00017-icon-service-Recovery-Services-Vaults",
+    "category": "management + governance"
+  },
+  "Network Watcher": {
+    "iconFile": "10066-icon-service-Network-Watcher",
+    "category": "networking"
+  },
+  "Azure Bastion": {
+    "iconFile": "02422-icon-service-Bastions",
+    "category": "networking"
+  },
+  "Azure DDoS Protection": {
+    "iconFile": "10072-icon-service-DDoS-Protection-Plans",
+    "category": "networking"
+  },
+  "Azure Policy": {
+    "iconFile": "10316-icon-service-Policy",
+    "category": "management + governance"
+  },
+  "Microsoft Sentinel": {
+    "iconFile": "10248-icon-service-Azure-Sentinel",
+    "category": "security"
+  },
+  "Web Application Firewall": {
+    "iconFile": "10362-icon-service-Web-Application-Firewall-Policies(WAF)",
+    "category": "networking"
+  },
+  "Private Link": {
+    "iconFile": "00427-icon-service-Private-Link",
+    "category": "networking"
+  },
+  "Azure DNS": {
+    "iconFile": "10064-icon-service-DNS-Zones",
+    "category": "networking"
+  },
+  "Azure API for FHIR": {
+    "iconFile": "10212-icon-service-Azure-API-for-FHIR",
+    "category": "integration"
+  },
+  "Microsoft Purview": {
+    "iconFile": "10314-icon-service-Azure-Purview-Accounts",
+    "category": "management + governance"
+  },
+  "Data Lake Storage": {
+    "iconFile": "10090-icon-service-Data-Lake-Storage-Gen1",
+    "category": "storage"
+  }
+}
