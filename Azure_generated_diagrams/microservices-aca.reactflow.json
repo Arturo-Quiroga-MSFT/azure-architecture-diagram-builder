@@ -1,0 +1,1078 @@
+{
+  "nodes": [
+    {
+      "id": "grp-edge",
+      "type": "groupNode",
+      "position": {
+        "x": 997.5,
+        "y": 40
+      },
+      "data": {
+        "label": "Edge / CDN",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 290,
+        "height": 150
+      },
+      "width": 290,
+      "height": 150
+    },
+    {
+      "id": "grp-compute",
+      "type": "groupNode",
+      "position": {
+        "x": 940,
+        "y": 270
+      },
+      "data": {
+        "label": "Container Apps Environment",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 782.5,
+        "height": 680
+      },
+      "width": 782.5,
+      "height": 680
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1142.5,
+        "y": 1030
+      },
+      "data": {
+        "label": "Data Tier",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 580,
+        "height": 150
+      },
+      "width": 580,
+      "height": 150
+    },
+    {
+      "id": "grp-messaging",
+      "type": "groupNode",
+      "position": {
+        "x": 40,
+        "y": 610
+      },
+      "data": {
+        "label": "Messaging",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 290,
+        "height": 570
+      },
+      "width": 290,
+      "height": 570
+    },
+    {
+      "id": "grp-ops",
+      "type": "groupNode",
+      "position": {
+        "x": 360,
+        "y": 40
+      },
+      "data": {
+        "label": "Platform & Observability",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 550,
+        "height": 720
+      },
+      "width": 550,
+      "height": 720
+    },
+    {
+      "id": "svc-front-door",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 1042.5,
+        "y": 80
+      },
+      "data": {
+        "label": "Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/azure-front-door.svg",
+        "stylePreset": "presentation",
+        "description": "Global entry point with WAF"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-edge",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-api-gateway",
+      "type": "azureNode",
+      "position": {
+        "x": 102.5,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 1042.5,
+        "y": 310
+      },
+      "data": {
+        "label": "API Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Routes to backend services"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-compute",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-orders-service",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 190
+      },
+      "positionAbsolute": {
+        "x": 985,
+        "y": 460
+      },
+      "data": {
+        "label": "Orders Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Order management microservice"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-compute",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-inventory-service",
+      "type": "azureNode",
+      "position": {
+        "x": 537.5,
+        "y": 570
+      },
+      "positionAbsolute": {
+        "x": 1477.5,
+        "y": 840
+      },
+      "data": {
+        "label": "Inventory Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Inventory microservice"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-compute",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-payments-service",
+      "type": "azureNode",
+      "position": {
+        "x": 190,
+        "y": 570
+      },
+      "positionAbsolute": {
+        "x": 1130,
+        "y": 840
+      },
+      "data": {
+        "label": "Payments Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Payments microservice"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-compute",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-postgresql",
+      "type": "azureNode",
+      "position": {
+        "x": 75,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 1217.5,
+        "y": 1070
+      },
+      "data": {
+        "label": "PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/02827-icon-service-Azure-Database-PostgreSQL-Server-Group.svg",
+        "stylePreset": "presentation",
+        "description": "Relational store for orders/payments"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-data",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-cosmos-db",
+      "type": "azureNode",
+      "position": {
+        "x": 335,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 1477.5,
+        "y": 1070
+      },
+      "data": {
+        "label": "Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "stylePreset": "presentation",
+        "description": "Inventory catalog NoSQL store"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-data",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-service-bus",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 85,
+        "y": 650
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/service-bus.svg",
+        "stylePreset": "presentation",
+        "description": "Reliable async messaging"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-messaging",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-event-grid",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 460
+      },
+      "positionAbsolute": {
+        "x": 85,
+        "y": 1070
+      },
+      "data": {
+        "label": "Event Grid",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10206-icon-service-Event-Grid-Topics.svg",
+        "stylePreset": "presentation",
+        "description": "Event-driven integrations"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-messaging",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 420
+      },
+      "positionAbsolute": {
+        "x": 405,
+        "y": 460
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "stylePreset": "presentation",
+        "description": "Secrets, keys, certs"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-container-registry",
+      "type": "azureNode",
+      "position": {
+        "x": 175,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 535,
+        "y": 80
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "stylePreset": "presentation",
+        "description": "Private image registry"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-application-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 305,
+        "y": 420
+      },
+      "positionAbsolute": {
+        "x": 665,
+        "y": 460
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "stylePreset": "presentation",
+        "description": "APM and tracing"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-log-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 305,
+        "y": 610
+      },
+      "positionAbsolute": {
+        "x": 665,
+        "y": 650
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "stylePreset": "presentation",
+        "description": "Centralized logs"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ops",
+      "extent": "parent"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-front-door",
+      "target": "svc-api-gateway",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "HTTPS",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-api-gateway",
+      "target": "svc-orders-service",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "/orders",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-api-gateway",
+      "target": "svc-inventory-service",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "/inventory",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-api-gateway",
+      "target": "svc-payments-service",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "/payments",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-orders-service",
+      "target": "svc-postgresql",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "read/write",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-payments-service",
+      "target": "svc-postgresql",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "read/write",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-inventory-service",
+      "target": "svc-cosmos-db",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "read/write",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-orders-service",
+      "target": "svc-service-bus",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "OrderPlaced",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-service-bus",
+      "target": "svc-payments-service",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "process payment",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-service-bus",
+      "target": "svc-inventory-service",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "reserve stock",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-payments-service",
+      "target": "svc-event-grid",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "PaymentCompleted",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-event-grid",
+      "target": "svc-orders-service",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "notify",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-api-gateway",
+      "target": "svc-key-vault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "secrets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-container-registry",
+      "target": "svc-api-gateway",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "image pull",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-api-gateway",
+      "target": "svc-application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc-application-insights",
+      "target": "svc-log-analytics",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "logs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": -321.25,
+    "y": -250,
+    "zoom": 0.65
+  },
+  "metadata": {
+    "architectureName": "Microservices on Azure Container Apps",
+    "author": "Arturo Quiroga",
+    "version": "1.0",
+    "date": "2026-04-30",
+    "savedAt": "2026-04-30T19:34:21.117Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client request arrives at Front Door (WAF) and is routed to the API Gateway container app.",
+      "services": [
+        "Front Door",
+        "API Gateway"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API Gateway dispatches to the appropriate microservice based on the route.",
+      "services": [
+        "API Gateway",
+        "Orders Service",
+        "Inventory Service",
+        "Payments Service"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Services persist transactional and catalog data.",
+      "services": [
+        "Orders Service",
+        "Payments Service",
+        "PostgreSQL",
+        "Inventory Service",
+        "Cosmos DB"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Order placement publishes an event to Service Bus; Payments and Inventory consume.",
+      "services": [
+        "Orders Service",
+        "Service Bus",
+        "Payments Service",
+        "Inventory Service"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "PaymentCompleted is broadcast via Event Grid back to Orders for status update.",
+      "services": [
+        "Payments Service",
+        "Event Grid",
+        "Orders Service"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "All services emit telemetry to Application Insights, which forwards to Log Analytics.",
+      "services": [
+        "API Gateway",
+        "Application Insights",
+        "Log Analytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "A microservices application on Azure Container Apps with API gateway, three backend services (orders, inventory, payments), shared PostgreSQL and Cosmos DB, async messaging via Service Bus and Event Grid, secrets in Key Vault, observability via Application Insights and Log Analytics, fronted by Front Door + WAF, with images in Azure Container Registry and CI/CD via GitHub Actions."
+}

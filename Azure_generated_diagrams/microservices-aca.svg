@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 1957.5 1370"
+     width="1957.5" height="1370"
+     style="background: white; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
+
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <text x="978.75" y="24" text-anchor="middle"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700"
+            fill="#1B1B1B">Microservices Architecture (Container Apps + APIM)</text>
+
+  <g transform="translate(0, 40)">
+    <!-- Groups (background) -->
+    
+    <g class="group" data-group="edge">
+      <rect x="230.5" y="8" 
+            width="676.5" height="344"
+            rx="12" fill="#0078D408" stroke="#0078D4" 
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="568.75" y="24" text-anchor="middle"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#0078D4">Edge / Ingress</text>
+    </g>
+
+    <g class="group" data-group="services">
+      <rect x="40.5" y="388" 
+            width="1229" height="574"
+            rx="12" fill="#00B29408" stroke="#00B294" 
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="655" y="404" text-anchor="middle"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#00B294">Microservices (Container Apps)</text>
+    </g>
+
+    <g class="group" data-group="messaging">
+      <rect x="1275.5" y="578" 
+            width="574" height="194"
+            rx="12" fill="#FFB90008" stroke="#FFB900" 
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="1562.5" y="594" text-anchor="middle"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#FFB900">Messaging &amp; Cache</text>
+    </g>
+
+    <g class="group" data-group="data">
+      <rect x="363" y="998" 
+            width="864" height="194"
+            rx="12" fill="#8764B808" stroke="#8764B8" 
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="795" y="1014" text-anchor="middle"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#8764B8">Data Stores</text>
+    </g>
+
+    <g class="group" data-group="obs">
+      <rect x="28" y="998" 
+            width="329" height="194"
+            rx="12" fill="#D1343808" stroke="#D13438" 
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <text x="192.5" y="1014" text-anchor="middle"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#D13438">Observability</text>
+    </g>
+
+    <!-- Edges -->
+    
+    <g class="edge" data-from="Front Door" data-to="API Gateway">
+      <path d="M 475 150 L 475 190 L 475 230" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="475,230 471.10581657691347,220.78939005997114 478.89418342308653,220.78939005997114" fill="#0078D4" />
+      <g>
+        <rect x="453.5" y="181" 
+              width="43" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="475" y="193" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">HTTPS</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="API Gateway" data-to="Orders Service">
+      <path d="M 575 284.2307692307692 L 865 340 L 865 380 L 865 420 L 865 460" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="865,460 861.1058165769135,450.78939005997114 868.8941834230865,450.78939005997114" fill="#0078D4" />
+      <g>
+        <rect x="847" y="371" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="865" y="383" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">HTTP</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="API Gateway" data-to="Catalog Service">
+      <path d="M 535.6666666666666 300 L 605 340 L 605 380 L 605 420 L 605 460" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="605,460 601.1058165769135,450.78939005997114 608.8941834230865,450.78939005997114" fill="#0078D4" />
+      <g>
+        <rect x="587" y="371" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="605" y="383" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">HTTP</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="API Gateway" data-to="Users Service">
+      <path d="M 414.3333333333333 300 L 345 340 L 345 380 L 345 420 L 345 460" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="345,460 341.10581657691347,450.78939005997114 348.89418342308653,450.78939005997114" fill="#0078D4" />
+      <g>
+        <rect x="327" y="371" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="345" y="383" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">HTTP</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Orders Service" data-to="Service Bus">
+      <path d="M 965 519.5901639344262 L 1170 570 L 1170 610 L 1592.5 670.6459330143541" fill="none" stroke="#8764B8" stroke-width="1.5"
+            stroke-dasharray="6,4" />
+      <polygon points="1592.5,670.6459330143541 1582.8295331980703,673.1919243404931 1583.9361385113934,665.482573991009" fill="#8764B8" />
+      <g>
+        <rect x="1141.5" y="601" 
+              width="57" height="16" rx="3"
+              fill="white" stroke="#8764B8" stroke-width="0.5" opacity="0.95" />
+        <text x="1170" y="613" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#8764B8">publish</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Service Bus" data-to="Fulfillment Worker">
+      <path d="M 1692.5 720 L 1692.5 760 L 1040 800 L 1040 840" fill="none" stroke="#8764B8" stroke-width="1.5"
+            stroke-dasharray="6,4" />
+      <polygon points="1040,840 1036.1058165769134,830.7893900599712 1043.8941834230866,830.7893900599712" fill="#8764B8" />
+      <g>
+        <rect x="1011.5" y="791" 
+              width="57" height="16" rx="3"
+              fill="white" stroke="#8764B8" stroke-width="0.5" opacity="0.95" />
+        <text x="1040" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#8764B8">consume</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Catalog Service" data-to="Redis Cache">
+      <path d="M 665.6666666666666 530 L 735 570 L 735 610 L 1332.5 674.247311827957" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="1332.5,674.247311827957 1322.9258498999247,677.1344643804263 1323.758508920111,669.3907354926959" fill="#0078D4" />
+      <g>
+        <rect x="713.5" y="601" 
+              width="43" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="735" y="613" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">cache</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Users Service" data-to="Redis Cache">
+      <path d="M 405.6666666666667 530 L 475 570 L 475 610 L 1332.5 677.1671018276762" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="1332.5,677.1671018276762 1323.013420255741,680.3301390952109 1323.6216121938096,672.5655553525345" fill="#0078D4" />
+      <g>
+        <rect x="453.5" y="601" 
+              width="43" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="475" y="613" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">cache</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Orders Service" data-to="Orders DB">
+      <path d="M 832.3333333333334 530 L 795 570 L 795 610 L 795 685 L 795 760 L 795 800 L 795 875 L 795 950 L 795 990 L 940 1030 L 993.3333333333334 1070" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="993.3333333333334,1070 983.6283353274584,1067.5889807744518 988.3013554351622,1061.3582872975135" fill="#0078D4" />
+      <g>
+        <rect x="770" y="791" 
+              width="50" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="795" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">writes</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Catalog Service" data-to="Catalog DB">
+      <path d="M 651.6666666666666 530 L 705 570 L 705 610 L 705 685 L 705 760 L 705 800 L 705 875 L 705 950 L 705 990 L 780 1030 L 780 1070" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="780,1070 776.1058165769135,1060.789390059971 783.8941834230865,1060.789390059971" fill="#0078D4" />
+      <g>
+        <rect x="683.5" y="791" 
+              width="43" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="705" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">reads</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Users Service" data-to="Users DB">
+      <path d="M 391.6666666666667 530 L 445 570 L 445 610 L 445 685 L 445 760 L 445 800 L 445 875 L 445 950 L 445 990 L 520 1030 L 520 1070" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="520,1070 516.1058165769135,1060.789390059971 523.8941834230865,1060.789390059971" fill="#0078D4" />
+      <g>
+        <rect x="399" y="791" 
+              width="92" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="445" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">reads/writes</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Fulfillment Worker" data-to="Orders DB">
+      <path d="M 1080.8333333333333 910 L 1127.5 950 L 1127.5 990 L 1127.5 1030 L 1080.8333333333333 1070" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="1080.8333333333333,1070 1085.2922487637118,1061.0491300319616 1090.3608507205115,1066.9624989815613" fill="#0078D4" />
+      <g>
+        <rect x="1099" y="981" 
+              width="57" height="16" rx="3"
+              fill="white" stroke="#0078D4" stroke-width="0.5" opacity="0.95" />
+        <text x="1127.5" y="993" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#0078D4">updates</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Orders Service" data-to="Log Analytics">
+      <path d="M 818.3333333333334 530 L 765 570 L 765 610 L 765 685 L 765 760 L 765 800 L 765 875 L 765 950 L 765 990 L 227.5 1030 L 212.83333333333334 1070" fill="none" stroke="#A0A0A0" stroke-width="1.5"
+            stroke-dasharray="4,4" />
+      <polygon points="212.83333333333334,1070 212.3479720411189,1060.011785724364 219.66028521242723,1062.6929672205104" fill="#A0A0A0" />
+      <g>
+        <rect x="747" y="791" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#A0A0A0" stroke-width="0.5" opacity="0.95" />
+        <text x="765" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#A0A0A0">logs</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Catalog Service" data-to="Log Analytics">
+      <path d="M 558.3333333333334 530 L 505 570 L 505 610 L 505 685 L 505 760 L 505 800 L 505 875 L 505 950 L 505 990 L 197.5 1030 L 198.83333333333334 1070" fill="none" stroke="#A0A0A0" stroke-width="1.5"
+            stroke-dasharray="4,4" />
+      <polygon points="198.83333333333334,1070 194.63446163779577,1060.9242368649016 202.41850521588867,1060.6647687456318" fill="#A0A0A0" />
+      <g>
+        <rect x="487" y="791" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#A0A0A0" stroke-width="0.5" opacity="0.95" />
+        <text x="505" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#A0A0A0">logs</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Users Service" data-to="Log Analytics">
+      <path d="M 256.3333333333333 530 L 155 570 L 155 610 L 155 685 L 155 760 L 155 800 L 155 875 L 155 950 L 155 990 L 155 1030 L 179 1070" fill="none" stroke="#A0A0A0" stroke-width="1.5"
+            stroke-dasharray="4,4" />
+      <polygon points="179,1070 170.92194554423284,1064.105507976962 177.60041501768032,1060.0984262928935" fill="#A0A0A0" />
+      <g>
+        <rect x="137" y="791" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#A0A0A0" stroke-width="0.5" opacity="0.95" />
+        <text x="155" y="803" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#A0A0A0">logs</text>
+      </g>
+    </g>
+
+    <g class="edge" data-from="Fulfillment Worker" data-to="Log Analytics">
+      <path d="M 966.5 910 L 882.5 950 L 882.5 990 L 257.5 1030 L 226.83333333333334 1070" fill="none" stroke="#A0A0A0" stroke-width="1.5"
+            stroke-dasharray="4,4" />
+      <polygon points="226.83333333333334,1070 229.34691022056987,1060.321057328822 235.52780769376784,1065.059745391607" fill="#A0A0A0" />
+      <g>
+        <rect x="864.5" y="981" 
+              width="36" height="16" rx="3"
+              fill="white" stroke="#A0A0A0" stroke-width="0.5" opacity="0.95" />
+        <text x="882.5" y="993" text-anchor="middle"
+              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
+              fill="#A0A0A0">logs</text>
+      </g>
+    </g>
+
+    <!-- Nodes (foreground) -->
+    
+    <!-- Front Door -->
+    <g class="node" data-service="Front Door" data-type="Azure Front Door">
+      <!-- Shadow -->
+      <rect x="377" y="82" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="375" y="80" width="200" height="70"
+            rx="8" fill="white" stroke="#E65100" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="375" y="80" width="6" height="70"
+            rx="3" fill="#E65100" />
+      <!-- Icon + Name -->
+      <text x="393" y="108" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        🔗 Front Door
+      </text>
+      <!-- Type badge -->
+      <text x="393" y="128" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#E65100">
+        Front Door
+      </text>
+    </g>
+
+    <!-- API Gateway -->
+    <g class="node" data-service="API Gateway" data-type="API Management">
+      <!-- Shadow -->
+      <rect x="377" y="232" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="375" y="230" width="200" height="70"
+            rx="8" fill="white" stroke="#C62828" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="375" y="230" width="6" height="70"
+            rx="3" fill="#C62828" />
+      <!-- Icon + Name -->
+      <text x="393" y="258" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        🔄 API Gateway
+      </text>
+      <!-- Type badge -->
+      <text x="393" y="278" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#C62828">
+        APIM
+      </text>
+    </g>
+
+    <!-- Orders Service -->
+    <g class="node" data-service="Orders Service" data-type="Container Apps">
+      <!-- Shadow -->
+      <rect x="767" y="462" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="765" y="460" width="200" height="70"
+            rx="8" fill="white" stroke="#00838F" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="765" y="460" width="6" height="70"
+            rx="3" fill="#00838F" />
+      <!-- Icon + Name -->
+      <text x="783" y="488" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        📦 Orders Service
+      </text>
+      <!-- Type badge -->
+      <text x="783" y="508" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#00838F">
+        ACA
+      </text>
+    </g>
+
+    <!-- Catalog Service -->
+    <g class="node" data-service="Catalog Service" data-type="Container Apps">
+      <!-- Shadow -->
+      <rect x="507" y="462" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="505" y="460" width="200" height="70"
+            rx="8" fill="white" stroke="#00838F" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="505" y="460" width="6" height="70"
+            rx="3" fill="#00838F" />
+      <!-- Icon + Name -->
+      <text x="523" y="488" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        📦 Catalog Service
+      </text>
+      <!-- Type badge -->
+      <text x="523" y="508" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#00838F">
+        ACA
+      </text>
+    </g>
+
+    <!-- Users Service -->
+    <g class="node" data-service="Users Service" data-type="Container Apps">
+      <!-- Shadow -->
+      <rect x="247" y="462" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="245" y="460" width="200" height="70"
+            rx="8" fill="white" stroke="#00838F" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="245" y="460" width="6" height="70"
+            rx="3" fill="#00838F" />
+      <!-- Icon + Name -->
+      <text x="263" y="488" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        📦 Users Service
+      </text>
+      <!-- Type badge -->
+      <text x="263" y="508" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#00838F">
+        ACA
+      </text>
+    </g>
+
+    <!-- Fulfillment Worker -->
+    <g class="node" data-service="Fulfillment Worker" data-type="Container Apps">
+      <!-- Shadow -->
+      <rect x="942" y="842" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="940" y="840" width="200" height="70"
+            rx="8" fill="white" stroke="#00838F" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="940" y="840" width="6" height="70"
+            rx="3" fill="#00838F" />
+      <!-- Icon + Name -->
+      <text x="958" y="868" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        📦 Fulfillment Worker
+      </text>
+      <!-- Type badge -->
+      <text x="958" y="888" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#00838F">
+        ACA
+      </text>
+    </g>
+
+    <!-- Service Bus -->
+    <g class="node" data-service="Service Bus" data-type="Service Bus">
+      <!-- Shadow -->
+      <rect x="1594.5" y="652" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="1592.5" y="650" width="200" height="70"
+            rx="8" fill="white" stroke="#C62828" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="1592.5" y="650" width="6" height="70"
+            rx="3" fill="#C62828" />
+      <!-- Icon + Name -->
+      <text x="1610.5" y="678" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        🔄 Service Bus
+      </text>
+      <!-- Type badge -->
+      <text x="1610.5" y="698" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#C62828">
+        Service Bus
+      </text>
+    </g>
+
+    <!-- Redis Cache -->
+    <g class="node" data-service="Redis Cache" data-type="Azure Cache for Redis">
+      <!-- Shadow -->
+      <rect x="1334.5" y="652" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="1332.5" y="650" width="200" height="70"
+            rx="8" fill="white" stroke="#616161" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="1332.5" y="650" width="6" height="70"
+            rx="3" fill="#616161" />
+      <!-- Icon + Name -->
+      <text x="1350.5" y="678" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        ☁️ Redis Cache
+      </text>
+      <!-- Type badge -->
+      <text x="1350.5" y="698" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#616161">
+        Azure Cache for Redis
+      </text>
+    </g>
+
+    <!-- Orders DB -->
+    <g class="node" data-service="Orders DB" data-type="SQL Database">
+      <!-- Shadow -->
+      <rect x="942" y="1072" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="940" y="1070" width="200" height="70"
+            rx="8" fill="white" stroke="#0B8043" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="940" y="1070" width="6" height="70"
+            rx="3" fill="#0B8043" />
+      <!-- Icon + Name -->
+      <text x="958" y="1098" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        🗄️ Orders DB
+      </text>
+      <!-- Type badge -->
+      <text x="958" y="1118" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#0B8043">
+        SQL DB
+      </text>
+    </g>
+
+    <!-- Catalog DB -->
+    <g class="node" data-service="Catalog DB" data-type="SQL Database">
+      <!-- Shadow -->
+      <rect x="682" y="1072" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="680" y="1070" width="200" height="70"
+            rx="8" fill="white" stroke="#0B8043" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="680" y="1070" width="6" height="70"
+            rx="3" fill="#0B8043" />
+      <!-- Icon + Name -->
+      <text x="698" y="1098" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        🗄️ Catalog DB
+      </text>
+      <!-- Type badge -->
+      <text x="698" y="1118" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#0B8043">
+        SQL DB
+      </text>
+    </g>
+
+    <!-- Users DB -->
+    <g class="node" data-service="Users DB" data-type="SQL Database">
+      <!-- Shadow -->
+      <rect x="422" y="1072" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="420" y="1070" width="200" height="70"
+            rx="8" fill="white" stroke="#0B8043" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="420" y="1070" width="6" height="70"
+            rx="3" fill="#0B8043" />
+      <!-- Icon + Name -->
+      <text x="438" y="1098" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        🗄️ Users DB
+      </text>
+      <!-- Type badge -->
+      <text x="438" y="1118" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#0B8043">
+        SQL DB
+      </text>
+    </g>
+
+    <!-- Log Analytics -->
+    <g class="node" data-service="Log Analytics" data-type="Log Analytics">
+      <!-- Shadow -->
+      <rect x="102" y="1072" width="200" height="70"
+            rx="8" fill="#00000010" />
+      <!-- Card -->
+      <rect x="100" y="1070" width="200" height="70"
+            rx="8" fill="white" stroke="#5E35B1" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="100" y="1070" width="6" height="70"
+            rx="3" fill="#5E35B1" />
+      <!-- Icon + Name -->
+      <text x="118" y="1098" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="13" font-weight="600" fill="#1B1B1B">
+        📈 Log Analytics
+      </text>
+      <!-- Type badge -->
+      <text x="118" y="1118" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="11" fill="#5E35B1">
+        Log Analytics
+      </text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <text x="20" y="1320" font-family="Segoe UI, system-ui, sans-serif" 
+                    font-size="10" fill="#666">📦 containers</text>
+<text x="180" y="1320" font-family="Segoe UI, system-ui, sans-serif" 
+                    font-size="10" fill="#666">🗄️ databases</text>
+<text x="340" y="1320" font-family="Segoe UI, system-ui, sans-serif" 
+                    font-size="10" fill="#666">🔄 integration</text>
+<text x="500" y="1320" font-family="Segoe UI, system-ui, sans-serif" 
+                    font-size="10" fill="#666">📈 monitor</text>
+<text x="660" y="1320" font-family="Segoe UI, system-ui, sans-serif" 
+                    font-size="10" fill="#666">🔗 networking</text>
+<text x="820" y="1320" font-family="Segoe UI, system-ui, sans-serif" 
+                    font-size="10" fill="#666">☁️ other</text>
+
+  <!-- Watermark -->
+  <text x="1947.5" y="1362" text-anchor="end"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="9" fill="#CCC">
+    Generated by Azure Architecture Diagram Builder
+  </text>
+</svg>

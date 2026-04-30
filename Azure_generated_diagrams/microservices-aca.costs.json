@@ -1,0 +1,26 @@
+{
+  "region": "eastus2",
+  "serviceCount": 12,
+  "estimates": [
+    { "name": "Front Door",         "type": "Azure Front Door",      "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$35-412/mo + traffic",   "estimatedMonthlyCost": "$35-412/mo + traffic" },
+    { "name": "API Gateway",        "type": "API Management",        "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$50-2800/mo",            "estimatedMonthlyCost": "$50-2800/mo" },
+    { "name": "Orders Service",     "type": "Container Apps",        "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$0-500/mo",              "estimatedMonthlyCost": "$0-500/mo" },
+    { "name": "Catalog Service",    "type": "Container Apps",        "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$0-500/mo",              "estimatedMonthlyCost": "$0-500/mo" },
+    { "name": "Users Service",      "type": "Container Apps",        "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$0-500/mo",              "estimatedMonthlyCost": "$0-500/mo" },
+    { "name": "Fulfillment Worker", "type": "Container Apps",        "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$0-500/mo",              "estimatedMonthlyCost": "$0-500/mo" },
+    { "name": "Service Bus",        "type": "Service Bus",           "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$0-10/mo + messages",    "estimatedMonthlyCost": "$0-10/mo + messages" },
+    { "name": "Redis Cache",        "type": "Azure Cache for Redis", "tier": "standard", "quantity": 1, "hasPricingData": false, "costRange": "Unknown",                "estimatedMonthlyCost": "No pricing data available" },
+    { "name": "Orders DB",          "type": "SQL Database",          "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$5-43800/mo",            "estimatedMonthlyCost": "$5-43800/mo" },
+    { "name": "Catalog DB",         "type": "SQL Database",          "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$5-43800/mo",            "estimatedMonthlyCost": "$5-43800/mo" },
+    { "name": "Users DB",           "type": "SQL Database",          "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$5-43800/mo",            "estimatedMonthlyCost": "$5-43800/mo" },
+    { "name": "Log Analytics",      "type": "Log Analytics",         "tier": "standard", "quantity": 1, "hasPricingData": true,  "costRange": "$2.76 per GB ingested",  "estimatedMonthlyCost": "$2.76 per GB ingested" }
+  ],
+  "byCategory": {
+    "networking":   { "count": 1, "services": ["Front Door"] },
+    "integration":  { "count": 2, "services": ["API Gateway", "Service Bus"] },
+    "containers":   { "count": 4, "services": ["Orders Service", "Catalog Service", "Users Service", "Fulfillment Worker"] },
+    "databases":    { "count": 3, "services": ["Orders DB", "Catalog DB", "Users DB"] },
+    "monitor":      { "count": 1, "services": ["Log Analytics"] }
+  },
+  "note": "Cost ranges are from the Diagram Builder pricing catalog. For precise estimates, use the Azure Pricing Calculator or the Diagram Builder UI with live pricing API."
+}

@@ -1,0 +1,1612 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": 1425,
+        "y": 40
+      },
+      "data": {
+        "label": "Ingress & API Gateway",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 290,
+        "height": 490
+      },
+      "width": 290,
+      "height": 490
+    },
+    {
+      "id": "grp-appdevops",
+      "type": "groupNode",
+      "position": {
+        "x": 620,
+        "y": 230
+      },
+      "data": {
+        "label": "Application & DevOps",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 775,
+        "height": 830
+      },
+      "width": 775,
+      "height": 830
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 40,
+        "y": 760
+      },
+      "data": {
+        "label": "Data & Messaging",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 550,
+        "height": 530
+      },
+      "width": 550,
+      "height": 530
+    },
+    {
+      "id": "grp-identity",
+      "type": "groupNode",
+      "position": {
+        "x": 112.5,
+        "y": 230
+      },
+      "data": {
+        "label": "Identity & Security",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 305,
+        "height": 300
+      },
+      "width": 305,
+      "height": 300
+    },
+    {
+      "id": "grp-observability",
+      "type": "groupNode",
+      "position": {
+        "x": 840,
+        "y": 1140
+      },
+      "data": {
+        "label": "Monitoring & Observability",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 570,
+        "height": 490
+      },
+      "width": 570,
+      "height": 490
+    },
+    {
+      "id": "svc-azure-front-door",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 1470,
+        "y": 80
+      },
+      "data": {
+        "label": "Azure Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/azure-front-door.svg",
+        "stylePreset": "presentation",
+        "description": "Global edge with TLS termination, caching, and traffic acceleration"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ingress",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-web-application-firewall",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 230
+      },
+      "positionAbsolute": {
+        "x": 1470,
+        "y": 270
+      },
+      "data": {
+        "label": "Web Application Firewall",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10362-icon-service-Web-Application-Firewall-Policies(WAF).svg",
+        "stylePreset": "presentation",
+        "description": "OWASP rule set protecting all inbound HTTP(S) traffic"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ingress",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-api-management",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 380
+      },
+      "positionAbsolute": {
+        "x": 1470,
+        "y": 420
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "stylePreset": "presentation",
+        "description": "Centralized API facade with throttling, versioning, and developer portal"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-ingress",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-github-actions",
+      "type": "azureNode",
+      "position": {
+        "x": 367.5,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 987.5,
+        "y": 270
+      },
+      "data": {
+        "label": "GitHub Actions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/generic-service.svg",
+        "stylePreset": "presentation",
+        "description": "CI/CD pipelines that build container images and deploy revisions"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-appdevops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-container-registry",
+      "type": "azureNode",
+      "position": {
+        "x": 367.5,
+        "y": 190
+      },
+      "positionAbsolute": {
+        "x": 987.5,
+        "y": 420
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "stylePreset": "presentation",
+        "description": "Private OCI registry for microservice images with content trust"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-appdevops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-orders-container-apps",
+      "type": "azureNode",
+      "position": {
+        "x": 280,
+        "y": 380
+      },
+      "positionAbsolute": {
+        "x": 900,
+        "y": 610
+      },
+      "data": {
+        "label": "Orders Container Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Orders microservice running on Azure Container Apps environment"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-appdevops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-inventory-container-apps",
+      "type": "azureNode",
+      "position": {
+        "x": 500,
+        "y": 720
+      },
+      "positionAbsolute": {
+        "x": 1120,
+        "y": 950
+      },
+      "data": {
+        "label": "Inventory Container Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Inventory microservice running on Azure Container Apps environment"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-appdevops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-payments-container-apps",
+      "type": "azureNode",
+      "position": {
+        "x": 150,
+        "y": 720
+      },
+      "positionAbsolute": {
+        "x": 770,
+        "y": 950
+      },
+      "data": {
+        "label": "Payments Container Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Payments microservice running on Azure Container Apps environment"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-appdevops",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-microsoft-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 60,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 172.5,
+        "y": 270
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "stylePreset": "presentation",
+        "description": "Workforce and workload identity provider; backs managed identities"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-identity",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 190
+      },
+      "positionAbsolute": {
+        "x": 157.5,
+        "y": 420
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "stylePreset": "presentation",
+        "description": "Secrets, keys, and certificates accessed via managed identity"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-identity",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-service-bus",
+      "type": "azureNode",
+      "position": {
+        "x": 305,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 345,
+        "y": 800
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/service-bus.svg",
+        "stylePreset": "presentation",
+        "description": "Reliable broker for order/payment workflows with sessions and DLQ"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-data",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-event-grid",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 85,
+        "y": 800
+      },
+      "data": {
+        "label": "Event Grid",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10206-icon-service-Event-Grid-Topics.svg",
+        "stylePreset": "presentation",
+        "description": "Pub/sub fabric for fan-out of business events to subscribers"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-data",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-azure-database-for-postgresql",
+      "type": "azureNode",
+      "position": {
+        "x": 45,
+        "y": 420
+      },
+      "positionAbsolute": {
+        "x": 85,
+        "y": 1180
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/02827-icon-service-Azure-Database-PostgreSQL-Server-Group.svg",
+        "stylePreset": "presentation",
+        "description": "Flexible Server: relational store for orders and payments transactions"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-data",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-azure-cosmos-db",
+      "type": "azureNode",
+      "position": {
+        "x": 305,
+        "y": 420
+      },
+      "positionAbsolute": {
+        "x": 345,
+        "y": 1180
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "stylePreset": "presentation",
+        "description": "Globally distributed NoSQL store for inventory catalog"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-data",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-application-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 310,
+        "y": 40
+      },
+      "positionAbsolute": {
+        "x": 1150,
+        "y": 1180
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "stylePreset": "presentation",
+        "description": "Distributed traces, dependencies, and performance metrics from all services"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-observability",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-azure-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 310,
+        "y": 230
+      },
+      "positionAbsolute": {
+        "x": 1150,
+        "y": 1370
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "stylePreset": "presentation",
+        "description": "Unified telemetry pipeline aggregating metrics, logs, and alerts"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-observability",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-log-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 310,
+        "y": 380
+      },
+      "positionAbsolute": {
+        "x": 1150,
+        "y": 1520
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "stylePreset": "presentation",
+        "description": "Long-term log store and KQL query workspace for ops and security"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-observability",
+      "extent": "parent"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-azure-front-door",
+      "target": "svc-web-application-firewall",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward incoming HTTP(S) requests for security inspection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-web-application-firewall",
+      "target": "svc-api-management",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route sanitized API traffic to API gateway",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-api-management",
+      "target": "svc-orders-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route order-related API operations to orders microservice",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-api-management",
+      "target": "svc-inventory-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route inventory-related API operations to inventory microservice",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-api-management",
+      "target": "svc-payments-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route payment-related API operations to payments microservice",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-github-actions",
+      "target": "svc-container-registry",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Build and push microservice container images during CI/CD",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-container-registry",
+      "target": "svc-orders-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Supply container image for orders microservice revisions",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-container-registry",
+      "target": "svc-inventory-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Supply container image for inventory microservice revisions",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-container-registry",
+      "target": "svc-payments-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Supply container image for payments microservice revisions",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-key-vault",
+      "target": "svc-orders-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide secrets and connection strings via secure retrieval",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-key-vault",
+      "target": "svc-inventory-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide secrets and connection strings via secure retrieval",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-key-vault",
+      "target": "svc-payments-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide secrets and connection strings via secure retrieval",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-microsoft-entra-id",
+      "target": "svc-api-management",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate callers with OAuth 2.0 / OIDC",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-microsoft-entra-id",
+      "target": "svc-key-vault",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authorize managed identities to access secrets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "forward",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-orders-container-apps",
+      "target": "svc-service-bus",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish order-created messages for downstream processing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc-service-bus",
+      "target": "svc-payments-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deliver order messages to initiate payment workflows",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "svc-service-bus",
+      "target": "svc-inventory-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deliver order messages to trigger inventory updates",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "svc-orders-container-apps",
+      "target": "svc-event-grid",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit order lifecycle events to event subscribers",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "svc-event-grid",
+      "target": "svc-payments-container-apps",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Notify payments service of completed-order events",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "svc-orders-container-apps",
+      "target": "svc-azure-database-for-postgresql",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Persist orders transactions",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-20",
+      "source": "svc-payments-container-apps",
+      "target": "svc-azure-database-for-postgresql",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store and retrieve payment transactions in PostgreSQL",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-21",
+      "source": "svc-inventory-container-apps",
+      "target": "svc-azure-cosmos-db",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read and write inventory catalog records",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-22",
+      "source": "svc-orders-container-apps",
+      "target": "svc-application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send metrics and traces from orders microservice",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-23",
+      "source": "svc-inventory-container-apps",
+      "target": "svc-application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send metrics and traces from inventory microservice",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-24",
+      "source": "svc-payments-container-apps",
+      "target": "svc-application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send metrics and traces from payments microservice",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-25",
+      "source": "svc-application-insights",
+      "target": "svc-azure-monitor",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward telemetry into the unified monitoring pipeline",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-26",
+      "source": "svc-azure-monitor",
+      "target": "svc-log-analytics",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Ingest collected logs and metrics into Log Analytics workspace",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 13,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 1.5,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": -317.5,
+    "y": -475,
+    "zoom": 0.65
+  },
+  "metadata": {
+    "architectureName": "Microservices on Azure Container Apps (Enriched)",
+    "author": "Arturo Quiroga",
+    "version": "1.0",
+    "date": "2026-04-30",
+    "savedAt": "2026-04-30T19:50:53.453Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Internet traffic enters Front Door, is inspected by WAF, and routed to API Management.",
+      "services": [
+        "Azure Front Door",
+        "Web Application Firewall",
+        "API Management"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API Management authenticates callers via Entra ID and dispatches to the appropriate microservice.",
+      "services": [
+        "Microsoft Entra ID",
+        "API Management",
+        "Orders Container Apps",
+        "Inventory Container Apps",
+        "Payments Container Apps"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Microservices retrieve secrets from Key Vault using managed identities and persist data to PostgreSQL or Cosmos DB.",
+      "services": [
+        "Key Vault",
+        "Orders Container Apps",
+        "Payments Container Apps",
+        "Azure Database for PostgreSQL",
+        "Inventory Container Apps",
+        "Azure Cosmos DB"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Order placement publishes to Service Bus; Payments and Inventory consume to advance the workflow.",
+      "services": [
+        "Orders Container Apps",
+        "Service Bus",
+        "Payments Container Apps",
+        "Inventory Container Apps"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Order lifecycle events fan out via Event Grid to payment subscribers.",
+      "services": [
+        "Orders Container Apps",
+        "Event Grid",
+        "Payments Container Apps"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "GitHub Actions builds images, pushes to ACR, and triggers Container Apps revision rollouts.",
+      "services": [
+        "GitHub Actions",
+        "Container Registry",
+        "Orders Container Apps",
+        "Inventory Container Apps",
+        "Payments Container Apps"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "All services emit telemetry to Application Insights, which flows through Azure Monitor into Log Analytics.",
+      "services": [
+        "Orders Container Apps",
+        "Inventory Container Apps",
+        "Payments Container Apps",
+        "Application Insights",
+        "Azure Monitor",
+        "Log Analytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "A microservices application on Azure Container Apps with API gateway, three backend services (orders, inventory, payments), shared PostgreSQL and Cosmos DB, async messaging via Service Bus and Event Grid, secrets in Key Vault, observability via Application Insights and Log Analytics, fronted by Front Door + WAF, with images in Azure Container Registry and CI/CD via GitHub Actions."
+}

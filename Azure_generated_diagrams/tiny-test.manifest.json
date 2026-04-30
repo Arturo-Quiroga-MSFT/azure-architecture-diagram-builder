@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "source": "azure-diagram-builder",
+  "createdAt": "2026-04-30T18:36:20.510Z",
+  "project": {
+    "name": "tiny-test",
+    "location": "eastus2",
+    "iacTool": "bicep"
+  },
+  "architecture": {
+    "services": [
+      {
+        "id": "svc-1",
+        "name": "Web",
+        "type": "App Service",
+        "category": "app services",
+        "description": "Web frontend",
+        "groupId": null
+      },
+      {
+        "id": "svc-2",
+        "name": "DB",
+        "type": "SQL Database",
+        "category": "databases",
+        "description": "Relational database",
+        "groupId": null
+      }
+    ],
+    "connections": [
+      {
+        "from": "Web",
+        "to": "DB",
+        "label": "TDS",
+        "type": "sync"
+      }
+    ],
+    "groups": [],
+    "workflow": []
+  },
+  "metadata": {
+    "generatedBy": "azure-diagram-builder-mcp",
+    "serviceCount": 2,
+    "connectionCount": 1
+  }
+}

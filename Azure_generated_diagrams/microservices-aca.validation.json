@@ -1,0 +1,48 @@
+{
+  "score": 36,
+  "totalFindings": 9,
+  "patternsDetected": ["no-identity", "no-key-vault", "no-backup"],
+  "rulesApplied": { "pattern": 3, "service": 6 },
+  "findingsByPillar": {
+    "Reliability": {
+      "count": 1,
+      "findings": [
+        {
+          "severity": "medium",
+          "category": "Disaster Recovery",
+          "issue": "No backup or disaster recovery service detected",
+          "recommendation": "Add Azure Backup or configure point-in-time restore for databases. Define and test your RPO/RTO targets.",
+          "resources": ["Redis Cache", "Orders DB", "Catalog DB", "Users DB"]
+        }
+      ]
+    },
+    "Security": {
+      "count": 8,
+      "findings": [
+        {
+          "severity": "critical",
+          "category": "Identity & Access",
+          "issue": "No identity provider or authentication service detected",
+          "recommendation": "Add Microsoft Entra ID for centralized authentication and authorization. Use managed identities for service-to-service communication.",
+          "resources": ["Orders Service", "Catalog Service", "Users Service", "Fulfillment Worker"]
+        },
+        {
+          "severity": "high",
+          "category": "Secrets Management",
+          "issue": "No secrets management service (Key Vault) detected in the architecture",
+          "recommendation": "Add Azure Key Vault to centrally manage secrets, certificates, and encryption keys.",
+          "resources": ["Orders Service", "Catalog Service", "Users Service", "Fulfillment Worker"]
+        },
+        { "severity": "high", "category": "Data Encryption", "issue": "SQL Database should have Transparent Data Encryption (TDE) enabled", "recommendation": "Ensure TDE is enabled (it is by default). Consider customer-managed keys (CMK) for regulated workloads.", "resources": ["Orders DB"] },
+        { "severity": "high", "category": "Auditing",        "issue": "SQL Database should have auditing enabled",                          "recommendation": "Enable Azure SQL auditing to Log Analytics or Storage Account for compliance and threat detection.",                       "resources": ["Orders DB"] },
+        { "severity": "high", "category": "Data Encryption", "issue": "SQL Database should have Transparent Data Encryption (TDE) enabled", "recommendation": "Ensure TDE is enabled (it is by default). Consider customer-managed keys (CMK) for regulated workloads.", "resources": ["Catalog DB"] },
+        { "severity": "high", "category": "Auditing",        "issue": "SQL Database should have auditing enabled",                          "recommendation": "Enable Azure SQL auditing to Log Analytics or Storage Account for compliance and threat detection.",                       "resources": ["Catalog DB"] },
+        { "severity": "high", "category": "Data Encryption", "issue": "SQL Database should have Transparent Data Encryption (TDE) enabled", "recommendation": "Ensure TDE is enabled (it is by default). Consider customer-managed keys (CMK) for regulated workloads.", "resources": ["Users DB"] },
+        { "severity": "high", "category": "Auditing",        "issue": "SQL Database should have auditing enabled",                          "recommendation": "Enable Azure SQL auditing to Log Analytics or Storage Account for compliance and threat detection.",                       "resources": ["Users DB"] }
+      ]
+    },
+    "Cost Optimization":      { "count": 0, "findings": [] },
+    "Operational Excellence": { "count": 0, "findings": [] },
+    "Performance Efficiency": { "count": 0, "findings": [] }
+  }
+}
