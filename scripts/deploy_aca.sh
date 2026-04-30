@@ -74,27 +74,57 @@ if [[ $MODEL_COUNT -eq 0 ]]; then
 fi
 
 # ─── Build arguments ────────────────────────────────────────────────
-# Collect all VITE_ variables as --build-arg flags
-BUILD_ARGS=""
+# Collect all VITE_ variables as --build-arg flags into a bash array
+# (array avoids eval pitfalls when values contain quotes, $, spaces, etc.)
+#
+# IMPORTANT — App Insights connection string workaround:
+#   VITE_APPINSIGHTS_CONNECTION_STRING contains semicolons (;) which break
+#   `az acr build --build-arg`. ACR Tasks forwards build args to a remote
+#   Docker agent via shell commands, and semicolons are interpreted as
+#   command separators ("docker build requires exactly 1 argument" error).
+#
+#   Workaround: extract that one value into .env.appinsights (gitignored,
+#   NOT in .dockerignore). The Dockerfile COPYs it and `source`s it in the
+#   same RUN layer as `npm run build` so Vite embeds it via import.meta.env.
+SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+APPINSIGHTS_FILE="$SOURCE_DIR/.env.appinsights"
+: > "$APPINSIGHTS_FILE"
+
+BUILD_ARGS=()
 while IFS='=' read -r key value; do
     if [[ "$key" == VITE_* && -n "$value" ]]; then
-        BUILD_ARGS="$BUILD_ARGS --build-arg $key=\"$value\""
+        # Strip surrounding quotes if present in .env
+        value="${value%\"}"
+        value="${value#\"}"
+        value="${value%\'}"
+        value="${value#\'}"
+        # Route App Insights conn string through file workaround
+        if [[ "$key" == "VITE_APPINSIGHTS_CONNECTION_STRING" ]]; then
+            echo "$key=$value" > "$APPINSIGHTS_FILE"
+            continue
+        fi
+        BUILD_ARGS+=(--build-arg "$key=$value")
     fi
-done < <(cat "$ENV_FILE" | grep -v '^#' | grep -v '^\s*$')
+done < <(grep -v '^#' "$ENV_FILE" | grep -v '^\s*$')
 
 ACR_IMAGE="$ACR_NAME.azurecr.io/$IMAGE_NAME:latest"
 
 echo "🔨 Building image in ACR: $ACR_NAME"
 echo "   Image: $IMAGE_NAME:latest"
 echo "   Models configured: $MODEL_COUNT"
+echo "   Source: $SOURCE_DIR"
+echo "   Build args: ${#BUILD_ARGS[@]} VITE_* values via --build-arg"
+if [[ -s "$APPINSIGHTS_FILE" ]]; then
+    echo "   App Insights: routed via .env.appinsights (semicolon workaround)"
+fi
 echo ""
 
 # ─── Build in ACR ────────────────────────────────────────────────────
-eval az acr build \
+az acr build \
     --registry "$ACR_NAME" \
     --image "$IMAGE_NAME:latest" \
-    $BUILD_ARGS \
-    "$(dirname "$0")/.."
+    "${BUILD_ARGS[@]}" \
+    "$SOURCE_DIR"
 
 # ─── Get ACA FQDN ───────────────────────────────────────────────────
 FQDN=$(az containerapp show \
