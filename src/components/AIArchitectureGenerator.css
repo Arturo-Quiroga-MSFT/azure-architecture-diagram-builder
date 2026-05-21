@@ -138,6 +138,14 @@
   overflow: hidden;
 }
 
+/* Scoped override: ValidationModal.css also defines .modal-content with
+   max-width: 900px, which can win on source-order ties. The .ai-architecture-modal
+   class lifts specificity so this modal can actually grow to 1200px. */
+.modal-content.ai-architecture-modal {
+  max-width: 1200px;
+  width: 94%;
+}
+
 .modal-body-grid {
   display: grid;
   grid-template-columns: 1fr;

@@ -433,7 +433,7 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
 
       {isOpen && (
         <div className="modal-overlay" onClick={() => setIsOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content ai-architecture-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title">
                 <Sparkles size={20} />
