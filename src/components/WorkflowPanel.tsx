@@ -33,9 +33,14 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [captionWords, setCaptionWords] = useState<string[]>([]);
   const [captionWordIdx, setCaptionWordIdx] = useState<number>(-1);
+  const [activeStepNum, setActiveStepNum] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const presenterRef = useRef<AvatarPresenter | null>(null);
+  const activeStepRef = useRef<number | null>(null);
+  const stepElRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  // Cancellation flag for the per-step narration loop. Set by Stop / Dismiss.
+  const cancelledRef = useRef<boolean>(false);
   const isSpeechConfigured = !!import.meta.env.VITE_SPEECH_REGION;
 
   // Draggable + resizable avatar panel
@@ -53,8 +58,12 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
     return () => { presenterRef.current?.disconnect(); };
   }, []);
 
-  const buildNarrationText = (): string =>
-    workflow.map(s => `Step ${s.step}: ${s.description}`).join('. ');
+  // Auto-scroll the active step into view as narration progresses.
+  useEffect(() => {
+    if (activeStepNum == null) return;
+    const el = stepElRefs.current[activeStepNum];
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [activeStepNum]);
 
   const startNarration = async () => {
     setAvatarStatus('connecting');
@@ -74,10 +83,31 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
         presenterRef.current = presenter;
         await presenter.connect(videoRef.current, audioRef.current);
       }
-      const text = buildNarrationText();
-      setCaptionWords(text.split(/\s+/).filter(Boolean));
-      setCaptionWordIdx(-1);
-      await presenterRef.current!.speak(text);
+      cancelledRef.current = false;
+      activeStepRef.current = null;
+      setActiveStepNum(null);
+      // Speak each step in sequence; advance the highlight before each call.
+      // AvatarSynthesizer.speakTextAsync resolves when the segment finishes
+      // playing, giving us natural step-level sync without bookmark events.
+      for (const step of workflow) {
+        if (cancelledRef.current) break;
+        activeStepRef.current = step.step;
+        setActiveStepNum(step.step);
+        onServiceHover?.(step.services ?? []);
+        const segText = `Step ${step.step}. ${step.description}`;
+        setCaptionWords(segText.split(/\s+/).filter(Boolean));
+        setCaptionWordIdx(-1);
+        try {
+          await presenterRef.current!.speak(segText);
+        } catch {
+          // stopSpeaking or dismiss interrupts the SDK promise; bail out cleanly.
+          break;
+        }
+      }
+      activeStepRef.current = null;
+      setActiveStepNum(null);
+      onServiceLeave?.();
+      setCaptionWords([]);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setAvatarError(msg);
@@ -88,19 +118,24 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
   const handleNarrateClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // prevent collapsing the panel
     if (avatarStatus === 'speaking') {
-      presenterRef.current?.stopSpeaking();
+      cancelledRef.current = true;
+      void presenterRef.current?.stopSpeaking();
     } else {
       void startNarration();
     }
   };
 
   const handleDismissAvatar = () => {
+    cancelledRef.current = true;
     presenterRef.current?.disconnect();
     presenterRef.current = null;
     setAvatarStatus('idle');
     setAvatarError(null);
     setCaptionWords([]);
     setCaptionWordIdx(-1);
+    activeStepRef.current = null;
+    setActiveStepNum(null);
+    onServiceLeave?.();
     resetAvatarGeom();
   };
 
@@ -143,7 +178,8 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
               {workflow.map((step) => (
                 <div
                   key={step.step}
-                  className="workflow-step"
+                  ref={(el) => { stepElRefs.current[step.step] = el; }}
+                  className={`workflow-step${step.step === activeStepNum ? ' is-narrating' : ''}`}
                   onMouseEnter={() => onServiceHover?.(step.services)}
                   onMouseLeave={() => onServiceLeave?.()}
                 >
@@ -223,7 +259,7 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
         {(avatarStatus === 'ready' || avatarStatus === 'speaking') && (
           <div className="workflow-avatar-panel-controls">
             {avatarStatus === 'speaking'
-              ? <button className="workflow-avatar-action-btn stop" onClick={() => presenterRef.current?.stopSpeaking()}><StopCircle size={13} /> Stop</button>
+              ? <button className="workflow-avatar-action-btn stop" onClick={() => { cancelledRef.current = true; void presenterRef.current?.stopSpeaking(); }}><StopCircle size={13} /> Stop</button>
               : <button className="workflow-avatar-action-btn" onClick={() => void startNarration()}><MonitorPlay size={13} /> Re-narrate</button>}
           </div>
         )}

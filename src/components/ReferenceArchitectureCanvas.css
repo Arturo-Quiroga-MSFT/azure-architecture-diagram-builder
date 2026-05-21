@@ -1,0 +1,389 @@
+/* Copyright (c) Microsoft Corporation.
+ * Licensed under the MIT License.
+ *
+ * Editorial / publication-style reference architecture canvas.
+ * Used both for on-screen preview and off-screen PNG export, so all sizes
+ * are fixed (px) rather than responsive — output must be deterministic.
+ */
+
+.ref-arch-canvas {
+  box-sizing: border-box;
+  padding: 40px 48px 48px;
+  background: #ffffff;
+  color: #1f2937;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.ref-arch-canvas * {
+  box-sizing: border-box;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
+
+.ref-arch-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 2px solid #0078d4;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.ref-arch-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  color: #0078d4;
+  font-weight: 600;
+}
+
+.ref-arch-title {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.ref-arch-author {
+  font-size: 12px;
+  color: #4b5563;
+  background: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+/* ─── Platform wrapper bars ───────────────────────────────────────────── */
+
+.ref-arch-wrappers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.ref-arch-wrapper-bar {
+  background: linear-gradient(90deg, #e0f2fe 0%, #f0f9ff 100%);
+  border: 1px solid #7dd3fc;
+  border-left: 4px solid #0284c7;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #075985;
+  border-radius: 4px;
+}
+
+/* ─── Body: data-sources | stages | actors ────────────────────────────── */
+
+.ref-arch-body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.ref-arch-body > .ref-arch-datasources + .ref-arch-stages,
+.ref-arch-body > .ref-arch-stages:first-child {
+  /* keep grid stable when optional columns are absent */
+}
+
+/* ─── Side columns (data sources, actors) ─────────────────────────────── */
+
+.ref-arch-datasources,
+.ref-arch-actors {
+  width: 200px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.ref-arch-col-header {
+  font-weight: 600;
+  font-size: 12px;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ref-arch-ds-group {
+  margin-bottom: 12px;
+}
+
+.ref-arch-ds-label {
+  font-weight: 600;
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.ref-arch-ds-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: #374151;
+}
+
+.ref-arch-ds-list li {
+  margin-bottom: 2px;
+}
+
+.ref-arch-actor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.ref-arch-actor-icon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0078d4;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ref-arch-actor-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.ref-arch-actor-glyph {
+  font-size: 24px;
+}
+
+.ref-arch-actor-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ─── Stages grid ─────────────────────────────────────────────────────── */
+
+.ref-arch-stages {
+  display: grid;
+  gap: 12px;
+}
+
+/* Numbered workflow-step badges on a tile, top-right corner. Each badge
+ * matches a step number in the workflow legend at the bottom of the
+ * diagram, so readers can trace flow without tile-to-tile arrows. */
+.ref-arch-tile {
+  position: relative;
+}
+.ref-arch-tile-steps {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 3px;
+  z-index: 1;
+}
+.ref-arch-tile-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Path-band tinting: a 3px colored stripe along the tile's left edge
+ * indicates whether the service participates in the hot or cool path.
+ * Only present when `pathBands` are defined in the architecture data. */
+.ref-arch-tile[data-band='hot'] {
+  border-left: 3px solid #ec4899; /* pink */
+  background: linear-gradient(90deg, #fdf2f8 0%, #ffffff 60%);
+}
+.ref-arch-tile[data-band='cool'] {
+  border-left: 3px solid #0ea5e9; /* sky-blue */
+  background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 60%);
+}
+.ref-arch-tile[data-band='green'] {
+  border-left: 3px solid #10b981;
+  background: linear-gradient(90deg, #ecfdf5 0%, #ffffff 60%);
+}
+.ref-arch-tile[data-band='amber'] {
+  border-left: 3px solid #f59e0b;
+  background: linear-gradient(90deg, #fffbeb 0%, #ffffff 60%);
+}
+
+.ref-arch-stage {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-top: 4px solid #0078d4;
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ref-arch-stage-header {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1f2937;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ref-arch-stage-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+/* ─── Service tile ────────────────────────────────────────────────────── */
+
+.ref-arch-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 6px 8px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  min-height: 86px;
+}
+
+.ref-arch-tile-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.ref-arch-tile-icon img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.ref-arch-tile-icon-placeholder {
+  width: 40px;
+  height: 40px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.ref-arch-tile-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: #1f2937;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+/* ─── Bottom strips (foundation, cross-cutting) ───────────────────────── */
+
+.ref-arch-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.ref-arch-foundation {
+  background: #ecfeff;
+  border: 1px solid #67e8f9;
+}
+
+.ref-arch-crosscutting {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+
+.ref-arch-strip-label {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.ref-arch-strip-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ref-arch-chip {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.ref-arch-chip-muted {
+  background: #ffffff;
+  color: #4b5563;
+}
+
+/* ─── Workflow narrative ──────────────────────────────────────────────── */
+
+.ref-arch-workflow {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 16px 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.ref-arch-workflow li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #374151;
+}
+
+.ref-arch-workflow li:last-child {
+  margin-bottom: 0;
+}
+
+.ref-arch-step-badge {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0078d4;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ref-arch-step-text {
+  flex: 1;
+  line-height: 1.5;
+}

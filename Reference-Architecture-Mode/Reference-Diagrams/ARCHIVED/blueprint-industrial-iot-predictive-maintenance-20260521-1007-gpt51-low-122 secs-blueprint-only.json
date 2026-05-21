@@ -1,0 +1,395 @@
+{
+  "title": "Industrial IoT Predictive Maintenance Platform",
+  "canvas": {
+    "width": 1778,
+    "height": 1044
+  },
+  "zones": [
+    {
+      "id": "ot",
+      "label": "OT Network - Plant",
+      "kind": "onprem",
+      "x": 36,
+      "y": 276,
+      "width": 238,
+      "height": 428
+    },
+    {
+      "id": "azure",
+      "label": "Azure",
+      "kind": "azure",
+      "x": 344,
+      "y": 32,
+      "width": 1414,
+      "height": 992
+    },
+    {
+      "id": "net",
+      "label": "Private Link / Network Boundary",
+      "kind": "subnet",
+      "x": 388,
+      "y": 276,
+      "width": 238,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "ingress",
+      "label": "IoT Ingress & Stream Processing",
+      "kind": "subsystem",
+      "x": 696,
+      "y": 334,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "data",
+      "label": "Data, Analytics & Models",
+      "kind": "subsystem",
+      "x": 628,
+      "y": 592,
+      "width": 778,
+      "height": 388,
+      "parent": "azure"
+    },
+    {
+      "id": "mgmt",
+      "label": "Device Management & Identity",
+      "kind": "subsystem",
+      "x": 628,
+      "y": 76,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "observability",
+      "label": "Observability",
+      "kind": "subsystem",
+      "x": 1206,
+      "y": 76,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sensors",
+      "name": "Industrial IoT Sensors",
+      "category": "iot",
+      "kind": "device",
+      "x": 80,
+      "y": 320,
+      "zone": "ot"
+    },
+    {
+      "id": "gateway",
+      "name": "Industrial Gateway",
+      "category": "iot",
+      "kind": "device",
+      "x": 80,
+      "y": 560,
+      "zone": "ot"
+    },
+    {
+      "id": "privatelink",
+      "name": "Private Link Endpoint",
+      "category": "networking",
+      "kind": "cloud",
+      "x": 432,
+      "y": 320,
+      "zone": "net"
+    },
+    {
+      "id": "iothub",
+      "name": "Azure IoT Hub",
+      "category": "iot",
+      "kind": "service",
+      "x": 740,
+      "y": 378,
+      "zone": "ingress"
+    },
+    {
+      "id": "stream",
+      "name": "Azure Stream Analytics",
+      "category": "analytics",
+      "kind": "service",
+      "x": 1010,
+      "y": 378,
+      "zone": "ingress"
+    },
+    {
+      "id": "tsi",
+      "name": "Time Series Insights",
+      "category": "analytics",
+      "kind": "service",
+      "x": 672,
+      "y": 636,
+      "zone": "data"
+    },
+    {
+      "id": "adt",
+      "name": "Azure Digital Twins",
+      "category": "iot",
+      "kind": "service",
+      "x": 942,
+      "y": 636,
+      "zone": "data"
+    },
+    {
+      "id": "datalake",
+      "name": "Azure Data Lake Storage",
+      "category": "storage",
+      "kind": "service",
+      "x": 672,
+      "y": 836,
+      "zone": "data"
+    },
+    {
+      "id": "synapse",
+      "name": "Azure Synapse Analytics",
+      "category": "analytics",
+      "kind": "service",
+      "x": 942,
+      "y": 836,
+      "zone": "data"
+    },
+    {
+      "id": "aml",
+      "name": "Azure Machine Learning",
+      "category": "ai + machine learning",
+      "kind": "service",
+      "x": 1212,
+      "y": 836,
+      "zone": "data"
+    },
+    {
+      "id": "dps",
+      "name": "Device Provisioning Service",
+      "category": "iot",
+      "kind": "service",
+      "x": 672,
+      "y": 120,
+      "zone": "mgmt"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "category": "identity",
+      "kind": "service",
+      "x": 942,
+      "y": 120,
+      "zone": "mgmt"
+    },
+    {
+      "id": "azmon",
+      "name": "Azure Monitor",
+      "category": "monitor",
+      "kind": "service",
+      "x": 1250,
+      "y": 120,
+      "zone": "observability"
+    },
+    {
+      "id": "logana",
+      "name": "Log Analytics",
+      "category": "monitor",
+      "kind": "service",
+      "x": 1520,
+      "y": 120,
+      "zone": "observability"
+    },
+    {
+      "id": "engineer",
+      "name": "Operations Engineer",
+      "category": "general",
+      "kind": "persona",
+      "x": 1450,
+      "y": 560
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "sensors",
+      "to": "gateway",
+      "step": 1,
+      "label": "Send telemetry",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e2",
+      "from": "gateway",
+      "to": "privatelink",
+      "step": 2,
+      "label": "Secure forward",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e3",
+      "from": "privatelink",
+      "to": "iothub",
+      "step": 3,
+      "label": "Ingest telemetry",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e4",
+      "from": "iothub",
+      "to": "stream",
+      "step": 4,
+      "label": "Stream events",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e5",
+      "from": "stream",
+      "to": "tsi",
+      "step": 5,
+      "label": "Feed dashboard",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e6",
+      "from": "stream",
+      "to": "adt",
+      "step": 6,
+      "label": "Update twins",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e7",
+      "from": "stream",
+      "to": "datalake",
+      "step": 7,
+      "label": "Store hot data",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e8",
+      "from": "datalake",
+      "to": "synapse",
+      "step": 8,
+      "label": "Run batch",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e9",
+      "from": "synapse",
+      "to": "aml",
+      "step": 9,
+      "label": "Train models",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e10",
+      "from": "aml",
+      "to": "stream",
+      "step": 10,
+      "label": "Deploy model",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e11",
+      "from": "iothub",
+      "to": "azmon",
+      "step": 11,
+      "label": "Send metrics",
+      "routing": "orthogonal",
+      "style": "dashed"
+    },
+    {
+      "id": "e12",
+      "from": "azmon",
+      "to": "logana",
+      "step": 12,
+      "label": "Ingest logs",
+      "routing": "orthogonal",
+      "style": "dashed"
+    },
+    {
+      "id": "e13",
+      "from": "dps",
+      "to": "iothub",
+      "step": 13,
+      "label": "Provision devices",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e14",
+      "from": "tsi",
+      "to": "engineer",
+      "step": 14,
+      "label": "View insights",
+      "routing": "orthogonal"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Industrial IoT sensors in the OT network send high-frequency telemetry to the on-premises industrial gateway."
+    },
+    {
+      "step": 2,
+      "description": "The industrial gateway securely forwards aggregated telemetry from the OT network toward Azure via the Private Link endpoint, maintaining OT/IT segregation."
+    },
+    {
+      "step": 3,
+      "description": "Traffic enters Azure over Private Link and is ingested by IoT Hub for reliable, scaled telemetry ingestion."
+    },
+    {
+      "step": 4,
+      "description": "IoT Hub routes device telemetry streams into Azure Stream Analytics for sub-second real-time processing and anomaly detection."
+    },
+    {
+      "step": 5,
+      "description": "Stream Analytics pushes processed time series and anomaly flags to Time Series Insights to power real-time dashboards."
+    },
+    {
+      "step": 6,
+      "description": "Stream Analytics updates Azure Digital Twins with live state changes and anomaly information for virtual facility modeling."
+    },
+    {
+      "step": 7,
+      "description": "Stream Analytics writes enriched telemetry into Azure Data Lake Storage as hot data, supporting 6-month high-performance retention and lifecycle policies for long-term cold storage."
+    },
+    {
+      "step": 8,
+      "description": "Azure Synapse Analytics runs scheduled and ad-hoc batch queries over Data Lake, performing trend and reliability analysis on historical telemetry."
+    },
+    {
+      "step": 9,
+      "description": "Synapse outputs training datasets into Azure Machine Learning, which trains predictive maintenance models using historical trends and failure patterns."
+    },
+    {
+      "step": 10,
+      "description": "Azure Machine Learning operationalizes and deploys trained models back into Azure Stream Analytics for inline scoring and real-time anomaly prediction."
+    },
+    {
+      "step": 11,
+      "description": "IoT Hub emits platform metrics and diagnostics to Azure Monitor for health monitoring and to support the 99.9% uptime SLA."
+    },
+    {
+      "step": 12,
+      "description": "Azure Monitor forwards telemetry and logs into Log Analytics workspaces for centralized querying, alerting, and integration with SIEM tools."
+    },
+    {
+      "step": 13,
+      "description": "Device Provisioning Service securely provisions and assigns IoT devices to IoT Hub instances using Microsoft Entra ID-backed identities and policies."
+    },
+    {
+      "step": 14,
+      "description": "Operations engineers access Time Series Insights dashboards to visualize anomalies, trends, and digital twin states for predictive maintenance decisions."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3203,
+    "completionTokens": 7637,
+    "totalTokens": 10840,
+    "elapsedTimeMs": 122263,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-21T14:07:01.178Z"
+}

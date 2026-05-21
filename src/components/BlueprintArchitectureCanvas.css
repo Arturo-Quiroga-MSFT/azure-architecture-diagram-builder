@@ -1,0 +1,83 @@
+.bp-arch-canvas {
+  background: #ffffff;
+  padding: 32px 48px 40px;
+  font-family: 'Caveat', 'Patrick Hand', 'Segoe UI', system-ui, sans-serif;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+.bp-arch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #cbd5e1;
+}
+
+.bp-arch-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6366f1;
+  margin-bottom: 4px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.bp-arch-title {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.bp-arch-author {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.bp-arch-svg {
+  display: block;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.bp-arch-workflow {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.bp-arch-workflow li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.45;
+}
+
+.bp-step-badge {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bp-step-text {
+  flex: 1;
+}

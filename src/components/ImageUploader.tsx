@@ -125,7 +125,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     <div className="image-uploader">
       <div className="image-uploader-header">
         <Image size={16} />
-        <span>Upload Architecture Diagram</span>
+        <span>Upload Diagram, Sketch, Photograph, or Napkin Drawing</span>
         <span className="optional-badge">Optional</span>
       </div>
       

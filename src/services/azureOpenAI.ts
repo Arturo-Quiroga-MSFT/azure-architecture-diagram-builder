@@ -28,7 +28,7 @@ export interface ModelOverride {
   reasoningEffort: ReasoningEffort;
 }
 
-async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride, jsonOutput = true): Promise<CallResult> {
+export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride, jsonOutput = true): Promise<CallResult> {
   // Use explicit model override if provided, otherwise read from store
   const storeSettings = getModelSettingsForFeature('architectureGeneration');
   const rawStore = getModelSettings();
@@ -143,13 +143,17 @@ async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride, j
   }
 }
 
-export async function generateArchitectureWithAI(description: string, modelOverride?: ModelOverride) {
+export async function generateArchitectureWithAI(description: string, modelOverride?: ModelOverride, manifest?: import('./componentManifestAI').ComponentManifest) {
   // Build a compact list of known service display names for the prompt
   const knownServices = Object.entries(SERVICE_ICON_MAP)
     .map(([, m]) => `${m.displayName} (${m.category})`)
     .join(', ');
 
-  const systemPrompt = `You are an expert Azure cloud architect. Analyze architecture requirements and return a JSON specification for an Azure architecture diagram with logical groupings.
+  const manifestBlock = manifest
+    ? '\n\n' + (await import('./componentManifestAI')).renderManifestForPrompt(manifest)
+    : '';
+
+  const systemPrompt = `You are an expert Azure cloud architect. Analyze architecture requirements and return a JSON specification for an Azure architecture diagram with logical groupings.${manifestBlock}
 
 **IMPORTANT: DO NOT include position, x, y, width, or height in your response. The layout engine will calculate optimal positions automatically.**
 

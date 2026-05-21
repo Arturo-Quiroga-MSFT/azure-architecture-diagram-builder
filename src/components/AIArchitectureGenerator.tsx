@@ -2,15 +2,34 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { Sparkles, X, Loader2, Clock, Zap, Brain } from 'lucide-react';
-import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';
+import { Sparkles, X, Loader2, Clock, Zap, Brain, Network, PenTool, Layers } from 'lucide-react';
+import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';import { generateReferenceArchitectureWithAI } from '../services/referenceArchitectureAI';
+import { generateBlueprintArchitectureWithAI } from '../services/blueprintArchitectureAI';
+import { generateComponentManifest, ComponentManifest } from '../services/componentManifestAI';
+import { exportReferenceArchitectureAsPng } from '../utils/exportReferencePng';
+import { exportBlueprintArchitectureAsPng } from '../utils/exportBlueprintPng';
 import ImageUploader from './ImageUploader';
-import { useModelSettings, MODEL_CONFIG } from '../stores/modelSettingsStore';
+import { useModelSettings, MODEL_CONFIG, getAvailableModels, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { trackImageImport } from '../services/telemetryService';
 import './AIArchitectureGenerator.css';
 
+type GenerationMode = 'topology' | 'reference' | 'blueprint' | 'both';
+
 interface AIArchitectureGeneratorProps {
   onGenerate: (architecture: any, prompt: string, autoSnapshot: boolean, referenceImageUrl?: string) => void;
+  /**
+   * Called when a Reference Architecture has been generated. Reference mode
+   * intentionally does NOT push a topology onto the canvas (the transformed
+   * topology is low-fidelity and confuses users); the PNG is the deliverable.
+   * App uses this to stash the ref so the toolbar can re-export the PNG.
+   */
+  onReferenceArchitecture?: (ref: any) => void;
+  /**
+   * Called when a Blueprint Architecture has been generated. Like reference
+   * mode, blueprint mode does NOT push a topology onto the canvas; the PNG is
+   * the deliverable. App stashes the blueprint so the toolbar can re-export.
+   */
+  onBlueprintArchitecture?: (bp: any) => void;
   currentArchitecture?: {
     nodes: any[];
     edges: any[];
@@ -18,7 +37,7 @@ interface AIArchitectureGeneratorProps {
   };
 }
 
-const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGenerate, currentArchitecture }) => {
+const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGenerate, onReferenceArchitecture, onBlueprintArchitecture, currentArchitecture }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -27,9 +46,33 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [imageAnalyzed, setImageAnalyzed] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  
+  const [mode, setMode] = useState<GenerationMode>(() => {
+    const saved = localStorage.getItem('aiGenerator.mode');
+    if (saved === 'blueprint' || saved === 'both') return saved;
+    // Reference mode is hidden in the UI; migrate any stale persisted value.
+    if (saved === 'reference') return 'blueprint';
+    return 'topology';
+  });
+
+  // When mode === 'both', run topology + blueprint generations in parallel
+  // (default) or sequentially. Persisted.
+  const [bothInParallel, setBothInParallel] = useState<boolean>(() => {
+    const saved = localStorage.getItem('aiGenerator.bothInParallel');
+    return saved === null ? true : JSON.parse(saved);
+  });
+  const handleBothInParallelChange = (checked: boolean) => {
+    setBothInParallel(checked);
+    localStorage.setItem('aiGenerator.bothInParallel', JSON.stringify(checked));
+  };
+
+  const handleModeChange = (m: GenerationMode) => {
+    setMode(m);
+    localStorage.setItem('aiGenerator.mode', m);
+  };
+
+  // Opt-in: also download an editorial PNG when generating in reference mode.
   // Model settings from reactive hook (stays in sync with dropdown)
-  const [modelSettings] = useModelSettings();
+  const [modelSettings, updateModelSettings] = useModelSettings();
   
   // Auto-snapshot preference (stored in localStorage)
   const [autoSnapshot, setAutoSnapshot] = useState<boolean>(() => {
@@ -142,6 +185,161 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     console.log(`🎯 Generate clicked: dropdown model=${modelSettings.model}, reasoning=${modelSettings.reasoningEffort}, overrides=${JSON.stringify(modelSettings.featureOverrides)}`);
 
     try {
+      // ── Reference (Editorial) mode — PNG is the sole deliverable.
+      // We deliberately do NOT push a topology onto the canvas: the
+      // transformed network-flow view is low fidelity for editorial inputs
+      // and confuses users. Instead we notify App so it can enable the
+      // toolbar “Export Editorial PNG” action, then render + download.
+      if (mode === 'reference') {
+        const ref = await generateReferenceArchitectureWithAI(description, currentModelSettings);
+        if (ref.metrics) setAiMetrics(ref.metrics);
+
+        // Stash the ref for the toolbar re-export button (if App provided it).
+        onReferenceArchitecture?.(ref);
+
+        // Always export the PNG — it is the only artifact produced in this mode.
+        try {
+          await exportReferenceArchitectureAsPng(ref);
+        } catch (err) {
+          console.warn('Reference architecture PNG export failed:', err);
+          setError('PNG export failed. See console for details.');
+        }
+
+        setDescription('');
+        setTimeout(() => {
+          setIsOpen(false);
+          setAiMetrics(null);
+          setUploadedImageUrl(null);
+        }, 45000);
+        return;
+      }
+
+      // ── Blueprint (Whiteboard) mode — PNG is the sole deliverable.
+      // Hand-drawn / sketchnote-style nested zones with numbered, labeled
+      // arrows. Like reference mode, we do not touch the ReactFlow canvas.
+      if (mode === 'blueprint') {
+        const bp = await generateBlueprintArchitectureWithAI(description, currentModelSettings);
+        if (bp.metrics) setAiMetrics(bp.metrics);
+
+        onBlueprintArchitecture?.(bp);
+
+        try {
+          await exportBlueprintArchitectureAsPng(bp);
+        } catch (err) {
+          console.warn('Blueprint architecture PNG export failed:', err);
+          setError('PNG export failed. See console for details.');
+        }
+
+        setDescription('');
+        setTimeout(() => {
+          setIsOpen(false);
+          setAiMetrics(null);
+          setUploadedImageUrl(null);
+        }, 45000);
+        return;
+      }
+
+      // ── Both mode — generate topology AND blueprint from the same prompt.
+      // Topology renders on the canvas (via onGenerate); blueprint is stashed
+      // and (when autoSnapshot is on) auto-downloaded as PNG. The toolbar's
+      // "Export Blueprint PNG" remains available either way.
+      if (mode === 'both') {
+        // Build the same enriched context the topology branch uses below.
+        let bothContextPrompt = description;
+        if (currentArchitecture && currentArchitecture.nodes.length > 0) {
+          const groups = currentArchitecture.nodes
+            .filter((n) => n.type === 'groupNode')
+            .map((n) => ({ name: n.data.label, id: n.id }));
+          const groupNameMap = new Map(groups.map((g) => [g.id, g.name]));
+          const services = currentArchitecture.nodes
+            .filter((n) => n.type === 'azureNode')
+            .map((n) => {
+              const groupName = n.parentNode ? groupNameMap.get(n.parentNode) : null;
+              return { name: n.data.label, group: groupName || null };
+            });
+          const connections = currentArchitecture.edges.map((e) => {
+            const fromNode = currentArchitecture.nodes.find((n) => n.id === e.source);
+            const toNode = currentArchitecture.nodes.find((n) => n.id === e.target);
+            return `${fromNode?.data.label || e.source} → ${toNode?.data.label || e.target}${e.label ? ` (${e.label})` : ''}`;
+          });
+          const servicesList = services.map((s) => `${s.name}${s.group ? ` [${s.group}]` : ''}`).join(', ');
+          bothContextPrompt = `MODIFY EXISTING ARCHITECTURE: "${currentArchitecture.architectureName}"\nServices: ${servicesList}\n${groups.length > 0 ? `Groups: ${groups.map((g) => g.name).join(', ')}` : ''}\n${connections.length > 0 ? `Connections: ${connections.join('; ')}` : ''}\n\nCHANGE REQUESTED: ${description}\n\nIMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connections, workflow). Keep everything unchanged EXCEPT what the user requested. Only add, modify, or remove what was asked.`;
+        }
+
+        const topoCall = (m?: ComponentManifest) => generateArchitectureWithAI(bothContextPrompt, currentModelSettings, m);
+        const bpCall = (m?: ComponentManifest) => generateBlueprintArchitectureWithAI(description, currentModelSettings, m);
+
+        const t0 = performance.now();
+        // Pre-pass: extract a canonical component manifest so topology and
+        // blueprint agree on the set of services, zones, and on-prem actors.
+        let manifest: ComponentManifest | undefined;
+        try {
+          manifest = await generateComponentManifest(description, currentModelSettings);
+          console.log(
+            `📋 Manifest: ${manifest.components.length} components across ${manifest.zones.length} zones (${manifest.metrics?.totalTokens ?? '?'} tokens, ${Math.round((manifest.metrics?.elapsedTimeMs ?? 0) / 100) / 10}s)`,
+          );
+        } catch (err) {
+          console.warn('Component manifest pre-pass failed; falling back to independent generation:', err);
+          manifest = undefined;
+        }
+
+        let topoResult: any;
+        let bpResult: any;
+        if (bothInParallel) {
+          [topoResult, bpResult] = await Promise.all([topoCall(manifest), bpCall(manifest)]);
+        } else {
+          topoResult = await topoCall(manifest);
+          bpResult = await bpCall(manifest);
+        }
+        const wallElapsed = performance.now() - t0;
+
+        // Combined metrics: sum tokens (including manifest); wall-clock
+        // elapsed reflects actual perceived time (manifest + max(topo, bp)
+        // for parallel; manifest + topo + bp for sequential).
+        const tm = topoResult.metrics;
+        const bm = bpResult.metrics;
+        const mm = manifest?.metrics;
+        if (tm || bm || mm) {
+          setAiMetrics({
+            elapsedTimeMs: Math.round(wallElapsed),
+            promptTokens: (tm?.promptTokens || 0) + (bm?.promptTokens || 0) + (mm?.promptTokens || 0),
+            completionTokens: (tm?.completionTokens || 0) + (bm?.completionTokens || 0) + (mm?.completionTokens || 0),
+            totalTokens: (tm?.totalTokens || 0) + (bm?.totalTokens || 0) + (mm?.totalTokens || 0),
+          } as AIMetrics);
+        }
+
+        // Push topology to canvas first.
+        // Inject the manifest title (when available) so the canvas banner /
+        // title block stop reading "Untitled Architecture" after generation.
+        if (manifest?.title && topoResult && typeof topoResult === 'object') {
+          if (!topoResult.architectureName || /untitled/i.test(String(topoResult.architectureName))) {
+            topoResult.architectureName = manifest.title;
+          }
+        }
+        onGenerate(topoResult, description, autoSnapshot, uploadedImageUrl || undefined);
+        // Stash blueprint for the toolbar re-export button.
+        onBlueprintArchitecture?.(bpResult);
+
+        // Auto-download the blueprint PNG when the user has autoSnapshot on
+        // (matches the existing "auto" behavior they're already used to).
+        if (autoSnapshot) {
+          try {
+            await exportBlueprintArchitectureAsPng(bpResult);
+          } catch (err) {
+            console.warn('Blueprint architecture PNG export failed:', err);
+            setError('Blueprint PNG export failed. See console for details.');
+          }
+        }
+
+        setDescription('');
+        setTimeout(() => {
+          setIsOpen(false);
+          setAiMetrics(null);
+          setUploadedImageUrl(null);
+        }, 45000);
+        return;
+      }
+
       // Build context about existing architecture if present
       let contextPrompt = description;
       
@@ -235,7 +433,7 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
 
       {isOpen && (
         <div className="modal-overlay" onClick={() => setIsOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content ai-architecture-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title">
                 <Sparkles size={20} />
@@ -247,11 +445,21 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
             </div>
 
             <div className="modal-body">
+             <div className="modal-body-grid">
+              <div className="modal-col modal-col-left">
               <p className="modal-description">
-                Describe your Azure architecture in plain English, and AI will automatically
-                generate a diagram with the appropriate services and connections.
-                You can also <strong>upload an existing diagram</strong> (screenshot, whiteboard photo, or export from other tools)
-                and AI will analyze it to create your architecture.
+                {mode === 'reference' ? (
+                  <>Describe the workload in plain English and AI will generate a <strong>publication-style reference architecture</strong> with stages (Ingest → Process → Serve), a foundation strip, and cross-cutting governance rails — in the style of the Azure Architecture Center.</>
+                ) : mode === 'blueprint' ? (
+                  <>Describe the workload and AI will sketch a <strong>whiteboard-style blueprint</strong> with nested zones (Azure / VNet / On-prem) and numbered, labeled arrows showing the end-to-end flow — like an architect explaining a system at a whiteboard.</>
+                ) : mode === 'both' ? (
+                  <>Generate <strong>both</strong> a deployable topology (on the canvas) and a whiteboard-style blueprint (PNG) from the same prompt. Useful when you want a working diagram to edit and a polished visual to share.</>
+                ) : (
+                  <>Describe your Azure architecture in plain English, and AI will automatically
+                  generate a diagram with the appropriate services and connections.
+                  You can also <strong>upload an existing diagram</strong> (screenshot, whiteboard photo, or export from other tools)
+                  and AI will analyze it to create your architecture.</>
+                )}
               </p>
 
               <div className="form-group">
@@ -305,7 +513,47 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                   </div>
                 </div>
               )}
-
+              </div>
+              <div className="modal-col modal-col-right">
+              <div className="mode-toggle" role="tablist" aria-label="Generation mode">
+                <button
+                  role="tab"
+                  aria-selected={mode === 'topology'}
+                  className={`mode-toggle-btn ${mode === 'topology' ? 'active' : ''}`}
+                  onClick={() => handleModeChange('topology')}
+                  disabled={isGenerating}
+                  type="button"
+                >
+                  <Network size={16} />
+                  <span className="mode-label">Topology</span>
+                  <span className="mode-sub">Deployable network diagram</span>
+                </button>
+                {/* Reference (swim-lane) mode hidden — Blueprint replaces it. Code path kept for now in case we want to restore. */}
+                <button
+                  role="tab"
+                  aria-selected={mode === 'blueprint'}
+                  className={`mode-toggle-btn ${mode === 'blueprint' ? 'active' : ''}`}
+                  onClick={() => handleModeChange('blueprint')}
+                  disabled={isGenerating}
+                  type="button"
+                >
+                  <PenTool size={16} />
+                  <span className="mode-label">Blueprint <span className="mode-badge-beta">BETA</span></span>
+                  <span className="mode-sub">Hand-drawn whiteboard diagram</span>
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={mode === 'both'}
+                  className={`mode-toggle-btn ${mode === 'both' ? 'active' : ''}`}
+                  onClick={() => handleModeChange('both')}
+                  disabled={isGenerating}
+                  type="button"
+                >
+                  <Layers size={16} />
+                  <span className="mode-label">Both <span className="mode-badge-beta">BETA</span></span>
+                  <span className="mode-sub">Topology + Blueprint</span>
+                </button>
+              </div>
               <div className="example-prompts">
                 <h3>Example Prompts</h3>
                 <div className="example-list">
@@ -330,16 +578,56 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                   ))}
                 </div>
               </div>
+              </div>
+             </div>
             </div>
 
             <div className="modal-footer">
               <div className="ai-modal-active-model">
                 <Brain size={20} />
-                <span>Using: <span className="model-badge">{MODEL_CONFIG[modelSettings.model].displayName}</span></span>
+                <span className="ai-modal-model-label">Model:</span>
+                <select
+                  className="ai-modal-model-select"
+                  value={modelSettings.model}
+                  onChange={(e) => {
+                    const next = e.target.value as ModelType;
+                    const cfg = MODEL_CONFIG[next];
+                    updateModelSettings({
+                      model: next,
+                      reasoningEffort: cfg.isReasoning
+                        ? (cfg.defaultReasoningEffort ?? modelSettings.reasoningEffort)
+                        : modelSettings.reasoningEffort,
+                    });
+                  }}
+                  disabled={isGenerating}
+                  aria-label="Select AI model"
+                >
+                  {getAvailableModels().map((m) => (
+                    <option key={m} value={m}>
+                      {MODEL_CONFIG[m].displayName}
+                    </option>
+                  ))}
+                </select>
                 {MODEL_CONFIG[modelSettings.model].isReasoning && (
-                  <span className="model-badge">({modelSettings.reasoningEffort})</span>
+                  <>
+                    <span className="ai-modal-model-label">Reasoning:</span>
+                    <select
+                      className="ai-modal-model-select"
+                      value={modelSettings.reasoningEffort}
+                      onChange={(e) =>
+                        updateModelSettings({ reasoningEffort: e.target.value as ReasoningEffort })
+                      }
+                      disabled={isGenerating}
+                      aria-label="Select reasoning effort"
+                    >
+                      <option value="none">none</option>
+                      <option value="low">low</option>
+                      <option value="medium">medium</option>
+                      <option value="high">high</option>
+                    </select>
+                  </>
                 )}
-                <span className="model-change-hint">Change in toolbar → AI Model</span>
+                <span className="model-change-hint">Also configurable in toolbar → AI Model</span>
               </div>
               {currentArchitecture && currentArchitecture.nodes.length > 0 && (
                 <div className="auto-snapshot-option">
@@ -354,6 +642,22 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                   </label>
                   <p className="checkbox-hint">
                     Automatically saves your current diagram to version history before generating a new one
+                  </p>
+                </div>
+              )}
+              {mode === 'both' && (
+                <div className="auto-snapshot-option">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={bothInParallel}
+                      onChange={(e) => handleBothInParallelChange(e.target.checked)}
+                      disabled={isGenerating}
+                    />
+                    <span>Run topology and blueprint in parallel</span>
+                  </label>
+                  <p className="checkbox-hint">
+                    Parallel ≈ half the wall-time (recommended on high-quota deployments). Uncheck to run sequentially if your model deployment has tight rate limits.
                   </p>
                 </div>
               )}

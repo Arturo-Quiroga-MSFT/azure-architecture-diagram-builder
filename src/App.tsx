@@ -22,6 +22,10 @@ import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
+import { exportReferenceArchitectureAsPng } from './utils/exportReferencePng';
+import type { ReferenceArchitecture } from './services/referenceArchitectureAI';
+import { exportBlueprintArchitectureAsPng } from './utils/exportBlueprintPng';
+import type { BlueprintArchitecture } from './services/blueprintArchitectureAI';
 import ReferenceImageViewer from './components/ReferenceImageViewer';
 import TitleBlock from './components/TitleBlock';
 import ModelBadge from './components/ModelBadge';
@@ -91,6 +95,34 @@ type ExportHistoryItem = {
 
 const EXPORT_HISTORY_STORAGE_KEY = 'azure-diagram-builder.exportHistory.v1';
 
+// Derive a short, human-friendly architecture title from a free-form prompt
+// (used as a fallback when no manifest title is available). Strips common
+// prefixes like "MODIFY EXISTING ARCHITECTURE: ...", "Build a", "Design a",
+// then takes the first ~8 words and title-cases them.
+function deriveTitleFromPrompt(prompt: string | undefined | null): string | undefined {
+  if (!prompt) return undefined;
+  let p = String(prompt).trim();
+  // Strip our own context-prompt prefix if present.
+  const modMatch = p.match(/CHANGE REQUESTED:\s*(.+)$/is);
+  if (modMatch) p = modMatch[1].trim();
+  // Drop leading verbs / fillers.
+  p = p.replace(/^(please\s+)?(build|design|create|generate|make|draw|architect|show|produce)\s+(me\s+)?(a|an|the)?\s*/i, '');
+  // Take first sentence / line.
+  p = p.split(/[\n.!?]/)[0].trim();
+  if (!p) return undefined;
+  const words = p.split(/\s+/).slice(0, 8);
+  if (words.length === 0) return undefined;
+  const titled = words
+    .map((w) => {
+      if (w.length <= 3 && w === w.toUpperCase()) return w; // keep acronyms (IoT, AKS)
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(' ')
+    .replace(/[^\w\s\-/&]/g, '')
+    .trim();
+  return titled.length > 0 ? titled : undefined;
+}
+
 function App() {
   const [nodes, setNodes, onNodesChangeBase] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -144,6 +176,8 @@ function App() {
   const [isAzPrototypeExportOpen, setIsAzPrototypeExportOpen] = useState(false);
   const [isAzPrototypeImportOpen, setIsAzPrototypeImportOpen] = useState(false);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
+  const [lastReferenceArchitecture, setLastReferenceArchitecture] = useState<ReferenceArchitecture | null>(null);
+  const [lastBlueprintArchitecture, setLastBlueprintArchitecture] = useState<BlueprintArchitecture | null>(null);
   const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -1468,6 +1502,9 @@ function App() {
   const handleAIGenerate = useCallback(async (architecture: any, prompt: string, autoSnapshot: boolean = true) => {
     try {
       console.log('Generating architecture from:', architecture);
+      // Capture (or clear) the editorial reference-architecture payload so the
+      // Export menu can re-emit the publication-style PNG on demand.
+      setLastReferenceArchitecture(architecture?.__referenceArchitecture ?? null);
       const { services, connections, workflow: workflowSteps } = architecture;
       let { groups } = architecture;
       
@@ -1534,6 +1571,16 @@ function App() {
 
       // Store the prompt and workflow for display
       setArchitecturePrompt(prompt);
+
+      // Pick up an architecture name from the AI payload (manifest.title in
+      // Both mode) or derive a short title from the prompt so the banner
+      // doesn't read "Untitled Architecture" after every generation.
+      const incomingName: string | undefined = (architecture?.architectureName && String(architecture.architectureName).trim())
+        || deriveTitleFromPrompt(prompt);
+      if (incomingName && incomingName !== 'Untitled Architecture') {
+        setTitleBlockData((prev) => ({ ...prev, architectureName: incomingName }));
+      }
+
       if (workflowSteps && workflowSteps.length > 0) {
         setWorkflow(workflowSteps);
         // setShowWorkflow(true); // Automatically show workflow panel for new generations
@@ -2340,6 +2387,15 @@ function App() {
                     if (refImageUrl) setReferenceImageUrl(refImageUrl);
                     handleAIGenerate(arch, prompt, autoSnap);
                   }}
+                  onReferenceArchitecture={(ref) => {
+                    // Reference mode does not push a topology onto the canvas;
+                    // just remember the ref so the toolbar can re-export the PNG.
+                    setLastReferenceArchitecture(ref ?? null);
+                  }}
+                  onBlueprintArchitecture={(bp) => {
+                    // Blueprint mode is also PNG-only; stash for re-export.
+                    setLastBlueprintArchitecture(bp ?? null);
+                  }}
                   currentArchitecture={{
                     nodes,
                     edges,
@@ -2421,6 +2477,48 @@ function App() {
                       >
                         <Download size={18} />
                         Export PNG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={!lastReferenceArchitecture}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          if (!lastReferenceArchitecture) return;
+                          exportReferenceArchitectureAsPng(lastReferenceArchitecture).catch((err) => {
+                            console.error('Editorial PNG export failed:', err);
+                            alert('Editorial PNG export failed. See console for details.');
+                          });
+                        }}
+                        title={
+                          lastReferenceArchitecture
+                            ? 'Re-download the publication-style reference-architecture PNG'
+                            : 'Generate a diagram in Reference Architecture mode to enable this export'
+                        }
+                      >
+                        <Download size={18} />
+                        Export Editorial PNG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={!lastBlueprintArchitecture}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          if (!lastBlueprintArchitecture) return;
+                          exportBlueprintArchitectureAsPng(lastBlueprintArchitecture).catch((err) => {
+                            console.error('Blueprint PNG export failed:', err);
+                            alert('Blueprint PNG export failed. See console for details.');
+                          });
+                        }}
+                        title={
+                          lastBlueprintArchitecture
+                            ? 'Re-download the hand-drawn whiteboard-style blueprint PNG'
+                            : 'Generate a diagram in Blueprint mode to enable this export'
+                        }
+                      >
+                        <Download size={18} />
+                        Export Blueprint PNG
                       </button>
                       <button
                         className="toolbar-dropdown-item"
