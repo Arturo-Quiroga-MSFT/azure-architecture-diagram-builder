@@ -46,6 +46,25 @@
   border-radius: 12px;
 }
 
+.bp-arch-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bp-arch-body--right {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.bp-arch-body--right .bp-arch-workflow {
+  grid-template-columns: 1fr;
+  flex: 0 0 320px;
+  width: 320px;
+  margin-top: 0;
+}
+
 .bp-arch-workflow {
   list-style: none;
   padding: 0;

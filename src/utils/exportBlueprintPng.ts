@@ -24,6 +24,19 @@ export interface ExportBlueprintPngOptions {
   fileName?: string;
   author?: string;
   pixelRatio?: number;
+  /** 'bottom' | 'right' | 'auto' (default 'auto'). Auto picks based on aspect ratio. */
+  legendPosition?: 'bottom' | 'right' | 'auto';
+}
+
+const LEGEND_RIGHT_WIDTH = 340;
+
+function resolveLegendForExport(
+  position: 'bottom' | 'right' | 'auto' | undefined,
+  cW: number,
+  cH: number,
+): 'bottom' | 'right' {
+  if (position === 'bottom' || position === 'right') return position;
+  return cW / Math.max(cH, 1) > 1.4 ? 'bottom' : 'right';
 }
 
 export async function exportBlueprintArchitectureAsPng(
@@ -34,6 +47,7 @@ export async function exportBlueprintArchitectureAsPng(
     fileName,
     author,
     pixelRatio = 2,
+    legendPosition,
   } = options;
 
   const titleSlug = shortSlug(data.title || 'blueprint');
@@ -47,12 +61,17 @@ export async function exportBlueprintArchitectureAsPng(
   const iconMap = await preloadIconMap(data);
   const personaIconUrl = await preloadPersonaIcon();
 
+  const resolvedLegend = resolveLegendForExport(legendPosition, data.canvas.width, data.canvas.height);
+  const hostPxWidth = resolvedLegend === 'right'
+    ? data.canvas.width + LEGEND_RIGHT_WIDTH + 32
+    : data.canvas.width + 96;
+
   const host = document.createElement('div');
   host.setAttribute('data-bp-arch-export-host', 'true');
   host.style.position = 'fixed';
   host.style.left = '-100000px';
   host.style.top = '0';
-  host.style.width = `${data.canvas.width + 96}px`;
+  host.style.width = `${hostPxWidth}px`;
   host.style.pointerEvents = 'none';
   host.style.zIndex = '-1';
   document.body.appendChild(host);
@@ -66,6 +85,7 @@ export async function exportBlueprintArchitectureAsPng(
         author,
         iconMap,
         personaIconUrl,
+        legendPosition: resolvedLegend,
       }),
     );
 

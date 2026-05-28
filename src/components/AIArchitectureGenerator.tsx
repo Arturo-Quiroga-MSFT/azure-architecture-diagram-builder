@@ -15,12 +15,16 @@ import './AIArchitectureGenerator.css';
 
 type GenerationMode = 'topology' | 'reference' | 'blueprint' | 'both';
 
-// Blueprint diagrams require OpenAI models. Non-OpenAI partner deployments on
-// Azure (DeepSeek, Grok, Mistral, Kimi, etc. — identified by
-// apiFormat: 'chat-completions') run under stricter Azure AI Content Safety
-// configurations that block the blueprint system prompt as adversarial.
+// Blueprint diagrams require general-purpose OpenAI models.
+// - Non-OpenAI partner deployments (DeepSeek, Grok, Mistral, Kimi, etc. —
+//   identified by apiFormat: 'chat-completions') run under stricter Azure AI
+//   Content Safety configurations that block the blueprint system prompt as
+//   adversarial.
+// - Codex-tuned variants (e.g. gpt-5.2-codex, gpt-5.3-codex) are optimized for
+//   coding tasks and tend to refuse non-code architecture-diagram prompts with
+//   "I'm sorry, ..." responses.
 const isBlueprintCapableModel = (m: ModelType): boolean =>
-  MODEL_CONFIG[m].apiFormat !== 'chat-completions';
+  MODEL_CONFIG[m].apiFormat !== 'chat-completions' && !m.includes('codex');
 const modeRequiresOpenAI = (m: GenerationMode): boolean =>
   m === 'blueprint' || m === 'both';
 
@@ -105,6 +109,18 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     const saved = localStorage.getItem('aiGenerator.autoSnapshot');
     return saved === null ? true : JSON.parse(saved); // Default to true
   });
+
+  // Blueprint legend position preference (stored in localStorage). 'auto'
+  // picks bottom vs right based on aspect ratio.
+  const [legendPosition, setLegendPosition] = useState<'auto' | 'bottom' | 'right'>(() => {
+    const saved = localStorage.getItem('aiGenerator.blueprintLegendPosition');
+    if (saved === 'bottom' || saved === 'right' || saved === 'auto') return saved;
+    return 'auto';
+  });
+  const handleLegendPositionChange = (v: 'auto' | 'bottom' | 'right') => {
+    setLegendPosition(v);
+    localStorage.setItem('aiGenerator.blueprintLegendPosition', v);
+  };
 
   // Save preference to localStorage when it changes
   const handleAutoSnapshotChange = (checked: boolean) => {
@@ -250,7 +266,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         onBlueprintArchitecture?.(bp);
 
         try {
-          await exportBlueprintArchitectureAsPng(bp);
+          await exportBlueprintArchitectureAsPng(bp, { legendPosition });
         } catch (err) {
           console.warn('Blueprint architecture PNG export failed:', err);
           setError('PNG export failed. See console for details.');
@@ -350,7 +366,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         // (matches the existing "auto" behavior they're already used to).
         if (autoSnapshot) {
           try {
-            await exportBlueprintArchitectureAsPng(bpResult);
+            await exportBlueprintArchitectureAsPng(bpResult, { legendPosition });
           } catch (err) {
             console.warn('Blueprint architecture PNG export failed:', err);
             setError('Blueprint PNG export failed. See console for details.');
@@ -657,7 +673,7 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                 )}
                 <span className="model-change-hint">
                   {modeRequiresOpenAI(mode)
-                    ? 'Blueprint mode supports OpenAI models only (partner models trigger Azure content filters).'
+                    ? 'Blueprint mode supports general-purpose OpenAI models only (partner and Codex models are filtered out).'
                     : 'Also configurable in toolbar → AI Model'}
                 </span>
               </div>
@@ -690,6 +706,27 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                   </label>
                   <p className="checkbox-hint">
                     Parallel ≈ half the wall-time (recommended on high-quota deployments). Uncheck to run sequentially if your model deployment has tight rate limits.
+                  </p>
+                </div>
+              )}
+              {(mode === 'blueprint' || mode === 'both') && (
+                <div className="auto-snapshot-option">
+                  <label className="checkbox-label" style={{ alignItems: 'center', gap: 8 }}>
+                    <span>Blueprint legend position:</span>
+                    <select
+                      className="ai-modal-model-select"
+                      value={legendPosition}
+                      onChange={(e) => handleLegendPositionChange(e.target.value as 'auto' | 'bottom' | 'right')}
+                      disabled={isGenerating}
+                      aria-label="Blueprint legend position"
+                    >
+                      <option value="auto">Auto (by aspect ratio)</option>
+                      <option value="bottom">Bottom (full-width canvas)</option>
+                      <option value="right">Right (taller canvas)</option>
+                    </select>
+                  </label>
+                  <p className="checkbox-hint">
+                    Auto picks "bottom" for wide diagrams and "right" for square / tall ones.
                   </p>
                 </div>
               )}

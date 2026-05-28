@@ -2511,7 +2511,12 @@ function App() {
                         onClick={() => {
                           setIsExportMenuOpen(false);
                           if (!lastBlueprintArchitecture) return;
-                          exportBlueprintArchitectureAsPng(lastBlueprintArchitecture).catch((err) => {
+                          const savedLegend = localStorage.getItem('aiGenerator.blueprintLegendPosition');
+                          const legendPosition =
+                            savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
+                              ? (savedLegend as 'bottom' | 'right' | 'auto')
+                              : 'auto';
+                          exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }).catch((err) => {
                             console.error('Blueprint PNG export failed:', err);
                             alert('Blueprint PNG export failed. See console for details.');
                           });

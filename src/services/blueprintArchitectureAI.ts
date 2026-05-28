@@ -164,7 +164,7 @@ interface BlueprintArchitecture {
   nodes: Array<{
     id: string; name: string; category: string;
     kind?: "service"|"persona"|"cloud"|"device"|"database";
-    x: number; y: number;                                   // top-left of a 120x100 tile
+    x: number; y: number;                                   // top-left of a 180x120 tile
     zone?: string;                                          // grouping hint
   }>;
   edges: Array<{
@@ -182,12 +182,12 @@ Service "category" MUST be one of:
 
 Layout rules — CRITICAL:
 1. Canvas is 1600x1000 unless the workload truly needs more. Origin is top-left.
-2. Each node tile occupies roughly 120w x 100h px.
+2. Each node tile occupies roughly 180w x 120h px.
 3. SPACING (very important so edge labels don't collide with tiles):
-   • Horizontally adjacent nodes connected by a labeled edge: at least 220px between their LEFT edges (i.e., at least 100px of empty space between tiles).
-   • Vertically adjacent nodes connected by a labeled edge: at least 180px between their TOP edges (i.e., at least 80px of empty space between tiles).
-   • Unrelated nearby tiles: at least 60px of empty space.
-4. Zones must contain their child nodes with at least 40px padding on every side.
+   • Horizontally adjacent nodes connected by a labeled edge: at least 340px between their LEFT edges (i.e., at least 160px of empty space between tiles).
+   • Vertically adjacent nodes connected by a labeled edge: at least 250px between their TOP edges (i.e., at least 130px of empty space between tiles).
+   • Unrelated nearby tiles: at least 80px of empty space.
+4. Zones must contain their child nodes with at least 48px padding on every side.
 5. Nested zones (parent set) must lie fully inside their parent's bounds.
 6. Zones do NOT overlap their siblings.
 7. Place the primary entry actor (user/persona) on the LEFT. Place data stores and downstream sinks on the RIGHT or BOTTOM.
@@ -291,12 +291,12 @@ Now generate a blueprint architecture for the user's request. Return JSON only.`
 // ──────────────────────────────────────────────────────────────────────────────
 // Post-process: push apart nodes that the AI placed too close, then re-fit zones.
 // ──────────────────────────────────────────────────────────────────────────────
-const NODE_W = 150;
-const NODE_H = 100;
-const MIN_H_GAP = 120; // empty space between horizontally adjacent tiles
-const MIN_V_GAP = 95;  // empty space between vertically adjacent tiles
-const ZONE_PAD = 44;
-const MIN_ZONE_GAP = 70; // empty space between sibling zones
+const NODE_W = 180;
+const NODE_H = 120;
+const MIN_H_GAP = 160; // empty space between horizontally adjacent tiles
+const MIN_V_GAP = 130; // empty space between vertically adjacent tiles
+const ZONE_PAD = 48;
+const MIN_ZONE_GAP = 80; // empty space between sibling zones
 
 function enforceSpacing(bp: BlueprintArchitecture): void {
   if (!bp.nodes?.length) return;

@@ -34,10 +34,29 @@ export interface BlueprintArchitectureCanvasProps {
   iconMap?: Record<string, string>;
   /** Pre-resolved persona/users icon data: URL. */
   personaIconUrl?: string;
+  /**
+   * Position of the numbered workflow legend relative to the diagram.
+   * - 'bottom' (default): legend below the SVG in two columns (wide canvases).
+   * - 'right': legend to the right of the SVG in a single column (tall canvases).
+   * - 'auto': pick based on diagram aspect ratio (cW/cH).
+   */
+  legendPosition?: 'bottom' | 'right' | 'auto';
 }
 
-const NODE_W = 150;
-const NODE_H = 100;
+const LEGEND_RIGHT_WIDTH = 340;
+
+function resolveLegendPosition(
+  position: 'bottom' | 'right' | 'auto' | undefined,
+  canvasWidth: number,
+  canvasHeight: number,
+): 'bottom' | 'right' {
+  if (position === 'bottom' || position === 'right') return position;
+  const aspect = canvasWidth / Math.max(canvasHeight, 1);
+  return aspect > 1.4 ? 'bottom' : 'right';
+}
+
+const NODE_W = 180;
+const NODE_H = 120;
 const ICON = 44;
 const ARROW_GAP = 6;          // pixels between path end and node edge so the arrowhead is never clipped
 const LABEL_LINE_H = 12;      // line height for wrapped service labels
@@ -296,8 +315,11 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
   iconMap,
   personaIconUrl,
   author,
+  legendPosition,
 }) => {
   const { width: cW, height: cH } = data.canvas;
+  const resolvedLegend = resolveLegendPosition(legendPosition, cW, cH);
+  const hostWidth = resolvedLegend === 'right' ? cW + LEGEND_RIGHT_WIDTH + 32 : cW + 96;
 
   const nodeById = useMemo(() => {
     const m = new Map<string, BpNode>();
@@ -317,7 +339,8 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
     <div
       className="bp-arch-canvas"
       data-bp-arch-canvas="true"
-      style={{ width: cW + 96 }}
+      data-bp-arch-legend={resolvedLegend}
+      style={{ width: hostWidth }}
     >
       <header className="bp-arch-header">
         <div>
@@ -327,6 +350,7 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
         {author && <div className="bp-arch-author">{author}</div>}
       </header>
 
+      <div className={`bp-arch-body bp-arch-body--${resolvedLegend}`}>
       <svg
         className="bp-arch-svg"
         viewBox={`0 0 ${cW} ${cH}`}
@@ -414,8 +438,48 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
                 }
                 if (!collided) break;
               }
-              const finalBx = longest.horiz ? mx : mx + extra;
-              const finalBy = longest.horiz ? my + extra : my;
+              const finalBx0 = longest.horiz ? mx : mx + extra;
+              const finalBy0 = longest.horiz ? my + extra : my;
+
+              // Label-band avoidance: a step badge (r=13) must not land on
+              // top of any node's text label. The label sits in a vertical
+              // band just below the tile rect at [y + NODE_H - 22, y + NODE_H + 14].
+              // If we hit that band, push perpendicular to the longest
+              // segment so we slide laterally off the label without leaving
+              // the edge's neighborhood. Tile body itself is already cleared
+              // by the path router; this only fires for badges that landed
+              // near a label rendered below a tile.
+              let finalBx = finalBx0;
+              let finalBy = finalBy0;
+              const labelClearX = 10; // horizontal padding around tile
+              const labelBandTop = (n: BpNode) => n.y + NODE_H - 22;
+              const labelBandBot = (n: BpNode) => n.y + NODE_H + 14;
+              for (let iter = 0; iter < 4; iter++) {
+                let collided = false;
+                for (const n of data.nodes) {
+                  const inX = finalBx > n.x - labelClearX && finalBx < n.x + NODE_W + labelClearX;
+                  const inY = finalBy > labelBandTop(n) && finalBy < labelBandBot(n);
+                  if (!inX || !inY) continue;
+                  if (longest.horiz) {
+                    // Push along y (perpendicular to a horizontal segment).
+                    const upExit = labelBandTop(n) - 1;
+                    const downExit = labelBandBot(n) + 1;
+                    finalBy = Math.abs(finalBy - upExit) <= Math.abs(finalBy - downExit)
+                      ? upExit
+                      : downExit;
+                  } else {
+                    const leftExit = (n.x - labelClearX) - 1;
+                    const rightExit = (n.x + NODE_W + labelClearX) + 1;
+                    finalBx = Math.abs(finalBx - leftExit) <= Math.abs(finalBx - rightExit)
+                      ? leftExit
+                      : rightExit;
+                  }
+                  collided = true;
+                  break;
+                }
+                if (!collided) break;
+              }
+
               placed.push({ e, a, b, geom, bx: finalBx, by: finalBy });
             }
 
@@ -472,6 +536,7 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
           ))}
         </ol>
       )}
+      </div>
     </div>
   );
 };
