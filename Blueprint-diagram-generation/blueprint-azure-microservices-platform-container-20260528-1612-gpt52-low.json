@@ -1,0 +1,271 @@
+{
+  "title": "Azure Microservices Platform with Container Apps",
+  "canvas": {
+    "width": 1654,
+    "height": 1000
+  },
+  "zones": [
+    {
+      "id": "azure",
+      "label": "Azure Subscription",
+      "kind": "azure",
+      "x": 92,
+      "y": 32,
+      "width": 1542,
+      "height": 734
+    },
+    {
+      "id": "edge",
+      "label": "API Edge",
+      "kind": "subsystem",
+      "x": 136,
+      "y": 406,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "compute",
+      "label": "Microservices Compute",
+      "kind": "subsystem",
+      "x": 714,
+      "y": 296,
+      "width": 298,
+      "height": 383,
+      "parent": "azure"
+    },
+    {
+      "id": "data",
+      "label": "Data & Messaging",
+      "kind": "subsystem",
+      "x": 1082,
+      "y": 334,
+      "width": 508,
+      "height": 388,
+      "parent": "azure"
+    },
+    {
+      "id": "observability",
+      "label": "Observability",
+      "kind": "subsystem",
+      "x": 1016,
+      "y": 76,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user",
+      "name": "API Consumer",
+      "category": "general",
+      "kind": "persona",
+      "x": 180,
+      "y": 450,
+      "zone": "edge"
+    },
+    {
+      "id": "apim",
+      "name": "API Management",
+      "category": "integration",
+      "kind": "service",
+      "x": 450,
+      "y": 450,
+      "zone": "edge"
+    },
+    {
+      "id": "aca",
+      "name": "Azure Container Apps",
+      "category": "other",
+      "kind": "service",
+      "x": 818,
+      "y": 535,
+      "zone": "compute"
+    },
+    {
+      "id": "acr",
+      "name": "Container Registry",
+      "category": "containers",
+      "kind": "service",
+      "x": 758,
+      "y": 340,
+      "zone": "compute"
+    },
+    {
+      "id": "kv",
+      "name": "Key Vault",
+      "category": "security",
+      "kind": "service",
+      "x": 1126,
+      "y": 378,
+      "zone": "data"
+    },
+    {
+      "id": "sb",
+      "name": "Service Bus",
+      "category": "integration",
+      "kind": "service",
+      "x": 1126,
+      "y": 578,
+      "zone": "data"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "category": "databases",
+      "kind": "database",
+      "x": 1396,
+      "y": 578,
+      "zone": "data"
+    },
+    {
+      "id": "amon",
+      "name": "Azure Monitor",
+      "category": "monitor",
+      "kind": "service",
+      "x": 1060,
+      "y": 120,
+      "zone": "observability"
+    },
+    {
+      "id": "logs",
+      "name": "Log Analytics",
+      "category": "monitor",
+      "kind": "service",
+      "x": 1330,
+      "y": 120,
+      "zone": "observability"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user",
+      "to": "apim",
+      "step": 1,
+      "label": "Call API",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e2",
+      "from": "apim",
+      "to": "aca",
+      "step": 2,
+      "label": "Route request",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e3",
+      "from": "aca",
+      "to": "kv",
+      "step": 3,
+      "label": "Get secrets",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e4",
+      "from": "aca",
+      "to": "redis",
+      "step": 4,
+      "label": "Cache access",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e5",
+      "from": "aca",
+      "to": "sb",
+      "step": 5,
+      "label": "Enqueue event",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e6",
+      "from": "sb",
+      "to": "aca",
+      "step": 6,
+      "label": "Trigger worker",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e7",
+      "from": "acr",
+      "to": "aca",
+      "step": 7,
+      "label": "Pull image",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e8",
+      "from": "aca",
+      "to": "amon",
+      "step": 8,
+      "label": "Emit metrics",
+      "routing": "orthogonal",
+      "style": "dashed"
+    },
+    {
+      "id": "e9",
+      "from": "amon",
+      "to": "logs",
+      "step": 9,
+      "label": "Store logs",
+      "routing": "orthogonal",
+      "style": "dashed"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "An API consumer sends an API call to the platform entry point."
+    },
+    {
+      "step": 2,
+      "description": "API Management applies policies (auth, throttling, routing) and forwards the request to the appropriate microservice in Azure Container Apps."
+    },
+    {
+      "step": 3,
+      "description": "The microservice retrieves secrets (connection strings, keys) from Azure Key Vault at runtime."
+    },
+    {
+      "step": 4,
+      "description": "The microservice reads/writes low-latency shared state via Azure Cache for Redis."
+    },
+    {
+      "step": 5,
+      "description": "For asynchronous work, the microservice publishes a message to Azure Service Bus."
+    },
+    {
+      "step": 6,
+      "description": "A worker microservice (running on Azure Container Apps) is triggered by Service Bus to process the queued message."
+    },
+    {
+      "step": 7,
+      "description": "Azure Container Apps pulls the deployed microservice images from Azure Container Registry."
+    },
+    {
+      "step": 8,
+      "description": "Microservices emit platform metrics and signals to Azure Monitor for alerting and health views."
+    },
+    {
+      "step": 9,
+      "description": "Azure Monitor routes logs/diagnostics into Log Analytics for centralized querying, troubleshooting, and auditing."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3438,
+    "completionTokens": 2916,
+    "totalTokens": 6354,
+    "elapsedTimeMs": 31651,
+    "model": "gpt-5.2",
+    "reasoningEffort": "low"
+  },
+  "exportedAt": "2026-05-28T20:12:47.091Z"
+}

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, X, Loader2, Clock, Zap, Brain, Network, PenTool, Layers } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';import { generateReferenceArchitectureWithAI } from '../services/referenceArchitectureAI';
 import { generateBlueprintArchitectureWithAI } from '../services/blueprintArchitectureAI';
@@ -14,6 +14,15 @@ import { trackImageImport } from '../services/telemetryService';
 import './AIArchitectureGenerator.css';
 
 type GenerationMode = 'topology' | 'reference' | 'blueprint' | 'both';
+
+// Blueprint diagrams require OpenAI models. Non-OpenAI partner deployments on
+// Azure (DeepSeek, Grok, Mistral, Kimi, etc. — identified by
+// apiFormat: 'chat-completions') run under stricter Azure AI Content Safety
+// configurations that block the blueprint system prompt as adversarial.
+const isBlueprintCapableModel = (m: ModelType): boolean =>
+  MODEL_CONFIG[m].apiFormat !== 'chat-completions';
+const modeRequiresOpenAI = (m: GenerationMode): boolean =>
+  m === 'blueprint' || m === 'both';
 
 interface AIArchitectureGeneratorProps {
   onGenerate: (architecture: any, prompt: string, autoSnapshot: boolean, referenceImageUrl?: string) => void;
@@ -70,9 +79,26 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     localStorage.setItem('aiGenerator.mode', m);
   };
 
+
   // Opt-in: also download an editorial PNG when generating in reference mode.
   // Model settings from reactive hook (stays in sync with dropdown)
   const [modelSettings, updateModelSettings] = useModelSettings();
+
+  // When mode requires OpenAI (blueprint/both) and the current model is a
+  // non-OpenAI partner deployment, auto-switch to the first OpenAI model.
+  useEffect(() => {
+    if (!modeRequiresOpenAI(mode)) return;
+    if (isBlueprintCapableModel(modelSettings.model)) return;
+    const fallback = getAvailableModels().find(isBlueprintCapableModel);
+    if (!fallback) return;
+    const cfg = MODEL_CONFIG[fallback];
+    updateModelSettings({
+      model: fallback,
+      reasoningEffort: cfg.isReasoning
+        ? (cfg.defaultReasoningEffort ?? modelSettings.reasoningEffort)
+        : modelSettings.reasoningEffort,
+    });
+  }, [mode, modelSettings.model, updateModelSettings]);
   
   // Auto-snapshot preference (stored in localStorage)
   const [autoSnapshot, setAutoSnapshot] = useState<boolean>(() => {
@@ -602,7 +628,9 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                   disabled={isGenerating}
                   aria-label="Select AI model"
                 >
-                  {getAvailableModels().map((m) => (
+                  {getAvailableModels()
+                    .filter((m) => !modeRequiresOpenAI(mode) || isBlueprintCapableModel(m))
+                    .map((m) => (
                     <option key={m} value={m}>
                       {MODEL_CONFIG[m].displayName}
                     </option>
@@ -627,7 +655,11 @@ IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connecti
                     </select>
                   </>
                 )}
-                <span className="model-change-hint">Also configurable in toolbar → AI Model</span>
+                <span className="model-change-hint">
+                  {modeRequiresOpenAI(mode)
+                    ? 'Blueprint mode supports OpenAI models only (partner models trigger Azure content filters).'
+                    : 'Also configurable in toolbar → AI Model'}
+                </span>
               </div>
               {currentArchitecture && currentArchitecture.nodes.length > 0 && (
                 <div className="auto-snapshot-option">
