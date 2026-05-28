@@ -66,6 +66,7 @@ COPY mcp-server/package*.json ./
 RUN npm ci
 COPY mcp-server/tsconfig.json ./
 COPY mcp-server/src ./src
+COPY mcp-server/scripts ./scripts
 RUN npm run build
 
 # Production stage
