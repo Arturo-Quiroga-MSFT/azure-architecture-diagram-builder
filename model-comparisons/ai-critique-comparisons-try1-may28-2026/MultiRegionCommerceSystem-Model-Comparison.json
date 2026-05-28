@@ -1,0 +1,2305 @@
+{
+  "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+  "timestamp": "2026-05-28T18:39:43.884Z",
+  "reasoningEffort": "low",
+  "modelCount": 10,
+  "results": {
+    "gpt51-low": {
+      "model": "gpt-5.1",
+      "displayName": "GPT-5.1",
+      "metrics": {
+        "promptTokens": 1425,
+        "completionTokens": 2274,
+        "totalTokens": 3699,
+        "elapsedTimeMs": 15366,
+        "model": "gpt-5.1",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 9,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress & Routing"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application & Compute"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data, Cache & Events"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity & Access"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring & Diagnostics"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global HTTP entry point and multi-region traffic routing for e-commerce front-end",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Multi-region e-commerce web application and APIs handling user sessions and orders",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-redis",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Distributed cache for user sessions, shopping carts, and frequently accessed data",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Serverless background processing for order events and downstream workflows",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Globally distributed product catalog and order data store",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Static content, order documents, and media assets backing the storefront",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Event routing backbone for order placed, updated, and fulfillment events",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Customer and admin authentication and authorization for the e-commerce site",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central monitoring service collecting metrics and logs from the web app",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log analytics workspace for querying and analyzing application telemetry",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-appservice",
+            "label": "Route customer HTTP(S) requests to closest healthy web app region",
+            "type": "sync"
+          },
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-storage",
+            "label": "Serve static assets such as images and scripts for product pages",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-redis",
+            "label": "Read and write user session state and shopping cart contents",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-cosmos",
+            "label": "Query global product catalog and persist order records",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-eventgrid",
+            "label": "Publish OrderPlaced and OrderUpdated events for asynchronous processing",
+            "type": "async"
+          },
+          {
+            "from": "svc-eventgrid",
+            "to": "svc-functions",
+            "label": "Trigger serverless order workflows when new order events arrive",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-cosmos",
+            "label": "Update order status, inventory, and audit records after processing",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Store order-related documents such as invoices or packing slips",
+            "type": "sync"
+          },
+          {
+            "from": "svc-cosmos",
+            "to": "svc-eventgrid",
+            "label": "Emit data change notifications for order and catalog updates",
+            "type": "async"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-entra",
+            "label": "Redirect users for sign-in and validate tokens for secured APIs",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-azmonitor",
+            "label": "Send application metrics, traces, and request logs",
+            "type": "async"
+          },
+          {
+            "from": "svc-azmonitor",
+            "to": "svc-loganalytics",
+            "label": "Ingest consolidated telemetry for querying and alerting",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Customer navigates to the e-commerce site, and Azure Front Door routes the request to the nearest healthy App Service instance.",
+            "services": [
+              "svc-frontdoor",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "App Service delegates authentication to Microsoft Entra ID and establishes a user session, optionally using Azure Cache for Redis for session state.",
+            "services": [
+              "svc-appservice",
+              "svc-entra",
+              "svc-redis"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "For browsing, App Service retrieves product catalog data from Azure Cosmos DB and static assets from the Storage Account, returning composed product pages.",
+            "services": [
+              "svc-appservice",
+              "svc-cosmos",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "As users add items to the cart, App Service updates shopping cart state in Azure Cache for Redis and records interim data in Azure Cosmos DB if needed.",
+            "services": [
+              "svc-appservice",
+              "svc-redis",
+              "svc-cosmos"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "When checkout is completed, App Service writes the order to Azure Cosmos DB and immediately publishes an OrderPlaced event to Azure Event Grid.",
+            "services": [
+              "svc-appservice",
+              "svc-cosmos",
+              "svc-eventgrid"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure Event Grid invokes Azure Functions to handle order processing tasks such as inventory checks, payment confirmation, and fulfillment orchestration.",
+            "services": [
+              "svc-eventgrid",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Azure Functions updates the order status and inventory documents in Azure Cosmos DB and can store related artifacts such as invoices in the Storage Account.",
+            "services": [
+              "svc-functions",
+              "svc-cosmos",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Changes to orders or catalog entries in Azure Cosmos DB emit events through Azure Event Grid, enabling further downstream integrations if required.",
+            "services": [
+              "svc-cosmos",
+              "svc-eventgrid",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Throughout the flow, App Service sends metrics and logs to Azure Monitor, which aggregates telemetry in Log Analytics for troubleshooting and optimization.",
+            "services": [
+              "svc-appservice",
+              "svc-azmonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1425,
+          "completionTokens": 2274,
+          "totalTokens": 3699,
+          "elapsedTimeMs": 15366,
+          "model": "gpt-5.1",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt52-low": {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "metrics": {
+        "promptTokens": 1425,
+        "completionTokens": 2044,
+        "totalTokens": 3469,
+        "elapsedTimeMs": 18695,
+        "model": "gpt-5.2",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress / Edge (Multi-region Routing)"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application / Compute"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data / Storage (Globally Distributed)"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity & Secrets"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point for routing users to the nearest healthy region with TLS termination and edge caching options",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Multi-region e-commerce web/API application serving catalog, carts, and checkout",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Event backbone to fan out order events for asynchronous processing",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Event-driven order processing handlers triggered by order events",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Globally distributed database for product catalog and order records",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-redis",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Low-latency session and cart cache shared across app instances",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Customer/admin authentication and token issuance for the application",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Central storage for app secrets, certificates, and connection strings",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-azuremonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central metrics and platform monitoring hub for the application tier",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log workspace for querying application/platform logs and building alerts",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-appservice",
+            "label": "Route user traffic to nearest healthy regional web/API endpoint",
+            "type": "sync"
+          },
+          {
+            "from": "svc-entra",
+            "to": "svc-appservice",
+            "label": "Issue and validate OAuth/OIDC tokens for authenticated requests",
+            "type": "sync"
+          },
+          {
+            "from": "svc-keyvault",
+            "to": "svc-appservice",
+            "label": "Provide secrets and certificates at startup and during key rotation",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-redis",
+            "label": "Read/write user sessions and cart state for low-latency access",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-cosmos",
+            "label": "Query global product catalog and persist cart/checkout metadata",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-eventgrid",
+            "label": "Publish OrderPlaced event after successful checkout submission",
+            "type": "async"
+          },
+          {
+            "from": "svc-eventgrid",
+            "to": "svc-functions",
+            "label": "Trigger order-processing function per OrderPlaced event subscription",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-cosmos",
+            "label": "Create order record and update inventory/reservation state",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-redis",
+            "label": "Invalidate session/cart cache after order completion",
+            "type": "optional"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-azuremonitor",
+            "label": "Emit application metrics, traces, and dependency telemetry",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azuremonitor",
+            "to": "svc-loganalytics",
+            "label": "Centralize collected telemetry into workspace for querying and alerts",
+            "type": "sync"
+          },
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-entra",
+            "label": "Redirect users to sign-in and complete authorization code flow",
+            "type": "optional"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Customer hits the e-commerce URL; Azure Front Door routes the request to the nearest healthy region hosting the app.",
+            "services": [
+              "svc-frontdoor",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "User signs in; the application uses Microsoft Entra ID for authentication and token validation on protected endpoints.",
+            "services": [
+              "svc-entra",
+              "svc-appservice",
+              "svc-frontdoor"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "The application retrieves required secrets (e.g., database keys/connection strings) from Key Vault to access downstream services securely.",
+            "services": [
+              "svc-keyvault",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Browsing and cart actions use Redis for session/cart state and Cosmos DB for global product catalog lookups.",
+            "services": [
+              "svc-appservice",
+              "svc-redis",
+              "svc-cosmos"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "On checkout, the application records checkout metadata and publishes an OrderPlaced event for asynchronous processing.",
+            "services": [
+              "svc-appservice",
+              "svc-cosmos",
+              "svc-eventgrid"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Event Grid delivers the OrderPlaced event to an Azure Functions handler to process the order without blocking the user request.",
+            "services": [
+              "svc-eventgrid",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "The Functions handler writes the final order state to Cosmos DB and optionally invalidates Redis session/cart cache entries.",
+            "services": [
+              "svc-functions",
+              "svc-cosmos",
+              "svc-redis"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Application telemetry is sent to Azure Monitor and stored in Log Analytics for investigation, dashboards, and alerting.",
+            "services": [
+              "svc-appservice",
+              "svc-azuremonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1425,
+          "completionTokens": 2044,
+          "totalTokens": 3469,
+          "elapsedTimeMs": 18695,
+          "model": "gpt-5.2",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt52codex-low": {
+      "model": "gpt-5.2-codex",
+      "displayName": "GPT-5.2 Codex",
+      "metrics": {
+        "promptTokens": 1425,
+        "completionTokens": 1026,
+        "totalTokens": 2451,
+        "elapsedTimeMs": 9979,
+        "model": "gpt-5.2-codex",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 6,
+      "connectionCount": 6,
+      "groupCount": 4,
+      "workflowSteps": 5,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress/Edge"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application/Compute"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data/Storage"
+          },
+          {
+            "id": "grp-integration",
+            "label": "Integration/Events"
+          }
+        ],
+        "services": [
+          {
+            "id": "frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global traffic routing and acceleration for multi-region access",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "E-commerce web and API tier serving customers",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "redis",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Session state and cart caching for low-latency access",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Globally distributed product catalog and order data",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Eventing backbone for order processing workflows",
+            "groupId": "grp-integration"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Order processing handlers reacting to order events",
+            "groupId": "grp-integration"
+          }
+        ],
+        "connections": [
+          {
+            "from": "frontdoor",
+            "to": "appservice",
+            "label": "Route user traffic to nearest healthy regional app",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "redis",
+            "label": "Read and update session and cart state",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "cosmos",
+            "label": "Query global product catalog and persist orders",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "eventgrid",
+            "label": "Publish order-created and payment-confirmed events",
+            "type": "async"
+          },
+          {
+            "from": "eventgrid",
+            "to": "functions",
+            "label": "Deliver order events to processing handlers",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "cosmos",
+            "label": "Update order status and inventory reservations",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Customer traffic is routed to the closest healthy region",
+            "services": [
+              "frontdoor",
+              "appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Application retrieves session and cart state for the user",
+            "services": [
+              "appservice",
+              "redis"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Product catalog and pricing are read from the global database",
+            "services": [
+              "appservice",
+              "cosmos"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Order submission triggers an event for downstream processing",
+            "services": [
+              "appservice",
+              "eventgrid"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Event-driven functions process the order and update records",
+            "services": [
+              "eventgrid",
+              "functions",
+              "cosmos"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1425,
+          "completionTokens": 1026,
+          "totalTokens": 2451,
+          "elapsedTimeMs": 9979,
+          "model": "gpt-5.2-codex",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt53codex-low": {
+      "model": "gpt-5.3-codex",
+      "displayName": "GPT-5.3 Codex",
+      "metrics": {
+        "promptTokens": 1425,
+        "completionTokens": 2356,
+        "totalTokens": 3781,
+        "elapsedTimeMs": 23535,
+        "model": "gpt-5.3-codex",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-edge",
+            "label": "Ingress & Traffic Routing"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application & Order Processing"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data Layer"
+          },
+          {
+            "id": "grp-security",
+            "label": "Identity & Secrets"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point with multi-region traffic routing and failover.",
+            "groupId": "grp-edge"
+          },
+          {
+            "id": "svc-appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts e-commerce web/API application across regions.",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Distributes order domain events to downstream processors.",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Processes asynchronous order events and updates order state.",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Globally replicated product catalog and order metadata store.",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-redis",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Low-latency session and cart cache for shoppers.",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Customer/admin authentication and token issuance.",
+            "groupId": "grp-security"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores application secrets, keys, and connection credentials.",
+            "groupId": "grp-security"
+          },
+          {
+            "id": "svc-azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects primary application metrics and alerts.",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Central workspace for querying operational logs.",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-appservice",
+            "label": "Route shopper HTTP requests to healthiest regional app endpoint",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-entra",
+            "label": "Validate user sign-in and acquire access tokens for checkout sessions",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-keyvault",
+            "label": "Retrieve API keys and database credentials at runtime",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-redis",
+            "label": "Read and update cart/session state for active shoppers",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-cosmos",
+            "label": "Query global product catalog and persist order documents",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-eventgrid",
+            "label": "Publish OrderPlaced events after successful checkout",
+            "type": "async"
+          },
+          {
+            "from": "svc-eventgrid",
+            "to": "svc-functions",
+            "label": "Trigger serverless order processing handlers per event subscription",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-cosmos",
+            "label": "Update order status and reserve inventory records",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-eventgrid",
+            "label": "Emit OrderProcessed and OrderFailed lifecycle events",
+            "type": "async"
+          },
+          {
+            "from": "svc-eventgrid",
+            "to": "svc-appservice",
+            "label": "Deliver order lifecycle notifications to application webhook endpoint",
+            "type": "async"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-azmonitor",
+            "label": "Send application performance metrics and request telemetry",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmonitor",
+            "to": "svc-loganalytics",
+            "label": "Ingest and retain platform/application logs for analysis",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Customer traffic enters globally and is sent to the best available regional app instance.",
+            "services": [
+              "svc-frontdoor",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Application authenticates the user and retrieves required secrets before serving commerce actions.",
+            "services": [
+              "svc-appservice",
+              "svc-entra",
+              "svc-keyvault"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Product pages and carts are served using global catalog data and low-latency session cache.",
+            "services": [
+              "svc-appservice",
+              "svc-cosmos",
+              "svc-redis"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "On checkout, order data is stored and an OrderPlaced event is published for downstream processing.",
+            "services": [
+              "svc-appservice",
+              "svc-cosmos",
+              "svc-eventgrid"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Event Grid pushes order events to Functions, which execute fulfillment and status logic.",
+            "services": [
+              "svc-eventgrid",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Functions write updated order/inventory state and publish lifecycle events for application consumption.",
+            "services": [
+              "svc-functions",
+              "svc-cosmos",
+              "svc-eventgrid"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Application receives lifecycle notifications and exposes updated order state to customers.",
+            "services": [
+              "svc-eventgrid",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Primary application telemetry is centralized for alerting and log analytics.",
+            "services": [
+              "svc-appservice",
+              "svc-azmonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1425,
+          "completionTokens": 2356,
+          "totalTokens": 3781,
+          "elapsedTimeMs": 23535,
+          "model": "gpt-5.3-codex",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt54-low": {
+      "model": "gpt-5.4",
+      "displayName": "GPT-5.4",
+      "metrics": {
+        "promptTokens": 1425,
+        "completionTokens": 2350,
+        "totalTokens": 3775,
+        "elapsedTimeMs": 29986,
+        "model": "gpt-5.4",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 12,
+      "groupCount": 4,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-edge",
+            "label": "Ingress & Global Routing"
+          },
+          {
+            "id": "grp-app",
+            "label": "Regional Application & Order Processing"
+          },
+          {
+            "id": "grp-data",
+            "label": "Global Data & Session State"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Routes customer traffic to the healthiest regional storefront deployment",
+            "groupId": "grp-edge"
+          },
+          {
+            "id": "app-east",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Primary regional e-commerce web application handling browsing, cart, and checkout",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "app-west",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Secondary regional e-commerce web application for failover and load distribution",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "eventgrid-orders",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Distributes order-created events for asynchronous downstream processing",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "order-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Processes order events and updates order state asynchronously",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "cosmos-catalog",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Globally distributed product catalog and order metadata store",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "redis-east",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Regional session and cart cache for the primary application deployment",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "redis-west",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Regional session and cart cache for the secondary application deployment",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "azure-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects platform and application telemetry from the primary compute path",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Stores and enables querying of centralized operational logs and metrics",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "frontdoor",
+            "to": "app-east",
+            "label": "Route customer storefront traffic to primary healthy region",
+            "type": "sync"
+          },
+          {
+            "from": "frontdoor",
+            "to": "app-west",
+            "label": "Fail over customer sessions to secondary region during degradation",
+            "type": "optional"
+          },
+          {
+            "from": "app-east",
+            "to": "redis-east",
+            "label": "Read and update active customer session and cart state",
+            "type": "sync"
+          },
+          {
+            "from": "app-west",
+            "to": "redis-west",
+            "label": "Read and update secondary-region session and cart state",
+            "type": "sync"
+          },
+          {
+            "from": "app-east",
+            "to": "cosmos-catalog",
+            "label": "Query global product catalog and persist checkout records",
+            "type": "sync"
+          },
+          {
+            "from": "app-west",
+            "to": "cosmos-catalog",
+            "label": "Query replicated catalog data and persist regional checkout records",
+            "type": "sync"
+          },
+          {
+            "from": "app-east",
+            "to": "eventgrid-orders",
+            "label": "Publish order-created event after successful checkout",
+            "type": "async"
+          },
+          {
+            "from": "app-west",
+            "to": "eventgrid-orders",
+            "label": "Publish failover-region order-created event after successful checkout",
+            "type": "async"
+          },
+          {
+            "from": "eventgrid-orders",
+            "to": "order-functions",
+            "label": "Trigger asynchronous order workflow for each new order event",
+            "type": "async"
+          },
+          {
+            "from": "order-functions",
+            "to": "cosmos-catalog",
+            "label": "Update order processing state and enrich order with catalog details",
+            "type": "sync"
+          },
+          {
+            "from": "app-east",
+            "to": "azure-monitor",
+            "label": "Send application performance metrics and request telemetry",
+            "type": "sync"
+          },
+          {
+            "from": "azure-monitor",
+            "to": "log-analytics",
+            "label": "Export collected telemetry for centralized analysis and retention",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Azure Front Door evaluates health and directs shoppers to the primary regional storefront, with the secondary region available for failover.",
+            "services": [
+              "frontdoor",
+              "app-east",
+              "app-west"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "The selected regional App Service loads the customer's session and shopping cart from the co-located Redis cache.",
+            "services": [
+              "app-east",
+              "redis-east",
+              "app-west",
+              "redis-west"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "The regional storefront retrieves product information from the globally distributed Cosmos DB catalog during browsing and checkout.",
+            "services": [
+              "app-east",
+              "app-west",
+              "cosmos-catalog"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "After checkout completes, the storefront writes order data and publishes an order-created event to Event Grid.",
+            "services": [
+              "app-east",
+              "app-west",
+              "cosmos-catalog",
+              "eventgrid-orders"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Event Grid delivers each order event to Azure Functions for asynchronous order processing.",
+            "services": [
+              "eventgrid-orders",
+              "order-functions"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure Functions updates order status and related metadata in Cosmos DB as processing advances.",
+            "services": [
+              "order-functions",
+              "cosmos-catalog"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "The primary application sends runtime telemetry to Azure Monitor for centralized collection.",
+            "services": [
+              "app-east",
+              "azure-monitor"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Azure Monitor forwards collected logs and metrics into Log Analytics for troubleshooting and operational analysis.",
+            "services": [
+              "azure-monitor",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1425,
+          "completionTokens": 2350,
+          "totalTokens": 3775,
+          "elapsedTimeMs": 29986,
+          "model": "gpt-5.4",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt54mini-low": {
+      "model": "gpt-5.4-mini",
+      "displayName": "GPT-5.4 Mini",
+      "metrics": {
+        "promptTokens": 1425,
+        "completionTokens": 2611,
+        "totalTokens": 4036,
+        "elapsedTimeMs": 13093,
+        "model": "gpt-5.4-mini",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge-group",
+            "label": "Global Edge"
+          },
+          {
+            "id": "app-group",
+            "label": "Application & Processing"
+          },
+          {
+            "id": "data-group",
+            "label": "Data Layer"
+          },
+          {
+            "id": "security-group",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "monitor-group",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "front-door",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Routes shopper traffic to the nearest healthy region",
+            "groupId": "edge-group"
+          },
+          {
+            "id": "app-service",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts the e-commerce web and API application",
+            "groupId": "app-group"
+          },
+          {
+            "id": "functions-order",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Processes order events and performs backend workflow steps",
+            "groupId": "app-group"
+          },
+          {
+            "id": "cosmos-db",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Stores the global product catalog and order state",
+            "groupId": "data-group"
+          },
+          {
+            "id": "redis-cache",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Caches user sessions and frequently accessed shopping data",
+            "groupId": "data-group"
+          },
+          {
+            "id": "event-grid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Publishes order events for asynchronous processing",
+            "groupId": "app-group"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates customers and application users",
+            "groupId": "security-group"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores application secrets and cryptographic material",
+            "groupId": "security-group"
+          },
+          {
+            "id": "azure-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects application health and telemetry signals",
+            "groupId": "monitor-group"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Centralizes logs and supports operational analysis",
+            "groupId": "monitor-group"
+          }
+        ],
+        "connections": [
+          {
+            "from": "front-door",
+            "to": "app-service",
+            "label": "Route shopper traffic to the nearest healthy region",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "entra-id",
+            "label": "Redirect users for sign-in and receive authentication tokens",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "key-vault",
+            "label": "Retrieve connection secrets and signing keys at runtime",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "redis-cache",
+            "label": "Read and refresh customer session state for fast checkout",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "cosmos-db",
+            "label": "Read the global product catalog and pricing data",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "event-grid",
+            "label": "Publish order placed events for downstream fulfillment",
+            "type": "async"
+          },
+          {
+            "from": "event-grid",
+            "to": "functions-order",
+            "label": "Trigger backend order processing when a new event arrives",
+            "type": "async"
+          },
+          {
+            "from": "functions-order",
+            "to": "cosmos-db",
+            "label": "Persist order state and update inventory records",
+            "type": "sync"
+          },
+          {
+            "from": "functions-order",
+            "to": "redis-cache",
+            "label": "Invalidate or update cached session and cart data after checkout",
+            "type": "sync"
+          },
+          {
+            "from": "functions-order",
+            "to": "key-vault",
+            "label": "Resolve secrets needed for fulfillment integrations",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "azure-monitor",
+            "label": "Emit application telemetry and request metrics",
+            "type": "sync"
+          },
+          {
+            "from": "azure-monitor",
+            "to": "log-analytics",
+            "label": "Store logs and diagnostics for operational analysis",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "A shopper enters the site through the global edge and is routed to the healthiest regional application instance.",
+            "services": [
+              "front-door",
+              "app-service"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "The application authenticates the user with Microsoft Entra ID and retrieves runtime secrets from Key Vault.",
+            "services": [
+              "app-service",
+              "entra-id",
+              "key-vault"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "The application restores the customer session from Redis Cache and reads the latest product catalog from Cosmos DB.",
+            "services": [
+              "app-service",
+              "redis-cache",
+              "cosmos-db"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "When the customer places an order, the application publishes an order event to Event Grid.",
+            "services": [
+              "app-service",
+              "event-grid"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Event Grid triggers Azure Functions to process the order, update order records, and adjust inventory in Cosmos DB.",
+            "services": [
+              "event-grid",
+              "functions-order",
+              "cosmos-db"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "The function app updates cached session and cart data in Redis Cache and resolves any required downstream secrets from Key Vault.",
+            "services": [
+              "functions-order",
+              "redis-cache",
+              "key-vault"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "The application emits telemetry to Azure Monitor, which forwards logs to Log Analytics for centralized observability.",
+            "services": [
+              "app-service",
+              "azure-monitor",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1425,
+          "completionTokens": 2611,
+          "totalTokens": 4036,
+          "elapsedTimeMs": 13093,
+          "model": "gpt-5.4-mini",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-v3.2-speciale",
+      "displayName": "DeepSeek V3.2 Speciale",
+      "metrics": {
+        "promptTokens": 1454,
+        "completionTokens": 1542,
+        "totalTokens": 2996,
+        "elapsedTimeMs": 12482,
+        "model": "deepseek-v3.2-speciale",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 10,
+      "connectionCount": 13,
+      "groupCount": 5,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge",
+            "label": "Edge & Ingress"
+          },
+          {
+            "id": "compute",
+            "label": "Application & Compute"
+          },
+          {
+            "id": "data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "messaging",
+            "label": "Event Processing"
+          },
+          {
+            "id": "monitoring",
+            "label": "Monitoring & Security"
+          }
+        ],
+        "services": [
+          {
+            "id": "frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global traffic routing, load balancing, DDoS protection",
+            "groupId": "edge"
+          },
+          {
+            "id": "appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Web application hosting (multi-region)",
+            "groupId": "compute"
+          },
+          {
+            "id": "function",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Serverless order processing",
+            "groupId": "compute"
+          },
+          {
+            "id": "cosmosdb",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Global product catalog, multi-master",
+            "groupId": "data"
+          },
+          {
+            "id": "rediscache",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Session caching, product catalog caching",
+            "groupId": "data"
+          },
+          {
+            "id": "eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Event-driven order processing, reliability",
+            "groupId": "messaging"
+          },
+          {
+            "id": "keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secrets, connection strings, certificates",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication, user management",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Metrics, logs, alerts",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Centralized log storage and analysis",
+            "groupId": "monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "frontdoor",
+            "to": "appservice",
+            "label": "Routes HTTP requests",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "cosmosdb",
+            "label": "Read/write product catalog",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "rediscache",
+            "label": "Cache sessions and product data",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "eventgrid",
+            "label": "Publish order events",
+            "type": "async"
+          },
+          {
+            "from": "eventgrid",
+            "to": "function",
+            "label": "Trigger order processing",
+            "type": "async"
+          },
+          {
+            "from": "function",
+            "to": "cosmosdb",
+            "label": "Update order status",
+            "type": "sync"
+          },
+          {
+            "from": "function",
+            "to": "rediscache",
+            "label": "Invalidate cache on updates",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "keyvault",
+            "label": "Retrieve secrets and connection strings",
+            "type": "sync"
+          },
+          {
+            "from": "function",
+            "to": "keyvault",
+            "label": "Retrieve secrets and connection strings",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "entra",
+            "label": "Authenticate users",
+            "type": "sync"
+          },
+          {
+            "from": "appservice",
+            "to": "monitor",
+            "label": "Send metrics and logs",
+            "type": "async"
+          },
+          {
+            "from": "function",
+            "to": "monitor",
+            "label": "Send metrics and logs",
+            "type": "async"
+          },
+          {
+            "from": "monitor",
+            "to": "loganalytics",
+            "label": "Store and analyze logs",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User accesses the e-commerce site. Azure Front Door routes the request to the nearest App Service instance.",
+            "services": [
+              "frontdoor",
+              "appservice"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "App Service authenticates the user via Microsoft Entra ID and retrieves secrets from Key Vault.",
+            "services": [
+              "appservice",
+              "entra",
+              "keyvault"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "App Service reads product catalog from Cosmos DB, with Redis Cache as a session store and cache for frequently accessed data.",
+            "services": [
+              "appservice",
+              "cosmosdb",
+              "rediscache"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "When a customer places an order, App Service publishes an order event to Event Grid.",
+            "services": [
+              "appservice",
+              "eventgrid"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Event Grid triggers an Azure Function to process the order asynchronously.",
+            "services": [
+              "eventgrid",
+              "function"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "The Function updates order status in Cosmos DB and invalidates relevant cache entries in Redis.",
+            "services": [
+              "function",
+              "cosmosdb",
+              "rediscache"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "All services emit telemetry to Azure Monitor, which forwards logs to Log Analytics for analysis.",
+            "services": [
+              "appservice",
+              "function",
+              "monitor",
+              "loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1454,
+          "completionTokens": 1542,
+          "totalTokens": 2996,
+          "elapsedTimeMs": 12482,
+          "model": "deepseek-v3.2-speciale",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "unknown": {
+      "model": "grok-4.3",
+      "displayName": "Grok 4.3",
+      "metrics": {
+        "promptTokens": 1412,
+        "completionTokens": 1084,
+        "totalTokens": 6041,
+        "elapsedTimeMs": 51895,
+        "model": "grok-4.3",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 9,
+      "connectionCount": 9,
+      "groupCount": 5,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "ingress",
+            "label": "Ingress & Edge"
+          },
+          {
+            "id": "application",
+            "label": "Application Layer"
+          },
+          {
+            "id": "data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "identity",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "monitoring",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "frontDoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global traffic routing and CDN for multi-region requests",
+            "groupId": "ingress"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Handles API requests, session logic and order processing",
+            "groupId": "application"
+          },
+          {
+            "id": "eventGrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Publishes and routes order events for processing",
+            "groupId": "application"
+          },
+          {
+            "id": "cosmosDb",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Global multi-region product catalog storage",
+            "groupId": "data"
+          },
+          {
+            "id": "redisCache",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Session state and frequently accessed data cache",
+            "groupId": "data"
+          },
+          {
+            "id": "entraId",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "User authentication and token validation",
+            "groupId": "identity"
+          },
+          {
+            "id": "keyVault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secrets, keys and connection string management",
+            "groupId": "identity"
+          },
+          {
+            "id": "azureMonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central metrics and telemetry collection hub",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "logAnalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log aggregation and query analytics",
+            "groupId": "monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "frontDoor",
+            "to": "functions",
+            "label": "Route multi-region HTTP requests to nearest backend",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "redisCache",
+            "label": "Store and retrieve user session data",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "cosmosDb",
+            "label": "Query and update global product catalog",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "eventGrid",
+            "label": "Publish order created and status events",
+            "type": "async"
+          },
+          {
+            "from": "eventGrid",
+            "to": "functions",
+            "label": "Trigger order fulfillment and notification handlers",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "entraId",
+            "label": "Validate JWT tokens for authenticated API access",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "keyVault",
+            "label": "Retrieve database connection strings and secrets",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "azureMonitor",
+            "label": "Emit application metrics and distributed traces",
+            "type": "sync"
+          },
+          {
+            "from": "azureMonitor",
+            "to": "logAnalytics",
+            "label": "Forward collected logs for long-term analysis",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User request arrives and is routed globally by Front Door to the nearest Functions instance",
+            "services": [
+              "frontDoor",
+              "functions"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Azure Functions validates the user session token against Microsoft Entra ID",
+            "services": [
+              "functions",
+              "entraId"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Session data and shopping cart state are loaded from Redis Cache",
+            "services": [
+              "functions",
+              "redisCache"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Product catalog and inventory are read from the globally replicated Cosmos DB",
+            "services": [
+              "functions",
+              "cosmosDb"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Order is created and an event is published to Event Grid for async processing",
+            "services": [
+              "functions",
+              "eventGrid"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Event Grid triggers order fulfillment, payment, and notification workflows in Functions",
+            "services": [
+              "eventGrid",
+              "functions"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Functions emits telemetry to Azure Monitor which forwards logs to Log Analytics",
+            "services": [
+              "functions",
+              "azureMonitor",
+              "logAnalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1412,
+          "completionTokens": 1084,
+          "totalTokens": 6041,
+          "elapsedTimeMs": 51895,
+          "model": "grok-4.3",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "grok41fast": {
+      "model": "grok-4.1-fast",
+      "displayName": "Grok 4.1 Fast",
+      "metrics": {
+        "promptTokens": 1398,
+        "completionTokens": 1220,
+        "totalTokens": 2618,
+        "elapsedTimeMs": 7869,
+        "model": "grok-4-1-fast-non-reasoning",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 9,
+      "connectionCount": 8,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge",
+            "label": "Global Edge & Networking"
+          },
+          {
+            "id": "app",
+            "label": "Application Tier"
+          },
+          {
+            "id": "data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "events",
+            "label": "Event Processing"
+          },
+          {
+            "id": "observability",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "afd",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global traffic routing and WAF",
+            "groupId": "edge"
+          },
+          {
+            "id": "appgw",
+            "name": "Application Gateway",
+            "type": "Application Gateway",
+            "category": "networking",
+            "description": "Regional load balancing",
+            "groupId": "edge"
+          },
+          {
+            "id": "appsvc",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "E-commerce web application",
+            "groupId": "app"
+          },
+          {
+            "id": "redis",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Session state management",
+            "groupId": "data"
+          },
+          {
+            "id": "cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Global product catalog",
+            "groupId": "data"
+          },
+          {
+            "id": "eventgrid",
+            "name": "Azure Event Grid",
+            "type": "Azure Event Grid",
+            "category": "integration",
+            "description": "Order event distribution",
+            "groupId": "events"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Order processing handlers",
+            "groupId": "events"
+          },
+          {
+            "id": "monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central observability hub",
+            "groupId": "observability"
+          },
+          {
+            "id": "loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log storage and analytics",
+            "groupId": "observability"
+          }
+        ],
+        "connections": [
+          {
+            "from": "afd",
+            "to": "appgw",
+            "label": "Route global traffic to regional gateways",
+            "type": "sync"
+          },
+          {
+            "from": "appgw",
+            "to": "appsvc",
+            "label": "Load balance HTTP requests to app service",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "cosmos",
+            "label": "Query product catalog by SKU",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "redis",
+            "label": "Read/write customer session state",
+            "type": "sync"
+          },
+          {
+            "from": "appsvc",
+            "to": "eventgrid",
+            "label": "Publish new order events",
+            "type": "async"
+          },
+          {
+            "from": "eventgrid",
+            "to": "functions",
+            "label": "Trigger order fulfillment workflows",
+            "type": "async"
+          },
+          {
+            "from": "appsvc",
+            "to": "monitor",
+            "label": "Send application metrics and traces",
+            "type": "async"
+          },
+          {
+            "from": "monitor",
+            "to": "loganalytics",
+            "label": "Aggregate and store telemetry data",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Global traffic enters through Azure Front Door and routes to regional Application Gateways",
+            "services": [
+              "afd",
+              "appgw"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Application Gateway load balances requests to App Service instances",
+            "services": [
+              "appgw",
+              "appsvc"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "App Service queries Cosmos DB for product catalog data",
+            "services": [
+              "appsvc",
+              "cosmos"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "App Service manages user sessions via Redis Cache",
+            "services": [
+              "appsvc",
+              "redis"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Customer completes order; App Service publishes event to Event Grid",
+            "services": [
+              "appsvc",
+              "eventgrid"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Event Grid triggers Azure Functions for order processing",
+            "services": [
+              "eventgrid",
+              "functions"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "App Service emits telemetry to Azure Monitor",
+            "services": [
+              "appsvc",
+              "monitor"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Azure Monitor aggregates data and forwards to Log Analytics for analysis",
+            "services": [
+              "monitor",
+              "loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1398,
+          "completionTokens": 1220,
+          "totalTokens": 2618,
+          "elapsedTimeMs": 7869,
+          "model": "grok-4-1-fast-non-reasoning",
+          "reasoningEffort": "none"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "groups": [
+    {
+      "id": "streaming-ingestion",
+      "label": "Streaming Ingestion"
+    },
+    {
+      "id": "ai-processing",
+      "label": "AI Processing"
+    },
+    {
+      "id": "security-identity",
+      "label": "Security & Identity"
+    },
+    {
+      "id": "observability",
+      "label": "Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Ingests streaming audio, text, and vision data",
+      "groupId": "streaming-ingestion"
+    },
+    {
+      "id": "azure-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Orchestrates multi-modal AI processing pipeline",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Processes text and vision content using GPT models",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "speech-services",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Performs real-time audio transcription",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Provides multilingual translation support",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secures AI service API keys and endpoints",
+      "groupId": "security-identity"
+    },
+    {
+      "id": "microsoft-entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates service-to-service identities",
+      "groupId": "security-identity"
+    },
+    {
+      "id": "application-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Collects model performance and request telemetry",
+      "groupId": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Aggregates logs for operational analysis",
+      "groupId": "observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "event-hubs",
+      "to": "azure-functions",
+      "label": "Stream multimodal events for processing",
+      "type": "async"
+    },
+    {
+      "from": "azure-functions",
+      "to": "speech-services",
+      "label": "Submit audio for real-time transcription",
+      "type": "sync"
+    },
+    {
+      "from": "azure-functions",
+      "to": "translator",
+      "label": "Translate transcribed text content",
+      "type": "sync"
+    },
+    {
+      "from": "azure-functions",
+      "to": "azure-openai",
+      "label": "Analyze text and vision inputs",
+      "type": "sync"
+    },
+    {
+      "from": "key-vault",
+      "to": "azure-functions",
+      "label": "Retrieve AI service credentials",
+      "type": "sync"
+    },
+    {
+      "from": "microsoft-entra-id",
+      "to": "azure-functions",
+      "label": "Authenticate managed identity",
+      "type": "sync"
+    },
+    {
+      "from": "azure-functions",
+      "to": "application-insights",
+      "label": "Send model inference telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "application-insights",
+      "to": "log-analytics",
+      "label": "Forward aggregated observability data",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Event Hubs ingests streaming audio, text, and vision data from client applications",
+      "services": [
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure Functions triggers on Event Hubs stream to process incoming events",
+      "services": [
+        "event-hubs",
+        "azure-functions"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Functions sends audio payloads to Speech Services for real-time transcription",
+      "services": [
+        "azure-functions",
+        "speech-services"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Functions sends text content to Translator for multilingual localization",
+      "services": [
+        "azure-functions",
+        "translator"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Functions sends text and vision data to Azure OpenAI for analysis and generation",
+      "services": [
+        "azure-functions",
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Functions emits model performance telemetry to Application Insights",
+      "services": [
+        "azure-functions",
+        "application-insights"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Application Insights forwards aggregated logs and metrics to Log Analytics",
+      "services": [
+        "application-insights",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1429,
+    "completionTokens": 4184,
+    "totalTokens": 5613,
+    "elapsedTimeMs": 26182,
+    "model": "Kimi-K2.5",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "kimi-k2-5",
+    "modelDisplayName": "Kimi K2.5",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1429,
+      "completionTokens": 4184,
+      "totalTokens": 5613,
+      "elapsedTimeMs": 26182,
+      "model": "Kimi-K2.5",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T19:48:57.448Z",
+    "source": "model-comparison"
+  }
+}

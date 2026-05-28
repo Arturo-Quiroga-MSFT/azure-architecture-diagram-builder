@@ -412,9 +412,13 @@ export function isAzureOpenAIConfigured(): boolean {
   const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
   const hasGpt54Mini = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI;
   const hasDeepSeek = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK;
+  const hasDeepSeekV4Pro = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO;
   const hasGrok = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST;
+  const hasGrok43 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43;
+  const hasMistralL3 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3;
+  const hasKimi = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25;
   
-  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasDeepSeek || hasGrok);
+  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasDeepSeek || hasDeepSeekV4Pro || hasGrok || hasGrok43 || hasMistralL3 || hasKimi);
 }
 
 /**

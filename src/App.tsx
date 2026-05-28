@@ -3379,6 +3379,37 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           }
           handleAIGenerate(architecture, prompt, true);
         }}
+        onCaptureBatch={async (items) => {
+          // Render each architecture on the main canvas in turn, capture as PNG,
+          // and trigger a download. Filenames are supplied by the modal so the
+          // PNG file always pairs 1:1 with the JSON saved via "Save All Diagrams".
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            try {
+              // Apply this architecture to the canvas (no auto-snapshot to
+              // avoid spamming the snapshot history with N intermediate states).
+              await handleAIGenerate(item.architecture, item.prompt, false);
+              // Give icons, layout, and the post-generate fitView a moment to settle.
+              await new Promise(res => setTimeout(res, 1500));
+              if (reactFlowInstance) {
+                reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+                await new Promise(res => setTimeout(res, 400));
+              }
+              if (!reactFlowWrapper.current) continue;
+              const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
+                backgroundColor: '#ffffff',
+              });
+              const a = document.createElement('a');
+              a.href = dataUrl;
+              a.download = item.filename;
+              a.click();
+              // Small gap so the browser doesn't throttle / merge downloads.
+              await new Promise(res => setTimeout(res, 350));
+            } catch (err) {
+              console.error(`Failed to capture PNG for ${item.filename}:`, err);
+            }
+          }
+        }}
       />
       <CompareValidationModal
         isOpen={isCompareValidationOpen}

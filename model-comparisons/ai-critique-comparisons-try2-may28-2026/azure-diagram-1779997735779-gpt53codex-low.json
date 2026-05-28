@@ -1,0 +1,262 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress & Streaming"
+    },
+    {
+      "id": "grp-app-ai",
+      "label": "Application & AI Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity & Access"
+    },
+    {
+      "id": "grp-observability",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point for multimodal client traffic and API routing",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-eventhubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "High-throughput streaming ingest for audio, text, and metadata events",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless orchestration of transcription, translation, and multimodal inference pipeline",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Text and vision model inference for multimodal AI responses",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-speech",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Real-time speech-to-text transcription for streaming audio",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Multilingual translation of transcripts and generated responses",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores raw stream payloads, transcripts, translations, and model outputs",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates users and issues tokens for platform access",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-appinsights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Tracks model latency, errors, and end-to-end request telemetry",
+      "groupId": "grp-observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-entra",
+      "label": "Redirect user sign-in and validate bearer tokens before API access",
+      "type": "sync"
+    },
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-eventhubs",
+      "label": "Accept client audio/text stream and publish ingestion events",
+      "type": "async"
+    },
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-functions",
+      "label": "Route synchronous multimodal prompt requests to orchestration endpoint",
+      "type": "sync"
+    },
+    {
+      "from": "svc-eventhubs",
+      "to": "svc-functions",
+      "label": "Trigger processing function for each queued stream segment",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-speech",
+      "label": "Send real-time audio chunks for transcription",
+      "type": "sync"
+    },
+    {
+      "from": "svc-speech",
+      "to": "svc-functions",
+      "label": "Return timestamped transcript segments to orchestrator",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-translator",
+      "label": "Submit transcript text for target-language translation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-translator",
+      "to": "svc-functions",
+      "label": "Return multilingual transcript and response variants",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-openai",
+      "label": "Invoke text and vision models with normalized multimodal context",
+      "type": "sync"
+    },
+    {
+      "from": "svc-openai",
+      "to": "svc-functions",
+      "label": "Return generated answer, reasoning metadata, and vision interpretation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-storage",
+      "label": "Persist transcripts, translations, prompts, and AI outputs for replay",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-appinsights",
+      "label": "Emit dependency traces, token usage, and model latency metrics",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User authenticates and receives access token for the multimodal AI platform.",
+      "services": [
+        "svc-frontdoor",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Client streams audio/text input through the edge endpoint into the ingestion bus.",
+      "services": [
+        "svc-frontdoor",
+        "svc-eventhubs"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Event-driven function execution starts for each incoming stream segment.",
+      "services": [
+        "svc-eventhubs",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Orchestrator submits audio to speech service and receives real-time transcript output.",
+      "services": [
+        "svc-functions",
+        "svc-speech"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Transcript is translated into requested languages for multilingual interaction.",
+      "services": [
+        "svc-functions",
+        "svc-translator"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Translated text and visual context are sent to Azure OpenAI for multimodal inference.",
+      "services": [
+        "svc-functions",
+        "svc-openai"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Function composes final response and stores processing artifacts for audit and replay.",
+      "services": [
+        "svc-functions",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Pipeline emits observability telemetry to monitor model quality, latency, and failures.",
+      "services": [
+        "svc-functions",
+        "svc-appinsights"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1436,
+    "completionTokens": 2343,
+    "totalTokens": 3779,
+    "elapsedTimeMs": 36007,
+    "model": "gpt-5.3-codex",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "gpt-5.3-codex",
+    "modelDisplayName": "GPT-5.3 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1436,
+      "completionTokens": 2343,
+      "totalTokens": 3779,
+      "elapsedTimeMs": 36007,
+      "model": "gpt-5.3-codex",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T19:48:56.236Z",
+    "source": "model-comparison"
+  }
+}

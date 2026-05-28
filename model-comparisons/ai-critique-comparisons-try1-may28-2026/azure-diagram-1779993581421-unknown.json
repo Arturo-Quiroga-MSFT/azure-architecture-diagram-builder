@@ -1,0 +1,247 @@
+{
+  "groups": [
+    {
+      "id": "group-edge",
+      "label": "Global Entry & Traffic Management"
+    },
+    {
+      "id": "group-compute",
+      "label": "Application & Processing"
+    },
+    {
+      "id": "group-data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "group-identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "group-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global load balancing and routing for multi-region traffic",
+      "groupId": "group-edge"
+    },
+    {
+      "id": "appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the e-commerce web application",
+      "groupId": "group-compute"
+    },
+    {
+      "id": "eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Routes and processes order events asynchronously",
+      "groupId": "group-compute"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores global product catalog with multi-region writes",
+      "groupId": "group-data"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Caches user sessions for fast state retrieval",
+      "groupId": "group-data"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores order receipts and static assets",
+      "groupId": "group-data"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Manages connection strings and secrets",
+      "groupId": "group-identity"
+    },
+    {
+      "id": "entraid",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates users and administrators",
+      "groupId": "group-identity"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects metrics and telemetry",
+      "groupId": "group-monitor"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Aggregates logs and enables querying",
+      "groupId": "group-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "appservice",
+      "label": "Routes user requests to nearest regional App Service",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "cosmosdb",
+      "label": "Reads product catalog and writes orders",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "redis",
+      "label": "Stores and retrieves user session state",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "eventgrid",
+      "label": "Publishes order placed event",
+      "type": "async"
+    },
+    {
+      "from": "eventgrid",
+      "to": "storage",
+      "label": "Persists order receipt upon event trigger",
+      "type": "async"
+    },
+    {
+      "from": "appservice",
+      "to": "keyvault",
+      "label": "Retrieves database and cache connection secrets",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "entraid",
+      "label": "Validates user access tokens",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "monitor",
+      "label": "Emits application metrics and traces",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "loganalytics",
+      "label": "Streams aggregated diagnostics for analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User request enters via Azure Front Door and is routed to the optimal regional App Service instance.",
+      "services": [
+        "frontdoor",
+        "appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service authenticates the user against Microsoft Entra ID.",
+      "services": [
+        "appservice",
+        "entraid"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "App Service retrieves database and cache connection strings from Key Vault.",
+      "services": [
+        "appservice",
+        "keyvault"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "App Service reads product catalog from Cosmos DB and checks session state in Redis Cache to build the page.",
+      "services": [
+        "appservice",
+        "cosmosdb",
+        "redis"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "User places an order; App Service writes the order to Cosmos DB and publishes an OrderPlaced event to Event Grid.",
+      "services": [
+        "appservice",
+        "cosmosdb",
+        "eventgrid"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Event Grid triggers a function or logic app (conceptual) that persists the order receipt to Storage Account for archival.",
+      "services": [
+        "eventgrid",
+        "storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "App Service emits application metrics to Azure Monitor, which streams logs to Log Analytics for centralized observability.",
+      "services": [
+        "appservice",
+        "monitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1451,
+    "completionTokens": 1479,
+    "totalTokens": 2930,
+    "elapsedTimeMs": 21764,
+    "model": "default",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "deepseek-v4-pro",
+    "modelDisplayName": "DeepSeek V4 Pro",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1451,
+      "completionTokens": 1479,
+      "totalTokens": 2930,
+      "elapsedTimeMs": 21764,
+      "model": "default",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T18:39:42.485Z",
+    "source": "model-comparison"
+  }
+}

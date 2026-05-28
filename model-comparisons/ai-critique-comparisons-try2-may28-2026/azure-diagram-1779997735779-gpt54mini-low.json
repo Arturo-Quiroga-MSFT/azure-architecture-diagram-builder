@@ -1,0 +1,220 @@
+{
+  "groups": [
+    {
+      "id": "group-ingress",
+      "label": "Ingress and Streaming Ingest"
+    },
+    {
+      "id": "group-app",
+      "label": "AI Application and Processing"
+    },
+    {
+      "id": "group-monitoring",
+      "label": "Monitoring and Observability"
+    },
+    {
+      "id": "group-security",
+      "label": "Identity and Security"
+    }
+  ],
+  "services": [
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates users and service-to-service access",
+      "groupId": "group-security"
+    },
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Streams multimodal events and messages into the platform",
+      "groupId": "group-ingress"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Orchestrates streaming processing and AI service calls",
+      "groupId": "group-app"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates text and vision-enabled AI responses",
+      "groupId": "group-app"
+    },
+    {
+      "id": "speech",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Performs real-time speech-to-text transcription",
+      "groupId": "group-app"
+    },
+    {
+      "id": "translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Translates content for multilingual experiences",
+      "groupId": "group-app"
+    },
+    {
+      "id": "appinsights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Collects application telemetry and model usage signals",
+      "groupId": "group-monitoring"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Centralizes monitoring and alerting for the platform",
+      "groupId": "group-monitoring"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores and queries platform telemetry and logs",
+      "groupId": "group-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "entra-id",
+      "to": "event-hubs",
+      "label": "Issue authenticated access tokens for streaming clients",
+      "type": "sync"
+    },
+    {
+      "from": "event-hubs",
+      "to": "functions",
+      "label": "Deliver incoming multimodal events for stream processing",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "speech",
+      "label": "Send audio payloads for real-time transcription",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "translator",
+      "label": "Submit extracted text for multilingual translation",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "openai",
+      "label": "Invoke text and vision prompts for model inference",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "appinsights",
+      "label": "Emit request traces, latency, and model telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "appinsights",
+      "to": "azure-monitor",
+      "label": "Forward application telemetry for platform-wide monitoring",
+      "type": "sync"
+    },
+    {
+      "from": "azure-monitor",
+      "to": "log-analytics",
+      "label": "Store metrics and logs for cross-resource analysis",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Users and streaming producers authenticate before publishing multimodal events into the ingest pipeline.",
+      "services": [
+        "entra-id",
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Event Hubs receives audio, text, and image payloads and triggers downstream processing.",
+      "services": [
+        "event-hubs",
+        "functions"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Functions routes audio streams to Speech Services for real-time transcription.",
+      "services": [
+        "functions",
+        "speech"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Functions sends transcribed and extracted text to Translator for multilingual normalization.",
+      "services": [
+        "functions",
+        "translator"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Functions invokes Azure OpenAI for text and vision inference to generate model outputs.",
+      "services": [
+        "functions",
+        "openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Application telemetry and model usage metrics flow from the compute layer into the monitoring stack.",
+      "services": [
+        "functions",
+        "appinsights",
+        "azure-monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1436,
+    "completionTokens": 2033,
+    "totalTokens": 3469,
+    "elapsedTimeMs": 16355,
+    "model": "gpt-5.4-mini",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "gpt-5.4-mini",
+    "modelDisplayName": "GPT-5.4 Mini",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1436,
+      "completionTokens": 2033,
+      "totalTokens": 3469,
+      "elapsedTimeMs": 16355,
+      "model": "gpt-5.4-mini",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T19:48:56.538Z",
+    "source": "model-comparison"
+  }
+}

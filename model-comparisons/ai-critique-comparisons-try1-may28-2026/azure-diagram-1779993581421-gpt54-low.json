@@ -1,0 +1,272 @@
+{
+  "groups": [
+    {
+      "id": "grp-edge",
+      "label": "Ingress & Global Routing"
+    },
+    {
+      "id": "grp-app",
+      "label": "Regional Application & Order Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Global Data & Session State"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Routes customer traffic to the healthiest regional storefront deployment",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "app-east",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Primary regional e-commerce web application handling browsing, cart, and checkout",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "app-west",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Secondary regional e-commerce web application for failover and load distribution",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "eventgrid-orders",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Distributes order-created events for asynchronous downstream processing",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "order-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Processes order events and updates order state asynchronously",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "cosmos-catalog",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Globally distributed product catalog and order metadata store",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "redis-east",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Regional session and cart cache for the primary application deployment",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "redis-west",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Regional session and cart cache for the secondary application deployment",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects platform and application telemetry from the primary compute path",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores and enables querying of centralized operational logs and metrics",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "app-east",
+      "label": "Route customer storefront traffic to primary healthy region",
+      "type": "sync"
+    },
+    {
+      "from": "frontdoor",
+      "to": "app-west",
+      "label": "Fail over customer sessions to secondary region during degradation",
+      "type": "optional"
+    },
+    {
+      "from": "app-east",
+      "to": "redis-east",
+      "label": "Read and update active customer session and cart state",
+      "type": "sync"
+    },
+    {
+      "from": "app-west",
+      "to": "redis-west",
+      "label": "Read and update secondary-region session and cart state",
+      "type": "sync"
+    },
+    {
+      "from": "app-east",
+      "to": "cosmos-catalog",
+      "label": "Query global product catalog and persist checkout records",
+      "type": "sync"
+    },
+    {
+      "from": "app-west",
+      "to": "cosmos-catalog",
+      "label": "Query replicated catalog data and persist regional checkout records",
+      "type": "sync"
+    },
+    {
+      "from": "app-east",
+      "to": "eventgrid-orders",
+      "label": "Publish order-created event after successful checkout",
+      "type": "async"
+    },
+    {
+      "from": "app-west",
+      "to": "eventgrid-orders",
+      "label": "Publish failover-region order-created event after successful checkout",
+      "type": "async"
+    },
+    {
+      "from": "eventgrid-orders",
+      "to": "order-functions",
+      "label": "Trigger asynchronous order workflow for each new order event",
+      "type": "async"
+    },
+    {
+      "from": "order-functions",
+      "to": "cosmos-catalog",
+      "label": "Update order processing state and enrich order with catalog details",
+      "type": "sync"
+    },
+    {
+      "from": "app-east",
+      "to": "azure-monitor",
+      "label": "Send application performance metrics and request telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "azure-monitor",
+      "to": "log-analytics",
+      "label": "Export collected telemetry for centralized analysis and retention",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Azure Front Door evaluates health and directs shoppers to the primary regional storefront, with the secondary region available for failover.",
+      "services": [
+        "frontdoor",
+        "app-east",
+        "app-west"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The selected regional App Service loads the customer's session and shopping cart from the co-located Redis cache.",
+      "services": [
+        "app-east",
+        "redis-east",
+        "app-west",
+        "redis-west"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The regional storefront retrieves product information from the globally distributed Cosmos DB catalog during browsing and checkout.",
+      "services": [
+        "app-east",
+        "app-west",
+        "cosmos-catalog"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "After checkout completes, the storefront writes order data and publishes an order-created event to Event Grid.",
+      "services": [
+        "app-east",
+        "app-west",
+        "cosmos-catalog",
+        "eventgrid-orders"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Event Grid delivers each order event to Azure Functions for asynchronous order processing.",
+      "services": [
+        "eventgrid-orders",
+        "order-functions"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Functions updates order status and related metadata in Cosmos DB as processing advances.",
+      "services": [
+        "order-functions",
+        "cosmos-catalog"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "The primary application sends runtime telemetry to Azure Monitor for centralized collection.",
+      "services": [
+        "app-east",
+        "azure-monitor"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure Monitor forwards collected logs and metrics into Log Analytics for troubleshooting and operational analysis.",
+      "services": [
+        "azure-monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1425,
+    "completionTokens": 2350,
+    "totalTokens": 3775,
+    "elapsedTimeMs": 29986,
+    "model": "gpt-5.4",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "gpt-5.4",
+    "modelDisplayName": "GPT-5.4",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1425,
+      "completionTokens": 2350,
+      "totalTokens": 3775,
+      "elapsedTimeMs": 29986,
+      "model": "gpt-5.4",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T18:39:42.028Z",
+    "source": "model-comparison"
+  }
+}

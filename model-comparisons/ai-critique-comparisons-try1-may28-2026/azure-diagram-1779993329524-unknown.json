@@ -1,0 +1,228 @@
+{
+  "groups": [
+    {
+      "id": "group-ingest",
+      "label": "Document Ingestion"
+    },
+    {
+      "id": "group-processing",
+      "label": "AI Processing"
+    },
+    {
+      "id": "group-knowledge",
+      "label": "Knowledge & Storage"
+    },
+    {
+      "id": "group-security",
+      "label": "Security & Identity"
+    }
+  ],
+  "services": [
+    {
+      "id": "blob-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Raw document retention and landing zone",
+      "groupId": "group-ingest"
+    },
+    {
+      "id": "document-intelligence",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "OCR and document structure extraction",
+      "groupId": "group-processing"
+    },
+    {
+      "id": "azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Summarization and key phrase extraction",
+      "groupId": "group-processing"
+    },
+    {
+      "id": "cognitive-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Full-text indexing and semantic search",
+      "groupId": "group-knowledge"
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Document metadata and enrichment store",
+      "groupId": "group-knowledge"
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Orchestration API for the processing pipeline",
+      "groupId": "group-ingest"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Managed identity and role-based access control",
+      "groupId": "group-security"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets, API keys, and connection strings",
+      "groupId": "group-security"
+    }
+  ],
+  "connections": [
+    {
+      "from": "app-service",
+      "to": "blob-storage",
+      "label": "Upload raw document for long-term retention",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "document-intelligence",
+      "label": "Submit document for OCR and layout analysis",
+      "type": "async"
+    },
+    {
+      "from": "document-intelligence",
+      "to": "azure-openai",
+      "label": "Forward extracted text for summarization",
+      "type": "async"
+    },
+    {
+      "from": "azure-openai",
+      "to": "cosmos-db",
+      "label": "Persist enrichment metadata and summary",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "cognitive-search",
+      "label": "Push document chunk with metadata to index",
+      "type": "async"
+    },
+    {
+      "from": "cognitive-search",
+      "to": "cosmos-db",
+      "label": "Enrich search document with stored metadata",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "key-vault",
+      "label": "Retrieve secrets for downstream AI services",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "entra-id",
+      "label": "Authenticate using managed identity",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client uploads a document through the orchestration API, which authenticates via Entra ID and stores the raw file in Blob Storage.",
+      "services": [
+        "app-service",
+        "entra-id",
+        "blob-storage"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Orchestrator retrieves Document Intelligence API key from Key Vault and submits the document for OCR processing.",
+      "services": [
+        "app-service",
+        "key-vault",
+        "document-intelligence"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Document Intelligence returns structured text and layout data back to the orchestrator.",
+      "services": [
+        "document-intelligence",
+        "app-service"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Orchestrator forwards the extracted text to Azure OpenAI for summarization and key phrase extraction.",
+      "services": [
+        "app-service",
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure OpenAI returns the generated summary and metadata, which the orchestrator persists in Cosmos DB.",
+      "services": [
+        "azure-openai",
+        "app-service",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Orchestrator pushes the document chunks with enriched metadata into Cognitive Search for full-text indexing.",
+      "services": [
+        "app-service",
+        "cognitive-search"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Cognitive Search optionally enriches the indexed document by pulling additional metadata from Cosmos DB.",
+      "services": [
+        "cognitive-search",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "End users query Cognitive Search to find and retrieve processed documents with summaries.",
+      "services": [
+        "cognitive-search"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1454,
+    "completionTokens": 1362,
+    "totalTokens": 2816,
+    "elapsedTimeMs": 14484,
+    "model": "default",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "deepseek-v4-pro",
+    "modelDisplayName": "DeepSeek V4 Pro",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1454,
+      "completionTokens": 1362,
+      "totalTokens": 2816,
+      "elapsedTimeMs": 14484,
+      "model": "default",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T18:35:30.129Z",
+    "source": "model-comparison"
+  }
+}

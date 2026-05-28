@@ -1,0 +1,238 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Global Edge & Networking"
+    },
+    {
+      "id": "app",
+      "label": "Application Tier"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "events",
+      "label": "Event Processing"
+    },
+    {
+      "id": "observability",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "afd",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global traffic routing and WAF",
+      "groupId": "edge"
+    },
+    {
+      "id": "appgw",
+      "name": "Application Gateway",
+      "type": "Application Gateway",
+      "category": "networking",
+      "description": "Regional load balancing",
+      "groupId": "edge"
+    },
+    {
+      "id": "appsvc",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "E-commerce web application",
+      "groupId": "app"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Session state management",
+      "groupId": "data"
+    },
+    {
+      "id": "cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Global product catalog",
+      "groupId": "data"
+    },
+    {
+      "id": "eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Order event distribution",
+      "groupId": "events"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Order processing handlers",
+      "groupId": "events"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central observability hub",
+      "groupId": "observability"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log storage and analytics",
+      "groupId": "observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "afd",
+      "to": "appgw",
+      "label": "Route global traffic to regional gateways",
+      "type": "sync"
+    },
+    {
+      "from": "appgw",
+      "to": "appsvc",
+      "label": "Load balance HTTP requests to app service",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "cosmos",
+      "label": "Query product catalog by SKU",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "redis",
+      "label": "Read/write customer session state",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "eventgrid",
+      "label": "Publish new order events",
+      "type": "async"
+    },
+    {
+      "from": "eventgrid",
+      "to": "functions",
+      "label": "Trigger order fulfillment workflows",
+      "type": "async"
+    },
+    {
+      "from": "appsvc",
+      "to": "monitor",
+      "label": "Send application metrics and traces",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "loganalytics",
+      "label": "Aggregate and store telemetry data",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Global traffic enters through Azure Front Door and routes to regional Application Gateways",
+      "services": [
+        "afd",
+        "appgw"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Application Gateway load balances requests to App Service instances",
+      "services": [
+        "appgw",
+        "appsvc"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "App Service queries Cosmos DB for product catalog data",
+      "services": [
+        "appsvc",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "App Service manages user sessions via Redis Cache",
+      "services": [
+        "appsvc",
+        "redis"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Customer completes order; App Service publishes event to Event Grid",
+      "services": [
+        "appsvc",
+        "eventgrid"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Event Grid triggers Azure Functions for order processing",
+      "services": [
+        "eventgrid",
+        "functions"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "App Service emits telemetry to Azure Monitor",
+      "services": [
+        "appsvc",
+        "monitor"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure Monitor aggregates data and forwards to Log Analytics for analysis",
+      "services": [
+        "monitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1398,
+    "completionTokens": 1220,
+    "totalTokens": 2618,
+    "elapsedTimeMs": 7869,
+    "model": "grok-4-1-fast-non-reasoning",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1398,
+      "completionTokens": 1220,
+      "totalTokens": 2618,
+      "elapsedTimeMs": 7869,
+      "model": "grok-4-1-fast-non-reasoning",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T18:39:42.636Z",
+    "source": "model-comparison"
+  }
+}

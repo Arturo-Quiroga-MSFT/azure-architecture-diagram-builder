@@ -1,0 +1,275 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress / Edge (Multi-region Routing)"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / Compute"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage (Globally Distributed)"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity & Secrets"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point for routing users to the nearest healthy region with TLS termination and edge caching options",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Multi-region e-commerce web/API application serving catalog, carts, and checkout",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Event backbone to fan out order events for asynchronous processing",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Event-driven order processing handlers triggered by order events",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Globally distributed database for product catalog and order records",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Low-latency session and cart cache shared across app instances",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Customer/admin authentication and token issuance for the application",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Central storage for app secrets, certificates, and connection strings",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-azuremonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central metrics and platform monitoring hub for the application tier",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log workspace for querying application/platform logs and building alerts",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-appservice",
+      "label": "Route user traffic to nearest healthy regional web/API endpoint",
+      "type": "sync"
+    },
+    {
+      "from": "svc-entra",
+      "to": "svc-appservice",
+      "label": "Issue and validate OAuth/OIDC tokens for authenticated requests",
+      "type": "sync"
+    },
+    {
+      "from": "svc-keyvault",
+      "to": "svc-appservice",
+      "label": "Provide secrets and certificates at startup and during key rotation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-redis",
+      "label": "Read/write user sessions and cart state for low-latency access",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-cosmos",
+      "label": "Query global product catalog and persist cart/checkout metadata",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-eventgrid",
+      "label": "Publish OrderPlaced event after successful checkout submission",
+      "type": "async"
+    },
+    {
+      "from": "svc-eventgrid",
+      "to": "svc-functions",
+      "label": "Trigger order-processing function per OrderPlaced event subscription",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-cosmos",
+      "label": "Create order record and update inventory/reservation state",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-redis",
+      "label": "Invalidate session/cart cache after order completion",
+      "type": "optional"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-azuremonitor",
+      "label": "Emit application metrics, traces, and dependency telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azuremonitor",
+      "to": "svc-loganalytics",
+      "label": "Centralize collected telemetry into workspace for querying and alerts",
+      "type": "sync"
+    },
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-entra",
+      "label": "Redirect users to sign-in and complete authorization code flow",
+      "type": "optional"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Customer hits the e-commerce URL; Azure Front Door routes the request to the nearest healthy region hosting the app.",
+      "services": [
+        "svc-frontdoor",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "User signs in; the application uses Microsoft Entra ID for authentication and token validation on protected endpoints.",
+      "services": [
+        "svc-entra",
+        "svc-appservice",
+        "svc-frontdoor"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The application retrieves required secrets (e.g., database keys/connection strings) from Key Vault to access downstream services securely.",
+      "services": [
+        "svc-keyvault",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Browsing and cart actions use Redis for session/cart state and Cosmos DB for global product catalog lookups.",
+      "services": [
+        "svc-appservice",
+        "svc-redis",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "On checkout, the application records checkout metadata and publishes an OrderPlaced event for asynchronous processing.",
+      "services": [
+        "svc-appservice",
+        "svc-cosmos",
+        "svc-eventgrid"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Event Grid delivers the OrderPlaced event to an Azure Functions handler to process the order without blocking the user request.",
+      "services": [
+        "svc-eventgrid",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "The Functions handler writes the final order state to Cosmos DB and optionally invalidates Redis session/cart cache entries.",
+      "services": [
+        "svc-functions",
+        "svc-cosmos",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Application telemetry is sent to Azure Monitor and stored in Log Analytics for investigation, dashboards, and alerting.",
+      "services": [
+        "svc-appservice",
+        "svc-azuremonitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1425,
+    "completionTokens": 2044,
+    "totalTokens": 3469,
+    "elapsedTimeMs": 18695,
+    "model": "gpt-5.2",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "gpt-5.2",
+    "modelDisplayName": "GPT-5.2",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1425,
+      "completionTokens": 2044,
+      "totalTokens": 3469,
+      "elapsedTimeMs": 18695,
+      "model": "gpt-5.2",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T18:39:41.573Z",
+    "source": "model-comparison"
+  }
+}

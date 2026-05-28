@@ -1,0 +1,274 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress / Streaming"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / Orchestration"
+    },
+    {
+      "id": "grp-ai",
+      "label": "AI Services (Multi-Modal + Language)"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "grp-idsec",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-obs",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-eventhubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Streaming ingestion for audio, images, and metadata events",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Orchestrates real-time processing pipeline and calls AI services",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates/understands text and performs vision-capable multimodal reasoning",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-speech",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Real-time speech-to-text transcription for streamed audio",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Multilingual translation for transcripts, prompts, and responses",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores raw media, transcripts, translated text, and AI outputs",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates callers and issues tokens for protected API access",
+      "groupId": "grp-idsec"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets/keys for AI endpoints, Event Hubs, and storage access",
+      "groupId": "grp-idsec"
+    },
+    {
+      "id": "svc-azmon",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central observability hub for metrics and platform telemetry",
+      "groupId": "grp-obs"
+    },
+    {
+      "id": "svc-log",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log store for querying pipeline and operational logs",
+      "groupId": "grp-obs"
+    },
+    {
+      "id": "svc-appinsights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Model and application observability: traces, dependencies, and latency breakdowns",
+      "groupId": "grp-obs"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-entra",
+      "to": "svc-functions",
+      "label": "Validate caller identity and authorize API invocations via tokens",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-keyvault",
+      "label": "Retrieve AI/service credentials and connection strings at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "svc-eventhubs",
+      "to": "svc-functions",
+      "label": "Trigger processing per incoming audio/image event batch/partition",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-storage",
+      "label": "Persist raw media, transcripts, translations, and enriched outputs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-speech",
+      "label": "Stream audio frames and receive real-time transcription segments",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-translator",
+      "label": "Translate transcripts and prompts to requested target languages",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-openai",
+      "label": "Submit multimodal prompt (text + image reference) and get generated response",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-eventhubs",
+      "label": "Publish enriched transcript/translation/AI insights as downstream events",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-azmon",
+      "label": "Emit platform metrics and pipeline health signals from the orchestrator",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmon",
+      "to": "svc-log",
+      "label": "Centralize collected telemetry for querying, alerts, and retention",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmon",
+      "to": "svc-appinsights",
+      "label": "Correlate distributed traces and dependency timings for model observability",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Producers send audio/image events to the streaming ingestion layer; the orchestrator is authorized for protected access.",
+      "services": [
+        "svc-eventhubs",
+        "svc-functions",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The orchestrator is triggered by new stream events and loads required secrets/configuration.",
+      "services": [
+        "svc-eventhubs",
+        "svc-functions",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Audio content is transcribed in real time and transcript segments are accumulated for downstream processing.",
+      "services": [
+        "svc-functions",
+        "svc-speech"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Transcripts and/or prompts are translated to the target languages required by consumers or the model prompt strategy.",
+      "services": [
+        "svc-functions",
+        "svc-translator"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Multimodal inference is performed by combining translated text with image context to generate responses or structured insights.",
+      "services": [
+        "svc-functions",
+        "svc-openai",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Outputs (transcripts, translations, AI responses) are persisted and optionally published back onto the event stream for downstream systems.",
+      "services": [
+        "svc-functions",
+        "svc-storage",
+        "svc-eventhubs"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "End-to-end observability is captured from the orchestrator and centralized for querying and model/pipeline health analysis.",
+      "services": [
+        "svc-functions",
+        "svc-azmon",
+        "svc-appinsights",
+        "svc-log"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1436,
+    "completionTokens": 2500,
+    "totalTokens": 3936,
+    "elapsedTimeMs": 24233,
+    "model": "gpt-5.2",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "gpt-5.2",
+    "modelDisplayName": "GPT-5.2",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1436,
+      "completionTokens": 2500,
+      "totalTokens": 3936,
+      "elapsedTimeMs": 24233,
+      "model": "gpt-5.2",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T19:48:55.931Z",
+    "source": "model-comparison"
+  }
+}

@@ -19,9 +19,13 @@ function abbreviateModelForFile(model: ModelType): string {
   const map: Record<string, string> = {
     'gpt-5.1': 'gpt51', 'gpt-5.2': 'gpt52', 'gpt-5.2-codex': 'gpt52codex',
     'gpt-5.3-codex': 'gpt53codex', 'gpt-5.4': 'gpt54', 'gpt-5.4-mini': 'gpt54mini',
-    'deepseek-v3.2-speciale': 'deepseek', 'grok-4.1-fast': 'grok41fast',
+    'deepseek-v3.2-speciale': 'deepseek', 'deepseek-v4-pro': 'deepseekv4pro',
+    'grok-4.1-fast': 'grok41fast', 'grok-4.3': 'grok43',
+    'mistral-large-3': 'mistrallarge3',
+    'kimi-k2-5': 'kimik25',
   };
-  return map[model] || 'unknown';
+  // Fallback: derive a sane slug from the model id so we never write "unknown"
+  return map[model] || String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
 }
 
 /** Build a model suffix like "gpt52-medium" or "deepseek" */
@@ -68,9 +72,16 @@ interface CompareModelsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApply: (architecture: any, prompt: string, sourceModel?: ModelType, sourceReasoningEffort?: ReasoningEffort) => void;
+  /**
+   * Optional parent-provided batch PNG capture.
+   * Modal supplies one item per successful result with the desired filename;
+   * parent is responsible for applying each architecture to its canvas,
+   * capturing the rendered PNG, and triggering the download.
+   */
+  onCaptureBatch?: (items: Array<{ architecture: any; prompt: string; filename: string; model: ModelType; reasoningEffort: ReasoningEffort }>) => Promise<void>;
 }
 
-const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose, onApply }) => {
+const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose, onApply, onCaptureBatch }) => {
   const availableModels = getAvailableModels();
   const currentSettings = getModelSettings();
   
@@ -91,6 +102,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   const [critiqueByModel, setCritiqueByModel] = useState<ModelType | null>(null);
   const [isCritiquing, setIsCritiquing] = useState(false);
   const [critiqueError, setCritiqueError] = useState<string | null>(null);
+  const [isSavingPngs, setIsSavingPngs] = useState(false);
 
   // Avatar presenter state
   const [avatarStatus, setAvatarStatus] = useState<AvatarStatus>('idle');
@@ -338,6 +350,43 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       if (i < successful.length - 1) {
         await new Promise(res => setTimeout(res, 150));
       }
+    }
+  };
+
+  /**
+   * Render each successful result on the parent's canvas and save it as PNG.
+   * Filenames mirror saveAllDiagrams() so the JSON + PNG pair always match.
+   * Note: this temporarily replaces the main canvas content with each result
+   * in turn (same effect as clicking "Use This Architecture" multiple times).
+   */
+  const saveAllPngs = async () => {
+    if (!onCaptureBatch) {
+      alert('PNG capture is not available in this build.');
+      return;
+    }
+    const successful = results.filter(r => r.status === 'success' && r.architecture);
+    if (successful.length === 0) return;
+    const confirmed = window.confirm(
+      `This will render all ${successful.length} model diagram(s) on the canvas one at a time to save them as PNG. ` +
+      `Your current canvas content will be replaced with the last rendered diagram. Continue?`,
+    );
+    if (!confirmed) return;
+    const ts = Date.now();
+    const items = successful.map(r => ({
+      architecture: r.architecture,
+      prompt,
+      filename: `azure-diagram-${ts}-${modelSuffix(r.model, r.reasoningEffort)}.png`,
+      model: r.model,
+      reasoningEffort: r.reasoningEffort,
+    }));
+    setIsSavingPngs(true);
+    try {
+      await onCaptureBatch(items);
+    } catch (err) {
+      console.error('Save All PNGs failed:', err);
+      alert('Failed to save one or more PNGs. Check the console for details.');
+    } finally {
+      setIsSavingPngs(false);
     }
   };
 
@@ -714,14 +763,27 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                     <button
                       className="compare-save-btn"
                       onClick={saveAllDiagrams}
+                      disabled={isSavingPngs}
                       title="Download each model's diagram as a separate JSON file"
                     >
                       <Download size={14} />
                       Save All Diagrams
                     </button>
+                    {onCaptureBatch && (
+                      <button
+                        className="compare-save-btn"
+                        onClick={saveAllPngs}
+                        disabled={isSavingPngs}
+                        title="Render each model's diagram on the canvas and save as PNG (filenames match the JSON files)"
+                      >
+                        {isSavingPngs ? <Loader2 size={14} className="spinner" /> : <Download size={14} />}
+                        {isSavingPngs ? 'Saving PNGs...' : 'Save All PNGs'}
+                      </button>
+                    )}
                     <button
                       className="compare-save-btn compare-save-report-btn"
                       onClick={saveComparisonReport}
+                      disabled={isSavingPngs}
                       title="Download a single JSON with all results for side-by-side analysis"
                     >
                       <FileJson size={14} />
@@ -730,6 +792,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
                     <button
                       className="compare-save-btn compare-save-report-btn"
                       onClick={saveComparisonReportMd}
+                      disabled={isSavingPngs}
                       title="Download a formatted Markdown report for easy reading and sharing"
                     >
                       <FileText size={14} />

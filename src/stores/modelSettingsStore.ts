@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-5.4' | 'gpt-5.4-mini' | 'deepseek-v3.2-speciale' | 'grok-4.1-fast';
+export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-5.4' | 'gpt-5.4-mini' | 'deepseek-v3.2-speciale' | 'deepseek-v4-pro' | 'grok-4.1-fast' | 'grok-4.3' | 'mistral-large-3' | 'kimi-k2-5';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -136,12 +136,48 @@ export const MODEL_CONFIG: Record<ModelType, {
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
+  'deepseek-v4-pro': {
+    displayName: 'DeepSeek V4 Pro',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Flagship DeepSeek V4 - top-tier quality at third-party pricing',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
   'grok-4.1-fast': {
     displayName: 'Grok 4.1 Fast',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST',
     isReasoning: false,
     maxCompletionTokens: 16000,
     description: 'Fast non-reasoning model from xAI - diversified provider',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'grok-4.3': {
+    displayName: 'Grok 4.3',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK43',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Frontier xAI model - top-tier quality, broad knowledge',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'mistral-large-3': {
+    displayName: 'Mistral Large 3',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Mistral flagship - strong reasoning and multilingual',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'kimi-k2-5': {
+    displayName: 'Kimi K2.5',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'MoonshotAI trillion-param MoE - strong JSON / long context',
     apiFormat: 'chat-completions',
     supportsVision: false,
   },

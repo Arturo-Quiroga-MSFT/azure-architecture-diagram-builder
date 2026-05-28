@@ -1,0 +1,267 @@
+{
+  "groups": [
+    {
+      "id": "edge-group",
+      "label": "Global Edge"
+    },
+    {
+      "id": "app-group",
+      "label": "Application & Processing"
+    },
+    {
+      "id": "data-group",
+      "label": "Data Layer"
+    },
+    {
+      "id": "security-group",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "monitor-group",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "front-door",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Routes shopper traffic to the nearest healthy region",
+      "groupId": "edge-group"
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the e-commerce web and API application",
+      "groupId": "app-group"
+    },
+    {
+      "id": "functions-order",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Processes order events and performs backend workflow steps",
+      "groupId": "app-group"
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores the global product catalog and order state",
+      "groupId": "data-group"
+    },
+    {
+      "id": "redis-cache",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Caches user sessions and frequently accessed shopping data",
+      "groupId": "data-group"
+    },
+    {
+      "id": "event-grid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Publishes order events for asynchronous processing",
+      "groupId": "app-group"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates customers and application users",
+      "groupId": "security-group"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores application secrets and cryptographic material",
+      "groupId": "security-group"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects application health and telemetry signals",
+      "groupId": "monitor-group"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralizes logs and supports operational analysis",
+      "groupId": "monitor-group"
+    }
+  ],
+  "connections": [
+    {
+      "from": "front-door",
+      "to": "app-service",
+      "label": "Route shopper traffic to the nearest healthy region",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "entra-id",
+      "label": "Redirect users for sign-in and receive authentication tokens",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "key-vault",
+      "label": "Retrieve connection secrets and signing keys at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "redis-cache",
+      "label": "Read and refresh customer session state for fast checkout",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "cosmos-db",
+      "label": "Read the global product catalog and pricing data",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "event-grid",
+      "label": "Publish order placed events for downstream fulfillment",
+      "type": "async"
+    },
+    {
+      "from": "event-grid",
+      "to": "functions-order",
+      "label": "Trigger backend order processing when a new event arrives",
+      "type": "async"
+    },
+    {
+      "from": "functions-order",
+      "to": "cosmos-db",
+      "label": "Persist order state and update inventory records",
+      "type": "sync"
+    },
+    {
+      "from": "functions-order",
+      "to": "redis-cache",
+      "label": "Invalidate or update cached session and cart data after checkout",
+      "type": "sync"
+    },
+    {
+      "from": "functions-order",
+      "to": "key-vault",
+      "label": "Resolve secrets needed for fulfillment integrations",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "azure-monitor",
+      "label": "Emit application telemetry and request metrics",
+      "type": "sync"
+    },
+    {
+      "from": "azure-monitor",
+      "to": "log-analytics",
+      "label": "Store logs and diagnostics for operational analysis",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "A shopper enters the site through the global edge and is routed to the healthiest regional application instance.",
+      "services": [
+        "front-door",
+        "app-service"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The application authenticates the user with Microsoft Entra ID and retrieves runtime secrets from Key Vault.",
+      "services": [
+        "app-service",
+        "entra-id",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The application restores the customer session from Redis Cache and reads the latest product catalog from Cosmos DB.",
+      "services": [
+        "app-service",
+        "redis-cache",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "When the customer places an order, the application publishes an order event to Event Grid.",
+      "services": [
+        "app-service",
+        "event-grid"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Event Grid triggers Azure Functions to process the order, update order records, and adjust inventory in Cosmos DB.",
+      "services": [
+        "event-grid",
+        "functions-order",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "The function app updates cached session and cart data in Redis Cache and resolves any required downstream secrets from Key Vault.",
+      "services": [
+        "functions-order",
+        "redis-cache",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "The application emits telemetry to Azure Monitor, which forwards logs to Log Analytics for centralized observability.",
+      "services": [
+        "app-service",
+        "azure-monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1425,
+    "completionTokens": 2611,
+    "totalTokens": 4036,
+    "elapsedTimeMs": 13093,
+    "model": "gpt-5.4-mini",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "gpt-5.4-mini",
+    "modelDisplayName": "GPT-5.4 Mini",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1425,
+      "completionTokens": 2611,
+      "totalTokens": 4036,
+      "elapsedTimeMs": 13093,
+      "model": "gpt-5.4-mini",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T18:39:42.181Z",
+    "source": "model-comparison"
+  }
+}

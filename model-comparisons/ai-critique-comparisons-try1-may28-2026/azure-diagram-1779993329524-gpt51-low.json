@@ -1,0 +1,274 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Client & API Layer"
+    },
+    {
+      "id": "grp-ai-processing",
+      "label": "AI Processing Layer"
+    },
+    {
+      "id": "grp-data",
+      "label": "Search & Data Layer"
+    },
+    {
+      "id": "grp-identity-security",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "grp-monitoring",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the document processing API and orchestrates the pipeline",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-doc-intel",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "Performs OCR and document structure extraction",
+      "groupId": "grp-ai-processing"
+    },
+    {
+      "id": "svc-azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates summaries and insights from extracted text",
+      "groupId": "grp-ai-processing"
+    },
+    {
+      "id": "svc-cognitive-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Indexes documents and metadata for full-text and semantic search",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores document metadata and AI-generated insights",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Retains original documents and extracted artifacts as blobs",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Provides user authentication and access tokens for the API",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets and credentials for downstream AI and data services",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-az-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects telemetry and performance metrics from the application",
+      "groupId": "grp-monitoring"
+    },
+    {
+      "id": "svc-log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central workspace for querying logs and metrics from the pipeline",
+      "groupId": "grp-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-app-service",
+      "to": "svc-entra",
+      "label": "Request user authentication and acquire access tokens for document upload",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-keyvault",
+      "label": "Retrieve service credentials and API keys for Document Intelligence and Azure OpenAI",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-doc-intel",
+      "label": "Submit uploaded document for OCR and layout extraction",
+      "type": "sync"
+    },
+    {
+      "from": "svc-doc-intel",
+      "to": "svc-storage",
+      "label": "Persist original files and extracted structured outputs as blobs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-doc-intel",
+      "to": "svc-azure-openai",
+      "label": "Send extracted text and key fields for summarization and insight generation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azure-openai",
+      "to": "svc-app-service",
+      "label": "Return summarized content and extracted insights to orchestrator",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-cosmosdb",
+      "label": "Store document metadata, processing status, and AI-generated summaries",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-cognitive-search",
+      "label": "Push document text and metadata for search index update",
+      "type": "sync"
+    },
+    {
+      "from": "svc-cognitive-search",
+      "to": "svc-storage",
+      "label": "Retrieve document content or attachments for indexing and search results",
+      "type": "sync"
+    },
+    {
+      "from": "svc-cognitive-search",
+      "to": "svc-cosmosdb",
+      "label": "Access enriched metadata as an external data source during indexing and querying",
+      "type": "optional"
+    },
+    {
+      "from": "svc-app-service",
+      "to": "svc-az-monitor",
+      "label": "Emit application logs, pipeline metrics, and custom events",
+      "type": "async"
+    },
+    {
+      "from": "svc-az-monitor",
+      "to": "svc-log-analytics",
+      "label": "Ingest collected telemetry into centralized log workspace",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User uploads a document through the App Service API, which validates the request via Microsoft Entra ID authentication.",
+      "services": [
+        "svc-app-service",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service retrieves necessary secrets from Key Vault and submits the document to Document Intelligence for OCR and layout analysis.",
+      "services": [
+        "svc-app-service",
+        "svc-keyvault",
+        "svc-doc-intel"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Document Intelligence processes the file and stores the original document and extracted structured outputs in the Storage Account.",
+      "services": [
+        "svc-doc-intel",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Document Intelligence sends extracted text and key fields to Azure OpenAI for summarization and advanced language understanding.",
+      "services": [
+        "svc-doc-intel",
+        "svc-azure-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure OpenAI returns summaries and insights to App Service, which then persists the metadata and AI results in Azure Cosmos DB.",
+      "services": [
+        "svc-azure-openai",
+        "svc-app-service",
+        "svc-cosmosdb"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "App Service pushes searchable content and enriched metadata into Azure Cognitive Search to update the index.",
+      "services": [
+        "svc-app-service",
+        "svc-cognitive-search"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure Cognitive Search uses blob content from Storage Account and metadata from Azure Cosmos DB to serve rich search and retrieval experiences.",
+      "services": [
+        "svc-cognitive-search",
+        "svc-storage",
+        "svc-cosmosdb"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "During processing and querying, App Service sends telemetry to Azure Monitor, which aggregates the data and stores it in Log Analytics for analysis.",
+      "services": [
+        "svc-app-service",
+        "svc-az-monitor",
+        "svc-log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1429,
+    "completionTokens": 2885,
+    "totalTokens": 4314,
+    "elapsedTimeMs": 19547,
+    "model": "gpt-5.1",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "gpt-5.1",
+    "modelDisplayName": "GPT-5.1",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1429,
+      "completionTokens": 2885,
+      "totalTokens": 4314,
+      "elapsedTimeMs": 19547,
+      "model": "gpt-5.1",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T18:35:29.524Z",
+    "source": "model-comparison"
+  }
+}

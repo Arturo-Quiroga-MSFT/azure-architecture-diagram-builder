@@ -1,0 +1,219 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress & Streaming"
+    },
+    {
+      "id": "grp-application",
+      "label": "AI Orchestration"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data & Session Storage"
+    },
+    {
+      "id": "grp-monitoring",
+      "label": "Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-eventhubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Ingests real-time multimodal event streams such as audio, image, and text payloads.",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Consumes streaming events, normalizes payloads, and coordinates downstream AI processing.",
+      "groupId": "grp-application"
+    },
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the platform API and session orchestration layer for multimodal AI interactions.",
+      "groupId": "grp-application"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Performs text generation and vision-enabled reasoning over user prompts and image context.",
+      "groupId": "grp-application"
+    },
+    {
+      "id": "svc-speech",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Provides real-time speech-to-text transcription for streaming audio inputs.",
+      "groupId": "grp-application"
+    },
+    {
+      "id": "svc-translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Translates transcripts, prompts, and responses for multilingual user experiences.",
+      "groupId": "grp-application"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores raw media, transcripts, prompts, and generated multimodal outputs.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-appinsights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Captures model latency, throughput, errors, and application telemetry for observability.",
+      "groupId": "grp-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-eventhubs",
+      "to": "svc-functions",
+      "label": "Consume streamed audio, image, and text events for preprocessing",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-storage",
+      "label": "Persist raw media chunks and normalized event payloads",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-speech",
+      "label": "Submit live audio frames for real-time transcription",
+      "type": "sync"
+    },
+    {
+      "from": "svc-speech",
+      "to": "svc-translator",
+      "label": "Translate interim and final transcripts into target languages",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-appservice",
+      "label": "Forward normalized transcripts and media references to session orchestration",
+      "type": "async"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-openai",
+      "label": "Send text prompts and image context for multimodal reasoning",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-translator",
+      "label": "Translate user prompts and AI responses for multilingual delivery",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-storage",
+      "label": "Store session artifacts, transcripts, and generated outputs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-appinsights",
+      "label": "Emit model latency, token usage, and failure telemetry",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Streaming clients publish multimodal events into the platform intake stream for downstream processing.",
+      "services": [
+        "svc-eventhubs",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The stream processor normalizes incoming payloads and stores raw media and event snapshots for replay and auditing.",
+      "services": [
+        "svc-functions",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Audio segments are sent for low-latency speech recognition to produce live transcripts.",
+      "services": [
+        "svc-functions",
+        "svc-speech"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Recognized speech is translated into requested languages before being attached to the active application session.",
+      "services": [
+        "svc-speech",
+        "svc-translator",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The application orchestrator submits multilingual text and image context to the multimodal model for reasoning and response generation.",
+      "services": [
+        "svc-appservice",
+        "svc-openai",
+        "svc-translator"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Final transcripts, prompts, and AI outputs are saved, while application and model telemetry is recorded for observability.",
+      "services": [
+        "svc-appservice",
+        "svc-storage",
+        "svc-appinsights"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1436,
+    "completionTokens": 2395,
+    "totalTokens": 3831,
+    "elapsedTimeMs": 34407,
+    "model": "gpt-5.4",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "gpt-5.4",
+    "modelDisplayName": "GPT-5.4",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1436,
+      "completionTokens": 2395,
+      "totalTokens": 3831,
+      "elapsedTimeMs": 34407,
+      "model": "gpt-5.4",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T19:48:56.387Z",
+    "source": "model-comparison"
+  }
+}
