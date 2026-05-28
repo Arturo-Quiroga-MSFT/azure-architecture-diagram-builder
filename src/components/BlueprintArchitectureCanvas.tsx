@@ -42,6 +42,179 @@ const ICON = 44;
 const ARROW_GAP = 6;          // pixels between path end and node edge so the arrowhead is never clipped
 const LABEL_LINE_H = 12;      // line height for wrapped service labels
 const LABEL_MAX_CHARS = 20;   // soft wrap target per line
+const TILE_PAD = 8;           // clearance kept around node tiles when routing edges
+
+/** Axis-aligned segment ↔ axis-aligned rect intersection test. */
+function segmentIntersectsRect(
+  x1: number, y1: number, x2: number, y2: number,
+  rx1: number, ry1: number, rx2: number, ry2: number,
+): boolean {
+  if (x1 === x2) {
+    if (x1 <= rx1 || x1 >= rx2) return false;
+    const sy1 = Math.min(y1, y2);
+    const sy2 = Math.max(y1, y2);
+    return sy1 < ry2 && sy2 > ry1;
+  }
+  if (y1 === y2) {
+    if (y1 <= ry1 || y1 >= ry2) return false;
+    const sx1 = Math.min(x1, x2);
+    const sx2 = Math.max(x1, x2);
+    return sx1 < rx2 && sx2 > rx1;
+  }
+  return false;
+}
+
+/**
+ * Search for a midpoint coordinate (mx for horizontal routing, my for vertical)
+ * such that the resulting 3-segment orthogonal path does not cross any blocker
+ * tile. Falls back to the naive midpoint if no clear value is found.
+ */
+function findClearOrthogonalMidpoint(
+  ax: number, ay: number, bx: number, by: number,
+  horizontal: boolean,
+  blockers: BpNode[],
+): number {
+  const tileH = NODE_H - 22;
+  const naive = horizontal ? (ax + bx) / 2 : (ay + by) / 2;
+
+  const clear = (m: number): boolean => {
+    let segs: Array<[number, number, number, number]>;
+    if (horizontal) {
+      segs = [[ax, ay, m, ay], [m, ay, m, by], [m, by, bx, by]];
+    } else {
+      segs = [[ax, ay, ax, m], [ax, m, bx, m], [bx, m, bx, by]];
+    }
+    for (const n of blockers) {
+      const rx1 = n.x - TILE_PAD;
+      const rx2 = n.x + NODE_W + TILE_PAD;
+      const ry1 = n.y - TILE_PAD;
+      const ry2 = n.y + tileH + TILE_PAD;
+      for (const [sx1, sy1, sx2, sy2] of segs) {
+        if (segmentIntersectsRect(sx1, sy1, sx2, sy2, rx1, ry1, rx2, ry2)) return false;
+      }
+    }
+    return true;
+  };
+
+  if (clear(naive)) return naive;
+
+  // Search outward from the naive midpoint. Allow stepping a bit past the
+  // endpoint span to handle blockers sitting near a node edge.
+  const lo = horizontal ? Math.min(ax, bx) : Math.min(ay, by);
+  const hi = horizontal ? Math.max(ax, bx) : Math.max(ay, by);
+  const reach = Math.max(120, (hi - lo) / 2 + 80);
+  for (let off = 8; off <= reach; off += 8) {
+    const plus = naive + off;
+    const minus = naive - off;
+    if (plus <= hi + 60 && clear(plus)) return plus;
+    if (minus >= lo - 60 && clear(minus)) return minus;
+  }
+  return naive;
+}
+
+/** Geometry produced for each edge so paths and decorations can be rendered
+ *  in independent passes (paths beneath badges/labels). */
+interface EdgeGeom {
+  ax: number; ay: number;
+  bx: number; by: number;
+  endX: number; endY: number;
+  horizontal: boolean;
+  d: string;
+  segs: Array<{ x1: number; y1: number; x2: number; y2: number; len: number; horiz: boolean }>;
+  longest: { x1: number; y1: number; x2: number; y2: number; len: number; horiz: boolean };
+  strokeDash?: string;
+}
+
+/**
+ * Compute the rendered path and segment breakdown for an edge, including
+ * obstacle-aware midpoint selection for orthogonal routing.
+ */
+function computeEdgeGeometry(
+  a: BpNode,
+  b: BpNode,
+  edge: { routing?: string; style?: string },
+  allNodes: BpNode[],
+): EdgeGeom {
+  const tileH = NODE_H - 22;
+  const aCx = a.x + NODE_W / 2;
+  const aCy = a.y + tileH / 2;
+  const bCx = b.x + NODE_W / 2;
+  const bCy = b.y + tileH / 2;
+  const horizontal = Math.abs(bCx - aCx) >= Math.abs(bCy - aCy);
+
+  let ax: number, ay: number, bx: number, by: number;
+  if (horizontal) {
+    if (bCx >= aCx) { ax = a.x + NODE_W; ay = aCy; bx = b.x;          by = bCy; }
+    else            { ax = a.x;          ay = aCy; bx = b.x + NODE_W; by = bCy; }
+  } else {
+    if (bCy >= aCy) { ax = aCx; ay = a.y + tileH; bx = bCx; by = b.y; }
+    else            { ax = aCx; ay = a.y;        bx = bCx; by = b.y + tileH; }
+  }
+
+  const routing = edge.routing || 'orthogonal';
+  const blockers = allNodes.filter((n) => n.id !== a.id && n.id !== b.id);
+
+  let d: string;
+  let endX = bx;
+  let endY = by;
+  type Seg = { x1: number; y1: number; x2: number; y2: number; len: number; horiz: boolean };
+  let segs: Seg[];
+
+  if (routing === 'orthogonal') {
+    if (horizontal) {
+      const mx = findClearOrthogonalMidpoint(ax, ay, bx, by, true, blockers);
+      endX = bx - Math.sign(bx - mx || 1) * ARROW_GAP;
+      endY = by;
+      d = `M ${ax} ${ay} L ${mx} ${ay} L ${mx} ${endY} L ${endX} ${endY}`;
+      segs = [
+        { x1: ax, y1: ay, x2: mx, y2: ay, len: Math.abs(mx - ax), horiz: true },
+        { x1: mx, y1: ay, x2: mx, y2: by, len: Math.abs(by - ay), horiz: false },
+        { x1: mx, y1: by, x2: bx, y2: by, len: Math.abs(bx - mx), horiz: true },
+      ];
+    } else {
+      const my = findClearOrthogonalMidpoint(ax, ay, bx, by, false, blockers);
+      endX = bx;
+      endY = by - Math.sign(by - my || 1) * ARROW_GAP;
+      d = `M ${ax} ${ay} L ${ax} ${my} L ${endX} ${my} L ${endX} ${endY}`;
+      segs = [
+        { x1: ax, y1: ay, x2: ax, y2: my, len: Math.abs(my - ay), horiz: false },
+        { x1: ax, y1: my, x2: bx, y2: my, len: Math.abs(bx - ax), horiz: true },
+        { x1: bx, y1: my, x2: bx, y2: by, len: Math.abs(by - my), horiz: false },
+      ];
+    }
+  } else if (routing === 'curve') {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const totalLen = Math.hypot(dx, dy) || 1;
+    const ux = dx / totalLen;
+    const uy = dy / totalLen;
+    endX = bx - ux * ARROW_GAP;
+    endY = by - uy * ARROW_GAP;
+    const offset = Math.max(40, Math.min(120, Math.abs(horizontal ? dx : dy) / 2));
+    if (horizontal) {
+      d = `M ${ax} ${ay} C ${ax + offset} ${ay}, ${endX - offset} ${endY}, ${endX} ${endY}`;
+    } else {
+      d = `M ${ax} ${ay} C ${ax} ${ay + offset}, ${endX} ${endY - offset}, ${endX} ${endY}`;
+    }
+    segs = [{ x1: ax, y1: ay, x2: endX, y2: endY, len: totalLen, horiz: horizontal }];
+  } else {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const totalLen = Math.hypot(dx, dy) || 1;
+    const ux = dx / totalLen;
+    const uy = dy / totalLen;
+    endX = bx - ux * ARROW_GAP;
+    endY = by - uy * ARROW_GAP;
+    d = `M ${ax} ${ay} L ${endX} ${endY}`;
+    segs = [{ x1: ax, y1: ay, x2: endX, y2: endY, len: totalLen, horiz: horizontal }];
+  }
+
+  const longest = segs.reduce((p, c) => (c.len > p.len ? c : p));
+  const strokeDash =
+    edge.style === 'dashed' ? '6 5' : edge.style === 'dotted' ? '2 4' : undefined;
+
+  return { ax, ay, bx, by, endX, endY, horizontal, d, segs, longest, strokeDash };
+}
 
 // Approved short aliases for noisy or commonly-truncated service names.
 // Applied only inside blueprint rendering so it does not affect topology /
@@ -181,7 +354,8 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
         ))}
 
         {/* Edges drawn between zones and nodes so they sit beneath node tiles
-            but above zone fills. */}
+            but above zone fills. Paths render first, then badges + labels so
+            no later edge can paint over an earlier badge. */}
         <g className="bp-edges">
           {(() => {
             // Pre-pass: count parallel edges (unordered node pairs) so we can
@@ -192,67 +366,29 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
               pairCount.set(k, (pairCount.get(k) || 0) + 1);
             }
             const pairSeen = new Map<string, number>();
-            const tileH = NODE_H - 22;
-            // Precompute badge centers from the longest straight segment of each
-            // edge's orthogonal path (Tier-1 polish: bubbles never sit on elbows
-            // or arrowheads). Cross-pair collision detection still nudges later
-            // badges along the segment's perpendicular axis.
-            type Pre = {
+
+            type Placed = {
               e: typeof data.edges[number];
               a: BpNode;
               b: BpNode;
-              parallelOffset: number;
+              geom: EdgeGeom;
               bx: number;            // badge x
               by: number;            // badge y
-              segHorizontal: boolean; // longest-segment orientation
-              extra: number;
             };
-            const placed: Pre[] = [];
+            const placed: Placed[] = [];
             for (const e of data.edges) {
               const a = nodeById.get(e.from);
               const b = nodeById.get(e.to);
               if (!a || !b) continue;
+
               const k = [e.from, e.to].sort().join('|');
               const idx = pairSeen.get(k) || 0;
               pairSeen.set(k, idx + 1);
               const count = pairCount.get(k) || 1;
               const parallelOffset = count > 1 ? (idx - (count - 1) / 2) * 28 : 0;
 
-              // Resolve anchor points the same way <Edge> does so the badge
-              // lands on the actual rendered path.
-              const aCx = a.x + NODE_W / 2;
-              const aCy = a.y + tileH / 2;
-              const bCx = b.x + NODE_W / 2;
-              const bCy = b.y + tileH / 2;
-              const horizontal = Math.abs(bCx - aCx) >= Math.abs(bCy - aCy);
-              let ax: number, ay: number, bx: number, by: number;
-              if (horizontal) {
-                if (bCx >= aCx) { ax = a.x + NODE_W; ay = aCy; bx = b.x;          by = bCy; }
-                else            { ax = a.x;          ay = aCy; bx = b.x + NODE_W; by = bCy; }
-              } else {
-                if (bCy >= aCy) { ax = aCx; ay = a.y + tileH; bx = bCx; by = b.y; }
-                else            { ax = aCx; ay = a.y;        bx = bCx; by = b.y + tileH; }
-              }
-
-              // Build the orthogonal path's three segments and pick the longest.
-              type Seg = { x1: number; y1: number; x2: number; y2: number; len: number; horiz: boolean };
-              let segs: Seg[];
-              if (horizontal) {
-                const mx = (ax + bx) / 2;
-                segs = [
-                  { x1: ax, y1: ay, x2: mx, y2: ay, len: Math.abs(mx - ax), horiz: true },
-                  { x1: mx, y1: ay, x2: mx, y2: by, len: Math.abs(by - ay), horiz: false },
-                  { x1: mx, y1: by, x2: bx, y2: by, len: Math.abs(bx - mx), horiz: true },
-                ];
-              } else {
-                const my = (ay + by) / 2;
-                segs = [
-                  { x1: ax, y1: ay, x2: ax, y2: my, len: Math.abs(my - ay), horiz: false },
-                  { x1: ax, y1: my, x2: bx, y2: my, len: Math.abs(bx - ax), horiz: true },
-                  { x1: bx, y1: my, x2: bx, y2: by, len: Math.abs(by - my), horiz: false },
-                ];
-              }
-              const longest = segs.reduce((p, c) => (c.len > p.len ? c : p));
+              const geom = computeEdgeGeometry(a, b, e, data.nodes);
+              const longest = geom.longest;
               let mx = (longest.x1 + longest.x2) / 2;
               let my = (longest.y1 + longest.y2) / 2;
               if (longest.horiz) my += parallelOffset; else mx += parallelOffset;
@@ -280,24 +416,36 @@ const BlueprintArchitectureCanvas: React.FC<BlueprintArchitectureCanvasProps> = 
               }
               const finalBx = longest.horiz ? mx : mx + extra;
               const finalBy = longest.horiz ? my + extra : my;
-              placed.push({
-                e, a, b, parallelOffset,
-                bx: finalBx, by: finalBy,
-                segHorizontal: longest.horiz,
-                extra,
-              });
+              placed.push({ e, a, b, geom, bx: finalBx, by: finalBy });
             }
-            return placed.map((p) => (
-              <Edge
-                key={p.e.id}
-                a={p.a}
-                b={p.b}
-                edge={p.e}
-                badgeX={p.bx}
-                badgeY={p.by}
-                allNodes={data.nodes}
-              />
-            ));
+
+            return (
+              <>
+                {/* Pass 1: paths only — guarantees no edge line paints over a badge. */}
+                {placed.map((p) => (
+                  <path
+                    key={`${p.e.id}-path`}
+                    d={p.geom.d}
+                    fill="none"
+                    stroke="#1f2937"
+                    strokeWidth={1.6}
+                    strokeDasharray={p.geom.strokeDash}
+                    markerEnd="url(#bp-arrow)"
+                  />
+                ))}
+                {/* Pass 2: badges + labels on top of every path. */}
+                {placed.map((p) => (
+                  <EdgeDecor
+                    key={`${p.e.id}-decor`}
+                    edge={p.e}
+                    geom={p.geom}
+                    badgeX={p.bx}
+                    badgeY={p.by}
+                    allNodes={data.nodes}
+                  />
+                ))}
+              </>
+            );
           })()}
         </g>
 
@@ -509,102 +657,24 @@ const FallbackGlyph: React.FC<{ cx: number; cy: number; name: string }> = ({ cx,
   );
 };
 
-// ─── Edge ────────────────────────────────────────────────────────────────────
+// ─── Edge decoration (badge + label) ─────────────────────────────────────────
+// The SVG <path> itself is rendered in the parent's first pass so that the
+// later badge pass paints above every path. This component renders only the
+// numbered badge and the label, both of which need to sit above all edges.
 
-const Edge: React.FC<{
-  a: BpNode;
-  b: BpNode;
-  edge: { id: string; step?: number; label?: string; routing?: string; style?: string };
+const EdgeDecor: React.FC<{
+  edge: { id: string; step?: number; label?: string };
+  geom: EdgeGeom;
   badgeX: number;
   badgeY: number;
-  allNodes?: BpNode[];
-}> = ({ a, b, edge, badgeX, badgeY, allNodes = [] }) => {
-  // Edge endpoints anchor to the nearest side of each node tile.
-  const tileH = NODE_H - 22;
-  const aCx = a.x + NODE_W / 2;
-  const aCy = a.y + tileH / 2;
-  const bCx = b.x + NODE_W / 2;
-  const bCy = b.y + tileH / 2;
-
-  // Pick anchor sides based on dominant direction.
-  const dx = bCx - aCx;
-  const dy = bCy - aCy;
-  const horizontal = Math.abs(dx) >= Math.abs(dy);
-
-  let ax: number, ay: number, bx: number, by: number;
-  if (horizontal) {
-    if (dx >= 0) {
-      ax = a.x + NODE_W; ay = aCy; bx = b.x; by = bCy;
-    } else {
-      ax = a.x;          ay = aCy; bx = b.x + NODE_W; by = bCy;
-    }
-  } else {
-    if (dy >= 0) {
-      ax = aCx; ay = a.y + tileH; bx = bCx; by = b.y;
-    } else {
-      ax = aCx; ay = a.y;         bx = bCx; by = b.y + tileH;
-    }
-  }
-
-  const routing = edge.routing || 'orthogonal';
-
-  // Tier-1 polish: shorten the path by ARROW_GAP so the rendered arrowhead
-  // marker keeps clearance from the destination tile (no clipped tips).
-  let endX = bx;
-  let endY = by;
-  let d: string;
-  if (routing === 'orthogonal') {
-    if (horizontal) {
-      const mx = (ax + bx) / 2;
-      endX = bx - Math.sign(bx - mx) * ARROW_GAP;
-      endY = by;
-      d = `M ${ax} ${ay} L ${mx} ${ay} L ${mx} ${endY} L ${endX} ${endY}`;
-    } else {
-      const my = (ay + by) / 2;
-      endX = bx;
-      endY = by - Math.sign(by - my) * ARROW_GAP;
-      d = `M ${ax} ${ay} L ${ax} ${my} L ${endX} ${my} L ${endX} ${endY}`;
-    }
-  } else if (routing === 'curve') {
-    const totalLen = Math.hypot(bx - ax, by - ay) || 1;
-    const ux = (bx - ax) / totalLen;
-    const uy = (by - ay) / totalLen;
-    endX = bx - ux * ARROW_GAP;
-    endY = by - uy * ARROW_GAP;
-    const offset = Math.max(40, Math.min(120, Math.abs(horizontal ? dx : dy) / 2));
-    if (horizontal) {
-      d = `M ${ax} ${ay} C ${ax + offset} ${ay}, ${endX - offset} ${endY}, ${endX} ${endY}`;
-    } else {
-      d = `M ${ax} ${ay} C ${ax} ${ay + offset}, ${endX} ${endY - offset}, ${endX} ${endY}`;
-    }
-  } else {
-    const totalLen = Math.hypot(bx - ax, by - ay) || 1;
-    const ux = (bx - ax) / totalLen;
-    const uy = (by - ay) / totalLen;
-    endX = bx - ux * ARROW_GAP;
-    endY = by - uy * ARROW_GAP;
-    d = `M ${ax} ${ay} L ${endX} ${endY}`;
-  }
-
-  const strokeDash =
-    edge.style === 'dashed' ? '6 5' : edge.style === 'dotted' ? '2 4' : undefined;
-
-  // Badge position is computed in the parent pre-pass (longest straight
-  // segment of the orthogonal path) so it never lands on an elbow or
-  // arrowhead.
+  allNodes: BpNode[];
+}> = ({ edge, geom, badgeX, badgeY, allNodes }) => {
   const mx = badgeX;
   const my = badgeY;
+  const { ax, ay, bx, by, horizontal } = geom;
 
   return (
-    <g className="bp-edge">
-      <path
-        d={d}
-        fill="none"
-        stroke="#1f2937"
-        strokeWidth={1.6}
-        strokeDasharray={strokeDash}
-        markerEnd="url(#bp-arrow)"
-      />
+    <g className="bp-edge-decor">
       {edge.step !== undefined && (
         <g>
           {/* White halo so the badge stays readable when crowded against a node tile */}
@@ -648,12 +718,11 @@ const Edge: React.FC<{
         };
 
         if (labelOverlapsNode(lx, ly)) {
-          // Try sliding along the path axis in both directions, pick first clear.
           const span = horizontal ? Math.abs(bx - ax) : Math.abs(by - ay);
           const step = 16;
           const maxSteps = Math.max(2, Math.floor(span / (step * 2)));
-          let placed = false;
-          for (let i = 1; i <= maxSteps && !placed; i++) {
+          let placedLabel = false;
+          for (let i = 1; i <= maxSteps && !placedLabel; i++) {
             const delta = i * step;
             for (const dir of [1, -1]) {
               const tryX = horizontal ? mx + dir * delta : mx;
@@ -661,7 +730,7 @@ const Edge: React.FC<{
               if (!labelOverlapsNode(tryX, tryY)) {
                 lx = tryX;
                 ly = tryY;
-                placed = true;
+                placedLabel = true;
                 break;
               }
             }

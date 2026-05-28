@@ -199,6 +199,13 @@ LAYOUT POLICY — tier-based row placement (apply rigorously):
 A. The MAIN data-plane pipeline (entry actor → ingress → processing → primary sinks) must occupy the MIDDLE horizontal band of the canvas and flow strictly LEFT→RIGHT. This is the diagram's backbone and must be visually dominant.
 B. Control-plane / management / provisioning services (e.g., Device Provisioning Service, Key Vault, deployment, Microsoft Entra ID when used for control) belong ABOVE the main pipeline. Their edges should drop DOWN into the pipeline.
 C. Monitoring / observability / governance services (Azure Monitor, Log Analytics, Application Insights, Microsoft Sentinel, Defender for Cloud) also belong ABOVE the main pipeline OR in a dedicated Observability zone to the side. Their edges should be dashed (style: "dashed").
+   C.1 OBSERVABILITY DATA-FLOW DIRECTION IS STRICT — telemetry, logs, metrics, and traces always flow FROM the emitting service INTO the collection store. The collection store NEVER emits telemetry to another collection store. Specifically:
+        • Application Insights → Log Analytics is the ONLY allowed direction between these two (App Insights is backed by a Log Analytics workspace).
+        • Workloads (Container Apps, Functions, AKS, App Service, VMs, API Management, Application Gateway, Front Door, etc.) → Log Analytics OR Application Insights (NEVER the reverse).
+        • Workloads → Azure Monitor is ALLOWED for platform metrics with labels like "Publish metrics" or "Emit metrics".
+        • Azure Monitor → Log Analytics is FORBIDDEN. Azure Monitor is a query/alerting surface that READS from Log Analytics, it does not push logs into it. Do not emit edges in that direction with any label ("Send logs", "Publish metrics", "Store logs", "Forward telemetry" etc.).
+        • Log Analytics → Azure Monitor is also FORBIDDEN as a labeled data-flow edge — that relationship is implicit, not a step in the workflow. If you need to show alerting, emit an edge FROM Azure Monitor TO an action target (Logic Apps, Action Group, Webhook) with a label like "Trigger alert".
+        • Microsoft Sentinel and Defender for Cloud INGEST from Log Analytics (Log Analytics → Sentinel / Defender), never the reverse.
 D. Storage / batch analytics / long-term data (Data Lake, Synapse, Cosmos DB, SQL, Blob, Time Series Insights for historical) belong BELOW the main pipeline. Their edges should come UP from the pipeline.
 E. ML / inference / feedback loops belong adjacent to analytics (typically bottom-right). Feedback edges back into the pipeline should be visually distinct (curve routing OK here).
 F. End-user dashboards / web apps belong on the FAR LEFT (if they trigger flow) or FAR RIGHT (if they consume outputs) — not in the middle row.
@@ -210,7 +217,7 @@ J. Use SHORT VERB-FIRST labels: "Send telemetry", "Ingest stream", "Store raw", 
 Content rules:
 9. Use ONLY OFFICIAL Microsoft product names that exist as Azure services ("Microsoft Entra ID", "Azure Cosmos DB", "Azure Functions", "Logic Apps", "Microsoft Sentinel", "Microsoft Defender for Cloud", "Azure Monitor", "Log Analytics", "Key Vault", "Application Insights", "API Management", "Service Bus", "Event Hubs", "Azure SQL Database", "Azure Cache for Redis", "Azure Kubernetes Service", "Azure Container Apps", etc.). Do NOT invent composite names like "Azure Workloads" or "Logic Apps Playbooks" — just use "Logic Apps". If you need a generic workloads tile, use kind: "cloud" with name "Azure Workloads" and category "compute" only as a last resort.
 10. Use 5–20 nodes total. Use 3–5 zones — ALWAYS group related services into logical zones (kind: "subsystem" or "rg") such as "Edge / Ingress", "Compute / Microservices", "Messaging", "Data / Storage", "Observability", "Identity", or "On-Premises". Every service node (not personas) MUST belong to a zone via the "zone" field. A diagram with only one zone is INVALID.
-11. Use 4–15 edges. EVERY edge MUST have a step number and a short label — including telemetry, logging, and observability flows (those should additionally be dashed via "style": "dashed"). Do not leave any edge unnumbered.
+11. Use 4–15 edges. EVERY edge MUST have a step number and a short label — including telemetry, logging, and observability flows (those should additionally be dashed via "style": "dashed"). Do not leave any edge unnumbered. RE-READ RULE C.1 BEFORE EMITTING ANY OBSERVABILITY EDGE — verify the (from, to) pair has the emitter on the `from` side and the collection store on the `to` side. An edge `{ from: "monitor", to: "logs", label: "Send logs" }` is INVALID and will be rejected; the correct form is `{ from: "<workload>", to: "logs", label: "Send logs" }` (or `{ from: "appins", to: "logs", label: "Export logs" }`).
 12. Always include a workflow array matching the numbered edges. STEP NUMBERING IS STRICT: the set of edge "step" values MUST equal exactly {1, 2, 3, …, workflow.length} with NO gaps, NO duplicates, and NO numbers beyond workflow.length. For every workflow item with "step": N, there MUST be exactly one edge whose "step" field is N and whose "label" describes that same action. If a workflow step has no obvious arrow in the topology, either (a) add an edge for it, or (b) remove that workflow item — never leave a gap.
 13. Personas (users, operators) use kind: "persona" and category: "general".
 14. Network gateways (Site-to-Site VPN, ExpressRoute, Front Door) use kind: "cloud".
@@ -263,6 +270,7 @@ Now generate a blueprint architecture for the user's request. Return JSON only.`
 
   enforceSpacing(bp);
   validateStepNumbering(bp);
+  fixObservabilityEdgeDirection(bp);
 
   // Force orthogonal routing on every edge. The prompt asks the model to do
   // this but it sometimes emits "straight"/"curved", which produces diagonal
@@ -485,6 +493,45 @@ function validateStepNumbering(bp: BlueprintArchitecture): void {
   if (stillMissing.length > 0) {
     console.warn(
       `⚠️ Blueprint workflow has ${wf.length} steps but edges are missing step numbers: [${stillMissing.join(', ')}]. The AI did not produce edges for these steps.`,
+    );
+  }
+}
+
+// Telemetry / logs / metrics always flow FROM the emitting workload INTO the
+// collection store. Models sometimes invert this (e.g. `Azure Monitor → Log
+// Analytics` with a "Send logs" or "Publish metrics" label), which is
+// semantically backwards. This pass detects the inversion by node name and
+// flips the edge direction. Cases handled:
+//   • Azure Monitor       → Log Analytics         => flip
+//   • Log Analytics       → Azure Monitor         => flip (implicit, not a step)
+//   • Log Analytics       → Application Insights  => flip (App Insights writes into LA)
+function fixObservabilityEdgeDirection(bp: BlueprintArchitecture): void {
+  const nameById = new Map<string, string>();
+  for (const n of bp.nodes) nameById.set(n.id, (n.name || '').toLowerCase());
+
+  const isMonitor = (s: string | undefined) => !!s && /\bazure monitor\b/.test(s);
+  const isLogAnalytics = (s: string | undefined) => !!s && /\blog analytics\b/.test(s);
+  const isAppInsights = (s: string | undefined) =>
+    !!s && /\bapplication insights\b/.test(s);
+
+  let flipped = 0;
+  for (const e of bp.edges) {
+    const fromName = nameById.get(e.from);
+    const toName = nameById.get(e.to);
+    const flip =
+      (isMonitor(fromName) && isLogAnalytics(toName)) ||
+      (isLogAnalytics(fromName) && isMonitor(toName)) ||
+      (isLogAnalytics(fromName) && isAppInsights(toName));
+    if (flip) {
+      const tmp = e.from;
+      e.from = e.to;
+      e.to = tmp;
+      flipped++;
+    }
+  }
+  if (flipped > 0) {
+    console.warn(
+      `⚠️ Blueprint: flipped ${flipped} inverted observability edge(s) (telemetry must flow INTO Log Analytics / Application Insights, not out of them).`,
     );
   }
 }
