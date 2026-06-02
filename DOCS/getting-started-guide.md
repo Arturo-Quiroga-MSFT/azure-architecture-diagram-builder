@@ -24,7 +24,9 @@ estimated_reading_time: 12
 
 ## What Is It?
 
-The Azure Architecture Diagram Builder is a web application that lets you design, validate, and deploy Azure cloud architectures. You describe what you need in plain English, and one of **seven** AI models generates a professional diagram with official Azure icons, logical groupings, data-flow connections, real-time cost estimates, and Infrastructure as Code templates.
+The Azure Architecture Diagram Builder is a web application that lets you design, validate, and deploy Azure cloud architectures. You describe what you need in plain English, and any of **twelve** AI models generates a professional diagram with official Azure icons, logical groupings, data-flow connections, real-time cost estimates, and Infrastructure as Code templates.
+
+You can produce two kinds of visuals from the same prompt: an interactive, editable **topology** diagram on the canvas, and a polished **Blueprint** (whiteboard-style) PNG for sharing. The app also validates against the Well-Architected Framework, estimates costs across regions, and generates deployment guides with Bicep.
 
 No installs required. Open the link in any modern browser and start building.
 
@@ -61,7 +63,8 @@ Navigate to [https://aka.ms/diagram-builder](https://aka.ms/diagram-builder). Yo
    - Data & Analytics
    - IoT
 
-4. Click **Generate**. The AI creates your diagram in seconds.
+4. Choose a **diagram mode** (see the next section). The default, **Topology**, is the right choice for most users.
+5. Click **Generate**. The AI creates your diagram in seconds.
 
 After generation, the canvas displays:
 
@@ -73,6 +76,21 @@ After generation, the canvas displays:
 
 > [!NOTE]
 > The active model and reasoning effort level are shown in the modal footer. You can change them in the toolbar's AI Model settings (covered in Step 9).
+
+### Choose a Diagram Mode: Topology, Blueprint, or Both
+
+The "Generate with AI" modal includes a mode toggle that controls what the AI produces.
+
+| Mode | What you get | Where it appears |
+|------|--------------|------------------|
+| **Topology** | A deployable, fully interactive diagram with service nodes, groups, and connections | On the canvas (editable) |
+| **Blueprint** *(BETA)* | A hand-drawn, whiteboard-style blueprint with nested zones (Azure / VNet / On-prem) and numbered, labeled arrows showing the end-to-end flow | Downloaded as a PNG (the PNG is the deliverable) |
+| **Both** *(BETA)* | A deployable topology **and** a whiteboard-style Blueprint from the same prompt | Topology on the canvas, Blueprint as a PNG |
+
+> [!NOTE]
+> Blueprint and Both modes require a general-purpose OpenAI model (the GPT-5.x family). If you have a third-party model selected, the app automatically switches to a compatible one for these modes.
+
+Blueprint diagrams are intentionally **not** rendered on the canvas — the transformed topology would be low-fidelity. The polished PNG is the deliverable, and you can re-download it any time from **Export > Export Blueprint PNG**. When you choose **Both**, an optional checkbox lets the two generations run in parallel for speed. You can also set the Blueprint legend position (auto, or a fixed corner) in the modal.
 
 ---
 
@@ -100,6 +118,12 @@ A floating reference image viewer appears on the canvas so you can compare the o
 3. The AI parses resource definitions and dependencies, then generates a visual diagram.
 4. A loading banner appears on the canvas while parsing completes.
 
+### Import an `az prototype` Manifest
+
+1. Click the **"Import Manifest"** button in the toolbar.
+2. Select an `az prototype` manifest file.
+3. The app reconstructs an interactive diagram from the manifest, round-tripping with the **Export to az prototype** action (Step 12) so you can move between visual design and production IaC generation.
+
 ---
 
 ## Step 4: Interact with the Canvas
@@ -122,6 +146,8 @@ Your diagram is fully interactive. Here are the key actions:
 - Click the palette button on a group to change its color (10 presets available).
 - Click the fit-to-content button to auto-shrink the group around its children.
 - Use the **Collapse All Groups** toolbar button for a bird's-eye summary, then expand to restore.
+- Click **Add grouping box** in the toolbar to drop an empty group onto the canvas, then drag nodes into it.
+- Use the **Bulk Select** toolbar dropdown to select nodes or edges in bulk before aligning, moving, or deleting them.
 
 ### Connections (Edges)
 
@@ -207,7 +233,7 @@ Two comparison modes let you evaluate which model produces the best results for 
 ### Architecture Comparison
 
 1. Click **"Compare Models"** in the toolbar.
-2. Select two or more models from the seven available options.
+2. Select two or more models from the twelve available options.
 3. Enter your architecture prompt and click **Compare**.
 4. All selected models run in parallel. Results appear side by side showing:
    - Service count, connection count, group count, workflow steps
@@ -243,13 +269,18 @@ After the comparison completes, a **"Present"** button appears in the results pa
 
 Click the **AI Model** dropdown in the toolbar to open the settings popover.
 
-- Choose a global model from seven options: GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, or Grok 4.1 Fast.
-- Set reasoning effort (none, low, medium, high) for models that support it.
+- Choose a global model from twelve options:
+  - **OpenAI (GPT-5.x):** GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini
+  - **Partner models:** DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5
+- Set reasoning effort (none, low, medium, high) for models that support it (the GPT-5.x family).
 - Override the model independently for three features:
   - Architecture Generation
   - Architecture Validation
   - Deployment Guide & Bicep
 - Reset all overrides with a single button.
+
+> [!NOTE]
+> Blueprint and Both modes (Step 2) require an OpenAI GPT-5.x model. The partner models are great for topology generation, validation, and cost-effective comparisons.
 
 Settings persist across browser sessions.
 
@@ -296,13 +327,19 @@ Click the **Export** dropdown to choose a format:
 
 | Format | Best For |
 |--------|----------|
-| PNG | Documentation, presentations, email attachments |
-| SVG | Scalable graphics for web pages or wikis |
-| Draw.io | Further editing in diagrams.net |
-| JSON | Backup, version control, sharing with teammates |
-| CSV | Cost analysis in Excel or other spreadsheet tools |
+| Export PNG | Documentation, presentations, email attachments |
+| Export Editorial PNG | Re-downloading the publication-style reference-architecture PNG |
+| Export Blueprint PNG | Re-downloading the hand-drawn, whiteboard-style Blueprint PNG (Step 2) |
+| Export SVG | Scalable vector graphics for web pages or wikis |
+| Export PPTX Slide | Dropping the diagram straight into a PowerPoint deck (.pptx) |
+| Export Draw.io | Further editing in diagrams.net |
+| Export Interactive HTML | A self-contained HTML file with pan, zoom, and tooltips |
+| Export to az prototype | A manifest for production IaC generation (round-trips with Import Manifest) |
+| Export Costs (CSV) | Cost analysis in Excel or other spreadsheet tools |
+| Export Costs (All Formats) | A ZIP with CSV, JSON, a summary, and an intelligent cost analysis |
+| Save (JSON) | Backup, version control, sharing with teammates |
 
-The Export menu also shows your six most recent exports with timestamps for quick re-downloads.
+The Export menu also shows your most recent exports with timestamps for quick re-downloads. The Editorial PNG and Blueprint PNG items are enabled only after you generate the corresponding diagram, and the cost exports are enabled once your diagram has at least one priced service.
 
 ---
 

@@ -8,6 +8,8 @@
 ![GPT-5.x](https://img.shields.io/badge/GPT--5.x-412991?style=for-the-badge&logo=openai&logoColor=white)
 ![DeepSeek](https://img.shields.io/badge/DeepSeek-4D6BFF?style=for-the-badge&logoColor=white)
 ![Grok](https://img.shields.io/badge/Grok-000000?style=for-the-badge&logoColor=white)
+![Mistral](https://img.shields.io/badge/Mistral-FF7000?style=for-the-badge&logoColor=white)
+![Kimi](https://img.shields.io/badge/Kimi-1A1A1A?style=for-the-badge&logoColor=white)
 
 **A professional AI-powered tool for designing, validating, and deploying Azure cloud architectures**
 
@@ -26,7 +28,9 @@
 
 ## 📖 Overview
 
-Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **7 AI models** — **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast** (via Azure OpenAI) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
+Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **12 AI models** across multiple providers — **GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, and Kimi K2.5** (via Azure OpenAI and Azure AI model deployments) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
+
+Beyond editable **topology** diagrams, the app can also produce polished, whiteboard-style **Blueprint** diagrams (BETA) as shareable PNGs — ideal for presentations and design reviews.
 
 ### Why This Tool?
 
@@ -40,7 +44,7 @@ Azure Architecture Diagram Builder is an enterprise-grade web application that e
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Architecture Generation
-Describe your architecture in plain English and let any of 7 AI models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, or Grok 4.1 Fast) automatically create a complete, professionally organized diagram with logical service groupings.
+Describe your architecture in plain English and let any of **12 AI models** (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, or Kimi K2.5) automatically create a complete, professionally organized diagram with logical service groupings.
 
 **13 curated example prompts** included — from simple web apps to complex enterprise scenarios:
 - Zero Trust enterprise networks with security segmentation
@@ -53,6 +57,15 @@ Describe your architecture in plain English and let any of 7 AI models (GPT-5.1,
 
 ### 🖼️ Architecture Image Import
 Upload an existing architecture diagram image (screenshot, whiteboard photo, or exported PNG) and let AI analyze it to recreate the architecture as an editable, interactive diagram with proper Azure service mapping.
+
+### ✏️ Blueprint Diagrams (BETA)
+Generate a hand-drawn, **whiteboard-style blueprint** of your architecture — nested zones (Azure / VNet / On-prem) with numbered, labeled arrows that trace the end-to-end flow, just like an architect explaining a system at a whiteboard. Three generation modes are available in the AI Generator modal:
+
+- **Topology** — the classic deployable, editable diagram on the canvas
+- **Blueprint** *(BETA)* — a polished whiteboard-style PNG (the PNG is the deliverable; re-download any time via **Export > Export Blueprint PNG**)
+- **Both** *(BETA)* — a deployable topology **and** a Blueprint PNG from the same prompt, optionally generated in parallel
+
+> Blueprint and Both modes require a general-purpose OpenAI model (GPT-5.x). The app auto-switches if a third-party model is selected. A configurable legend position keeps the output presentation-ready.
 
 ### 📋 ARM Template Import
 Import existing ARM templates and automatically visualize your current infrastructure. The AI parses resource dependencies and creates meaningful diagrams. A **glowing purple banner** provides visual feedback during parsing.
@@ -68,7 +81,7 @@ Validate your architecture against all five WAF pillars:
 Select specific recommendations and automatically regenerate an improved architecture. During analysis, a dismiss hint lets you close the panel and return later via the **Validation Score** button in the toolbar.
 
 ### 🔀 Multi-Model Comparison
-Compare AI output side-by-side across all 7 models:
+Compare AI output side-by-side across all 12 models:
 
 - **Architecture Comparison** — Run the same prompt through multiple models and compare service counts, connection counts, groups, workflow steps, token usage, and latency
 - **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins. An inline WAF info box explains the five pillars being assessed
@@ -150,9 +163,13 @@ Features include:
 | Format | Use Case |
 |--------|----------|
 | **PNG** | Documentation, presentations |
+| **Editorial PNG** | Publication-style reference-architecture PNG |
+| **Blueprint PNG** | Hand-drawn, whiteboard-style blueprint PNG (BETA) |
 | **SVG** | Scalable vector graphics (true vector — edges preserved as paths) |
 | **PPTX Slide** | Single PowerPoint slide, dark or light theme matching the canvas |
+| **Interactive HTML** | Self-contained HTML with pan, zoom, and tooltips |
 | **Draw.io** | Edit in diagrams.net |
+| **az prototype manifest** | Round-trips with Import Manifest for production IaC generation |
 | **JSON** | Backup, version control |
 | **CSV** | Cost analysis in Excel (single region) |
 | **ZIP (All Formats)** | CSV + JSON + TXT summary + intelligent analysis + multi-region comparison |
@@ -193,7 +210,7 @@ flowchart TD
         G[Image Upload] --> H[Vision Analyzer]
     end
 
-    subgraph AI["🤖 AI Services (7 Models)"]
+    subgraph AI["🤖 AI Services (12 Models)"]
         B --> I[Architecture Generation]
         D --> I
         H --> I
@@ -321,7 +338,7 @@ graph TB
     end
 
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI API<br/>7 Models]
+        OpenAI[Azure OpenAI API<br/>12 Models]
         PricingAPI[Azure Retail Prices API]
         AppInsights[Application Insights]
         SpeechAPI[Azure Speech Service<br/>TTS Avatar]
@@ -437,14 +454,21 @@ VITE_AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key-here
 VITE_AZURE_OPENAI_DEPLOYMENT=your-default-deployment
 
-# Multi-model deployments (7 models)
+# Multi-model deployments (12 models)
+# OpenAI GPT-5.x family
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=your-gpt51-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT52_CODEX=your-gpt52-codex-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT53_CODEX=your-gpt53-codex-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX=your-gpt52-codex-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX=your-gpt53-codex-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT54=your-gpt54-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI=your-gpt54-mini-deployment
+# Partner models (Chat Completions API)
 VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=your-deepseek-v32-speciale-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GROK=your-grok-41-fast-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO=your-deepseek-v4-pro-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST=your-grok-41-fast-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GROK43=your-grok-43-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3=your-mistral-large-3-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25=your-kimi-k2-5-deployment
 
 # Reasoning model configuration (GPT-5.x models)
 VITE_REASONING_EFFORT=medium  # none | low | medium | high
@@ -514,8 +538,13 @@ docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT54="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK43="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25="..." \
   --build-arg VITE_SPEECH_REGION="westus2" .
 
 # Optional: include App Insights telemetry
@@ -573,10 +602,11 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 ### Creating Diagrams
 
 #### Method 1: AI Generation (Recommended)
-1. Click **"AI Generate"** in the toolbar
+1. Click **"Generate with AI"** in the toolbar
 2. Describe your architecture in natural language, or pick from **13 curated example prompts**
-3. Select your AI model (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek, or Grok) and reasoning level
-4. Click **Generate** — the architecture is created with auto-layout and workflow animation
+3. Choose a **diagram mode** — Topology, Blueprint (BETA), or Both (BETA)
+4. Select your AI model (any of the 12 options) and reasoning level
+5. Click **Generate** — the architecture is created with auto-layout and workflow animation
 
 #### Method 2: Image Import
 1. Click **"AI Generate"** and expand the image upload section
@@ -645,7 +675,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 | Category | Technologies |
 |----------|-------------|
 | **Frontend** | React 18, TypeScript, React Flow, Vite |
-| **AI** | Azure OpenAI (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, DeepSeek V3.2 Speciale, Grok 4.1 Fast), Dual API (Responses + Chat Completions) |
+| **AI** | Azure OpenAI (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini) + partner models (DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5), Dual API (Responses + Chat Completions) |
 | **Styling** | CSS3, html-to-image |
 | **Serving** | nginx:alpine (Docker), Vite dev server (local) |
 | **APIs** | Azure Retail Prices API |
@@ -687,7 +717,7 @@ azure-diagrams/
 │   │   ├── avatarPresenter.ts   # Talking avatar: Speech SDK, ICE relay, word-boundary captions
 │   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
-│   │   └── modelSettingsStore.ts  # Multi-model settings (7 models)
+│   │   └── modelSettingsStore.ts  # Multi-model settings (12 models)
 │   ├── hooks/                # Shared React hooks
 │   │   └── useDraggableResizable.ts  # Pointer-capture drag-to-move + drag-to-resize hook
 │   ├── data/                 # Static data
@@ -725,6 +755,26 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### June 2026 — Blueprint Diagrams (BETA) & 12-Model Lineup
+
+#### ✏️ Blueprint Diagrams (BETA)
+The AI Generator modal now offers three **diagram modes**:
+- **Topology** — the classic deployable, editable canvas diagram
+- **Blueprint** *(BETA)* — a hand-drawn, whiteboard-style PNG with nested zones (Azure / VNet / On-prem) and numbered, labeled arrows tracing the end-to-end flow
+- **Both** *(BETA)* — generate a deployable topology **and** a Blueprint PNG from the same prompt (optionally in parallel)
+
+Blueprint output is delivered as a polished PNG (the PNG is the deliverable, not a canvas render) and can be re-downloaded anytime via **Export › Export Blueprint PNG**. A configurable legend position keeps results presentation-ready. Blueprint/Both modes require a general-purpose OpenAI model (GPT-5.x); the app auto-switches if a partner model is selected.
+
+#### 🤖 Expanded to 12 AI Models
+The model lineup grew from 7 to **12**, adding **GPT-5.4 Mini**, **DeepSeek V4 Pro**, **Grok 4.3**, **Mistral Large 3**, and **Kimi K2.5** alongside the existing GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, and Grok 4.1 Fast. Every feature (generation, validation, comparison) can be assigned its own model.
+
+#### 📤 New Export Formats
+- **Interactive HTML** — self-contained page with pan, zoom, and tooltips
+- **Blueprint PNG** — re-export the whiteboard-style blueprint
+- **az prototype manifest** — round-trips with **Import Manifest** for production IaC generation
+
+---
 
 ### March 14, 2026 — Workflow Avatar Narrator & Draggable/Resizable Panels
 
