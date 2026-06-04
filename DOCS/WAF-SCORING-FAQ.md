@@ -99,4 +99,22 @@ No model fine-tuning required.
 
 ---
 
-*Last reviewed: May 2026 · Maintainer: Arturo Quiroga (PSA, Microsoft)*
+### Q11. Why does the UI show a maturity "band" instead of a number?
+
+By default the app leads with a **maturity band** (Strong alignment / Adequate,
+with gaps / Developing / Early) plus a **gaps-identified summary**, rather than a
+bare `NN/100`. A single number is easy to misread as an audit of a real,
+deployed environment or as a judgment of the team behind the design — when in
+fact it is a diagram-only, design-time heuristic. Bands keep the focus on the
+actionable part (the findings) while still conveying overall posture.
+
+The number is not gone: flip **"Show numeric score"** in the validation modal
+header to bring it back everywhere (circle, overall headline, and per-pillar
+rows). The choice is remembered across sessions. The model-comparison view and
+the downloaded report always retain the number. See
+[WAF-PILLAR-MATURITY-VIEW-DESIGN.md](WAF-PILLAR-MATURITY-VIEW-DESIGN.md) for the
+rationale and band thresholds.
+
+---
+
+*Last reviewed: June 2026 · Maintainer: Arturo Quiroga (PSA, Microsoft)*

@@ -2,7 +2,7 @@
 
 > Reframe architecture validation results away from a single numeric score toward a per-pillar maturity view, with the numeric score made optional and off by default.
 
-**Status:** Proposed
+**Status:** Implemented
 **Branch:** `feature/waf-pillar-maturity-view`
 **Date:** 2026-06-04
 **Owner:** Arturo Quiroga
@@ -204,25 +204,24 @@ Ben's "what does the number add?" question.
 
 > Should the **downloaded markdown report** always include the numeric score
 > (for archival completeness) even when the live UI hides it, or honor the same
-> toggle? Recommendation: always include it in the *downloaded* report, hidden by
-> default only in the *live UI*, since a saved artifact benefits from the full
-> data. Confirm with Ben/Chris.
+> toggle? **Resolved:** the downloaded report always includes the numeric signal
+> for archival completeness; only the live UI hides it by default.
 
 ---
 
 ## 9. Implementation Checklist
 
-- [ ] Add `src/services/wafMaturity.ts` with `MaturityBand`, `scoreToBand()`, and a
+- [x] Add `src/services/wafMaturity.ts` with `MaturityBand`, `scoreToBand()`, and a
       `summarizeGaps(findings)` helper.
-- [ ] Add `showNumericScore` UI preference (store + `localStorage`, default false).
-- [ ] Update `ValidationModal.tsx` (overall band, per-pillar bands, gaps chips,
+- [x] Add `showNumericScore` UI preference (store + `localStorage`, default false).
+- [x] Update `ValidationModal.tsx` (overall band, per-pillar bands, gaps chips,
       header toggle).
-- [ ] Update toolbar badge in `App.tsx`.
-- [ ] Update `CompareValidationModal.tsx` (bands on cards/rows; keep ranking number).
-- [ ] Update `formatValidationReport()` band vocabulary and conditional number.
-- [ ] Add minimal styles for band chips and gaps summary
+- [x] Update toolbar badge in `App.tsx`.
+- [x] Update `CompareValidationModal.tsx` (bands on cards/rows; keep ranking number).
+- [x] Update `formatValidationReport()` band vocabulary and conditional number.
+- [x] Add minimal styles for band chips and gaps summary
       (`ValidationModal.css`, `CompareValidationModal.css`).
-- [ ] Update [WAF-SCORING-METHODOLOGY.md](WAF-SCORING-METHODOLOGY.md) and
+- [x] Update [WAF-SCORING-METHODOLOGY.md](WAF-SCORING-METHODOLOGY.md) and
       [WAF-SCORING-FAQ.md](WAF-SCORING-FAQ.md) to describe bands and the toggle.
 
 ---

@@ -159,15 +159,42 @@ Each pillar gets its own 0–100 score from the LLM, conditioned on:
 
 The **overall score** is the LLM's holistic synthesis across pillars — not a strict arithmetic mean. This is intentional: critical gaps in one pillar (e.g., no identity) should weigh more than nominal gaps in others.
 
-### Visual score bands shown in the UI
+### Maturity bands shown in the UI
 
-| Band | Color | Status label |
-|---|---|---|
-| 80–100 | 🟢 | Good |
-| 60–79 | 🟡 | Needs Improvement |
-| 0–59 | 🔴 | Critical |
+The app's primary, user-facing signal is a **qualitative maturity band**, not a
+bare number. Each 0–100 score (overall and per pillar) maps to a band, using the
+existing color thresholds for continuity:
 
-These thresholds appear in [src/services/architectureValidator.ts](src/services/architectureValidator.ts) (`formatValidationReport`).
+| Band | Score | Label | Short form | Color |
+|---|---|---|---|---|
+| `strong` | 80–100 | Strong alignment | Strong | 🟢 |
+| `adequate` | 60–79 | Adequate, with gaps | Adequate | 🟡 |
+| `developing` | 40–59 | Developing | Developing | 🟠 |
+| `early` | 0–39 | Early / needs attention | Early | 🔴 |
+
+Alongside each band, the UI shows a **gaps-identified summary** (finding counts by
+severity), making the actionable findings — not a number — the headline. Labels
+are deliberately non-judgmental (no "good/bad", pass/fail, or letter grades) to
+avoid the score being misread as a verdict on a real environment.
+
+The band/short-form/color mapping is centralized in
+[src/services/wafMaturity.ts](src/services/wafMaturity.ts) and reused across the
+validation modal, comparison modal, toolbar badge, and report.
+
+### Optional numeric score (off by default)
+
+The raw 0–100 number is **hidden by default** in the live UI and revealed by a
+**"Show numeric score"** toggle in the validation modal header. The preference is
+persisted to `localStorage` via
+[src/stores/validationDisplayStore.ts](src/stores/validationDisplayStore.ts).
+When enabled, the number returns to the score circle, the overall headline, and
+each pillar row. The **multi-model comparison** view always keeps the number,
+because it needs a numeric basis to rank models against each other. The
+**downloaded markdown report** also always includes the numeric signal for
+archival completeness, regardless of the toggle.
+
+The underlying score model is unchanged — bands are derived, not stored — so
+saved validations, version history, telemetry, and comparisons are unaffected.
 
 ---
 
