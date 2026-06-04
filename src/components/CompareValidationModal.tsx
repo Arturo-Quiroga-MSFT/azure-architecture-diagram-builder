@@ -426,15 +426,16 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
 
     // Summary table
     md += `## 📊 Overall Comparison\n\n`;
-    md += `| Model | Score | Findings | Critical | High | Medium | Low | Quick Wins | Time | Tokens |\n`;
-    md += `|-------|-------|----------|----------|------|--------|-----|------------|------|--------|\n`;
+    md += `| Model | Maturity | Score | Findings | Critical | High | Medium | Low | Quick Wins | Time | Tokens |\n`;
+    md += `|-------|----------|-------|----------|----------|------|--------|-----|------------|------|--------|\n`;
     for (const r of successful) {
       const name = MODEL_CONFIG[r.model].displayName;
       const scoreIcon = (r.overallScore || 0) >= 80 ? '🟢' : (r.overallScore || 0) >= 60 ? '🟡' : '🔴';
+      const maturity = bandLabel(r.overallScore || 0);
       const time = r.metrics ? `${(r.metrics.elapsedTimeMs / 1000).toFixed(1)}s` : '-';
       const tokens = r.metrics?.totalTokens?.toLocaleString() || '-';
       const best = r.overallScore === highestScore ? ' ⭐' : '';
-      md += `| ${name}${best} | ${scoreIcon} ${r.overallScore}/100 | ${r.totalFindings} | ${r.criticalCount} | ${r.highCount} | ${r.mediumCount} | ${r.lowCount} | ${r.quickWinCount} | ${time} | ${tokens} |\n`;
+      md += `| ${name}${best} | ${maturity} | ${scoreIcon} ${r.overallScore}/100 | ${r.totalFindings} | ${r.criticalCount} | ${r.highCount} | ${r.mediumCount} | ${r.lowCount} | ${r.quickWinCount} | ${time} | ${tokens} |\n`;
     }
     md += `\n`;
 
@@ -477,7 +478,7 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
     md += `## 📋 Detailed Findings by Model\n\n`;
     for (const r of successful) {
       const name = MODEL_CONFIG[r.model].displayName;
-      md += `### ${name} — Score: ${r.overallScore}/100\n\n`;
+      md += `### ${name} — ${bandLabel(r.overallScore || 0)} (${r.overallScore}/100)\n\n`;
 
       if (r.validation?.summary) {
         md += `**Summary:** ${r.validation.summary}\n\n`;
