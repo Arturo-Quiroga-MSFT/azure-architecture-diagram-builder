@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, FileJson, FileText, Shield, AlertTriangle, Info, Brain, MonitorPlay, StopCircle } from 'lucide-react';
 import { isAzureOpenAIConfigured, generateValidationCritique, ModelOverride } from '../services/azureOpenAI';
 import { validateArchitecture, ArchitectureValidation, ValidationModelOverride, AIMetrics } from '../services/architectureValidator';
+import { bandLabel } from '../services/wafMaturity';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
 import {
@@ -746,6 +747,9 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
                             <span className="cv-score-value">{result.overallScore}</span>
                             <span className="cv-score-label">/ 100</span>
                           </div>
+                          <span className="cv-score-band" style={{ color: scoreColor(result.overallScore || 0) }}>
+                            {bandLabel(result.overallScore || 0)}
+                          </span>
                           {result.overallScore === highestScore && (
                             <span className="compare-badge cv-badge-score">Best Score</span>
                           )}

@@ -51,6 +51,7 @@ import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS,
 import JSZip from 'jszip';
 import { formatMonthlyCost } from './utils/pricingHelpers';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
+import { bandLabel } from './services/wafMaturity';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG } from './stores/modelSettingsStore';
@@ -2981,7 +2982,7 @@ function App() {
                     title="Open last validation results"
                   >
                     <Shield size={18} />
-                    Validation {validationResult.overallScore}/100
+                    Validation: {bandLabel(validationResult.overallScore)}
                   </button>
                 )}
                 <button 

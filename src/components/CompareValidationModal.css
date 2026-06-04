@@ -70,6 +70,13 @@
   font-weight: 600;
 }
 
+.cv-score-band {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
 .cv-score-best .cv-score-circle {
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
 }

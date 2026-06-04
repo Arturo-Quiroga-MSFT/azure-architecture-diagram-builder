@@ -10,6 +10,7 @@
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { detectWafPatterns, calculatePreliminaryScore } from './wafPatternDetector';
 import { getKnowledgeBaseStats } from '../data/wafRules';
+import { scoreToBand } from './wafMaturity';
 import { trackAIModelUsage } from './telemetryService';
 import { buildApiUrl, buildRequestBody, parseApiResponse } from './apiHelper';
 
@@ -355,18 +356,20 @@ export function formatValidationReport(validation: ArchitectureValidation): stri
   
   // Executive Summary
   report += `## 📊 Executive Summary\n\n`;
-  report += `### Overall Score: ${validation.overallScore}/100\n\n`;
+  const overallBand = scoreToBand(validation.overallScore);
+  report += `### Overall Maturity: ${overallBand.label}\n\n`;
+  report += `_Numeric signal: ${validation.overallScore}/100 — a diagram-only, design-time heuristic, not a deployed-environment audit._\n\n`;
   
   const scoreColor = validation.overallScore >= 80 ? '🟢' : validation.overallScore >= 60 ? '🟡' : '🔴';
   report += `${scoreColor} **Assessment:** ${validation.summary}\n\n`;
   
-  // Pillar Scores at a Glance
-  report += `### Pillar Scores at a Glance\n\n`;
-  report += `| Pillar | Score | Status |\n`;
-  report += `|--------|-------|--------|\n`;
+  // Pillar Maturity at a Glance
+  report += `### Pillar Maturity at a Glance\n\n`;
+  report += `| Pillar | Maturity | Score |\n`;
+  report += `|--------|----------|-------|\n`;
   validation.pillars.forEach(pillar => {
-    const status = pillar.score >= 80 ? '✅ Good' : pillar.score >= 60 ? '⚠️ Needs Improvement' : '❌ Critical';
-    report += `| ${pillar.pillar} | ${pillar.score}/100 | ${status} |\n`;
+    const band = scoreToBand(pillar.score);
+    report += `| ${pillar.pillar} | ${band.label} | ${pillar.score}/100 |\n`;
   });
   report += `\n---\n\n`;
   
@@ -374,7 +377,8 @@ export function formatValidationReport(validation: ArchitectureValidation): stri
   report += `## 🏗️ Detailed Assessment by Pillar\n\n`;
   
   validation.pillars.forEach((pillar, index) => {
-    report += `### ${index + 1}. ${pillar.pillar} (${pillar.score}/100)\n\n`;
+    const band = scoreToBand(pillar.score);
+    report += `### ${index + 1}. ${pillar.pillar} — ${band.label} (${pillar.score}/100)\n\n`;
     
     if (pillar.findings.length === 0) {
       report += `✅ No critical findings for this pillar.\n\n`;
