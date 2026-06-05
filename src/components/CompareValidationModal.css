@@ -5,6 +5,42 @@
   border-bottom: 2px solid rgba(34, 197, 94, 0.25) !important;
 }
 
+/* Header right-side controls (numeric-score toggle + close button) */
+.cv-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cv-header-actions .score-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #64748b;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.cv-header-actions .score-toggle input {
+  cursor: pointer;
+  margin: 0;
+}
+
+body.dark-mode .cv-header-actions .score-toggle {
+  color: #9ca3af;
+}
+
+/* Band word shown inside the score circle when numeric score is hidden */
+.cv-score-band-mark {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  padding: 0 6px;
+}
+
 /* Architecture summary banner */
 .cv-arch-summary {
   background: rgba(99, 102, 241, 0.05);

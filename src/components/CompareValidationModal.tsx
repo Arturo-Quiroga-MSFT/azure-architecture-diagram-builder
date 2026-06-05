@@ -5,7 +5,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, FileJson, FileText, Shield, AlertTriangle, Info, Brain, MonitorPlay, StopCircle } from 'lucide-react';
 import { isAzureOpenAIConfigured, generateValidationCritique, ModelOverride } from '../services/azureOpenAI';
 import { validateArchitecture, ArchitectureValidation, ValidationModelOverride, AIMetrics } from '../services/architectureValidator';
-import { bandLabel } from '../services/wafMaturity';
+import { bandLabel, scoreToBand } from '../services/wafMaturity';
+import { useValidationDisplayPrefs } from '../stores/validationDisplayStore';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
 import {
@@ -77,6 +78,12 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
   const [reasoningEffort, setReasoningEffort] = useState<ReasoningEffort>(currentSettings.reasoningEffort);
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<ValidationComparisonResult[]>([]);
+
+  // Display preference: show raw 0-100 scores alongside maturity bands.
+  // Shared with the single-model ValidationModal so the choice is consistent
+  // and persists across both surfaces. Ranking logic (Best Score / ⭐) always
+  // uses the numeric score regardless of this display toggle.
+  const [displayPrefs, setDisplayPrefs] = useValidationDisplayPrefs();
 
   // --- AI Critique state ---
   const [criticModel, setCriticModel] = useState<ModelType>(() => {
@@ -573,9 +580,19 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
             <Shield size={20} />
             <h2>Compare Validation Across Models</h2>
           </div>
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
+          <div className="cv-header-actions">
+            <label className="score-toggle" title="Show the underlying 0-100 numeric scores alongside the maturity bands">
+              <input
+                type="checkbox"
+                checked={displayPrefs.showNumericScore}
+                onChange={(e) => setDisplayPrefs({ showNumericScore: e.target.checked })}
+              />
+              <span>Show numeric score</span>
+            </label>
+            <button className="modal-close" onClick={onClose}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="compare-modal-body">
@@ -745,8 +762,19 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
                         {/* Overall WAF Score */}
                         <div className={`cv-score-display ${result.overallScore === highestScore ? 'cv-score-best' : ''}`}>
                           <div className="cv-score-circle" style={{ borderColor: scoreColor(result.overallScore || 0) }}>
-                            <span className="cv-score-value">{result.overallScore}</span>
-                            <span className="cv-score-label">/ 100</span>
+                            {displayPrefs.showNumericScore ? (
+                              <>
+                                <span className="cv-score-value">{result.overallScore}</span>
+                                <span className="cv-score-label">/ 100</span>
+                              </>
+                            ) : (
+                              <span
+                                className="cv-score-band-mark"
+                                style={{ color: scoreColor(result.overallScore || 0) }}
+                              >
+                                {scoreToBand(result.overallScore || 0).short}
+                              </span>
+                            )}
                           </div>
                           <span className="cv-score-band" style={{ color: scoreColor(result.overallScore || 0) }}>
                             {bandLabel(result.overallScore || 0)}
@@ -761,7 +789,9 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
                           {result.pillarScores?.map((p, i) => (
                             <div key={i} className="cv-pillar-item">
                               <span className="cv-pillar-score" style={{ color: scoreColor(p.score) }}>
-                                {scoreLabel(p.score)} {p.score}
+                                {displayPrefs.showNumericScore
+                                  ? `${scoreLabel(p.score)} ${p.score}`
+                                  : `${scoreLabel(p.score)} ${scoreToBand(p.score).short}`}
                               </span>
                               <span className="cv-pillar-name">{p.pillar}</span>
                             </div>

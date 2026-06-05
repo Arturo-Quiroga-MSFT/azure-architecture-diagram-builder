@@ -196,9 +196,9 @@
 /* Scope note - greenfield-Azure positioning shown above validation results */
 .validation-scope-note {
   margin: 0 0 16px 0;
-  padding: 10px 14px;
-  font-size: 12px;
-  line-height: 1.5;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.6;
   color: #6b7280;
   background: rgba(0, 120, 212, 0.06);
   border: 1px solid rgba(0, 120, 212, 0.18);
