@@ -194,6 +194,13 @@ const ValidationModal: React.FC<ValidationModalProps> = ({ validation, isOpen, o
         ) : validation ? (
           <>
             <div className="modal-body">
+            {/* Scope note - sets expectations for workshop facilitators and users */}
+            <p className="validation-scope-note">
+              <strong>Scope:</strong> Designed for <strong>greenfield Azure</strong> designs. This is a
+              diagram-only, design-time signal to guide new architectures — not an audit of a deployed
+              environment, and not for direct deployment into existing, complex environments without
+              further review.
+            </p>
             {/* Overall Assessment - maturity band (numeric score optional) */}
             {(() => {
               const overall = scoreToBand(validation.overallScore);

@@ -39,6 +39,17 @@ Beyond editable **topology** diagrams, the app can also produce polished, whiteb
 - **Best Practices**: Built-in WAF validation ensures your architecture follows Microsoft recommendations
 - **Actionable Output**: Generate deployment guides with Bicep/ARM templates ready for production
 
+### 🎯 Scope & Intended Use
+
+This tool is designed for **greenfield Azure** architecture design — sketching, validating, and
+costing **new** solutions, and as an accelerator in architecture-design sessions and technical
+workshops. It supports **Azure services only**.
+
+The WAF validation produces a **diagram-only, design-time signal** intended to guide new designs.
+It is **not** an audit of a deployed environment, and it is **not** intended for direct deployment
+into existing, complex customer environments without further validation and review by a qualified
+architect.
+
 ---
 
 ## ✨ Key Features

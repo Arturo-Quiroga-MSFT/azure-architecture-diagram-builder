@@ -193,6 +193,33 @@
   color: #6b7280;
 }
 
+/* Scope note - greenfield-Azure positioning shown above validation results */
+.validation-scope-note {
+  margin: 0 0 16px 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+  background: rgba(0, 120, 212, 0.06);
+  border: 1px solid rgba(0, 120, 212, 0.18);
+  border-radius: 8px;
+}
+
+.validation-scope-note strong {
+  color: #0078d4;
+  font-weight: 600;
+}
+
+body.dark-mode .validation-scope-note {
+  color: #9ca3af;
+  background: rgba(96, 165, 250, 0.08);
+  border-color: rgba(96, 165, 250, 0.22);
+}
+
+body.dark-mode .validation-scope-note strong {
+  color: #60a5fa;
+}
+
 /* --------------------------------------------------------------------------
    Validation Score - Circular progress indicator with overall score
    -------------------------------------------------------------------------- */
