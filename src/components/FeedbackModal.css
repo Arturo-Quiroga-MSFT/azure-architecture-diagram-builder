@@ -1,0 +1,243 @@
+/* ==========================================================================
+   Feedback Modal Styles
+   ========================================================================== */
+
+.feedback-modal {
+  max-width: 520px;
+}
+
+.feedback-intro {
+  margin: 0 0 20px 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Form Group (shared look with other modals)
+   -------------------------------------------------------------------------- */
+
+.feedback-modal .form-group {
+  margin-bottom: 18px;
+}
+
+.feedback-modal .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.feedback-modal .label-hint {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Rating buttons
+   -------------------------------------------------------------------------- */
+
+.feedback-ratings {
+  display: flex;
+  gap: 8px;
+}
+
+.feedback-rating {
+  flex: 1;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.feedback-rating:hover:not(:disabled) {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  transform: translateY(-1px);
+}
+
+.feedback-rating.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.feedback-rating:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.feedback-rating-emoji {
+  font-size: 26px;
+}
+
+/* --------------------------------------------------------------------------
+   Category select
+   -------------------------------------------------------------------------- */
+
+.feedback-category {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.feedback-category:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* --------------------------------------------------------------------------
+   Comment textarea
+   -------------------------------------------------------------------------- */
+
+.feedback-comment {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.feedback-comment:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.feedback-comment:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.character-count {
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Error + hint
+   -------------------------------------------------------------------------- */
+
+.feedback-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #991b1b;
+  margin-bottom: 14px;
+}
+
+.feedback-hint {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12.5px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Thank-you state
+   -------------------------------------------------------------------------- */
+
+.feedback-thanks {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.feedback-thanks-icon {
+  color: #16a34a;
+  margin-bottom: 12px;
+}
+
+.feedback-thanks h3 {
+  margin: 0 0 8px 0;
+  color: #111827;
+  font-size: 20px;
+}
+
+.feedback-thanks p {
+  margin: 0 0 20px 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Floating launcher button
+   -------------------------------------------------------------------------- */
+
+.feedback-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+.feedback-fab:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+}
+
+.feedback-fab:active {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   Dark mode — header + intro contrast
+   (shared styles dark-ify .modal-content but only recolor .modal-title h2;
+   this modal uses .modal-header h2 and an explicit intro color.)
+   -------------------------------------------------------------------------- */
+
+body.dark-mode .feedback-modal .modal-header h2 {
+  color: #f3f4f6;
+}
+
+body.dark-mode .feedback-modal .modal-close {
+  color: #9ca3af;
+}
+
+body.dark-mode .feedback-modal .modal-close:hover {
+  color: #f3f4f6;
+}
+
+body.dark-mode .feedback-intro {
+  color: #d1d5db;
+}
+
+body.dark-mode .feedback-modal .label-hint {
+  color: #9ca3af;
+}

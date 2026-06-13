@@ -1,0 +1,191 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Azure Architecture Diagram Builder — User Feedback Trends workbook. Visualizes the App Insights custom event 'User_Feedback' (rating, category, hasComment, commentLength). Verbatim comment text is NOT in App Insights — it is stored durably in Cosmos DB (feedback container)."
+  },
+  "parameters": {
+    "appInsightsResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Full resource ID of the Application Insights component the workbook is scoped to."
+      }
+    },
+    "workbookDisplayName": {
+      "type": "string",
+      "defaultValue": "User Feedback Trends",
+      "metadata": { "description": "Display name shown in the App Insights workbooks gallery." }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "workbookId": {
+      "type": "string",
+      "defaultValue": "[guid(resourceGroup().id, 'azure-diagram-feedback-trends')]",
+      "metadata": { "description": "Stable GUID so re-deploys update the same workbook instead of creating duplicates." }
+    }
+  },
+  "variables": {
+    "workbookContent": {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 1,
+          "content": {
+            "json": "## 📊 User Feedback Trends\nSentiment and engagement from the in-app **Share Feedback** modal (App Insights event `User_Feedback`).\n\n> ℹ️ Verbatim comment **text** is stored in Cosmos DB (the `feedback` container), not here — this workbook shows the rating, category, whether a comment was left, and its length."
+          },
+          "name": "title"
+        },
+        {
+          "type": 9,
+          "content": {
+            "version": "KqlParameterItem/1.0",
+            "parameters": [
+              {
+                "id": "f1a00000-0000-0000-0000-000000000001",
+                "version": "KqlParameterItem/1.0",
+                "name": "TimeRange",
+                "label": "Time range",
+                "type": 4,
+                "isRequired": true,
+                "value": { "durationMs": 2592000000 },
+                "typeSettings": {
+                  "selectableValues": [
+                    { "durationMs": 86400000 },
+                    { "durationMs": 604800000 },
+                    { "durationMs": 2592000000 },
+                    { "durationMs": 7776000000 }
+                  ],
+                  "allowCustom": true
+                }
+              }
+            ],
+            "style": "pills",
+            "queryType": 0
+          },
+          "name": "parameters"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'User_Feedback'\n| where timestamp {TimeRange}\n| extend rating = toint(customMeasurements.rating), hasComment = tostring(customDimensions.hasComment), commentLength = toint(customMeasurements.commentLength)\n| summarize ['Total feedback'] = count(), ['Avg rating'] = round(avg(rating), 2), ['% with comment'] = round(100.0 * countif(hasComment == 'true') / count(), 1), ['Avg comment length'] = round(avg(commentLength), 0)",
+            "size": 4,
+            "title": "At a glance",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "table"
+          },
+          "name": "kpis"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'User_Feedback'\n| where timestamp {TimeRange}\n| extend rating = toint(customMeasurements.rating)\n| summarize ['Avg rating'] = avg(rating) by bin(timestamp, 1d)\n| order by timestamp asc",
+            "size": 0,
+            "title": "Average rating over time",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "linechart",
+            "chartSettings": { "yAxis": ["Avg rating"], "ySettings": { "min": 1, "max": 5 } }
+          },
+          "customWidth": "50",
+          "name": "avg-rating-trend"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'User_Feedback'\n| where timestamp {TimeRange}\n| extend Rating = toint(customMeasurements.rating)\n| summarize Count = count() by Rating\n| order by Rating asc",
+            "size": 0,
+            "title": "Rating distribution (1–5)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "barchart"
+          },
+          "customWidth": "50",
+          "name": "rating-distribution"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'User_Feedback'\n| where timestamp {TimeRange}\n| extend Category = tostring(customDimensions.category)\n| summarize Count = count() by Category\n| order by Count desc",
+            "size": 0,
+            "title": "Feedback by category",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "piechart"
+          },
+          "customWidth": "50",
+          "name": "by-category"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'User_Feedback'\n| where timestamp {TimeRange}\n| extend hasComment = tostring(customDimensions.hasComment), commentLength = toint(customMeasurements.commentLength)\n| summarize Total = count(), WithComment = countif(hasComment == 'true'), ['Avg comment length'] = round(avg(commentLength), 0) by bin(timestamp, 1d)\n| extend ['% with comment'] = round(100.0 * WithComment / Total, 1)\n| project timestamp, ['% with comment'], ['Avg comment length']\n| order by timestamp asc",
+            "size": 0,
+            "title": "Comment engagement over time",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "linechart"
+          },
+          "customWidth": "50",
+          "name": "comment-engagement"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'User_Feedback'\n| where timestamp {TimeRange}\n| extend Rating = toint(customMeasurements.rating), Category = tostring(customDimensions.category), HasComment = tostring(customDimensions.hasComment), ['Comment length'] = toint(customMeasurements.commentLength)\n| project timestamp, Rating, Category, HasComment, ['Comment length']\n| order by timestamp desc\n| take 100",
+            "size": 0,
+            "title": "Recent feedback (latest 100)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "table",
+            "gridSettings": {
+              "formatters": [
+                {
+                  "columnMatch": "Rating",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "redGreen",
+                    "min": 1,
+                    "max": 5
+                  }
+                }
+              ]
+            }
+          },
+          "name": "recent-feedback"
+        }
+      ],
+      "fallbackResourceIds": ["[parameters('appInsightsResourceId')]"]
+    }
+  },
+  "resources": [
+    {
+      "type": "microsoft.insights/workbooks",
+      "apiVersion": "2023-06-01",
+      "name": "[parameters('workbookId')]",
+      "location": "[parameters('location')]",
+      "kind": "shared",
+      "properties": {
+        "displayName": "[parameters('workbookDisplayName')]",
+        "serializedData": "[string(variables('workbookContent'))]",
+        "version": "1.0",
+        "sourceId": "[parameters('appInsightsResourceId')]",
+        "category": "workbook"
+      }
+    }
+  ],
+  "outputs": {
+    "workbookResourceId": {
+      "type": "string",
+      "value": "[resourceId('microsoft.insights/workbooks', parameters('workbookId'))]"
+    }
+  }
+}

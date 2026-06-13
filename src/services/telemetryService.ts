@@ -244,6 +244,29 @@ export function trackStartFresh(): void {
 }
 
 /**
+ * Track user feedback submitted via the in-app feedback modal.
+ * The rating (1-5 sentiment) is sent as both a property (for grouping)
+ * and a measurement (for averaging in KQL). The free-text comment is NOT
+ * sent to telemetry — it is persisted durably via the /api/feedback
+ * endpoint (Cosmos DB) to keep PII out of Application Insights.
+ */
+export function trackFeedback(params: {
+  rating: number;
+  category: string;
+  hasComment: boolean;
+  commentLength: number;
+}): void {
+  trackEvent('User_Feedback', {
+    category: params.category,
+    rating: String(params.rating),
+    hasComment: String(params.hasComment),
+  }, {
+    rating: params.rating,
+    commentLength: params.commentLength,
+  });
+}
+
+/**
  * Track AI model usage — fires on every Azure OpenAI call with full
  * model identity and token breakdown. This is the central telemetry
  * event for model/token analytics.

@@ -128,6 +128,7 @@ resource speechUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = i
 // ── Cosmos DB (optional) ──────────────────────────────────────────────────────
 var cosmosDatabaseId = 'diagrams'
 var cosmosContainerId = 'diagrams'
+var cosmosFeedbackContainerId = 'feedback'
 
 resource cosmos 'Microsoft.DocumentDB/databaseAccounts@2024-02-15-preview' = if (deployCosmos) {
   name: '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
@@ -158,6 +159,18 @@ resource cosmosContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
   properties: {
     resource: {
       id: cosmosContainerId
+      partitionKey: { paths: ['/id'], kind: 'Hash' }
+    }
+  }
+}
+
+// Dedicated container for in-app user feedback (append-only, low read volume).
+resource cosmosFeedbackContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-02-15-preview' = if (deployCosmos) {
+  parent: cosmosDb
+  name: cosmosFeedbackContainerId
+  properties: {
+    resource: {
+      id: cosmosFeedbackContainerId
       partitionKey: { paths: ['/id'], kind: 'Hash' }
     }
   }
@@ -217,6 +230,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_COSMOS_ENDPOINT', value: deployCosmos ? cosmos.properties.documentEndpoint : '' }
             { name: 'COSMOS_DATABASE_ID', value: deployCosmos ? cosmosDatabaseId : '' }
             { name: 'COSMOS_CONTAINER_ID', value: deployCosmos ? cosmosContainerId : '' }
+            { name: 'COSMOS_FEEDBACK_CONTAINER_ID', value: deployCosmos ? cosmosFeedbackContainerId : '' }
             // Public URL (self-referential — set after first deploy if needed)
             {
               name: 'PUBLIC_URL'
@@ -244,4 +258,5 @@ output speechResourceId string = deploySpeech ? speech.id : ''
 output cosmosEndpoint string = deployCosmos ? cosmos.properties.documentEndpoint : ''
 output cosmosDatabaseId string = deployCosmos ? cosmosDatabaseId : ''
 output cosmosContainerId string = deployCosmos ? cosmosContainerId : ''
+output cosmosFeedbackContainerId string = deployCosmos ? cosmosFeedbackContainerId : ''
 output appInsightsConnectionString string = appInsights.properties.ConnectionString

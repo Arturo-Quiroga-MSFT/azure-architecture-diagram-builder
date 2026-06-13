@@ -17,7 +17,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { captureDiagramAsPng, captureDiagramAsSvg } from './utils/captureCanvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, Terminal } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, Terminal, MessageSquare } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -73,6 +73,7 @@ import type { IaCFormat } from './services/azureOpenAI';
 import { exportToAzPrototype, serializeManifest, type ImportResult } from './services/azPrototypeService';
 import AzPrototypeExportModal from './components/AzPrototypeExportModal';
 import AzPrototypeImportModal from './components/AzPrototypeImportModal';
+import FeedbackModal from './components/FeedbackModal';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
@@ -176,6 +177,7 @@ function App() {
   const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
   const [isAzPrototypeExportOpen, setIsAzPrototypeExportOpen] = useState(false);
   const [isAzPrototypeImportOpen, setIsAzPrototypeImportOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [lastReferenceArchitecture, setLastReferenceArchitecture] = useState<ReferenceArchitecture | null>(null);
   const [lastBlueprintArchitecture, setLastBlueprintArchitecture] = useState<BlueprintArchitecture | null>(null);
@@ -3461,6 +3463,24 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         isOpen={isAzPrototypeImportOpen}
         onClose={() => setIsAzPrototypeImportOpen(false)}
         onImport={handleAzPrototypeImport}
+      />
+
+      <button
+        className="feedback-fab"
+        onClick={() => setIsFeedbackModalOpen(true)}
+        title="Share feedback"
+      >
+        <MessageSquare size={18} />
+        Feedback
+      </button>
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        context={{
+          diagramName: titleBlockData.architectureName,
+          serviceCount: nodes.filter(n => n.type === 'azureNode').length,
+          model: generatedWithModel?.name,
+        }}
       />
     </div>
   );

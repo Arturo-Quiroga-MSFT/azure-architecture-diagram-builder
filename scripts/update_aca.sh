@@ -90,6 +90,7 @@ az containerapp update --name azure-diagram-builder \
         "AZURE_COSMOS_ENDPOINT=$AZURE_COSMOS_ENDPOINT" \
         "COSMOS_DATABASE_ID=$COSMOS_DATABASE_ID" \
         "COSMOS_CONTAINER_ID=$COSMOS_CONTAINER_ID" \
+        "COSMOS_FEEDBACK_CONTAINER_ID=$COSMOS_FEEDBACK_CONTAINER_ID" \
         "PUBLIC_URL=https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io" \
         "AZURE_SPEECH_REGION=$AZURE_SPEECH_REGION" \
         "AZURE_SPEECH_RESOURCE_ID=$AZURE_SPEECH_RESOURCE_ID" \

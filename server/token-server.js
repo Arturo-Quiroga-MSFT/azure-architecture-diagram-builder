@@ -11,13 +11,35 @@
 
 const express = require('express');
 const { DefaultAzureCredential } = require('@azure/identity');
+const { CosmosClient } = require('@azure/cosmos');
+const crypto = require('crypto');
 
 const app = express();
+app.use(express.json({ limit: '16kb' }));
 const credential = new DefaultAzureCredential();
 
 const REGION = process.env.AZURE_SPEECH_REGION;
 const RESOURCE_NAME = process.env.AZURE_SPEECH_RESOURCE_NAME;
 const RESOURCE_ID = process.env.AZURE_SPEECH_RESOURCE_ID;
+
+// ── Cosmos DB (feedback storage) ───────────────────────────────────────────
+const COSMOS_ENDPOINT = process.env.AZURE_COSMOS_ENDPOINT;
+const COSMOS_DATABASE_ID = process.env.COSMOS_DATABASE_ID || 'diagrams';
+const COSMOS_FEEDBACK_CONTAINER_ID = process.env.COSMOS_FEEDBACK_CONTAINER_ID || 'feedback';
+
+// Lazily created singleton — reuse one CosmosClient for the process lifetime
+// (Cosmos best practice; avoids per-request connection/auth overhead).
+let feedbackContainer = null;
+function getFeedbackContainer() {
+  if (!COSMOS_ENDPOINT) return null;
+  if (!feedbackContainer) {
+    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, aadCredentials: credential });
+    feedbackContainer = client
+      .database(COSMOS_DATABASE_ID)
+      .container(COSMOS_FEEDBACK_CONTAINER_ID);
+  }
+  return feedbackContainer;
+}
 
 if (!REGION) {
   console.warn('[speech-token] AZURE_SPEECH_REGION is not set. Requests will fail.');
@@ -66,6 +88,50 @@ app.get('/api/ice-token', async (_req, res) => {
   } catch (err) {
     console.error('[ice-token] error:', err.message);
     res.status(500).json({ error: 'Failed to acquire ICE token' });
+  }
+});
+
+// ── Feedback (Cosmos DB) ──────────────────────────────────────────────────────
+app.post('/api/feedback', async (req, res) => {
+  const container = getFeedbackContainer();
+  if (!container) {
+    // Storage not configured — the client still captured sentiment in
+    // Application Insights, so this is a soft failure by design.
+    return res.status(503).json({ error: 'Feedback storage is not configured' });
+  }
+
+  const body = req.body || {};
+  const rating = Number(body.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: 'rating must be an integer between 1 and 5' });
+  }
+
+  const category = typeof body.category === 'string' ? body.category.slice(0, 100) : 'General';
+  const comment = typeof body.comment === 'string' ? body.comment.slice(0, 1000) : '';
+  const ctx = body.context && typeof body.context === 'object' ? body.context : {};
+
+  const item = {
+    id: crypto.randomUUID(),
+    type: 'feedback',
+    rating,
+    category,
+    comment,
+    context: {
+      diagramName: typeof ctx.diagramName === 'string' ? ctx.diagramName.slice(0, 200) : '',
+      serviceCount: Number.isFinite(Number(ctx.serviceCount)) ? Number(ctx.serviceCount) : 0,
+      model: typeof ctx.model === 'string' ? ctx.model.slice(0, 100) : '',
+      url: typeof ctx.url === 'string' ? ctx.url.slice(0, 500) : '',
+      userAgent: typeof ctx.userAgent === 'string' ? ctx.userAgent.slice(0, 500) : '',
+    },
+    createdAt: new Date().toISOString(),
+  };
+
+  try {
+    await container.items.create(item);
+    res.status(201).json({ ok: true, id: item.id });
+  } catch (err) {
+    console.error('[feedback] error:', err.message);
+    res.status(500).json({ error: 'Failed to store feedback' });
   }
 });
 
