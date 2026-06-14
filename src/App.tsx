@@ -98,6 +98,7 @@ type ExportHistoryItem = {
 };
 
 const EXPORT_HISTORY_STORAGE_KEY = 'azure-diagram-builder.exportHistory.v1';
+const EDGE_STYLE_STORAGE_KEY = 'azure-diagram-builder.edgeStyle.v1';
 
 // Derive a short, human-friendly architecture title from a free-form prompt
 // (used as a fallback when no manifest title is available). Strips common
@@ -199,7 +200,20 @@ function App() {
 
   const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>('flow-lr');
   const [layoutSpacing, setLayoutSpacing] = useState<LayoutSpacing>('comfortable');
-  const [layoutEdgeStyle, setLayoutEdgeStyle] = useState<LayoutEdgeStyle>('smooth');
+  // Default to orthogonal (right-angle) routing — matches the blueprint PNG and
+  // draw.io exports, and is the convention for architecture diagrams. The
+  // user's choice is remembered across sessions (see persistence effect below).
+  const [layoutEdgeStyle, setLayoutEdgeStyle] = useState<LayoutEdgeStyle>(() => {
+    try {
+      const saved = localStorage.getItem(EDGE_STYLE_STORAGE_KEY);
+      if (saved === 'straight' || saved === 'smooth' || saved === 'orthogonal') {
+        return saved;
+      }
+    } catch {
+      /* localStorage unavailable — fall through to default */
+    }
+    return 'orthogonal';
+  });
   const [layoutEmphasizePrimaryPath, setLayoutEmphasizePrimaryPath] = useState(false);
   const [layoutEngine, setLayoutEngine] = useState<LayoutEngineType>('dagre');
   
@@ -242,6 +256,16 @@ function App() {
       // ignore
     }
   }, [exportHistory]);
+
+  // Remember the chosen edge style across sessions so a user who prefers smooth
+  // (or straight) keeps it instead of reverting to the orthogonal default.
+  useEffect(() => {
+    try {
+      localStorage.setItem(EDGE_STYLE_STORAGE_KEY, layoutEdgeStyle);
+    } catch {
+      // ignore
+    }
+  }, [layoutEdgeStyle]);
 
   // One-time gentle pulse on the feedback button ~15s after load so it earns a
   // glance without looping/nagging. Suppressed once feedback has been given.
@@ -1952,6 +1976,7 @@ function App() {
           baseFlowAnimated,
           flowAnimated,
           flowMode: edgeDirection.flowMode,
+          pathStyle: layoutEdgeStyle,
           onLabelChange: handleEdgeLabelChange,
           onLabelOffsetChange: handleEdgeLabelOffsetChange,
           labelOffsetX: 0,
@@ -2051,7 +2076,7 @@ function App() {
       console.error('Error in handleAIGenerate:', error);
       alert('Failed to generate diagram. Check console for details.');
     }
-  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow, isFeedbackModalOpen]);
+  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle]);
 
   // ── az prototype import ──────────────────────────────────────────────
   const handleAzPrototypeImport = useCallback((result: ImportResult) => {
