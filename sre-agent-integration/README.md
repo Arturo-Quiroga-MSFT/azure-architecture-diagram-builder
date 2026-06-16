@@ -15,7 +15,7 @@ onto both:
 
 | SRE Agent surface | What it provides | Diagram Builder mapping |
 | --- | --- | --- |
-| **MCP connector** ([docs](https://learn.microsoft.com/en-us/azure/sre-agent/mcp-connectors)) | The *capability* — discoverable, callable tools over Streamable-HTTP | The six MCP tools: `list_services`, `validate_architecture`, `estimate_costs`, `generate_manifest`, `get_waf_rules`, `render_diagram` |
+| **MCP connector** ([docs](https://learn.microsoft.com/en-us/azure/sre-agent/mcp-connectors)) | The *capability* — discoverable, callable tools over Streamable-HTTP | The seven MCP tools: `list_services`, `validate_architecture`, `estimate_costs`, `generate_manifest`, `get_waf_rules`, `render_diagram`, `export_reactflow_scene` |
 | **Skill** ([docs](https://learn.microsoft.com/en-us/azure/sre-agent/create-skill)) | The *judgment* — a `SKILL.md` playbook the agent auto-loads when relevant | [`SKILL.md`](./SKILL.md) — when/how to call those tools during an incident |
 
 The connector gives the agent the **hands**; the skill gives it the **playbook**. You want both.
@@ -56,7 +56,7 @@ See [`mcp-connector-setup.md`](./mcp-connector-setup.md) for connector registrat
  ┌──────────────────────────┐      tools/list + tools/call       ┌────────────────────────────┐
  │      Azure SRE Agent      │ ──────────────────────────────────▶│  Diagram Builder MCP server │
  │                           │   Streamable-HTTP  (/mcp, Bearer)   │  on Azure Container Apps    │
- │  • loads SKILL.md         │◀──────────────────────────────────  │  6 tools, namespaced        │
+ │  • loads SKILL.md         │◀──────────────────────────────────  │  7 tools, namespaced        │
  │  • calls namespaced tools │        SVG / manifest / costs        │  azure-diagram-builder_*    │
  └──────────────────────────┘                                      └────────────────────────────┘
 ```
@@ -66,7 +66,7 @@ See [`mcp-connector-setup.md`](./mcp-connector-setup.md) for connector registrat
 1. **Restore + redeploy the MCP server** so `/mcp` answers over HTTPS with a Bearer token.
 2. **Register the MCP connector** in the SRE Agent portal (connection id `azure-diagram-builder`).
 3. **Create the skill** from [`SKILL.md`](./SKILL.md) and attach the example manifest as a supporting file.
-4. **Bind the six tools** to the skill (or to a dedicated *Architecture* subagent).
+4. **Bind the seven tools** to the skill (or to a dedicated *Architecture* subagent).
 5. **Test** with a prompt like *"Render the current architecture for this incident and validate it against WAF."*
 
 See each companion file for the detailed steps.

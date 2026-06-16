@@ -1,114 +1,170 @@
 ---
 name: azure-architecture-diagramming
-description: >-
-  Generate, validate, and cost an Azure architecture diagram during incident
-  response, change validation, or post-incident documentation. Renders the
-  current/proposed topology as an Azure-branded SVG, checks it against
-  Well-Architected Framework (WAF) rules, and produces cost estimates. Use when
-  an incident is topology-related, when a proposed change needs WAF validation,
-  or when an incident write-up needs an architecture diagram.
+description: |
+  Load this skill when the user asks to:
+  - Visualize or diagram an Azure architecture (from description, incident context, or resource list)
+  - Validate an architecture against the Azure Well-Architected Framework (WAF)
+  - Estimate monthly costs for an Azure architecture
+  - Generate a Bicep/IaC deployment manifest for an architecture
+  - List available Azure services and their categories for architecture planning
+  - Export an architecture as an editable React Flow scene for the Azure Architecture Diagram Builder web app
+  - Get WAF best-practice rules for specific Azure service types or pillars
+  - Produce architecture documentation as part of an incident RCA, post-mortem, or design review
+  Do NOT load for:
+  - Runtime diagnostics, log analysis, or active incident triage (use service-specific diagnostic skills)
+  - Azure resource configuration changes or remediation (use azure_cli_command_executor or service skills)
+  - Simple resource inventory or property lookups (use core system tools)
+  Load this skill alongside diagnostic skills when the user wants both investigation AND architecture visualization in the same session (e.g., "investigate this incident and show me the architecture").
 tools:
   - azure-diagram-builder_list_services
-  - azure-diagram-builder_generate_manifest
-  - azure-diagram-builder_validate_architecture
-  - azure-diagram-builder_get_waf_rules
-  - azure-diagram-builder_estimate_costs
   - azure-diagram-builder_render_diagram
+  - azure-diagram-builder_validate_architecture
+  - azure-diagram-builder_estimate_costs
+  - azure-diagram-builder_generate_manifest
+  - azure-diagram-builder_get_waf_rules
+  - azure-diagram-builder_export_reactflow_scene
 ---
 
-## When to use this skill
+# Azure Architecture Diagramming Skill
 
-Activate this skill when any of the following are true:
+## Purpose
 
-- An incident appears **topology- or architecture-related** — a missing/misconfigured resource,
-  a broken dependency path, an unexpected egress route, a single point of failure, or "why is this
-  talking to that?" questions.
-- A **proposed mitigation or change** needs to be checked against the Well-Architected Framework
-  (reliability, security, cost, operational excellence, performance) *before* it is applied.
-- A **post-incident report or RCA** needs a clear architecture diagram and/or a cost snapshot of the
-  affected resources.
-- A teammate asks to **visualize, diagram, or draw** the current or target Azure architecture.
+Generate professional Azure architecture diagrams, validate them against the Well-Architected Framework, estimate costs, and produce deployment-ready IaC manifests — all within an agent conversation. Closes the loop from incident diagnosis to architecture documentation to infrastructure-as-code.
 
-Do **not** use this skill for log queries, metric analysis, or resource health checks — those are
-handled by native SRE Agent tools and other connectors. Use this skill specifically to **turn an
-understood set of resources and relationships into a validated, costed picture.**
+## Scope
 
-## Tools this skill uses
+**In scope:** architecture visualization (SVG, interactive HTML, editable React Flow scenes), WAF validation and scoring, cost estimation, Bicep manifest generation, service catalog discovery, WAF rule lookup by service type or pillar.
 
-These come from the **Azure Diagram Builder MCP connector** (connection id `azure-diagram-builder`).
-Tool names are namespaced by the connection id. If you registered the connector under a different id,
-substitute it for the `azure-diagram-builder_` prefix below.
+**Out of scope:** runtime diagnostics, log queries, active remediation, resource configuration changes, kubectl/az CLI operations. Defer those to the appropriate diagnostic or operational skill.
 
-| Tool | Use it to |
-| --- | --- |
-| `azure-diagram-builder_list_services` | Resolve free-text resource names to canonical Azure service types / icons. |
-| `azure-diagram-builder_generate_manifest` | Build the structured diagram manifest (services, zones, connections). |
-| `azure-diagram-builder_validate_architecture` | Score the architecture against WAF and return findings. |
-| `azure-diagram-builder_get_waf_rules` | Retrieve the WAF rule set used for validation (to explain findings). |
-| `azure-diagram-builder_estimate_costs` | Produce a monthly cost estimate for the services in the manifest. |
-| `azure-diagram-builder_render_diagram` | Render the manifest as an Azure-branded SVG diagram. |
+## Tools Reference
 
-## Inputs you need before calling tools
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `list_services` | List available Azure services (68 services, 16 categories) | Discovery: find which service types map to the user's components |
+| `render_diagram` | Render architecture as SVG (static, for embedding) or interactive HTML (pan/zoom/tooltips) | Produce a visual diagram for documentation, presentations, or exploration |
+| `validate_architecture` | Score architecture against WAF (0–100), detect anti-patterns | Architecture review, post-incident improvement, compliance check |
+| `estimate_costs` | Estimate monthly costs by service and category | Budget planning, cost governance, architecture comparison |
+| `generate_manifest` | Generate az prototype interchange manifest (Bicep/IaC) | Infrastructure-as-code generation, deployment automation |
+| `get_waf_rules` | Get WAF rules filtered by service type or pillar | Targeted best-practice guidance for specific services or WAF pillars |
+| `export_reactflow_scene` | Export full React Flow scene JSON for the AADB web app | When the user wants an editable, importable diagram they can refine in the Diagram Builder UI |
 
-Gather these from the investigation context (Resource Graph, the incident's affected resources, the
-deployment, or the user). Do not invent resources — only diagram what the evidence supports.
+## Core Workflow
 
-- **Services**: the Azure resources in scope, each as `{ name, type, tier? }`.
-- **Connections**: directional relationships `{ from, to, label, type }` where `type` is
-  `sync` | `async` | `optional`.
-- **Zones** (optional but recommended): logical groupings such as `Azure`, `VNet`, `On-prem`,
-  or a resource group, each as `{ id, label }`.
+### Standard Architecture Review (default flow)
 
-See the attached `examples/sample-architecture-manifest.json` for the exact shape.
+1. **Gather context** — identify the services, connections, and logical groups from the user's description, incident context, or resource inventory.
+2. **Map to AADB service types** — use `list_services` (with category filter if needed) to find the correct service type keys. Cache results; do not re-query the catalog in the same session.
+3. **Render the diagram** — call `render_diagram` with:
+   - `format: svg` for static embedding (docs, slides, PRs)
+   - `format: html` for interactive exploration (pan, zoom, tooltips)
+   - Always include `groups` for logical separation and `connections` with `type` (sync/async/optional)
+4. **Validate against WAF** — call `validate_architecture` with the same services and connections. Report the score and findings grouped by pillar.
+5. **Estimate costs** — call `estimate_costs` with the deployable services (exclude external/SaaS services the user doesn't pay for directly).
+6. **Summarize** — deliver a structured report: diagram, WAF score + findings table, cost breakdown, and actionable recommendations.
 
-## Procedure
+### Editable Scene Export (when user wants to refine in AADB web app)
 
-### A. Topology / architecture drift during an incident
+1. Follow steps 1–2 above.
+2. Call `export_reactflow_scene` instead of (or in addition to) `render_diagram`. Include:
+   - `architectureName`, `author`, `architecturePrompt` for metadata
+   - `workflow` array with step-by-step narrative (the right panel in the web app)
+   - `groups` for visual container grouping
+   - `direction: "LR"` for wide architectures, `"TB"` for tall/hierarchical ones
+3. Save the returned JSON to a file the user can download and import via **Open → Import Architecture** in the AADB web app.
 
-1. Identify the resources and relationships in scope from the incident's affected resources and
-   Resource Graph. If any resource type is ambiguous, call `list_services` to canonicalize it.
-2. Call `generate_manifest` with the services, connections, and zones you established.
-3. Call `validate_architecture` on that manifest. Capture every finding (severity + rule + resource).
-4. Call `render_diagram` to produce the SVG. Reference the misconfigured/missing resource explicitly.
-5. If a finding needs justification, call `get_waf_rules` and quote the specific rule.
-6. Report: the diagram, the prioritized WAF findings, and the single most likely
-   architecture-level contributor to the incident.
+### IaC Generation
 
-### B. Pre-deployment / change validation
+1. Follow steps 1–2 above.
+2. Call `generate_manifest` with `iacTool: "bicep"` (default) and the architecture definition.
+3. The returned JSON can be consumed by `az prototype build` or imported into the AADB web app.
 
-1. Build the **proposed** manifest with `generate_manifest` (include the change being requested).
-2. Call `validate_architecture`; treat any High/Critical WAF finding as a blocker to flag.
-3. Optionally call `estimate_costs` to surface the cost delta the change introduces.
-4. Call `render_diagram` for the proposed state.
-5. Report a go / no-go recommendation with the WAF findings and cost impact as evidence.
+### Targeted WAF Guidance
 
-### C. Post-incident documentation
+1. Call `get_waf_rules` with `serviceType` (e.g., "Container Apps") and/or `pillar` (e.g., "Security").
+2. Present rules as an actionable checklist, not a raw dump.
 
-1. Build the manifest of the **affected** architecture with `generate_manifest`.
-2. Call `render_diagram` for the RCA write-up.
-3. Call `estimate_costs` for a cost snapshot of the affected footprint.
-4. Optionally call `validate_architecture` to record remediation items as follow-up actions.
-5. Attach the diagram, cost snapshot, and follow-ups to the incident record.
+## Architecture Modeling Guidelines
 
-## Expected output
+### Services
 
-Always return a **structured report** containing:
+- Use the exact `key` values from `list_services` for the `type` field (e.g., `"Container Apps"`, `"Microsoft Entra ID"`, `"Key Vault"`).
+- Give each service a descriptive `name` that identifies its role (e.g., `"Grocery API"` not just `"Container Apps"`).
+- Add a `description` for tooltip/hover context.
+- Assign a `groupId` to place services in logical containers.
 
-- **Diagram** — the rendered SVG (or a link/handle to it).
-- **WAF findings** — a table of `severity | pillar | rule | affected resource | recommendation`,
-  sorted by severity. State "no findings" explicitly if validation is clean.
-- **Cost estimate** — monthly total plus the top cost drivers, when costs were requested or relevant.
-- **Conclusion** — for incidents: the most likely architecture-level contributor. For changes: a
-  go / no-go. For documentation: a one-paragraph architecture summary.
-- **Evidence** — name the tools you called and the resources you diagrammed so the result is auditable.
+### Connections
 
-## Guardrails
+- Use `type: "sync"` for synchronous request/response (solid blue line).
+- Use `type: "async"` for event-driven, fire-and-forget, or telemetry flows (dashed purple line).
+- Use `type: "optional"` for fallback or degraded-mode paths (dotted gray line).
+- Always include a `label` describing what flows over the connection.
 
-- **Diagram only what the evidence supports.** Never fabricate resources, tiers, or connections to
-  make a diagram look complete. Missing information is itself a finding — call it out.
-- **Validation is advisory.** WAF findings are recommendations, not automated actions. This skill
-  never modifies infrastructure; it only renders, validates, and costs.
-- **Keep connections meaningful.** Limit to the primary data/control flow (roughly 12–18 edges).
-  Omit obvious implicit edges (e.g., every service reaching Key Vault) — show one representative edge.
-- **If the connector is unreachable**, say so plainly and fall back to a text description of the
-  architecture and the WAF concerns; do not pretend a diagram was produced.
+### Groups
+
+- Model functional boundaries: "Application Tier", "Identity & Access", "Observability", "Infrastructure", etc.
+- Keep to 3–7 groups for readability.
+- Each group needs an `id` (referenced by services' `groupId`) and a `label`.
+
+### Workflow (for `export_reactflow_scene`)
+
+- Number steps sequentially starting from 1.
+- Each step has a `description` (what happens) and `services` (which services are involved).
+- Steps should tell the story of the primary data flow or user journey.
+
+## Response Pattern
+
+1. **Direct answer** — 1–2 sentences summarizing what was produced.
+2. **Diagram** — embedded SVG or link to HTML/JSON artifact.
+3. **WAF findings** — table with pillar, severity, issue, recommendation.
+4. **Cost summary** — table by category with ranges.
+5. **Recommendations** — 2–4 actionable items tied to WAF findings or cost observations.
+6. **Next steps** — offer follow-up actions (export to AADB, generate IaC, address WAF gaps).
+
+## Key Principles
+
+- **Don't ask for what you can infer.** If the user describes an architecture or you have resource context from a diagnostic session, model it directly. Only ask for clarification when service types are genuinely ambiguous.
+- **Chain tools efficiently.** For a full review, call `render_diagram`, `validate_architecture`, and `estimate_costs` in parallel — they're independent.
+- **Match format to purpose.** SVG for docs/slides, HTML for exploration, React Flow JSON for editing in the AADB web app. Default to SVG unless the user implies interactivity.
+- **Keep diagrams readable.** 8–15 services is the sweet spot. For larger architectures, split into focused views (e.g., data plane vs control plane).
+- **WAF score is directional, not absolute.** The validator checks known patterns (single-region, no-identity, no-monitoring, etc.) but can't see runtime config. Frame findings as "areas to investigate" not "confirmed deficiencies".
+
+## Validation (internal)
+
+After each tool call, silently verify:
+- `render_diagram` returned valid SVG/HTML (non-empty response).
+- `validate_architecture` returned a numeric score and findings array.
+- `estimate_costs` returned per-service estimates (check for services with `hasPricingData: false`).
+- `export_reactflow_scene` returned nodes and edges arrays (verify node count matches input service count + group count).
+
+## Examples
+
+### Example 1: Post-Incident Architecture Review
+
+User: "We just had a 429 storm on our Grocery API. Show me the architecture and check it against WAF."
+
+Plan:
+- Model Grocery SRE Demo architecture (Web → API → Supplier → Loki → Grafana → Agent → Jira)
+- Render SVG diagram with 6 groups
+- Validate against WAF
+- Summarize findings and recommend improvements
+
+### Example 2: Architecture for Demo Deck
+
+User: "Generate an architecture diagram for the PIM Approver Agent for the Zafin demo."
+
+Plan:
+- Model PIM architecture (PIM → Agent → pim-mcp → Entra ID → Jira → Teams)
+- Export React Flow scene with 8-step workflow narrative
+- Render SVG version for slide embedding
+- Save both artifacts for download
+
+### Example 3: Cost Comparison
+
+User: "Compare the cost of our Grocery demo vs the PIM testbed."
+
+Plan:
+- Model both architectures
+- Call `estimate_costs` for each
+- Present side-by-side cost breakdown by category
+- Highlight cost drivers and optimization opportunities

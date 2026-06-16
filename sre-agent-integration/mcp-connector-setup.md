@@ -1,7 +1,7 @@
 # Register the Diagram Builder as an SRE Agent MCP connector
 
 This guide registers the Azure Architecture Diagram Builder as a **Streamable-HTTP MCP connector**
-in Azure SRE Agent, so the agent (and the [`SKILL.md`](./SKILL.md) playbook) can call its six tools.
+in Azure SRE Agent, so the agent (and the [`SKILL.md`](./SKILL.md) playbook) can call its seven tools.
 
 Reference docs: [MCP connectors in Azure SRE Agent](https://learn.microsoft.com/en-us/azure/sre-agent/mcp-connectors)
 · [Create a skill](https://learn.microsoft.com/en-us/azure/sre-agent/create-skill)
@@ -16,9 +16,9 @@ before a connector can connect.
 
 What "restored" means for this repo (**done** — see `mcp-server/` and the Docker wiring):
 
-1. **The `mcp-server/` directory is restored** and exposes the six tools over both **stdio** and
+1. **The `mcp-server/` directory is restored** and exposes the seven tools over both **stdio** and
    **Streamable-HTTP** transports (`list_services`, `validate_architecture`, `estimate_costs`,
-   `generate_manifest`, `get_waf_rules`, `render_diagram`). It builds with `npm run build`.
+   `generate_manifest`, `get_waf_rules`, `render_diagram`, `export_reactflow_scene`). It builds with `npm run build`.
 2. **It is wired into the container image** and listens on `/mcp`:
    - `Dockerfile` — builds the MCP server and copies its `dist/` into the runtime stage.
    - `start.sh` — starts the MCP HTTP server (port 3030, internal) alongside the token server and nginx.
@@ -77,7 +77,7 @@ What "restored" means for this repo (**done** — see `mcp-server/` and the Dock
 > (without `/mcp`) hits the web UI / SPA, not the MCP endpoint, and the connection test fails.
 > Confirmed gotcha during setup — always include the `/mcp` path suffix.
 
-4. Save. The agent connects, runs auto-discovery, and registers the six tools namespaced as
+4. Save. The agent connects, runs auto-discovery, and registers the seven tools namespaced as
    `azure-diagram-builder_<tool>` (for example `azure-diagram-builder_render_diagram`).
 
 > **Naming note:** the `SKILL.md` `tools:` list uses the `azure-diagram-builder_` prefix. If you name
@@ -87,7 +87,7 @@ What "restored" means for this repo (**done** — see `mcp-server/` and the Dock
 
 ## Step 2 — Select the tools
 
-After the connector connects, a **Select tools** step appears. Select all six tools (they fit easily
+After the connector connects, a **Select tools** step appears. Select all seven tools (they fit easily
 within the 80-tool-per-agent budget). For existing connectors, edit the connector and use the
 **MCP Tools** section to check them.
 
@@ -97,14 +97,14 @@ within the 80-tool-per-agent budget). For existing connectors, edit the connecto
 
 Two options:
 
-- **Agent tools (simplest):** with the six tools selected on the connector, they are available in the
+- **Agent tools (simplest):** with the seven tools selected on the connector, they are available in the
   main conversation, and the skill can call them directly.
 - **Dedicated subagent (recommended for focus):** create an *Architecture* subagent
   (**Builder → Agent Canvas**), assign the skill, and bind the tools with a YAML wildcard:
 
   ```yaml
   mcp_tools:
-    - azure-diagram-builder/*   # all six tools, including any added later
+    - azure-diagram-builder/*   # all seven tools, including any added later
   ```
 
 ---
@@ -115,7 +115,7 @@ Two options:
 2. Paste the contents of [`SKILL.md`](./SKILL.md) into the `SKILL.md` editor (front matter + body).
 3. In **Files**, upload [`examples/sample-architecture-manifest.json`](./examples/sample-architecture-manifest.json)
    as a supporting file.
-4. In **Tools → Choose tools**, confirm the six `azure-diagram-builder_*` tools are attached.
+4. In **Tools → Choose tools**, confirm the seven `azure-diagram-builder_*` tools are attached.
 5. **Create**.
 
 ---
@@ -139,7 +139,7 @@ Confirm the agent activates the skill, calls `generate_manifest` → `validate_a
 | --- | --- | --- |
 | Connection test fails / wizard probe returns SPA HTML | **URL missing the `/mcp` suffix** | Use `https://<fqdn>/mcp`, not the bare app FQDN. |
 | Connector status **Failed** | `/mcp` not deployed or wrong URL/token | Complete Step 0; re-check URL and Bearer token. |
-| `tools/list` returns nothing | MCP server up but tools not registered | Confirm the server exposes all six tools over Streamable-HTTP. |
+| `tools/list` returns nothing | MCP server up but tools not registered | Confirm the server exposes all seven tools over Streamable-HTTP. |
 | Agent never activates the skill | Description too narrow | Broaden the skill **description** so relevance is obvious. |
 | Interactive login prompt on `/mcp` | Easy Auth intercepts the path | Exclude `/mcp` from AAD auth or use a dedicated ingress. |
 | Tool calls time out | ACA scaled to zero / cold start | Set a minimum replica count, or accept first-call latency. |

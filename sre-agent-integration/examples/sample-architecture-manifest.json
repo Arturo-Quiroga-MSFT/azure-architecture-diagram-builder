@@ -1,30 +1,79 @@
 {
-  "$comment": "Reference manifest shape for the Azure Diagram Builder MCP tools (generate_manifest / validate_architecture / render_diagram / estimate_costs). Attach this file as a supporting file on the SRE Agent skill so the agent has a known-good example of the expected input structure. Values below depict a typical web app footprint involved in an incident.",
-  "title": "Contoso Web App - Incident Snapshot",
-  "zones": [
-    { "id": "internet", "label": "Internet" },
-    { "id": "azure", "label": "Azure" },
-    { "id": "vnet", "label": "VNet (spoke)" },
-    { "id": "data", "label": "Data tier" }
-  ],
+  "description": "Sample input shape for the AADB MCP tools. Use this as a reference when constructing service/connection/group definitions for render_diagram, validate_architecture, estimate_costs, generate_manifest, or export_reactflow_scene.",
   "services": [
-    { "name": "Front Door", "type": "Azure Front Door", "tier": "Premium", "zoneId": "internet" },
-    { "name": "App Gateway (WAF)", "type": "Application Gateway", "tier": "WAF_v2", "zoneId": "vnet" },
-    { "name": "Web App", "type": "App Service", "tier": "P1v3", "zoneId": "azure" },
-    { "name": "Orders API", "type": "Container Apps", "tier": "Consumption", "zoneId": "azure" },
-    { "name": "Postgres", "type": "Azure Database for PostgreSQL", "tier": "GP_Standard_D2s_v3", "zoneId": "data" },
-    { "name": "Redis", "type": "Azure Cache for Redis", "tier": "Standard C1", "zoneId": "data" },
-    { "name": "Key Vault", "type": "Key Vault", "tier": "Standard", "zoneId": "azure" },
-    { "name": "App Insights", "type": "Application Insights", "tier": "Standard", "zoneId": "azure" }
+    {
+      "name": "Web Frontend",
+      "type": "Container Apps",
+      "description": "Static frontend serving the user interface",
+      "groupId": "app"
+    },
+    {
+      "name": "Backend API",
+      "type": "Container Apps",
+      "description": "Node.js Express API with business logic",
+      "groupId": "app"
+    },
+    {
+      "name": "Identity Provider",
+      "type": "Microsoft Entra ID",
+      "description": "Authentication and authorization via Entra ID",
+      "groupId": "identity"
+    },
+    {
+      "name": "Secrets Store",
+      "type": "Key Vault",
+      "description": "Centralized secrets, certificates, and encryption keys",
+      "groupId": "infra"
+    },
+    {
+      "name": "Container Registry",
+      "type": "Container Registry",
+      "description": "ACR hosting container images",
+      "groupId": "infra"
+    },
+    {
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "description": "Centralized logging and diagnostics",
+      "groupId": "observe"
+    }
   ],
   "connections": [
-    { "from": "Front Door", "to": "App Gateway (WAF)", "label": "HTTPS ingress", "type": "sync" },
-    { "from": "App Gateway (WAF)", "to": "Web App", "label": "routes /", "type": "sync" },
-    { "from": "App Gateway (WAF)", "to": "Orders API", "label": "routes /api", "type": "sync" },
-    { "from": "Web App", "to": "Orders API", "label": "server-side calls", "type": "sync" },
-    { "from": "Orders API", "to": "Postgres", "label": "reads/writes orders", "type": "sync" },
-    { "from": "Orders API", "to": "Redis", "label": "session + cache", "type": "async" },
-    { "from": "Orders API", "to": "Key Vault", "label": "secrets at startup", "type": "optional" },
-    { "from": "Orders API", "to": "App Insights", "label": "telemetry", "type": "async" }
+    {
+      "from": "Web Frontend",
+      "to": "Backend API",
+      "label": "REST API calls",
+      "type": "sync"
+    },
+    {
+      "from": "Backend API",
+      "to": "Identity Provider",
+      "label": "Token validation",
+      "type": "sync"
+    },
+    {
+      "from": "Backend API",
+      "to": "Secrets Store",
+      "label": "Fetch secrets",
+      "type": "sync"
+    },
+    {
+      "from": "Backend API",
+      "to": "Log Analytics",
+      "label": "Telemetry",
+      "type": "async"
+    },
+    {
+      "from": "Backend API",
+      "to": "Container Registry",
+      "label": "Image pull",
+      "type": "sync"
+    }
+  ],
+  "groups": [
+    { "id": "app", "label": "Application Tier" },
+    { "id": "identity", "label": "Identity & Access" },
+    { "id": "infra", "label": "Infrastructure" },
+    { "id": "observe", "label": "Observability" }
   ]
 }
