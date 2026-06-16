@@ -27,6 +27,9 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
   forceCollapsed 
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  // Click-to-pin: a clicked step keeps its services highlighted until clicked
+  // again. Hover still previews; pinned highlight is re-asserted on mouse-leave.
+  const [pinnedStep, setPinnedStep] = useState<number | null>(null);
 
   // Avatar state
   const [avatarStatus, setAvatarStatus] = useState<AvatarStatus>('idle');
@@ -179,9 +182,25 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
                 <div
                   key={step.step}
                   ref={(el) => { stepElRefs.current[step.step] = el; }}
-                  className={`workflow-step${step.step === activeStepNum ? ' is-narrating' : ''}`}
+                  className={`workflow-step${step.step === activeStepNum ? ' is-narrating' : ''}${step.step === pinnedStep ? ' is-pinned' : ''}`}
+                  onClick={() => {
+                    setPinnedStep((prev) => {
+                      const next = prev === step.step ? null : step.step;
+                      if (next == null) onServiceLeave?.();
+                      else onServiceHover?.(step.services);
+                      return next;
+                    });
+                  }}
                   onMouseEnter={() => onServiceHover?.(step.services)}
-                  onMouseLeave={() => onServiceLeave?.()}
+                  onMouseLeave={() => {
+                    if (pinnedStep != null) {
+                      const pinned = workflow.find((s) => s.step === pinnedStep);
+                      if (pinned) onServiceHover?.(pinned.services);
+                      else onServiceLeave?.();
+                    } else {
+                      onServiceLeave?.();
+                    }
+                  }}
                 >
                   <div className="step-number">{step.step}</div>
                   <div className="step-description">

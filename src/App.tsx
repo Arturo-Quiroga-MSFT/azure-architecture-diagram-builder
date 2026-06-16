@@ -1431,7 +1431,28 @@ function App() {
       }
 
       if (flow.nodes) setNodes(flow.nodes || []);
-      if (flow.edges) setEdges(flow.edges || []);
+      // Normalize edge handle ids. Some scenes (e.g. exported by the MCP server
+      // or hand-authored) use bare position names for handles, but AzureNode's
+      // handles are asymmetric: valid sources are top-source/left-source/right/
+      // bottom; valid targets are top/left/right-target/bottom-target. A bare
+      // sourceHandle "top"/"left" or targetHandle "bottom"/"right" points at a
+      // non-existent handle, so the edge silently fails to render. Remap the
+      // invalid bare names to the correct handle id (valid ids pass through).
+      if (flow.edges) {
+        const SRC_FIX: Record<string, string> = { top: 'top-source', left: 'left-source' };
+        const TGT_FIX: Record<string, string> = { bottom: 'bottom-target', right: 'right-target' };
+        const fixedEdges = (flow.edges || []).map((edge: any) => {
+          const next = { ...edge };
+          if (typeof next.sourceHandle === 'string' && SRC_FIX[next.sourceHandle]) {
+            next.sourceHandle = SRC_FIX[next.sourceHandle];
+          }
+          if (typeof next.targetHandle === 'string' && TGT_FIX[next.targetHandle]) {
+            next.targetHandle = TGT_FIX[next.targetHandle];
+          }
+          return next;
+        });
+        setEdges(fixedEdges);
+      }
 
       if (flow.viewport && reactFlowInstance?.setViewport) {
         reactFlowInstance.setViewport(flow.viewport);
@@ -3249,7 +3270,20 @@ function App() {
         {workflow.length > 0 && (
           <WorkflowPanel 
             workflow={workflow}
-            onServiceHover={(serviceIds) => setHighlightedServices(serviceIds)}
+            onServiceHover={(refs) => {
+              // Workflow steps reference services by node id (app-generated) OR
+              // by label (e.g. scenes exported by the MCP server). The glow CSS
+              // targets nodes by id, so resolve each ref to matching node ids by
+              // id or case-insensitive label before highlighting.
+              const ids = (refs || []).flatMap((ref) => {
+                const refLc = String(ref).toLowerCase();
+                return nodes
+                  .filter((n) => n.type === 'azureNode'
+                    && (n.id === ref || String(n.data?.label ?? '').toLowerCase() === refLc))
+                  .map((n) => n.id);
+              });
+              setHighlightedServices(ids.length > 0 ? ids : (refs || []));
+            }}
             onServiceLeave={() => setHighlightedServices([])}
             forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined}
           />

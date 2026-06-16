@@ -724,14 +724,18 @@ server.tool(
       const tx = t.x + t.width / 2, ty = t.y + t.height / 2;
       const dx = tx - sx;
       const dy = ty - sy;
+      // AzureNode exposes asymmetric handle ids: sources are
+      // top-source/left-source/right/bottom; targets are top/left/right-target/
+      // bottom-target. Emit ids that exist on the matching handle type, else the
+      // edge silently fails to render.
       if (Math.abs(dx) > Math.abs(dy)) {
         return dx >= 0
           ? { sourceHandle: 'right', targetHandle: 'left' }
-          : { sourceHandle: 'left',  targetHandle: 'right' };
+          : { sourceHandle: 'left-source',  targetHandle: 'right-target' };
       }
       return dy >= 0
         ? { sourceHandle: 'bottom', targetHandle: 'top' }
-        : { sourceHandle: 'top',    targetHandle: 'bottom' };
+        : { sourceHandle: 'top-source',    targetHandle: 'bottom-target' };
     }
 
     const validConns = conns.filter(c => nodeIdByName.has(c.from) && nodeIdByName.has(c.to));

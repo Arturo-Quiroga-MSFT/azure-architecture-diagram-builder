@@ -168,6 +168,20 @@ body.dark-mode .workflow-step.is-narrating {
   border-left-color: #eab308;
 }
 
+/* Click-to-pin: a clicked step stays highlighted (and pins the canvas glow). */
+.workflow-step.is-pinned {
+  background: #dbeafe;
+  border-left-color: #0078d4;
+  border-left-width: 6px;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.35), 0 6px 18px rgba(0, 120, 212, 0.25);
+  transform: translateX(4px);
+}
+
+body.dark-mode .workflow-step.is-pinned {
+  background: #1e3a5f;
+  border-left-color: #4da4ff;
+}
+
 @keyframes workflow-narrating-pulse {
   0%, 100% { box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.35), 0 6px 18px rgba(234, 179, 8, 0.25); }
   50%      { box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.55), 0 8px 22px rgba(234, 179, 8, 0.40); }

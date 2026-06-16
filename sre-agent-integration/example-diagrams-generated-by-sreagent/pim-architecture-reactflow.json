@@ -1,0 +1,404 @@
+{
+  "nodes": [
+    {
+      "id": "grp-identity",
+      "type": "groupNode",
+      "position": { "x": 10, "y": -10 },
+      "data": { "label": "Identity & Access", "stylePreset": "presentation" },
+      "style": { "width": 1772, "height": 306 },
+      "width": 1772,
+      "height": 306
+    },
+    {
+      "id": "grp-agent",
+      "type": "groupNode",
+      "position": { "x": 438, "y": 1078 },
+      "data": { "label": "SRE Agent Platform", "stylePreset": "presentation" },
+      "style": { "width": 840, "height": 659.5 },
+      "width": 840,
+      "height": 659.5
+    },
+    {
+      "id": "grp-audit",
+      "type": "groupNode",
+      "position": { "x": 866, "y": 262 },
+      "data": { "label": "Audit & Compliance", "stylePreset": "presentation" },
+      "style": { "width": 412, "height": 306 },
+      "width": 412,
+      "height": 306
+    },
+    {
+      "id": "grp-notify",
+      "type": "groupNode",
+      "position": { "x": 866, "y": 534 },
+      "data": { "label": "Notification", "stylePreset": "presentation" },
+      "style": { "width": 412, "height": 306 },
+      "width": 412,
+      "height": 306
+    },
+    {
+      "id": "grp-infra",
+      "type": "groupNode",
+      "position": { "x": 1370, "y": 1285 },
+      "data": { "label": "Infrastructure", "stylePreset": "presentation" },
+      "style": { "width": 412, "height": 486 },
+      "width": 412,
+      "height": 486
+    },
+    {
+      "id": "grp-observe",
+      "type": "groupNode",
+      "position": { "x": 866, "y": 806 },
+      "data": { "label": "Observability", "stylePreset": "presentation" },
+      "style": { "width": 412, "height": 306 },
+      "width": 412,
+      "height": 306
+    },
+    {
+      "id": "svc-azure-pim",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 128 },
+      "positionAbsolute": { "x": 116, "y": 118 },
+      "data": {
+        "label": "Azure PIM",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "stylePreset": "presentation",
+        "description": "Privileged Identity Management — role activation requests"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-identity",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-entra-id",
+      "type": "azureNode",
+      "position": { "x": 1466, "y": 128 },
+      "positionAbsolute": { "x": 1476, "y": 118 },
+      "data": {
+        "label": "Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "stylePreset": "presentation",
+        "description": "User identity, group membership, MFA, Conditional Access"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-identity",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-sre-agent-aq-main",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 140.5 },
+      "positionAbsolute": { "x": 544, "y": 1218.5 },
+      "data": {
+        "label": "SRE Agent (aq-main)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "SRE Agent orchestrating PIM validation via pim-recommender sub-agent"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-agent",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-pim-mcp",
+      "type": "azureNode",
+      "position": { "x": 534, "y": 412.5 },
+      "positionAbsolute": { "x": 972, "y": 1490.5 },
+      "data": {
+        "label": "pim-mcp",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Custom MCP server — 13 tools (10 Graph + 3 ARM)"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-agent",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-enterprise-mcp",
+      "type": "azureNode",
+      "position": { "x": 534, "y": 199 },
+      "positionAbsolute": { "x": 972, "y": 1277 },
+      "data": {
+        "label": "Enterprise MCP",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "stylePreset": "presentation",
+        "description": "Microsoft-hosted MCP for Graph reads"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-agent",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-jira-cloud",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 128 },
+      "positionAbsolute": { "x": 972, "y": 390 },
+      "data": {
+        "label": "Jira Cloud",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/02989-icon-service-Container-Apps-Environments.svg",
+        "stylePreset": "presentation",
+        "description": "Ticket validation + audit trail (SCRUM project)"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-audit",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-microsoft-teams",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 128 },
+      "positionAbsolute": { "x": 972, "y": 662 },
+      "data": {
+        "label": "Microsoft Teams",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/logic-apps.svg",
+        "stylePreset": "presentation",
+        "description": "Adaptive Card delivery to human approvers"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-notify",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-container-registry",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 128 },
+      "positionAbsolute": { "x": 1476, "y": 1413 },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-registry.svg",
+        "stylePreset": "presentation",
+        "description": "ACR hosting pim-mcp Docker images"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-infra",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-log-analytics",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 128 },
+      "positionAbsolute": { "x": 972, "y": 934 },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "stylePreset": "presentation",
+        "description": "Centralized logging for Container Apps"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-observe",
+      "extent": "parent"
+    },
+    {
+      "id": "svc-key-vault",
+      "type": "azureNode",
+      "position": { "x": 106, "y": 308 },
+      "positionAbsolute": { "x": 1476, "y": 1593 },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "stylePreset": "presentation",
+        "description": "Secrets for Graph API credentials"
+      },
+      "width": 200,
+      "height": 70,
+      "parentNode": "grp-infra",
+      "extent": "parent"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-azure-pim",
+      "target": "svc-sre-agent-aq-main",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "PIM activation event",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "async", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "pulse", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-sre-agent-aq-main",
+      "target": "svc-pim-mcp",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "MCP tool calls (13 tools)",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-sre-agent-aq-main",
+      "target": "svc-enterprise-mcp",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Graph reads",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-sre-agent-aq-main",
+      "target": "svc-jira-cloud",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Ticket validation",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-sre-agent-aq-main",
+      "target": "svc-microsoft-teams",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Adaptive Card",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "async", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "pulse", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-sre-agent-aq-main",
+      "target": "svc-log-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Telemetry",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "async", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "pulse", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-pim-mcp",
+      "target": "svc-entra-id",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Graph API",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-pim-mcp",
+      "target": "svc-azure-pim",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "ARM PIM API",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-pim-mcp",
+      "target": "svc-key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Fetch secrets",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-pim-mcp",
+      "target": "svc-container-registry",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Image pull",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-enterprise-mcp",
+      "target": "svc-entra-id",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Graph API (read-only)",
+      "markerEnd": { "type": "arrowclosed", "color": "#0078d4" },
+      "labelStyle": { "fontSize": 13, "fill": "#333", "fontWeight": "600", "opacity": 1 },
+      "labelBgStyle": { "fill": "white", "fillOpacity": 0.95, "stroke": "#000", "strokeWidth": 1.5, "rx": 6 },
+      "style": { "strokeWidth": 2 },
+      "data": { "connectionType": "sync", "direction": "forward", "baseFlowAnimated": true, "flowAnimated": true, "flowMode": "directional", "labelOffsetX": 0, "labelOffsetY": 0 }
+    }
+  ],
+  "viewport": { "x": -336, "y": -530.5, "zoom": 0.65 },
+  "metadata": {
+    "architectureName": "Zafin PIM Approver Agent",
+    "author": "Arturo Quiroga",
+    "version": "1.0",
+    "date": "2026-06-16",
+    "savedAt": "2026-06-16T18:01:23.937Z"
+  },
+  "workflow": [
+    { "step": 1, "description": "PIM activation request is triggered by a user in Azure PIM", "services": ["Azure PIM"] },
+    { "step": 2, "description": "SRE Agent receives the activation event and begins deterministic validation", "services": ["SRE Agent (aq-main)"] },
+    { "step": 3, "description": "Agent queries pim-mcp for pending approvals, user details, group memberships, and role eligibilities", "services": ["SRE Agent (aq-main)", "pim-mcp", "Entra ID"] },
+    { "step": 4, "description": "Agent queries Enterprise MCP for additional Graph reads (users, groups, eligibility schedules)", "services": ["SRE Agent (aq-main)", "Enterprise MCP", "Entra ID"] },
+    { "step": 5, "description": "Agent validates Jira ticket (exists, active, requester linked, documented)", "services": ["SRE Agent (aq-main)", "Jira Cloud"] },
+    { "step": 6, "description": "Agent evaluates all deterministic rules (R001-R044) and calculates allowed duration", "services": ["SRE Agent (aq-main)"] },
+    { "step": 7, "description": "Agent sends Adaptive Card to approver in Teams with recommendation (Approve/Reject/Human Review)", "services": ["SRE Agent (aq-main)", "Microsoft Teams"] },
+    { "step": 8, "description": "Agent creates Jira audit ticket with full evidence trail", "services": ["SRE Agent (aq-main)", "Jira Cloud"] }
+  ],
+  "architecturePrompt": "Architecture for a PIM Approver Agent that validates Azure PIM activation requests against deterministic rules and provides Approve/Reject/Human Review recommendations via Adaptive Cards in Teams, with full Jira audit trail."
+}
