@@ -73,6 +73,10 @@ What "restored" means for this repo (**done** — see `mcp-server/` and the Dock
    | **URL** | `https://azure-diagram-builder-mcp.victorioussmoke-95d145bd.eastus2.azurecontainerapps.io/mcp` |
    | **Authentication** | Bearer token *(the value in `.env.mcp-instance`)* |
 
+> **The URL MUST end in `/mcp`.** The wizard probes the exact URL you enter. The bare app FQDN
+> (without `/mcp`) hits the web UI / SPA, not the MCP endpoint, and the connection test fails.
+> Confirmed gotcha during setup — always include the `/mcp` path suffix.
+
 4. Save. The agent connects, runs auto-discovery, and registers the six tools namespaced as
    `azure-diagram-builder_<tool>` (for example `azure-diagram-builder_render_diagram`).
 
@@ -133,6 +137,7 @@ Confirm the agent activates the skill, calls `generate_manifest` → `validate_a
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
+| Connection test fails / wizard probe returns SPA HTML | **URL missing the `/mcp` suffix** | Use `https://<fqdn>/mcp`, not the bare app FQDN. |
 | Connector status **Failed** | `/mcp` not deployed or wrong URL/token | Complete Step 0; re-check URL and Bearer token. |
 | `tools/list` returns nothing | MCP server up but tools not registered | Confirm the server exposes all six tools over Streamable-HTTP. |
 | Agent never activates the skill | Description too narrow | Broaden the skill **description** so relevance is obvious. |
