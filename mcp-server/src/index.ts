@@ -921,6 +921,30 @@ async function startHttp(): Promise<void> {
         return;
       }
 
+      // Liveness probe for connector wizards (e.g. Azure SRE Agent) that send a
+      // bare GET/HEAD to /mcp (no session id) to confirm the endpoint speaks MCP
+      // before initializing. Answered BEFORE the auth gate so the probe succeeds
+      // whether or not it carries the Bearer token. Returns no MCP data — every
+      // real operation still requires POST + (when configured) a valid token.
+      if ((req.method === 'GET' || req.method === 'HEAD') && !req.headers['mcp-session-id']) {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(req.method === 'HEAD'
+          ? undefined
+          : 'Azure Diagram Builder MCP — Streamable-HTTP endpoint. POST an initialize request to begin.');
+        return;
+      }
+
+      // CORS preflight — some clients preflight before the initialize POST.
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+          'Allow': 'GET, POST, DELETE, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Authorization, Content-Type, mcp-session-id, Accept',
+        });
+        res.end();
+        return;
+      }
+
       // Bearer-token gate (only enforced when MCP_AUTH_TOKEN is configured).
       if (authToken) {
         const authHeader = req.headers['authorization'];
