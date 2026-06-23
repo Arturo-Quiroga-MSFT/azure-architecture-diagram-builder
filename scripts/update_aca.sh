@@ -16,8 +16,7 @@
 # - Proper permissions for ACR and ACA resources
 #
 # Required .env variables:
-# - VITE_AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint URL (build-time)
-# - VITE_AZURE_OPENAI_API_KEY: Azure OpenAI API key (build-time)
+# - VITE_AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint URL (build-time, non-secret flag)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT51: GPT-5.1 deployment name (build-time)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT52: GPT-5.2 deployment name (build-time)
 # - VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX: GPT-5.2 Codex deployment name (build-time)
@@ -33,7 +32,17 @@
 # - COSMOS_CONTAINER_ID: Cosmos DB container ID (runtime)
 # - AZURE_SPEECH_REGION: Azure Speech region (runtime, used by token-server.js)
 # - AZURE_SPEECH_RESOURCE_ID: Azure Speech resource ID (runtime, used by token-server.js)
+# - AZURE_OPENAI_ENDPOINT: Azure OpenAI endpoint URL (runtime, used by the
+#       /api/openai proxy in token-server.js). REQUIRED — without it the proxy
+#       returns 503 and all AI features fail.
+# - AZURE_OPENAI_API_KEY: Azure OpenAI key (runtime, OPTIONAL). Prefer keyless
+#       auth: grant the Container App's managed identity the
+#       "Cognitive Services OpenAI User" role on the Azure OpenAI resource and
+#       leave this unset. The key is NEVER sent to the browser.
 #
+# SECURITY: The Azure OpenAI API key is intentionally NOT a build arg anymore.
+#       Calls are proxied server-side (managed identity), so the key must never
+#       be embedded in the client bundle.
 # Note: Vite environment variables must be passed as build arguments because they are
 # embedded at build time via import.meta.env, not available at runtime.
 #
@@ -66,7 +75,6 @@ echo "🚀 Building image in ACR..."
 az acr build --registry acrazurediagrams1767583743 \
     --image azure-diagram-builder:latest \
     --build-arg "VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT" \
-    --build-arg "VITE_AZURE_OPENAI_API_KEY=$VITE_AZURE_OPENAI_API_KEY" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT51" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX" \
@@ -94,6 +102,8 @@ az containerapp update --name azure-diagram-builder \
         "PUBLIC_URL=https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io" \
         "AZURE_SPEECH_REGION=$AZURE_SPEECH_REGION" \
         "AZURE_SPEECH_RESOURCE_ID=$AZURE_SPEECH_RESOURCE_ID" \
+        "AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT" \
+        "AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-${VITE_AZURE_OPENAI_API_KEY:-}}" \
     --revision-suffix "v$(date +%s)"
 
 echo "✅ Deployment complete!"
