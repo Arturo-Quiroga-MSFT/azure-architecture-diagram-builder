@@ -17,7 +17,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { captureDiagramAsPng, captureDiagramAsSvg } from './utils/captureCanvas';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, Terminal, MessageSquare, MessagesSquare } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -72,9 +72,6 @@ import { generateModelFilename, setSourceModel, clearSourceModel } from './utils
 import { fitAllGroupsToContent } from './utils/groupUtils';
 import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh } from './services/telemetryService';
 import type { IaCFormat } from './services/azureOpenAI';
-import { exportToAzPrototype, serializeManifest, type ImportResult } from './services/azPrototypeService';
-import AzPrototypeExportModal from './components/AzPrototypeExportModal';
-import AzPrototypeImportModal from './components/AzPrototypeImportModal';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
@@ -181,8 +178,6 @@ function App() {
   const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
-  const [isAzPrototypeExportOpen, setIsAzPrototypeExportOpen] = useState(false);
-  const [isAzPrototypeImportOpen, setIsAzPrototypeImportOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isFeedbackToastOpen, setIsFeedbackToastOpen] = useState(false);
   const [feedbackPreselectedRating, setFeedbackPreselectedRating] = useState<number | undefined>(undefined);
@@ -1117,38 +1112,7 @@ function App() {
     }, 800);
   }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData]);
 
-  // ── az prototype export ──────────────────────────────────────────────
-  const handleAzPrototypeExport = useCallback((options: {
-    projectName: string;
-    location: string;
-    iacTool: 'bicep' | 'terraform';
-    includeCosts: boolean;
-    includeWorkflow: boolean;
-  }) => {
-    const manifest = exportToAzPrototype(
-      nodes,
-      edges,
-      workflow,
-      options,
-      {
-        architectureName: titleBlockData.architectureName,
-        author: titleBlockData.author,
-        sourcePrompt: architecturePrompt || undefined,
-      },
-    );
-    const dataStr = serializeManifest(manifest);
-    const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    const fileName = `az-prototype-manifest-${options.projectName}.json`;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-    recordExport('json', fileName);
-    trackExport('az-prototype', nodes.filter(n => n.type === 'azureNode').length);
-    console.log(`✅ Exported az prototype manifest: ${manifest.architecture.services.length} services, ${manifest.architecture.connections.length} connections`);
-  }, [nodes, edges, workflow, titleBlockData, architecturePrompt, recordExport]);
+  // ── az prototype export removed (feature unused) ─────────────────────
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
@@ -2183,12 +2147,7 @@ function App() {
   }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle]);
 
   // ── az prototype import ──────────────────────────────────────────────
-  const handleAzPrototypeImport = useCallback((result: ImportResult) => {
-    const { architecture } = result;
-    handleAIGenerate(architecture, `Imported from az prototype project: ${result.projectInfo.name}`, true);
-    trackExport('az-prototype-import', architecture.services.length);
-    console.log(`✅ Imported az prototype manifest: ${result.stats.services} services, ${result.stats.connections} connections, ${result.stats.groups} groups`);
-  }, [handleAIGenerate]);
+  // (Import az prototype UI removed — feature unused.)
 
   /** Detect IaC format from file extension and content */
   const detectIaCFormat = useCallback((filename: string, text: string): { format: IaCFormat; label: string } | null => {
@@ -2608,14 +2567,6 @@ function App() {
                     disabled={isImportingTemplate}
                   />
                 </label>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setIsAzPrototypeImportOpen(true)}
-                  title="Import az prototype manifest as interactive diagram"
-                >
-                  <Terminal size={18} />
-                  Import az prototype
-                </button>
               </div>
 
               <div className="toolbar-group">
@@ -2759,19 +2710,6 @@ function App() {
                       >
                         <FileCode size={18} />
                         Export Interactive HTML
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          setIsAzPrototypeExportOpen(true);
-                        }}
-                        title="Export as az prototype manifest for production IaC generation"
-                      >
-                        <Terminal size={18} />
-                        Export to az prototype
                       </button>
                       <div className="toolbar-dropdown-separator" role="separator" />
                       <button
@@ -3639,21 +3577,6 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
               .map(child => child.data.label || child.data.serviceName || 'Unknown'),
           }))}
         architectureDescription={architecturePrompt || titleBlockData.architectureName}
-      />
-      <AzPrototypeExportModal
-        isOpen={isAzPrototypeExportOpen}
-        onClose={() => setIsAzPrototypeExportOpen(false)}
-        onExport={handleAzPrototypeExport}
-        serviceCount={nodes.filter(n => n.type === 'azureNode').length}
-        connectionCount={edges.length}
-        groupCount={nodes.filter(n => n.type === 'groupNode').length}
-        hasCostData={totalMonthlyCost > 0}
-        architectureName={titleBlockData.architectureName}
-      />
-      <AzPrototypeImportModal
-        isOpen={isAzPrototypeImportOpen}
-        onClose={() => setIsAzPrototypeImportOpen(false)}
-        onImport={handleAzPrototypeImport}
       />
 
       <button
