@@ -37,6 +37,15 @@ interface RegionalPricingData {
   Items: AzureRetailPrice[];
 }
 
+// Statically bundle every regional pricing JSON so the data is available in the
+// production build. A plain `import(path)` with /* @vite-ignore */ is NOT
+// bundled, so in production it 404s to index.html (text/html) and fails the
+// strict module-script MIME check. `import.meta.glob` lets Vite create lazy
+// chunks for each file that resolve correctly in both dev and production.
+const pricingModules = import.meta.glob<{ default: RegionalPricingData }>(
+  '/src/data/pricing/regions/*/*.json'
+);
+
 // Cache for loaded regional data
 const regionalDataCache = new Map<AzureRegion, Map<string, RegionalPricingData>>();
 
@@ -117,7 +126,12 @@ async function loadServiceData(region: AzureRegion, serviceName: string): Promis
       
       // Load the Foundry file
       const path = `/src/data/pricing/regions/${region}/${aiMapping.file}.json`;
-      const module = await import(/* @vite-ignore */ path);
+      const loader = pricingModules[path];
+      if (!loader) {
+        console.warn(`⚠️ No pricing data bundled at ${path}`);
+        return null;
+      }
+      const module = await loader();
       const fullData = module.default as RegionalPricingData;
       
       // Filter items by productName
@@ -144,8 +158,13 @@ async function loadServiceData(region: AzureRegion, serviceName: string): Promis
     const filename = serviceName.toLowerCase().replace(/\s+/g, '_');
     const path = `/src/data/pricing/regions/${region}/${filename}.json`;
     
-    // Dynamically import the JSON file
-    const module = await import(/* @vite-ignore */ path);
+    // Look up the statically bundled module for this file
+    const loader = pricingModules[path];
+    if (!loader) {
+      console.warn(`⚠️ No pricing data bundled at ${path}`);
+      return null;
+    }
+    const module = await loader();
     const data = module.default as RegionalPricingData;
     
     // Cache the data
