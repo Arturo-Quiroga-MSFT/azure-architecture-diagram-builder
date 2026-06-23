@@ -184,14 +184,38 @@ export const MODEL_CONFIG: Record<ModelType, {
 };
 
 /**
+ * Static map of deployment names per model.
+ *
+ * SECURITY: These MUST be accessed with literal `import.meta.env.VITE_...` keys.
+ * Using a dynamic/computed key (e.g. `import.meta.env[someVar]`) forces Vite to
+ * inline the ENTIRE env object into the client bundle — which leaks every VITE_
+ * variable, including the Azure OpenAI API key. Deployment names themselves are
+ * not secrets, so embedding them is fine.
+ */
+export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
+  'gpt-5.1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51,
+  'gpt-5.2': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52,
+  'gpt-5.2-codex': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX,
+  'gpt-5.3-codex': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX,
+  'gpt-5.4': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54,
+  'gpt-5.4-mini': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI,
+  'deepseek-v3.2-speciale': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK,
+  'deepseek-v4-pro': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO,
+  'grok-4.1-fast': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST,
+  'grok-4.3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43,
+  'mistral-large-3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3,
+  'kimi-k2-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25,
+};
+
+/**
  * Get deployment name for a specific model
  * Each model requires its own deployment env var to be set
  */
 export function getDeploymentName(model: ModelType): string {
   const config = MODEL_CONFIG[model];
-  
-  // Try specific deployment env var for this model
-  const specificDeployment = import.meta.env[config.deploymentEnvVar];
+
+  // Static lookup (see DEPLOYMENT_NAMES note above — do not use a dynamic key).
+  const specificDeployment = DEPLOYMENT_NAMES[model];
   if (specificDeployment) {
     return specificDeployment;
   }

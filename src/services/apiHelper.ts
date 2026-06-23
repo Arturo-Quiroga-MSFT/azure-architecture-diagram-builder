@@ -101,3 +101,47 @@ export function parseApiResponse(
     totalTokens: usage.total_tokens || 0,
   };
 }
+
+/**
+ * Result of a call to the server-side Azure OpenAI proxy.
+ */
+export interface OpenAIProxyResult {
+  ok: boolean;
+  status: number;
+  data: any;
+  errorText?: string;
+}
+
+/**
+ * Call Azure OpenAI through the server-side proxy (/api/openai).
+ *
+ * The proxy holds the Azure OpenAI credentials (managed identity, with optional
+ * key fallback) so they are never shipped to the browser. The client sends the
+ * already-built request body plus the deployment name and API format; the server
+ * constructs the upstream URL from its trusted endpoint and attaches auth.
+ */
+export async function callAzureOpenAIProxy(params: {
+  apiFormat: ApiFormat;
+  deployment: string;
+  body: any;
+  signal?: AbortSignal;
+}): Promise<OpenAIProxyResult> {
+  const response = await fetch('/api/openai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      apiFormat: params.apiFormat,
+      deployment: params.deployment,
+      body: params.body,
+    }),
+    signal: params.signal,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    return { ok: false, status: response.status, data: null, errorText };
+  }
+
+  const data = await response.json();
+  return { ok: true, status: response.status, data };
+}

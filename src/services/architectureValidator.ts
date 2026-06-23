@@ -12,15 +12,16 @@ import { detectWafPatterns, calculatePreliminaryScore } from './wafPatternDetect
 import { getKnowledgeBaseStats } from '../data/wafRules';
 import { scoreToBand } from './wafMaturity';
 import { trackAIModelUsage } from './telemetryService';
-import { buildApiUrl, buildRequestBody, parseApiResponse } from './apiHelper';
+import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
 
 export interface ValidationModelOverride {
   model: ModelType;
   reasoningEffort: ReasoningEffort;
 }
 
+// Non-secret flag indicating the AI backend is wired up. Credentials live
+// server-side; all calls go through the /api/openai proxy.
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
-const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 
 // Token usage metrics returned from Azure OpenAI API
 export interface AIMetrics {
@@ -56,13 +57,12 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
     throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
   }
 
-  if (!endpoint || !apiKey) {
-    throw new Error('Azure OpenAI credentials not configured');
+  if (!endpoint) {
+    throw new Error('Azure OpenAI is not configured');
   }
 
   // Determine API format
   const apiFormat = modelConfig.apiFormat || 'responses';
-  const url = buildApiUrl(endpoint, deployment, apiFormat);
 
   console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
   
@@ -82,25 +82,19 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
   
   console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    },
-    body: JSON.stringify(requestBody),
+  const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+    apiFormat,
+    deployment,
+    body: requestBody,
   });
   
   // Calculate elapsed time
   const elapsedTimeMs = Math.round(performance.now() - startTime);
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.error('❌ Azure OpenAI API error:', response.status, error);
-    throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
+  if (!ok) {
+    console.error('❌ Azure OpenAI API error:', status, errorText);
+    throw new Error(`Azure OpenAI API error (${status}): ${errorText}`);
   }
-
-  const data = await response.json();
   
   // Parse response using the appropriate API format
   const parsed = parseApiResponse(data, apiFormat);
@@ -176,7 +170,7 @@ export async function validateArchitecture(
   modelOverride?: ValidationModelOverride
 ): Promise<ArchitectureValidation> {
   
-  if (!endpoint || !apiKey) {
+  if (!endpoint) {
     throw new Error('Azure OpenAI configuration missing. Please check your .env file.');
   }
   

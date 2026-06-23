@@ -143,10 +143,13 @@ Features include:
 - SKU and tier information for each service
 - **Export Costs (CSV)** — per-service cost breakdown spreadsheet for the active region
 - **Export Costs (All Formats)** — downloads a ZIP containing:
+  - `README.md` — manifest explaining every file in the bundle
+  - `-report.md` — **start here**: combined summary + full analysis in one Markdown file
+  - `-report.html` — the same combined report as a self-contained HTML page (with the Mermaid pie chart rendered) for non-Markdown viewers
+  - `-summary.md` — Markdown summary with tables for by-service, by-group, and by-category costs
+  - `-analysis.md` — intelligent Markdown report: TL;DR callout, top cost drivers, a **Mermaid pie chart** of cost by category, fixed vs usage-based split, Reserved Instance flags, and a **ranked multi-region comparison table** showing cheapest/most expensive region and potential savings
   - `.csv` — spreadsheet for Excel
   - `.json` — structured breakdown for programmatic use
-  - `-summary.txt` — plain-text summary
-  - `-analysis.txt` — intelligent report: top cost drivers with bar charts, fixed vs usage-based split, Reserved Instance flags, and a **ranked multi-region comparison table** showing cheapest/most expensive region and potential savings
   - `-multiregion-comparison.csv` — per-service pricing across all 8 regions for side-by-side comparison
 
 ### 🧠 Smart Layout Engine
@@ -910,7 +913,7 @@ All edge types now render correctly: solid sync edges, dashed async edges, dotte
 
 ### March 2026
 - **8 Azure Regions** — Expanded from 5 to 8 regions: added Australia East (HERO), Southeast Asia (Singapore), Mexico Central (Querétaro) with full pricing data (568 JSON files)
-- **Export Costs (All Formats)** — One-click ZIP: CSV + JSON + plain-text summary + intelligent analysis report
+- **Export Costs (All Formats)** — One-click ZIP: CSV + JSON + Markdown summary + intelligent Markdown analysis report (with Mermaid pie chart)
 - **Multi-Region Cost Comparison** — Ranked table across all 8 regions in the analysis report, with cheapest/priciest callouts, potential savings estimate, and per-service regional variance
 - **Draggable & Resizable Reference Image** — Reference sketch panel can now be dragged anywhere and resized via a corner handle
 - **azd Template** — `azure.yaml` + Bicep infra for one-command `azd up` deployment (Azure-Samples ready)

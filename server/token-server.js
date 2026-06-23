@@ -15,12 +15,40 @@ const { CosmosClient } = require('@azure/cosmos');
 const crypto = require('crypto');
 
 const app = express();
+// The Azure OpenAI proxy forwards vision requests that embed base64 images, so
+// it needs a larger body limit. This route-scoped parser runs before the small
+// global parser below; the global parser then skips bodies already parsed here.
+app.use('/api/openai', express.json({ limit: '12mb' }));
 app.use(express.json({ limit: '16kb' }));
 const credential = new DefaultAzureCredential();
 
 const REGION = process.env.AZURE_SPEECH_REGION;
 const RESOURCE_NAME = process.env.AZURE_SPEECH_RESOURCE_NAME;
 const RESOURCE_ID = process.env.AZURE_SPEECH_RESOURCE_ID;
+
+// ── Azure OpenAI proxy ─────────────────────────────────────────────────────
+// Keeps Azure OpenAI credentials server-side so they are never shipped to the
+// browser. Prefers keyless auth via DefaultAzureCredential (managed identity in
+// ACA, `az login` in dev); falls back to AZURE_OPENAI_API_KEY when set.
+const OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
+const OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY; // optional fallback
+const OPENAI_API_VERSION = process.env.AZURE_OPENAI_API_VERSION || '2024-05-01-preview';
+
+// Deployment names are user-selected on the client; constrain them so they
+// cannot be used to inject a different upstream path (SSRF / path traversal).
+const DEPLOYMENT_NAME_RE = /^[A-Za-z0-9._-]{1,64}$/;
+
+function buildOpenAIUrl(deployment, apiFormat) {
+  const base = OPENAI_ENDPOINT.endsWith('/') ? OPENAI_ENDPOINT : `${OPENAI_ENDPOINT}/`;
+  if (apiFormat === 'chat-completions') {
+    return `${base}openai/deployments/${encodeURIComponent(deployment)}/chat/completions?api-version=${OPENAI_API_VERSION}`;
+  }
+  return `${base}openai/v1/responses`;
+}
+
+if (!OPENAI_ENDPOINT) {
+  console.warn('[openai-proxy] AZURE_OPENAI_ENDPOINT is not set. /api/openai will return 503.');
+}
 
 // ── Cosmos DB (feedback storage) ───────────────────────────────────────────
 const COSMOS_ENDPOINT = process.env.AZURE_COSMOS_ENDPOINT;
@@ -61,6 +89,48 @@ app.get('/api/speech-token', async (_req, res) => {
   } catch (err) {
     console.error('[speech-token] error:', err.message);
     res.status(500).json({ error: 'Failed to acquire speech token' });
+  }
+});
+
+app.post('/api/openai', async (req, res) => {
+  if (!OPENAI_ENDPOINT) {
+    return res.status(503).json({ error: 'AZURE_OPENAI_ENDPOINT is not configured on the server' });
+  }
+
+  const { apiFormat, deployment, body } = req.body || {};
+  if (apiFormat !== 'responses' && apiFormat !== 'chat-completions') {
+    return res.status(400).json({ error: "apiFormat must be 'responses' or 'chat-completions'" });
+  }
+  if (typeof deployment !== 'string' || !DEPLOYMENT_NAME_RE.test(deployment)) {
+    return res.status(400).json({ error: 'invalid deployment name' });
+  }
+  if (!body || typeof body !== 'object') {
+    return res.status(400).json({ error: 'missing request body' });
+  }
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (OPENAI_API_KEY) {
+      headers['api-key'] = OPENAI_API_KEY;
+    } else {
+      // Keyless: data-plane scope for Azure OpenAI / Cognitive Services.
+      const { token } = await credential.getToken('https://cognitiveservices.azure.com/.default');
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const upstream = await fetch(buildOpenAIUrl(deployment, apiFormat), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const text = await upstream.text();
+    res.status(upstream.status);
+    res.set('Content-Type', upstream.headers.get('content-type') || 'application/json');
+    res.send(text);
+  } catch (err) {
+    console.error('[openai-proxy] error:', err.message);
+    res.status(502).json({ error: 'Azure OpenAI proxy request failed' });
   }
 });
 

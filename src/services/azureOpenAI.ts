@@ -4,10 +4,12 @@
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { getServiceIconMapping, SERVICE_ICON_MAP } from '../data/serviceIconMapping';
 import { trackAIModelUsage } from './telemetryService';
-import { buildApiUrl, buildRequestBody, parseApiResponse } from './apiHelper';
+import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
 
+// Non-secret flag indicating the AI backend is wired up. The actual Azure OpenAI
+// endpoint and credentials live server-side in the token server; the browser
+// never sees the API key — all calls go through the /api/openai proxy.
 const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
-const apiKey = import.meta.env.VITE_AZURE_OPENAI_API_KEY;
 
 // Token usage metrics returned from Azure OpenAI API
 export interface AIMetrics {
@@ -46,13 +48,12 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
     throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
   }
 
-  if (!endpoint || !apiKey) {
-    throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
+  if (!endpoint) {
+    throw new Error('Azure OpenAI is not configured. Please check your .env file.');
   }
 
   // Determine API format (Responses for OpenAI models, Chat Completions for third-party)
   const apiFormat = modelConfig.apiFormat || 'responses';
-  const url = buildApiUrl(endpoint, deployment, apiFormat);
 
   // Add timeout for large requests (5 minutes for regenerations)
   const controller = new AbortController();
@@ -75,14 +76,11 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
   console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal
+    const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+      apiFormat,
+      deployment,
+      body: requestBody,
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
@@ -90,20 +88,17 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
     // Calculate elapsed time
     const elapsedTimeMs = Math.round(performance.now() - startTime);
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Azure OpenAI API error:', response.status, error);
-      if (response.status === 401) {
-        throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
+    if (!ok) {
+      console.error('Azure OpenAI API error:', status, errorText);
+      if (status === 401 || status === 403) {
+        throw new Error('Azure OpenAI authentication failed on the server. Check the managed identity role assignment.');
       }
-      if (response.status === 404) {
+      if (status === 404) {
         throw new Error('Deployment not found. Please check your model deployment name.');
       }
-      throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
+      throw new Error(`Azure OpenAI API error (${status}): ${errorText}`);
     }
 
-    const data = await response.json();
-    
     // Parse response using the appropriate API format
     const parsed = parseApiResponse(data, apiFormat);
     const content = parsed.content;
@@ -405,7 +400,6 @@ Verify findings independently.*`;
 export function isAzureOpenAIConfigured(): boolean {
   // Check if at least one model is available
   const hasEndpoint = !!endpoint;
-  const hasApiKey = !!apiKey;
   
   // Check for specific model deployments (no longer using legacy default)
   const hasGpt51 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51;
@@ -418,7 +412,7 @@ export function isAzureOpenAIConfigured(): boolean {
   const hasMistralL3 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3;
   const hasKimi = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25;
   
-  return hasEndpoint && hasApiKey && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasDeepSeek || hasDeepSeekV4Pro || hasGrok || hasGrok43 || hasMistralL3 || hasKimi);
+  return hasEndpoint && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasDeepSeek || hasDeepSeekV4Pro || hasGrok || hasGrok43 || hasMistralL3 || hasKimi);
 }
 
 /**
@@ -443,12 +437,9 @@ export async function analyzeArchitectureDiagramImage(imageBase64: string, mimeT
     throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
   }
 
-  if (!endpoint || !apiKey) {
-    throw new Error('Azure OpenAI credentials not configured. Please check your .env file.');
+  if (!endpoint) {
+    throw new Error('Azure OpenAI is not configured. Please check your .env file.');
   }
-
-  // Responses API endpoint
-  const url = `${endpoint}openai/v1/responses`;
 
   const systemPrompt = `You are an expert Azure cloud architect specializing in analyzing architecture diagrams.
 
@@ -528,36 +519,30 @@ If the image is not an architecture diagram or is unclear, describe what you can
   console.log(`🖼️ Analyzing architecture diagram with ${modelConfig.displayName}... | API: Responses`);
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal
+    const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+      apiFormat: 'responses',
+      deployment,
+      body: requestBody,
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
     const elapsedTimeMs = Math.round(performance.now() - startTime);
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Azure OpenAI Vision API error:', response.status, error);
+    if (!ok) {
+      console.error('Azure OpenAI Vision API error:', status, errorText);
       
-      if (response.status === 401) {
-        throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
+      if (status === 401 || status === 403) {
+        throw new Error('Azure OpenAI authentication failed on the server. Check the managed identity role assignment.');
       }
-      if (response.status === 404) {
+      if (status === 404) {
         throw new Error('Deployment not found. Please check your model deployment name.');
       }
-      if (response.status === 400 && error.includes('image')) {
+      if (status === 400 && (errorText || '').includes('image')) {
         throw new Error('The selected model may not support image analysis. Try using GPT-4o or GPT-5.2.');
       }
-      throw new Error(`Azure OpenAI API error (${response.status}): ${error}`);
+      throw new Error(`Azure OpenAI API error (${status}): ${errorText}`);
     }
-
-    const data = await response.json();
     
     // Responses API: extract text from output
     let content = data.output_text || '';
