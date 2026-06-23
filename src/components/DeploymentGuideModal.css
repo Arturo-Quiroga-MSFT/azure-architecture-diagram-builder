@@ -641,3 +641,41 @@
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+/* Microsoft Learn grounding (Phase 1) */
+.grounding-section .grounding-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.grounding-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.grounding-list a {
+  color: #4ea1ff;
+  text-decoration: none;
+}
+.grounding-list a:hover { text-decoration: underline; }
+
+/* Microsoft Learn grounding (Phase 1) */
+.grounding-section .grounding-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.grounding-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.grounding-list a {
+  color: #4ea1ff;
+  text-decoration: none;
+}
+.grounding-list a:hover { text-decoration: underline; }

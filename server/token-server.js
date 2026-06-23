@@ -134,6 +134,81 @@ app.post('/api/openai', async (req, res) => {
   }
 });
 
+// ── Microsoft Learn docs grounding ─────────────────────────────────────────
+// Server-side search of official Microsoft Learn docs via the public Learn MCP
+// endpoint. Used to ground deployment-guide generation in current, citable
+// documentation. Best-effort: failures return empty results so generation can
+// proceed ungrounded.
+const LEARN_MCP_URL = process.env.LEARN_MCP_URL || 'https://learn.microsoft.com/api/mcp';
+
+async function searchLearnDocs(query, top) {
+  const upstream = await fetch(LEARN_MCP_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json, text/event-stream',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/call',
+      params: { name: 'microsoft_docs_search', arguments: { query } },
+    }),
+  });
+
+  if (!upstream.ok) {
+    throw new Error(`Learn MCP returned ${upstream.status}`);
+  }
+
+  // The endpoint replies with Server-Sent Events; find the data: line that
+  // carries the tool result and unwrap result.content[].text (a JSON string).
+  const body = await upstream.text();
+  let payload = null;
+  for (const line of body.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('data:')) continue;
+    const json = trimmed.slice(5).trim();
+    if (!json || json === '[DONE]') continue;
+    try {
+      const obj = JSON.parse(json);
+      if (obj.result && Array.isArray(obj.result.content)) {
+        payload = obj;
+        break;
+      }
+    } catch {
+      /* ignore non-JSON / partial frames */
+    }
+  }
+  if (!payload) return [];
+
+  const textNode = payload.result.content.find((c) => c.type === 'text');
+  if (!textNode) return [];
+
+  const inner = JSON.parse(textNode.text);
+  const results = Array.isArray(inner.results) ? inner.results : [];
+  return results.slice(0, top).map((r) => ({
+    title: String(r.title || '').slice(0, 200),
+    url: String(r.contentUrl || ''),
+    excerpt: typeof r.content === 'string' ? r.content.slice(0, 600) : '',
+  }));
+}
+
+app.post('/api/docs-search', async (req, res) => {
+  const { query, top } = req.body || {};
+  if (typeof query !== 'string' || query.trim().length === 0) {
+    return res.status(400).json({ error: 'query is required' });
+  }
+  const limit = Math.min(Math.max(Number(top) || 6, 1), 10);
+  try {
+    const results = await searchLearnDocs(query.trim().slice(0, 400), limit);
+    res.json({ results });
+  } catch (err) {
+    console.error('[docs-search] error:', err.message);
+    // Soft-fail: grounding is best-effort.
+    res.json({ results: [], error: 'docs search failed' });
+  }
+});
+
 app.get('/api/ice-token', async (_req, res) => {
   if (!REGION || !RESOURCE_ID) {
     return res.status(503).json({ error: 'AZURE_SPEECH_REGION and AZURE_SPEECH_RESOURCE_ID must be configured' });

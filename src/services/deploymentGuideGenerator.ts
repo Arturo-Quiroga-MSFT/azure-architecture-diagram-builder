@@ -12,6 +12,7 @@ import { generateModelFilename } from '../utils/modelNaming';
 import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import { trackAIModelUsage } from './telemetryService';
 import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
+import { searchMicrosoftDocs, renderGroundingBlock, DocSource } from './docsGroundingService';
 
 // Non-secret flag indicating the AI backend is wired up. Credentials live
 // server-side; all calls go through the /api/openai proxy.
@@ -143,6 +144,8 @@ export interface DeploymentGuide {
   timestamp: string;
   bicepTemplates?: BicepModule[];
   metrics?: AIMetrics;
+  /** Official Microsoft Learn pages used to ground this guide (Phase 1). */
+  groundingSources?: DocSource[];
 }
 
 /**
@@ -164,6 +167,20 @@ export async function generateDeploymentGuide(
   const modelConfig = MODEL_CONFIG[settings.model];
 
   console.log(`📋 Generating deployment guide with ${modelConfig.displayName}...`);
+
+  // Phase 1 grounding: pull current, citable Microsoft Learn docs for the top
+  // services so the guide reflects up-to-date API versions, CLI flags, and
+  // Bicep schemas. Best-effort — if it fails we generate ungrounded.
+  const topServiceNames = services.slice(0, 6).map((s) => s.name).join(', ');
+  const groundingQuery = `Deploy ${topServiceNames} to Azure using Bicep and Azure CLI`;
+  let groundingSources: DocSource[] = [];
+  try {
+    groundingSources = await searchMicrosoftDocs(groundingQuery, 6);
+    console.log(`📚 Grounding: ${groundingSources.length} Microsoft Learn source(s)`);
+  } catch (e) {
+    console.warn('⚠️ Docs grounding unavailable, proceeding ungrounded:', e);
+  }
+  const groundingBlock = renderGroundingBlock(groundingSources);
 
   // Build architecture context (limit to prevent token overflow)
   const servicesList = services.slice(0, 25).map(s => 
@@ -189,6 +206,11 @@ Generate deployment documentation with:
 - Use parameters for environment, location, naming
 - Include outputs for endpoints and connection strings
 - Add resource tags and comments
+
+**Grounding:**
+- If GROUNDING SOURCES (Microsoft Learn) are provided in the request, prefer their guidance for API versions, CLI flags, and Bicep resource schemas.
+- Reference the relevant source URLs inline in step notes (e.g. "See: <url>") where they informed a command or template.
+- Never invent URLs; only cite URLs that appear in the provided sources.
 
 Return ONLY valid JSON:
 {
@@ -216,7 +238,9 @@ ${connectionsList}
 
 ${estimatedCost ? `**Est. Monthly Cost:** $${estimatedCost.toFixed(2)}` : ''}
 
-Generate a deployment guide with Azure CLI commands and Bicep templates for this architecture.`;
+${groundingBlock ? `${groundingBlock}
+
+` : ''}Generate a deployment guide with Azure CLI commands and Bicep templates for this architecture.`;
 
   try {
     const { content, metrics } = await callAzureOpenAI([
@@ -240,6 +264,9 @@ Generate a deployment guide with Azure CLI commands and Bicep templates for this
     }
     guide.timestamp = new Date().toISOString();
     guide.metrics = metrics;
+    if (groundingSources.length > 0) {
+      guide.groundingSources = groundingSources.map((s) => ({ title: s.title, url: s.url }));
+    }
 
     console.log('📋 Deployment guide generated');
     console.log('📝 Steps:', guide.deploymentSteps.length);
@@ -320,6 +347,14 @@ export function formatDeploymentGuide(guide: DeploymentGuide): string {
     md += `**Issue:** ${item.issue}\n\n`;
     md += `**Solution:** ${item.solution}\n\n`;
   });
+  
+  if (guide.groundingSources && guide.groundingSources.length > 0) {
+    md += `## References (Microsoft Learn)\n\n`;
+    guide.groundingSources.forEach(src => {
+      md += `- [${src.title}](${src.url})\n`;
+    });
+    md += `\n`;
+  }
   
   md += `---\n\n`;
   md += `*Generated: ${new Date(guide.timestamp).toLocaleString()}*\n`;

@@ -217,6 +217,23 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
               </div>
             )}
 
+            {/* References — Microsoft Learn grounding (Phase 1) */}
+            {guide.groundingSources && guide.groundingSources.length > 0 && (
+              <div className="guide-section grounding-section">
+                <h4>📚 Grounded with Microsoft Learn</h4>
+                <p className="grounding-note">
+                  This guide was informed by the following official documentation:
+                </p>
+                <ul className="grounding-list">
+                  {guide.groundingSources.map((src, index) => (
+                    <li key={index}>
+                      <a href={src.url} target="_blank" rel="noopener noreferrer">{src.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Bicep Templates - Infrastructure as Code */}
             {guide.bicepTemplates && guide.bicepTemplates.length > 0 && (
               <div className="guide-section bicep-section">
