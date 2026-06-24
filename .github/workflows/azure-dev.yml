@@ -1,17 +1,14 @@
 name: Azure Diagram Builder — provision & deploy (azd)
 
+# Manual-only. This workflow deploys via `azd` using OIDC federated login and
+# requires the following to be configured in the repo before it will run:
+#   Secrets:   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
+#              AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY
+#   Variables: AZURE_ENV_NAME, AZURE_LOCATION, AZURE_OPENAI_DEPLOYMENT_* , AZURE_SPEECH_REGION
+# Until those exist, run deployments locally with scripts/update_aca.sh.
+# To re-enable automatic deploys on push, restore the `push:` trigger below.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'Architecture_validations/**'
-      - 'Azure_generated_diagrams/**'
-      - 'Azure_generated_bicep_templates/**'
-      - 'prompts/**'
-      - 'notebooks/**'
 
 # Required for OIDC federated identity (passwordless login)
 permissions:
