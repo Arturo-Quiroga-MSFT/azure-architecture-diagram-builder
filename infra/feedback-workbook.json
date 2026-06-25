@@ -232,6 +232,33 @@
             }
           },
           "name": "reach-map"
+        },
+        {
+          "type": 1,
+          "content": {
+            "json": "## 🛟 Recovered comments (telemetry fallback)\nWhen the durable Cosmos write fails — most often when a nightly policy disables Cosmos public access — the app captures the **full comment text** in App Insights as `Feedback_Persist_Failed`. These comments are **not** in Cosmos, so this table is the only place to read them. `reason` shows why the write failed (`http_500`, `http_503`, `network_error`)."
+          },
+          "name": "recovered-comments-header"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Feedback_Persist_Failed'\n| where timestamp {TimeRange}\n| project timestamp, Rating = toint(customDimensions.rating), Category = tostring(customDimensions.category), Comment = tostring(customDimensions.comment), Reason = tostring(customDimensions.reason), Diagram = tostring(customDimensions.diagramName), Model = tostring(customDimensions.model)\n| order by timestamp desc\n| take 200",
+            "size": 0,
+            "title": "Recovered comments — full text (not persisted to Cosmos)",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "table",
+            "gridSettings": {
+              "formatters": [
+                { "columnMatch": "Rating", "formatter": 8, "formatOptions": { "palette": "redGreen", "min": 1, "max": 5 } },
+                { "columnMatch": "Comment", "formatter": 1, "formatOptions": { "maxFieldWidth": 600 } }
+              ]
+            },
+            "noDataMessage": "No persistence failures in this range — all comments were saved to Cosmos. 🎉"
+          },
+          "name": "recovered-comments"
         }
       ],
       "fallbackResourceIds": ["[parameters('appInsightsResourceId')]"]
