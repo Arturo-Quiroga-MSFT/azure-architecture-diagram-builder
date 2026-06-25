@@ -141,7 +141,10 @@ export function computeLayout(
     edgesep,
     marginx: PADDING,
     marginy: PADDING,
-    ranker: 'tight-tree',
+    // longest-path aligns tiered architectures (edge→app→data) onto clean ranks
+    // and empirically produces far fewer edge crossings than network-simplex /
+    // tight-tree for these graphs.
+    ranker: 'longest-path',
   });
 
   g.setDefaultEdgeLabel(() => ({}));
