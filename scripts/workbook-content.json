@@ -193,9 +193,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| summarize Value = dcount(client_CountryOrRegion)\n| extend Label = \"Countries\"",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| where not(isMsEgress)\n| summarize Value = dcount(client_CountryOrRegion)\n| extend Label = \"External countries\"",
         "size": 4,
-        "title": "Unique Countries",
+        "title": "External Countries",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
@@ -282,7 +282,7 @@
     {
       "type": 1,
       "content": {
-        "json": "## Geographic Insights"
+        "json": "## Geographic Insights\n> Geography is derived from the browser's **egress IP**. Microsoft-managed devices route through Microsoft / Azure egress (Global Secure Access), so they geolocate to Azure datacenters (e.g. Boydton, VA) rather than their real location. The tiles below count distinct **users by `user_Id`** and exclude Microsoft-network egress so external geography is truthful."
       },
       "name": "geo-header"
     },
@@ -290,9 +290,24 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| summarize Count = count(), Users = dcount(user_Id) by client_CountryOrRegion\n| order by Count desc",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| summarize Users = dcount(user_Id) by Origin = iff(isMsEgress, 'Microsoft network (geo unreliable)', 'External')\n| order by Users desc",
         "size": 0,
-        "title": "Users by Country",
+        "title": "Audience split \u2014 real users by egress",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "100",
+      "name": "audience-split"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| where not(isMsEgress)\n| summarize Count = count(), Users = dcount(user_Id) by client_CountryOrRegion\n| order by Count desc",
+        "size": 0,
+        "title": "External Users by Country",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
@@ -323,9 +338,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| summarize\n    Events = count(),\n    Users = dcount(user_Id),\n    UniqueIPs = dcount(client_IP),\n    IPs = make_set(client_IP, 5)\n  by client_CountryOrRegion, client_City\n| order by Events desc\n| take 50",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| where not(isMsEgress)\n| summarize\n    Events = count(),\n    Users = dcount(user_Id),\n    UniqueIPs = dcount(client_IP),\n    IPs = make_set(client_IP, 5)\n  by client_CountryOrRegion, client_City\n| order by Events desc\n| take 50",
         "size": 0,
-        "title": "User Locations \u2014 Country / City / IP",
+        "title": "External User Locations \u2014 Country / City / IP",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
