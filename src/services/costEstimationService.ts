@@ -24,6 +24,7 @@ import {
   getFallbackPricing,
   getFallbackDefaultLevel,
   getFallbackDefaultSku,
+  getReserved1yrDiscount,
   hasPricingData,
   USAGE_BASED_SERVICES 
 } from '../data/azurePricing';
@@ -208,11 +209,20 @@ export function setCustomPricing(
 }
 
 /**
+ * Billing term used for cost estimates.
+ * - 'payg': pay-as-you-go list price
+ * - 'reserved1yr': 1-year reserved/savings-plan (discount applied to
+ *   reservation-eligible, non-usage-based services only)
+ */
+export type PricingMode = 'payg' | 'reserved1yr';
+
+/**
  * Calculate total cost breakdown for all nodes
  */
 export function calculateCostBreakdown(
   nodes: Node[],
-  region?: string
+  region?: string,
+  pricingMode: PricingMode = 'payg'
 ): CostBreakdown {
   const targetRegion = region || getActiveRegion();
   // Initialize breakdown
@@ -236,7 +246,13 @@ export function calculateCostBreakdown(
     
     if (!pricing) return;
 
-    const cost = pricing.estimatedCost * pricing.quantity;
+    let cost = pricing.estimatedCost * pricing.quantity;
+    // Apply 1-year reserved discount to reservation-eligible, non-usage-based
+    // services. Usage-based/consumption services stay at PAYG.
+    if (pricingMode === 'reserved1yr' && !pricing.isUsageBased) {
+      const discount = getReserved1yrDiscount(node.data.label || '');
+      if (discount > 0) cost = cost * (1 - discount);
+    }
     breakdown.totalMonthlyCost += cost;
 
     // Add to service breakdown

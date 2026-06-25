@@ -47,7 +47,7 @@ import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
 import { layoutArchitecture as elkLayoutArchitecture } from './utils/elkLayoutEngine';
-import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing } from './services/costEstimationService';
+import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing, type PricingMode } from './services/costEstimationService';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS, RegionInfo } from './services/regionalPricingService';
 import JSZip from 'jszip';
@@ -151,6 +151,7 @@ function App() {
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
   const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
+  const [pricingMode, setPricingMode] = useState<PricingMode>('payg');
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -481,9 +482,9 @@ function App() {
 
   // Recalculate total cost whenever nodes change
   useEffect(() => {
-    const breakdown = calculateCostBreakdown(nodes);
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
     setTotalMonthlyCost(breakdown.totalMonthlyCost);
-  }, [nodes]);
+  }, [nodes, pricingMode]);
 
   // Handle region change
   const handleRegionChange = useCallback(async (region: AzureRegion) => {
@@ -1143,7 +1144,7 @@ function App() {
 
   const exportCostBreakdown = useCallback(() => {
     // Calculate the cost breakdown
-    const breakdown = calculateCostBreakdown(nodes);
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
     
     // Check if there's any cost data
     if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
@@ -1166,10 +1167,10 @@ function App() {
     URL.revokeObjectURL(url);
     recordExport('costs', fileName);
     trackExport('csv', nodes.filter(n => n.type === 'azureNode').length);
-  }, [nodes, recordExport]);
+  }, [nodes, recordExport, pricingMode]);
 
   const exportCostBreakdownZip = useCallback(async () => {
-    const breakdown = calculateCostBreakdown(nodes);
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
     if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
       alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
       return;
@@ -1181,7 +1182,7 @@ function App() {
     for (const rInfo of AVAILABLE_REGIONS) {
       try {
         const repricedNodes = await refreshAllNodePricing(nodes, rInfo.id);
-        const rb = calculateCostBreakdown(repricedNodes, rInfo.id);
+        const rb = calculateCostBreakdown(repricedNodes, rInfo.id, pricingMode);
         regionResults.push({ info: rInfo, total: rb.totalMonthlyCost, annual: rb.totalMonthlyCost * 12, breakdown: rb });
       } catch {
         // If a region fails to reprice (e.g. missing data), skip it gracefully
@@ -1474,7 +1475,7 @@ function App() {
     URL.revokeObjectURL(url);
     recordExport('costs', `${fileBase}-all-formats.zip`);
     trackExport('csv', azureServiceNodes.length);
-  }, [nodes, recordExport]);
+  }, [nodes, recordExport, pricingMode]);
 
   const applyFlowObject = useCallback(
     (flow: any) => {
@@ -2509,9 +2510,27 @@ function App() {
               <div className="toolbar-group">
                 <RegionSelector onRegionChange={handleRegionChange} />
                 {totalMonthlyCost > 0 && (
-                  <div className="cost-indicator" title="Total estimated monthly cost for all services">
-                    💰 {formatMonthlyCost(totalMonthlyCost)}
-                  </div>
+                  <>
+                    <div className="cost-indicator" title={`Total estimated monthly cost for all services (${pricingMode === 'reserved1yr' ? '1-year reserved' : 'pay-as-you-go'})`}>
+                      💰 {formatMonthlyCost(totalMonthlyCost)}
+                    </div>
+                    <div className="pricing-mode-toggle" role="group" aria-label="Pricing term">
+                      <button
+                        className={`pricing-mode-btn${pricingMode === 'payg' ? ' active' : ''}`}
+                        onClick={() => setPricingMode('payg')}
+                        title="Pay-as-you-go list pricing"
+                      >
+                        PAYG
+                      </button>
+                      <button
+                        className={`pricing-mode-btn${pricingMode === 'reserved1yr' ? ' active' : ''}`}
+                        onClick={() => setPricingMode('reserved1yr')}
+                        title="1-year reserved / savings-plan pricing (estimated discounts; applies to reservation-eligible services only)"
+                      >
+                        Reserved 1yr
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
 

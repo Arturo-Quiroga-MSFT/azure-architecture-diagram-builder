@@ -1242,6 +1242,39 @@ export function getFabricCapacityMonthly(
 }
 
 /**
+ * 1-year reserved discount (fraction OFF pay-as-you-go) for reservation-eligible
+ * services. Reservations/savings plans apply to provisioned compute-style
+ * resources; usage-based/consumption services (storage, bandwidth, OneLake,
+ * serverless) are NOT reservation-eligible and stay at PAYG. Values are
+ * representative 1-year Reserved Instance / Savings Plan discounts; Fabric is
+ * exact (matches FABRIC_CAPACITY_SKUS). Treat as estimates.
+ */
+export const RESERVED_1YR_DISCOUNT: Record<string, number> = {
+  'Virtual Machines': 0.37,
+  'Virtual Machine': 0.37,
+  'Azure Kubernetes Service': 0.37, // underlying node VMs
+  'AKS': 0.37,
+  'App Service': 0.36,
+  'App Services': 0.36,
+  'SQL Database': 0.35,
+  'Azure SQL Database': 0.35,
+  'Azure Cosmos DB': 0.35,
+  'Cosmos DB': 0.35,
+  'Azure Cache for Redis': 0.36,
+  'Azure Database for PostgreSQL': 0.34,
+  'PostgreSQL': 0.34,
+  'Azure Database for MySQL': 0.34,
+  'MySQL': 0.34,
+  'Azure Synapse Analytics': 0.28,
+  'Microsoft Fabric Capacity': 0.405, // exact: ~40.5% off PAYG
+};
+
+/** 1-year reserved discount fraction for a service (0 if not reservation-eligible). */
+export function getReserved1yrDiscount(serviceType: string): number {
+  return RESERVED_1YR_DISCOUNT[serviceType] || 0;
+}
+
+/**
  * Check if service has pricing data available
  */
 export function hasPricingData(serviceType: string): boolean {
