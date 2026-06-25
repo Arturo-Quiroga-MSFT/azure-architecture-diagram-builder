@@ -1,7 +1,6 @@
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env.local.env.*.local
 .env.appinsights
 .env.build
 .env.mcp-instance
@@ -56,3 +55,8 @@ blog-post/
 DONOTTRACK/
 Copilot-Studio-Stuff/
 model-mgmt/
+
+# Scout test artifacts — keep the README and the sample, ignore generated exports
+SCOUT/*
+!SCOUT/README.md
+!SCOUT/test-1.md
