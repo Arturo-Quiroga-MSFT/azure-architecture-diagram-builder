@@ -112,12 +112,86 @@ az deployment group create \
   soft-confirms; the telemetry event still fires. Telemetry can therefore show more
   events than Cosmos has documents if a write ever fails.
 
+## Resilience: comment recovery when the Cosmos write fails
+
+The durable comment **text** is written only to Cosmos (`/api/feedback`); the
+standard `User_Feedback` telemetry event intentionally carries only rating,
+category, and comment **length** — never the text.
+
+This created a silent data-loss risk: if Cosmos is unreachable (most commonly
+when a **nightly network policy disables the account's public access**), the
+write fails, the client swallows the error, and the workbook still lights up from
+telemetry — so the comment text is lost without any signal. This happened June
+18–24, 2026 (incl. a 278-char comment that could not be recovered).
+
+**Fix (shipped):** when the `/api/feedback` write does not succeed (any non-2xx,
+or a network error), the client fires a **distinct** `Feedback_Persist_Failed`
+event that **includes the full comment text** (capped at 2000 chars) plus a
+`reason` tag (`http_500`, `http_503`, `network_error`). The comment is therefore
+recoverable from App Insights even when Cosmos never received it. See
+[../src/services/feedbackService.ts](../src/services/feedbackService.ts) and
+`trackFeedbackPersistFailed()` in
+[../src/services/telemetryService.ts](../src/services/telemetryService.ts).
+
+### KQL — recover comments that failed to persist
+
+Run in App Insights → **Logs** (adjust the time range as needed):
+
+```kql
+customEvents
+| where name == 'Feedback_Persist_Failed'
+| where timestamp > ago(30d)
+| project timestamp,
+          rating       = toint(customDimensions.rating),
+          category     = tostring(customDimensions.category),
+          comment      = tostring(customDimensions.comment),
+          reason       = tostring(customDimensions.reason),
+          diagramName  = tostring(customDimensions.diagramName),
+          model        = tostring(customDimensions.model)
+| order by timestamp desc
+```
+
+### KQL — all comment activity (persisted + failed), unified
+
+`User_Feedback` (length only, persisted to Cosmos) and `Feedback_Persist_Failed`
+(full text, not in Cosmos) combined:
+
+```kql
+union
+  (customEvents | where name == 'User_Feedback'
+     | extend persisted = true, comment = ''),
+  (customEvents | where name == 'Feedback_Persist_Failed'
+     | extend persisted = false, comment = tostring(customDimensions.comment))
+| where timestamp > ago(30d)
+| where tobool(customDimensions.hasComment) == true or persisted == false
+| project timestamp, persisted,
+          rating   = toint(customDimensions.rating),
+          category = tostring(customDimensions.category),
+          comment, reason = tostring(customDimensions.reason)
+| order by timestamp desc
+```
+
+> The persisted comments themselves live in Cosmos — read them with
+> `cd server && node read-feedback.js` (newest first) or `--json`.
+
+### Durable fixes (still open)
+
+The telemetry fallback prevents data loss but does not keep Cosmos reachable. To
+make writes always succeed during the nightly lockout, either:
+
+1. **Policy exemption** — exempt `aqcosmosdb007` from the policy that disables
+   public access (fastest; acceptable for a single-owner dev/demo account), or
+2. **Private connectivity** — a Cosmos **Private Endpoint** + a **VNet-integrated
+   Container Apps environment** (enterprise-correct; requires recreating the
+   environment, since VNet integration is set at creation time).
+
 ## Files
 
 | File | Purpose |
 |---|---|
 | [../src/components/FeedbackModal.tsx](../src/components/FeedbackModal.tsx) | Modal UI + submit logic |
-| [../src/services/telemetryService.ts](../src/services/telemetryService.ts) | `trackFeedback()` → App Insights |
+| [../src/services/feedbackService.ts](../src/services/feedbackService.ts) | `submitFeedback()` — Cosmos write + telemetry fallback on failure |
+| [../src/services/telemetryService.ts](../src/services/telemetryService.ts) | `trackFeedback()` + `trackFeedbackPersistFailed()` → App Insights |
 | [../server/token-server.js](../server/token-server.js) | `POST /api/feedback` → Cosmos |
 | [../server/read-feedback.js](../server/read-feedback.js) | CLI read utility (comments) |
 | [../infra/feedback-workbook.json](../infra/feedback-workbook.json) | Trends workbook (ARM) |
