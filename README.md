@@ -149,6 +149,9 @@ Get instant cost estimates across **8 Azure regions**:
 - 🇺🇸 East US 2 · 🇦🇺 Australia East · 🇨🇦 Canada Central · 🇧🇷 Brazil South · 🇲🇽 Mexico Central · 🇳🇱 West Europe · 🇸🇪 Sweden Central · 🇸🇬 Southeast Asia
 
 Features include:
+- **PAYG ↔ Reserved (1-year) toggle** — flip the entire estimate between pay-as-you-go and 1-year reserved pricing. The reserved discount applies only to reservation-eligible services (VMs, AKS, SQL, Cosmos, App Service, Redis, …) and is **exact for Microsoft Fabric Capacity**; usage-based services stay at PAYG.
+- **“Prices as of” stamp** — every cost export records the pricing-data refresh date and the selected billing term.
+- **True per-region meters** — pricing is pre-fetched per region from the Azure Retail Prices API (refresh anytime with `npm run pricing:refresh`), including per-region **Microsoft Fabric** capacity (CU) and OneLake storage rates.
 - Color-coded legend (green/yellow/red based on cost thresholds)
 - SKU and tier information for each service
 - **Export Costs (CSV)** — per-service cost breakdown spreadsheet for the active region
@@ -161,6 +164,18 @@ Features include:
   - `.csv` — spreadsheet for Excel
   - `.json` — structured breakdown for programmatic use
   - `-multiregion-comparison.csv` — per-service pricing across all 8 regions for side-by-side comparison
+
+### 🟦 Microsoft Fabric Support
+Design **Microsoft Fabric** data platforms alongside core Azure services:
+- **~21 Fabric items** with official Fabric icons — Fabric Capacity, OneLake, Lakehouse, Warehouse, Eventhouse, Eventstream, KQL Database, Fabric Notebook, Dataflow Gen2, Semantic Model, Power BI Report, Mirrored Database, and more
+- **Capacity-aware costing** — Fabric Capacity (F-SKU) carries the cost; compute items show an **“incl. capacity”** badge instead of double-counting, and OneLake is billed as usage-based storage. The full F2→F2048 ladder (PAYG + 1-yr reserved) is built in.
+- **Fabric example prompts** — medallion lakehouse, real-time intelligence, and Direct Lake Power BI scenarios
+
+### ❓ Help & Learn Panel
+An in-app **Help** button opens a centered guide so new users can get productive fast — Quick Start, a feature tour, example prompts, tips & FAQ, and resource links. (Opening it fires a `Help_Opened` telemetry event.)
+
+### 💬 User Feedback
+A built-in feedback widget captures a rating, category, and free-text comment. Submissions persist to **Azure Cosmos DB** (keyless, managed-identity auth). If Cosmos is temporarily unreachable, the comment text is captured in telemetry as a fallback so feedback is never silently lost.
 
 ### 🧠 Smart Layout Engine
 - **Dagre-based hierarchical layout** with compound node support
@@ -176,8 +191,8 @@ Features include:
 - Cloud sync with shareable URLs
 
 ### 🎨 Professional Diagramming
-- **714 Official Azure Icons** — Complete service library across 29 categories
-- **68 AI-mapped services** — with pricing, categories, and icon resolution
+- **714 Official Azure Icons + Microsoft Fabric icon set** — complete service library across 29 categories, now including Microsoft Fabric
+- **89+ AI-mapped services** — with pricing, categories, and icon resolution (including ~21 Microsoft Fabric items)
 - **Smart Grouping** — Logical organization (Frontend, Backend, Data, Security)
 - **Editable Connections** — Labels, animations, custom styling
 - **Alignment Tools** — Professional layout assistance
@@ -280,43 +295,48 @@ sequenceDiagram
     participant U as User
     participant UI as React UI
     participant MS as Model Settings Store
+    participant TS as Token Server (/api)
     participant AI as Azure OpenAI
-    participant P as Pricing API
-    participant S as Storage
+    participant L as Microsoft Learn MCP
+    participant P as Azure Retail Prices API
+    participant DB as Cosmos DB
 
     U->>UI: Describe architecture
     UI->>MS: Get model selection
     MS-->>UI: Selected model + settings
-    UI->>AI: Generate request (selected model)
-    AI-->>UI: Diagram specification (JSON)
-    UI->>UI: Render nodes & connections
-    UI->>UI: Auto-layout with Dagre + overlap resolution
-    UI->>P: Fetch regional pricing
-    P-->>UI: Cost data (8 regions)
-    UI->>UI: Display cost legend
-    
-    U->>UI: Upload architecture image
-    UI->>AI: Analyze image (GPT vision)
-    AI-->>UI: Architecture description
-    UI->>AI: Generate from description
-    AI-->>UI: Diagram specification (JSON)
-    
+    UI->>TS: POST /api/openai (no key in browser)
+    TS->>AI: Generate request (managed identity / key fallback)
+    AI-->>TS: Diagram specification (JSON)
+    TS-->>UI: Diagram specification (JSON)
+    UI->>UI: Render nodes & auto-layout (Dagre + overlap resolution)
+    UI->>P: Fetch regional pricing (pre-fetched per region)
+    P-->>UI: Cost data (8 regions, PAYG / Reserved)
+
+    U->>UI: Refine via Architecture Chat
+    UI->>TS: POST /api/openai (modification prompt, live canvas)
+    TS->>AI: Apply change
+    AI-->>TS: Updated specification
+    TS-->>UI: Updated diagram + change summary
+
     U->>UI: Validate architecture
-    UI->>MS: Get validator model
-    UI->>AI: WAF validation request
-    AI-->>UI: Recommendations by pillar
-    U->>UI: Select improvements
-    UI->>AI: Regenerate with improvements
-    AI-->>UI: Updated architecture
-    
+    UI->>TS: POST /api/openai (WAF validation)
+    TS->>AI: Validation request
+    AI-->>TS: Recommendations by pillar
+    TS-->>UI: Findings + score
+
     U->>UI: Generate deployment guide
-    UI->>MS: Get deploy model
-    UI->>AI: Documentation request
-    AI-->>UI: Guide + Bicep templates
-    
-    U->>UI: Save/Share
-    UI->>S: Store diagram
-    S-->>UI: Shareable URL
+    UI->>TS: POST /api/docs-search (grounding)
+    TS->>L: Search Microsoft Learn
+    L-->>TS: Cited doc snippets
+    TS-->>UI: Sources
+    UI->>TS: POST /api/openai (guide + Bicep, grounded)
+    TS->>AI: Documentation request
+    AI-->>TS: Guide + Bicep templates
+    TS-->>UI: Guide + references
+
+    U->>UI: Submit feedback
+    UI->>TS: POST /api/feedback
+    TS->>DB: Persist (managed identity)
 ```
 
 ### Component Architecture
@@ -326,68 +346,93 @@ graph TB
     subgraph Frontend["Frontend (React + TypeScript)"]
         App[App.tsx]
         App --> Canvas[React Flow Canvas]
-        App --> Palette[Icon Palette]
         App --> AIGen[AI Generator Modal]
-        App --> ImgUpload[Image Uploader]
-        App --> CompareM[Compare Models Modal]
-        App --> CompareV[Compare Validation Modal]
+        App --> Chat[Architecture Chat Panel]
+        App --> Help[Help & Learn Panel]
         App --> Validation[Validation Modal]
         App --> Deploy[Deployment Guide Modal]
-        App --> Version[Version History]
-        App --> Workflow[Workflow Panel]
-        
-        Canvas --> AzureNode[Azure Node Component]
-        Canvas --> GroupNode[Group Node Component]
-        Canvas --> EditableEdge[Editable Edge]
-        Canvas --> Legend[Cost Legend]
-        Canvas --> TitleBlock[Title Block]
-        Canvas --> ModelBadge[Model Badge]
-        Canvas --> RefViewer[Reference Image Viewer]
-        Canvas --> Layout[Layout Engine + Overlap Resolution]
+        App --> Feedback[Feedback Widget]
+        Canvas --> AzureNode[Azure Node + real icons]
+        Canvas --> Layout[Layout Engine + overlap resolution]
     end
 
     subgraph Services["Services Layer"]
         azureOpenAI[azureOpenAI.ts]
-        costService[costEstimationService.ts]
-        validator[architectureValidator.ts]
-        wafDetector[wafPatternDetector.ts]
-        deployGen[deploymentGuideGenerator.ts]
-        pricing[regionalPricingService.ts]
-        drawio[drawioExporter.ts]
-        modelStore[modelSettingsStore.ts]
-        telemetry[telemetryService.ts]
         apiHelper[apiHelper.ts]
-        avatarPresenter[avatarPresenter.ts]
+        modificationPrompt[modificationPrompt.ts]
+        costService[costEstimationService.ts]
+        pricing[regionalPricingService.ts]
+        validator[architectureValidator.ts]
+        deployGen[deploymentGuideGenerator.ts]
+        docsGrounding[docsGroundingService.ts]
+        feedbackService[feedbackService.ts]
+        telemetry[telemetryService.ts]
+    end
+
+    subgraph Server["Server (co-located with nginx)"]
+        TokenServer["token-server.js<br/>/api/openai · /api/docs-search<br/>/api/feedback · /api/speech-token"]
     end
 
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI API<br/>12 Models]
+        OpenAI[Azure OpenAI<br/>12 models]
+        LearnMCP[Microsoft Learn MCP]
         PricingAPI[Azure Retail Prices API]
+        Cosmos[(Azure Cosmos DB)]
         AppInsights[Application Insights]
-        SpeechAPI[Azure Speech Service<br/>TTS Avatar]
+        SpeechAPI[Azure Speech]
     end
 
     AIGen --> azureOpenAI
-    ImgUpload --> azureOpenAI
+    Chat --> modificationPrompt --> azureOpenAI
     Validation --> validator
-    Deploy --> deployGen
-    Legend --> costService
+    Deploy --> deployGen --> docsGrounding
+    Feedback --> feedbackService
     costService --> pricing
-    AIGen --> modelStore
-    ImgUpload --> modelStore
-    Validation --> modelStore
-    Deploy --> modelStore
-    
-    azureOpenAI --> OpenAI
+
+    azureOpenAI --> apiHelper --> TokenServer
+    validator --> TokenServer
+    deployGen --> TokenServer
+    docsGrounding --> TokenServer
+    feedbackService --> TokenServer
     pricing --> PricingAPI
     telemetry --> AppInsights
-    avatarPresenter --> SpeechAPI
-    CompareM --> avatarPresenter
+
+    TokenServer --> OpenAI
+    TokenServer --> LearnMCP
+    TokenServer --> Cosmos
+    TokenServer --> SpeechAPI
 
     style Frontend fill:#61DAFB,color:#000
     style Services fill:#3178C6,color:#fff
+    style Server fill:#412991,color:#fff
     style External fill:#0078D4,color:#fff
 ```
+
+---
+
+## 🔌 MCP Server & Microsoft Scout Integration
+
+The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server/`) that exposes its core capabilities as tools, so any MCP-compatible client — including **[Microsoft Scout](https://learn.microsoft.com/en-us/microsoft-scout/get-started)** — can design, validate, cost, and render Azure architectures conversationally.
+
+### Tools
+
+| Tool | Purpose |
+|------|---------|
+| `list_services` | Browse the Azure service catalog (categories, aliases, pricing, cost ranges) |
+| `validate_architecture` | Score a design against Well-Architected Framework rules (deterministic, no LLM) |
+| `estimate_costs` | Estimate monthly cost for a set of services |
+| `generate_manifest` | Emit an `az prototype` interchange manifest |
+| `get_waf_rules` | Query WAF rules by pillar or service type |
+| `render_diagram` | Render a diagram as SVG/HTML — with **real Azure icons**, smooth edges, and tiered layout |
+| `export_reactflow_scene` | Produce a React Flow scene for the web app |
+
+### Transport & auth
+- **Dual transport** — stdio (local clients) and **Streamable-HTTP** (remote clients). Launch HTTP with `npm run start:http` (or `MCP_TRANSPORT=http`).
+- **Bearer-token auth** — set `MCP_AUTH_TOKEN`; the server enforces `Authorization: Bearer <token>` with a constant-time comparison. A `/healthz` probe and a pre-auth liveness response on `/mcp` keep connector wizards happy.
+- **Ops-ready** — stateful sessions (one transport per `mcp-session-id`), CORS preflight, graceful shutdown.
+
+### Use it from Scout
+Register the deployed MCP endpoint (`https://<your-mcp-host>/mcp`) as a **custom remote MCP server** in Scout's Extensions panel with your Bearer token (stored encrypted). See [`SCOUT/README.md`](SCOUT/README.md) for the walkthrough, and deploy an isolated MCP instance with [`scripts/deploy-mcp-instance.sh`](scripts/deploy-mcp-instance.sh).
 
 ---
 
@@ -729,6 +774,9 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 | **APIs** | Azure Retail Prices API |
 | **Export** | JSZip, Draw.io XML format, PptxGenJS (client-side PPTX) |
 | **Avatar** | Azure Cognitive Services Speech SDK (TTS Avatar), `DefaultAzureCredential` (keyless), Express.js token server |
+| **MCP** | Model Context Protocol server (`@modelcontextprotocol/sdk`), stdio + Streamable-HTTP, Bearer auth — consumable by Microsoft Scout |
+| **Persistence** | Azure Cosmos DB (keyless / managed identity) for diagrams & feedback |
+| **Docs grounding** | Microsoft Learn MCP endpoint (via server-side `/api/docs-search` proxy) |
 | **Deployment** | Docker, Azure Container Apps |
 
 ---
@@ -752,10 +800,13 @@ azure-diagrams/
 │   │   ├── Legend.tsx / TitleBlock.tsx
 │   │   └── ...
 │   ├── services/             # Business logic
-│   │   ├── azureOpenAI.ts    # AI integration (Responses + Chat Completions API)
+│   │   ├── azureOpenAI.ts    # AI integration (Responses + Chat Completions API), via /api/openai proxy
 │   │   ├── architectureValidator.ts  # WAF validation with ModelOverride support
 │   │   ├── deploymentGuideGenerator.ts  # Guides & Bicep generation
-│   │   ├── costEstimationService.ts  # Pricing engine
+│   │   ├── docsGroundingService.ts  # Microsoft Learn grounding for deployment guides
+│   │   ├── modificationPrompt.ts  # Architecture Chat: live-canvas modification prompts
+│   │   ├── feedbackService.ts  # User feedback (Cosmos + telemetry fallback)
+│   │   ├── costEstimationService.ts  # Pricing engine (PAYG / Reserved)
 │   │   ├── drawioExporter.ts  # Draw.io export
 │   │   ├── pptxExporter.ts   # PowerPoint slide export (PptxGenJS, dark/light theme)
 │   │   ├── regionalPricingService.ts  # Multi-region pricing
@@ -781,11 +832,16 @@ azure-diagrams/
 │   │   └── modelNaming.ts    # Model display names
 │   └── App.tsx               # Main application
 ├── server/                   # Token server (co-located with nginx in the container)
-│   └── token-server.js       # Express.js: /api/speech-token + /api/ice-token + /api/openai + /api/docs-search (Managed Identity, keyless)
-├── scripts/                  # Deployment scripts
+│   └── token-server.js       # Express.js: /api/speech-token + /api/ice-token + /api/openai + /api/docs-search + /api/feedback (Managed Identity, keyless)
+├── scripts/                  # Deployment & data scripts
 │   ├── deploy_aca.sh         # Configurable ACA deployment (reads from .env)
-│   └── update_aca.sh         # Author's ACA deployment (hardcoded resources)
+│   ├── update_aca.sh         # Author's ACA deployment (hardcoded resources)
+│   ├── deploy-mcp-instance.sh  # Deploy the isolated MCP server ACA instance
+│   └── fetch-multi-region-pricing.sh  # Refresh per-region pricing (npm run pricing:refresh)
 ├── Azure_Public_Service_Icons/  # 714 official Azure icons (29 categories)
+├── mcp-server/               # MCP server (7 tools, stdio + HTTP, Bearer auth)
+│   └── src/                  # serviceCatalog, wafDetector, layoutEngine, svgRenderer, htmlRenderer
+├── SCOUT/                    # Microsoft Scout integration notes & sample session
 ├── DOCS/                     # Documentation
 └── Dockerfile               # Container configuration
 ```
@@ -803,6 +859,22 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### June 2026 — MCP Server, Microsoft Scout, Fabric & Pricing Upgrades
+
+#### 🔌 MCP server + Microsoft Scout
+The Diagram Builder is now an **MCP server** (7 tools: list / validate / estimate / render / export / manifest / WAF) with stdio + Streamable-HTTP transports and Bearer auth, registerable as a remote extension in **Microsoft Scout**. SVG rendering gained **real Azure icons** (embedded glyphs, emoji fallback), smooth bezier edges, tighter layout, and far fewer edge crossings.
+
+#### 🟦 Microsoft Fabric support
+~21 Fabric items with official icons, capacity-aware costing (F2→F2048 ladder, “incl. capacity” badges), per-region Fabric/OneLake meters, and Fabric example prompts.
+
+#### 💰 Pricing upgrades
+PAYG ↔ Reserved (1-year) toggle, a “Prices as of” stamp on exports, true per-region meters refreshable with `npm run pricing:refresh`, and corrected OneLake/Fabric rates.
+
+#### 🔒 Security & resilience
+All Azure OpenAI traffic is now **proxied server-side** (`/api/openai`) — the key never reaches the browser. Deployment guides are **grounded in Microsoft Learn** (`/api/docs-search`). A new **Help & Learn** panel and **User Feedback** (Cosmos DB + telemetry fallback) round out the release.
+
+---
 
 ### June 2026 — Blueprint Diagrams (BETA) & 12-Model Lineup
 
