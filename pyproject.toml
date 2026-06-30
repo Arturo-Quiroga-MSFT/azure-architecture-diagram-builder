@@ -1,0 +1,13 @@
+[project]
+name = "azure-diagrams-scripts"
+version = "0.1.0"
+description = "Python helper scripts for the Azure Architecture Diagram Builder (pricing fetch, cost reports, workbook patching, image/table styling)."
+requires-python = ">=3.13"
+dependencies = [
+    # Used by scripts/fit-hero.py for image trimming/resizing.
+    "pillow>=11.0",
+]
+
+[tool.uv]
+# These are standalone utility scripts, not an installable package.
+package = false
