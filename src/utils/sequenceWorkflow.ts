@@ -282,7 +282,32 @@ export function sequenceWorkflowSvg(svgText: string, options: SequenceWorkflowOp
   svg = svg.replace(/(<svg\b[^>]*\bheight=")\d+(")/, `$1${newH}$2`);
   svg = svg.replace(/(<svg\b[^>]*\bviewBox="0 0 \d+ )\d+(")/, `$1${newH}$2`);
   svg = svg.replace(/(<svg\b[^>]*>)/, `$1<g transform="translate(0,${strip})">`);
-  svg = svg.replace(/<\/svg>\s*$/, `</g>${captions}</svg>`);
+
+  // Play/Pause control: a button in the top strip + click-anywhere toggle. The
+  // embedded script runs when the SVG is opened as a document in a browser and
+  // calls pause/unpauseAnimations() on every <svg> (root + nested edges layer).
+  // Degrades gracefully: where scripts don't run, the animation just keeps
+  // playing. (Intentionally NOT added to the offline .cjs, whose SVG feeds the
+  // GIF — a raster can't pause, so the button would be dead pixels there.)
+  const cx = W - 52;
+  const cy = bandY + 30;
+  const controls =
+    `<g id="wf-controls" style="cursor:pointer" font-family="Segoe UI, Arial, sans-serif">` +
+    `<text x="${cx - 34}" y="${cy + 5}" text-anchor="end" fill="#93c5fd" font-size="16">Click to pause / resume</text>` +
+    `<circle cx="${cx}" cy="${cy}" r="20" fill="#0b1220" stroke="#4dabf7" stroke-width="2"/>` +
+    `<g id="wf-pause-icon" fill="#4dabf7"><rect x="${cx - 7}" y="${cy - 10}" width="5" height="20" rx="1.5"/><rect x="${cx + 3}" y="${cy - 10}" width="5" height="20" rx="1.5"/></g>` +
+    `<g id="wf-play-icon" fill="#4dabf7" display="none"><path d="M ${cx - 6} ${cy - 11} L ${cx - 6} ${cy + 11} L ${cx + 12} ${cy} Z"/></g>` +
+    `</g>`;
+  const script =
+    `<script type="text/javascript">(function(){var paused=false;` +
+    `function all(){return document.querySelectorAll('svg');}` +
+    `function apply(){all().forEach(function(s){try{paused?s.pauseAnimations():s.unpauseAnimations();}catch(e){}});` +
+    `var pi=document.getElementById('wf-pause-icon'),pl=document.getElementById('wf-play-icon');` +
+    `if(pi)pi.setAttribute('display',paused?'none':'inline');` +
+    `if(pl)pl.setAttribute('display',paused?'inline':'none');}` +
+    `function toggle(){paused=!paused;apply();}` +
+    `var r=document.querySelector('svg');if(r)r.addEventListener('click',toggle);})();</script>`;
+  svg = svg.replace(/<\/svg>\s*$/, `</g>${captions}${controls}${script}</svg>`);
   void TOTAL;
   return svg;
 }
