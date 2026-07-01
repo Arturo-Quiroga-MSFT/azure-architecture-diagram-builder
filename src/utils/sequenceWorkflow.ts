@@ -274,8 +274,15 @@ export function sequenceWorkflowSvg(svgText: string, options: SequenceWorkflowOp
   });
   captions += `</g>`;
 
-  svg = svg.replace(/<\/svg>\s*$/, `${captions}</svg>`);
-  // (cycle length TOTAL is implicit in the SMIL begins; kept for callers/tests)
+  // Reserve a strip at the top for the caption and push the whole diagram down,
+  // so the caption never overlaps the canvas (the full diagram stays visible).
+  const strip = bandH + 40;
+  const H = dimMatch ? parseInt(dimMatch[2], 10) : 1107;
+  const newH = H + strip;
+  svg = svg.replace(/(<svg\b[^>]*\bheight=")\d+(")/, `$1${newH}$2`);
+  svg = svg.replace(/(<svg\b[^>]*\bviewBox="0 0 \d+ )\d+(")/, `$1${newH}$2`);
+  svg = svg.replace(/(<svg\b[^>]*>)/, `$1<g transform="translate(0,${strip})">`);
+  svg = svg.replace(/<\/svg>\s*$/, `</g>${captions}</svg>`);
   void TOTAL;
   return svg;
 }
