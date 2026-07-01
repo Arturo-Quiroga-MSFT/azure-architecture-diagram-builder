@@ -17,6 +17,8 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { captureDiagramAsPng, captureDiagramAsSvg } from './utils/captureCanvas';
+import { animateEdgeFlow } from './utils/animateEdges';
+import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
@@ -89,7 +91,7 @@ const edgeTypes = {
   editableEdge: EditableEdge,
 };
 
-type ExportHistoryKind = 'png' | 'svg' | 'costs' | 'json' | 'drawio' | 'pptx' | 'html';
+type ExportHistoryKind = 'png' | 'svg' | 'animated-svg' | 'workflow-animation' | 'costs' | 'json' | 'drawio' | 'pptx' | 'html';
 
 type ExportHistoryItem = {
   id: string;
@@ -1064,6 +1066,82 @@ function App() {
       }
     }, 800);
   }, [reactFlowInstance, recordExport, nodes]);
+
+  // Export as an Animated SVG: same vector capture as exportAsSvg, but with
+  // flowing data-flow circles injected onto each edge. Pure client-side — the
+  // motion is carried by the SVG (open in a browser to view). For README/Teams
+  // surfaces that strip SVG animation, export a GIF/WebP instead.
+  const exportAsAnimatedSvg = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
+      return;
+    }
+
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+    setTimeout(async () => {
+      try {
+        const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: '#f8fafc',
+          excludePanels: true,
+        });
+        const animatedSvg = animateEdgeFlow(svgText);
+
+        const blob = new Blob([animatedSvg], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = generateModelFilename('azure-diagram-animated', 'svg');
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('animated-svg', fileName);
+        trackExport('animated-svg', nodes.filter(n => n.type === 'azureNode').length);
+      } catch (err) {
+        console.error('Error exporting animated SVG:', err);
+        alert('Failed to export animated SVG. Please try again.');
+      }
+    }, 800);
+  }, [reactFlowInstance, recordExport, nodes]);
+
+  // Export a SEQUENCED "workflow animation" SVG: plays the diagram's workflow
+  // steps chronologically (one edge flows at a time) with a caption per step and
+  // pulsing highlights on the involved nodes. Client-side; the motion is carried
+  // by the SVG (open in a browser). Requires a workflow on the diagram.
+  const exportWorkflowAnimation = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
+      return;
+    }
+    if (!workflow || workflow.length === 0) {
+      alert('This diagram has no workflow steps to animate. Generate a diagram with a workflow first.');
+      return;
+    }
+
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+    setTimeout(async () => {
+      try {
+        const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: '#f8fafc',
+          excludePanels: true,
+        });
+        const sequenced = sequenceWorkflowSvg(svgText, { nodes, edges, workflow, stepDurSec: 3 });
+
+        const blob = new Blob([sequenced], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = generateModelFilename('azure-diagram-workflow', 'svg');
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('workflow-animation', fileName);
+        trackExport('workflow-animation', nodes.filter(n => n.type === 'azureNode').length);
+      } catch (err) {
+        console.error('Error exporting workflow animation:', err);
+        alert('Failed to export workflow animation. Please try again.');
+      }
+    }, 800);
+  }, [reactFlowInstance, recordExport, nodes, edges, workflow]);
 
   const exportAsDrawio = useCallback(async () => {
     try {
@@ -2718,6 +2796,35 @@ function App() {
                       >
                         <Download size={18} />
                         Export SVG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportAsAnimatedSvg();
+                        }}
+                        title="Export as Animated SVG — flowing data-flow arrows (open in a browser to see motion)"
+                      >
+                        <Download size={18} />
+                        Export Animated SVG
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={workflow.length === 0}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportWorkflowAnimation();
+                        }}
+                        title={
+                          workflow.length > 0
+                            ? 'Export an animated SVG that plays the workflow step-by-step with captions'
+                            : 'No workflow steps in this diagram to animate'
+                        }
+                      >
+                        <Download size={18} />
+                        Export Workflow Animation
                       </button>
                       <button
                         className="toolbar-dropdown-item"
