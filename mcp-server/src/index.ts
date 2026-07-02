@@ -51,6 +51,7 @@ import {
 import { computeLayout } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
+import { estimateServiceCost, getPricingMeta, type PricingTerm, type CostTier } from './pricing.js';
 
 // Web app icon mapping (generated from src/data/serviceIconMapping.ts via
 // scripts/sync-icon-map.mjs). Used by export_reactflow_scene to emit icon
@@ -225,7 +226,7 @@ server.tool(
 
 server.tool(
   'estimate_costs',
-  'Estimate monthly Azure costs for a list of services. Uses the Diagram Builder pricing catalog with cost ranges. Returns per-service estimates, total cost, and a breakdown by category.',
+  'Estimate monthly Azure costs for a list of services using live-derived Azure Retail Prices (distilled per region). Returns NUMERIC per-service monthly costs (low/expected/high) plus a real total and by-category totals, honoring region and pricing term (pay-as-you-go or 1-year reserved). Services without distilled pricing data fall back to a catalog cost range and are flagged.',
   {
     services: z
       .array(
@@ -235,7 +236,7 @@ server.tool(
           tier: z
             .string()
             .optional()
-            .describe('Pricing tier. Allowed values: basic, standard, premium. Default: standard'),
+            .describe('Pricing tier. Allowed values: basic, standard, premium. Default: standard. Maps to low/expected/high SKU band.'),
           quantity: z.number().optional().describe('Number of instances (default: 1)'),
         }),
       )
@@ -244,47 +245,102 @@ server.tool(
       .string()
       .optional()
       .describe('Azure region (default: eastus2). Available: eastus2, swedencentral, westeurope, canadacentral, brazilsouth, australiaeast, southeastasia, mexicocentral'),
+    term: z
+      .string()
+      .optional()
+      .describe('Pricing term. Allowed values: payg (pay-as-you-go, default) or reserved1yr (1-year reserved / savings plan).'),
   },
-  async ({ services, region }) => {
+  async ({ services, region, term }) => {
     const targetRegion = region ?? 'eastus2';
-    const estimates: Array<{
-      name: string;
-      type: string;
-      tier: string;
-      quantity: number;
-      hasPricingData: boolean;
-      costRange: string;
-      estimatedMonthlyCost: string;
-    }> = [];
+    const targetTerm: PricingTerm = term === 'reserved1yr' ? 'reserved1yr' : 'payg';
 
-    const categoryCosts = new Map<string, { count: number; services: string[] }>();
+    const estimates: Array<Record<string, unknown>> = [];
+
+    // Numeric running totals across services that have pricing data.
+    const totals = { low: 0, expected: 0, high: 0 };
+    const categoryTotals = new Map<
+      string,
+      { count: number; services: string[]; expectedMonthlyCost: number }
+    >();
+    let anyPricingData = false;
+    let currency = 'USD';
+    let pricesAsOf: string | null = null;
+    const servicesMissingData: string[] = [];
 
     for (const svc of services) {
       const resolved = resolveServiceName(svc.type);
       const info = resolved ? SERVICE_CATALOG[resolved] : null;
-      const tier = svc.tier ?? 'standard';
-      const qty = svc.quantity ?? 1;
+      const tier = (svc.tier as CostTier) ?? 'standard';
+      const qty = svc.quantity && svc.quantity > 0 ? svc.quantity : 1;
 
-      estimates.push({
-        name: svc.name,
-        type: resolved ?? svc.type,
+      const cat = info?.category ?? 'other';
+      if (!categoryTotals.has(cat)) {
+        categoryTotals.set(cat, { count: 0, services: [], expectedMonthlyCost: 0 });
+      }
+      const catEntry = categoryTotals.get(cat)!;
+      catEntry.count += qty;
+      catEntry.services.push(svc.name);
+
+      // Prefer the explicit pricingServiceName from the catalog; fall back to
+      // the resolved catalog key or the raw type.
+      const pricingName = info?.pricingServiceName ?? resolved ?? svc.type;
+      const est = estimateServiceCost({
+        pricingServiceName: pricingName,
+        region: targetRegion,
+        term: targetTerm,
         tier,
         quantity: qty,
-        hasPricingData: info?.hasPricingData ?? false,
-        costRange: info?.costRange ?? 'Unknown',
-        estimatedMonthlyCost: info?.costRange ?? 'No pricing data available',
       });
 
-      if (info) {
-        const cat = info.category;
-        if (!categoryCosts.has(cat)) {
-          categoryCosts.set(cat, { count: 0, services: [] });
+      if (est.hasPricingData && est.monthlyCost) {
+        anyPricingData = true;
+        currency = est.currency ?? currency;
+        if (est.pricesAsOf && (!pricesAsOf || est.pricesAsOf > pricesAsOf)) {
+          pricesAsOf = est.pricesAsOf;
         }
-        const entry = categoryCosts.get(cat)!;
-        entry.count += qty;
-        entry.services.push(svc.name);
+        totals.low += est.monthlyCost.low * qty;
+        totals.expected += est.monthlyCost.expected * qty;
+        totals.high += est.monthlyCost.high * qty;
+        catEntry.expectedMonthlyCost += est.selectedMonthlyCost ? est.selectedMonthlyCost * qty : est.monthlyCost.expected * qty;
+
+        estimates.push({
+          name: svc.name,
+          type: resolved ?? svc.type,
+          category: cat,
+          tier,
+          quantity: qty,
+          hasPricingData: true,
+          currency: est.currency,
+          term: targetTerm,
+          sampleSku: est.sampleSku,
+          reservedApplied: est.reservedApplied ?? false,
+          monthlyCostPerInstance: est.monthlyCost,
+          selectedMonthlyCost: est.selectedMonthlyCost,
+          totalMonthlyCost: est.totalMonthlyCost,
+          pricesAsOf: est.pricesAsOf,
+        });
+      } else {
+        servicesMissingData.push(svc.name);
+        estimates.push({
+          name: svc.name,
+          type: resolved ?? svc.type,
+          category: cat,
+          tier,
+          quantity: qty,
+          hasPricingData: false,
+          catalogCostRange: info?.costRange ?? 'No pricing data available',
+          note: info?.isUsageBased
+            ? 'Usage-based service — see catalog range; numeric distillation pending (P0-1b: AI/Fabric/per-GB).'
+            : 'No distilled pricing for this service/region; using catalog range.',
+        });
       }
     }
+
+    const roundedTotals = {
+      low: Math.round(totals.low * 100) / 100,
+      expected: Math.round(totals.expected * 100) / 100,
+      high: Math.round(totals.high * 100) / 100,
+    };
 
     return {
       content: [
@@ -293,15 +349,27 @@ server.tool(
           text: JSON.stringify(
             {
               region: targetRegion,
+              term: targetTerm,
+              currency,
+              pricesAsOf,
               serviceCount: services.length,
-              estimates,
+              hasPricingData: anyPricingData,
+              totalMonthlyCost: roundedTotals,
               byCategory: Object.fromEntries(
-                [...categoryCosts.entries()].map(([cat, data]) => [
+                [...categoryTotals.entries()].map(([cat, data]) => [
                   cat,
-                  data,
+                  {
+                    count: data.count,
+                    services: data.services,
+                    expectedMonthlyCost: Math.round(data.expectedMonthlyCost * 100) / 100,
+                  },
                 ]),
               ),
-              note: 'Cost ranges are from the Diagram Builder pricing catalog. For precise estimates, use the Azure Pricing Calculator or the Diagram Builder UI with live pricing API.',
+              estimates,
+              servicesMissingData,
+              pricingSource: getPricingMeta(),
+              note:
+                'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). "expected" uses a representative (median) SKU; low/high span the SKU range. AI (Foundry), Microsoft Fabric, and per-GB storage services still report catalog ranges (P0-1b). For authoritative quotes use the Azure Pricing Calculator.',
             },
             null,
             2,

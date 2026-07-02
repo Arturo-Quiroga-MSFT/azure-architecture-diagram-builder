@@ -9,8 +9,9 @@
   },
   "scripts": {
     "sync:icons": "node scripts/sync-icon-map.mjs",
-    "prebuild": "npm run sync:icons",
-    "build": "tsc && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json",
+    "sync:pricing": "node scripts/sync-pricing-data.mjs",
+    "prebuild": "npm run sync:icons && npm run sync:pricing",
+    "build": "tsc && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json && cp src/pricing.generated.json dist/pricing.generated.json",
     "start": "node dist/index.js",
     "start:http": "node dist/index.js --http",
     "dev": "tsc --watch"
