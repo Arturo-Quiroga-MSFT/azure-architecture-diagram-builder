@@ -276,14 +276,17 @@ function createEdgeCell(
   const edgeType = edge.data?.connectionType || edge.type || 'sync';
   const dashStyle = getEdgeStyle(edgeType);
   
-  // Edge style with smooth curves and boxed labels (like React Flow)
-  // - edgeStyle=orthogonalEdgeStyle with curved=1 creates smooth rounded orthogonal paths
+  // Edge style: force ORTHOGONAL (right-angle) routing on export, regardless of
+  // the app's smooth/orthogonal setting — draw.io users expect square-cornered
+  // architecture connectors.
+  // - edgeStyle=orthogonalEdgeStyle routes with right angles
+  // - curved=0 + rounded=0 keeps corners square (no smooth/curved bends)
   // - labelBackgroundColor adds a white box behind the label
   // - labelBorderColor adds a border around the label box
   const labelBoxStyle = label 
     ? 'labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;' 
     : '';
-  const style = `edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;${labelBoxStyle}`;
+  const style = `edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;${labelBoxStyle}`;
   
   const labelAttr = label ? ` value="${escapeXml(String(label))}"` : ' value=""';
   
