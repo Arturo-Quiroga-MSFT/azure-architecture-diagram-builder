@@ -176,7 +176,12 @@ function rectShapeXml(id: number, pinX: number, pinY: number, w: number, h: numb
 }
 
 function connectorShapeXml(id: number, beginX: number, beginY: number, endX: number, endY: number, text: string): string {
-  const w = f(Math.hypot(endX - beginX, endY - beginY)) || 0.0001;
+  const dx = endX - beginX;
+  const dy = endY - beginY;
+  const w = f(Math.hypot(dx, dy)) || 0.0001;
+  // Rotate the horizontal geometry line so it points from begin to end. Without
+  // this the line renders flat/horizontal at the midpoint (Angle defaults to 0).
+  const angle = f(Math.atan2(dy, dx));
   return `    <Shape ID="${id}" Type="Shape" LineStyle="0" FillStyle="0" TextStyle="0">
       <Cell N="PinX" V="${f((beginX + endX) / 2)}"/>
       <Cell N="PinY" V="${f((beginY + endY) / 2)}"/>
@@ -184,6 +189,7 @@ function connectorShapeXml(id: number, beginX: number, beginY: number, endX: num
       <Cell N="Height" V="0"/>
       <Cell N="LocPinX" V="${f(w / 2)}"/>
       <Cell N="LocPinY" V="0"/>
+      <Cell N="Angle" V="${angle}"/>
       <Cell N="BeginX" V="${f(beginX)}"/>
       <Cell N="BeginY" V="${f(beginY)}"/>
       <Cell N="EndX" V="${f(endX)}"/>
