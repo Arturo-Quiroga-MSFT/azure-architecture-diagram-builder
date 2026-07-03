@@ -2938,10 +2938,10 @@ function App() {
                           setIsExportMenuOpen(false);
                           exportAsDrawio();
                         }}
-                        title="Export for Draw.io / diagrams.net (editable). For Visio: open the file at diagrams.net, then File → Export as → VSDX."
+                        title="Export for Draw.io / diagrams.net (editable diagram format)"
                       >
                         <Download size={18} />
-                        Export Draw.io (→ Visio via diagrams.net)
+                        Export Draw.io
                       </button>
                       <button
                         className="toolbar-dropdown-item"
