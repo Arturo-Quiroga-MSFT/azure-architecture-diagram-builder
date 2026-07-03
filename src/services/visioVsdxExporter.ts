@@ -207,6 +207,10 @@ function iconShapeXml(id: number, pinX: number, pinY: number, size: number, relI
       <Cell N="LocPinX" V="${f(size / 2)}"/>
       <Cell N="LocPinY" V="${f(size / 2)}"/>
       <Cell N="Angle" V="0"/>
+      <Cell N="ImgOffsetX" V="0"/>
+      <Cell N="ImgOffsetY" V="0"/>
+      <Cell N="ImgWidth" V="${f(size)}"/>
+      <Cell N="ImgHeight" V="${f(size)}"/>
       <ForeignData ForeignType="Bitmap" CompressionType="PNG">
         <Rel r:id="${relId}"/>
       </ForeignData>
