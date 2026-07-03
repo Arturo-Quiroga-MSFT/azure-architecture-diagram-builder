@@ -52,6 +52,7 @@ import { computeLayout } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
 import { estimateServiceCost, getPricingMeta, type PricingTerm, type CostTier } from './pricing.js';
+import { generateBicep } from './bicepGenerator.js';
 
 // Web app icon mapping (generated from src/data/serviceIconMapping.ts via
 // scripts/sync-icon-map.mjs). Used by export_reactflow_scene to emit icon
@@ -472,6 +473,71 @@ server.tool(
         {
           type: 'text' as const,
           text: JSON.stringify(manifest, null, 2),
+        },
+      ],
+    };
+  },
+);
+
+// ── Tool 4b: generate_bicep ────────────────────────────────────────────
+
+server.tool(
+  'generate_bicep',
+  'Generate deployable Bicep (IaC) from a list of services and connections, with Well-Architected secure defaults PRE-SET: App Service HTTPS-only + TLS 1.2 + managed identity + health check + autoscale + staging slot, Key Vault soft-delete + purge protection + RBAC, Storage HTTPS-only/no-public-access, Cosmos DB automatic failover + continuous backup, Redis TLS 1.2, plus managed-identity Key Vault role assignments. Resolves the config-level WAF findings that cannot be expressed in a diagram. Returns the Bicep text and a structured map of which WAF finding each setting resolves. Design-time only — never deploys.',
+  {
+    projectName: z.string().optional().describe('Project name (used for namePrefix). Default: workload'),
+    location: z.string().optional().describe('Azure region (default: eastus2)'),
+    iacTool: z
+      .string()
+      .optional()
+      .describe('IaC format. Allowed values: bicep (default), terraform (stub — not yet implemented).'),
+    services: z
+      .array(
+        z.object({
+          name: z.string().describe('Service instance name'),
+          type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
+          description: z.string().optional().describe('Service description'),
+          groupId: z.string().optional().describe('Group ID this service belongs to'),
+        }),
+      )
+      .describe('List of Azure services to generate Bicep for'),
+    connections: z
+      .array(
+        z.object({
+          from: z.string().describe('Source service name'),
+          to: z.string().describe('Target service name'),
+          label: z.string().optional().describe('Connection label'),
+        }),
+      )
+      .optional()
+      .describe('Connections between services'),
+  },
+  async ({ projectName, location, iacTool, services, connections }) => {
+    const result = generateBicep({
+      services,
+      connections,
+      projectName,
+      location,
+      iacTool,
+    });
+
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: JSON.stringify(
+            {
+              iacTool: result.iacTool,
+              servicesCovered: result.servicesCovered,
+              servicesGeneric: result.servicesGeneric,
+              findingsResolved: result.findingsResolved,
+              findingsResolvedCount: result.findingsResolved.length,
+              note: result.note,
+              bicep: result.bicep,
+            },
+            null,
+            2,
+          ),
         },
       ],
     };
