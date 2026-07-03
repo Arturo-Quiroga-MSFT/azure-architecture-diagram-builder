@@ -175,34 +175,81 @@ function rectShapeXml(id: number, pinX: number, pinY: number, w: number, h: numb
     </Shape>`;
 }
 
-function connectorShapeXml(id: number, beginX: number, beginY: number, endX: number, endY: number, text: string): string {
-  const dx = endX - beginX;
-  const dy = endY - beginY;
-  const w = f(Math.hypot(dx, dy)) || 0.0001;
-  // Rotate the horizontal geometry line so it points from begin to end. Without
-  // this the line renders flat/horizontal at the midpoint (Angle defaults to 0).
-  const angle = f(Math.atan2(dy, dx));
+/**
+ * Orthogonal connector: a 2-D polyline through right-angle waypoints (page-inch
+ * points). Drawn with absolute local geometry (no rotation) so multi-segment
+ * routes render correctly. Arrowhead on the final point.
+ */
+function orthConnectorXml(id: number, pts: Array<[number, number]>): string {
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const w = f(Math.max(maxX - minX, 0.0001));
+  const h = f(Math.max(maxY - minY, 0.0001));
+  const rows = pts
+    .map(
+      (p, i) =>
+        `        <Row T="${i === 0 ? 'MoveTo' : 'LineTo'}" IX="${i + 1}"><Cell N="X" V="${f(p[0] - minX)}"/><Cell N="Y" V="${f(p[1] - minY)}"/></Row>`,
+    )
+    .join('\n');
   return `    <Shape ID="${id}" Type="Shape" LineStyle="0" FillStyle="0" TextStyle="0">
-      <Cell N="PinX" V="${f((beginX + endX) / 2)}"/>
-      <Cell N="PinY" V="${f((beginY + endY) / 2)}"/>
+      <Cell N="PinX" V="${f(minX + (maxX - minX) / 2)}"/>
+      <Cell N="PinY" V="${f(minY + (maxY - minY) / 2)}"/>
       <Cell N="Width" V="${w}"/>
-      <Cell N="Height" V="0"/>
+      <Cell N="Height" V="${h}"/>
       <Cell N="LocPinX" V="${f(w / 2)}"/>
-      <Cell N="LocPinY" V="0"/>
-      <Cell N="Angle" V="${angle}"/>
-      <Cell N="BeginX" V="${f(beginX)}"/>
-      <Cell N="BeginY" V="${f(beginY)}"/>
-      <Cell N="EndX" V="${f(endX)}"/>
-      <Cell N="EndY" V="${f(endY)}"/>
-      <Cell N="LineColor" V="#0078D4"/>
+      <Cell N="LocPinY" V="${f(h / 2)}"/>
+      <Cell N="Angle" V="0"/>
+      <Cell N="LineColor" V="#6B7280"/>
       <Cell N="LineWeight" V="0.01"/>
       <Cell N="EndArrow" V="4"/>
-      <Cell N="ObjType" V="2"/>
       <Section N="Geometry" IX="0">
         <Cell N="NoFill" V="1"/>
         <Cell N="NoLine" V="0"/>
+${rows}
+      </Section>
+    </Shape>`;
+}
+
+/**
+ * Edge label chip: a boxed, wrapped, distinctly-colored text shape placed at the
+ * connector's elbow — mirrors the app's yellow label chips. Text wraps within
+ * the fixed width; label text color differs from the (blue/black) shapes.
+ */
+function labelShapeXml(id: number, cx: number, cy: number, text: string): string {
+  const width = 1.7;
+  const perLine = 24; // approx chars per line at this width/size
+  const lines = Math.max(1, Math.ceil(text.length / perLine));
+  const height = +(lines * 0.17 + 0.1).toFixed(2);
+  return `    <Shape ID="${id}" Type="Shape" LineStyle="0" FillStyle="0" TextStyle="0">
+      <Cell N="PinX" V="${f(cx)}"/>
+      <Cell N="PinY" V="${f(cy)}"/>
+      <Cell N="Width" V="${width}"/>
+      <Cell N="Height" V="${height}"/>
+      <Cell N="LocPinX" V="${f(width / 2)}"/>
+      <Cell N="LocPinY" V="${f(height / 2)}"/>
+      <Cell N="Angle" V="0"/>
+      <Cell N="FillForegnd" V="#FEF9C3"/>
+      <Cell N="FillPattern" V="1"/>
+      <Cell N="LineColor" V="#9CA3AF"/>
+      <Cell N="LineWeight" V="0.005"/>
+      <Section N="Geometry" IX="0">
+        <Cell N="NoFill" V="0"/>
+        <Cell N="NoLine" V="0"/>
         <Row T="MoveTo" IX="1"><Cell N="X" V="0"/><Cell N="Y" V="0"/></Row>
-        <Row T="LineTo" IX="2"><Cell N="X" V="${w}"/><Cell N="Y" V="0"/></Row>
+        <Row T="LineTo" IX="2"><Cell N="X" V="${width}"/><Cell N="Y" V="0"/></Row>
+        <Row T="LineTo" IX="3"><Cell N="X" V="${width}"/><Cell N="Y" V="${height}"/></Row>
+        <Row T="LineTo" IX="4"><Cell N="X" V="0"/><Cell N="Y" V="${height}"/></Row>
+        <Row T="LineTo" IX="5"><Cell N="X" V="0"/><Cell N="Y" V="0"/></Row>
+      </Section>
+      <Section N="Character">
+        <Row IX="0"><Cell N="Color" V="#B45309"/><Cell N="Size" V="0.1"/></Row>
+      </Section>
+      <Section N="Paragraph">
+        <Row IX="0"><Cell N="HorzAlign" V="1"/></Row>
       </Section>
       <Text>${text}</Text>
     </Shape>`;
@@ -294,21 +341,35 @@ export async function buildVsdxBlob(nodes: Node[], edges: Edge[], diagramName = 
     shapes.push(rectShapeXml(shapeId.get(s.id)!, pinX, pinY, inches(b.w), inches(b.h), esc(String((s.data as any)?.label ?? 'Service')), '#FFFFFF', '#0078D4'));
   }
 
-  // Connectors.
-  const connects: string[] = [];
+  // Connectors — orthogonal (right-angle) routes + boxed wrapped labels.
   for (const e of edges) {
-    const sId = shapeId.get(e.source);
-    const tId = shapeId.get(e.target);
     const sBox = boxes.get(e.source);
     const tBox = boxes.get(e.target);
-    if (!sId || !tId || !sBox || !tBox) continue;
-    const cid = nextId++;
+    if (!sBox || !tBox) continue;
     const s = centerIn(sBox);
     const t = centerIn(tBox);
+
+    // Right-angle "Z" route: bend at the horizontal midpoint for horizontal-
+    // dominant flows, else at the vertical midpoint. Label sits on the middle
+    // (elbow) segment so it stays clear of the shapes.
+    let pts: Array<[number, number]>;
+    let lcx: number;
+    let lcy: number;
+    if (Math.abs(t.pinX - s.pinX) >= Math.abs(t.pinY - s.pinY)) {
+      const midX = (s.pinX + t.pinX) / 2;
+      pts = [[s.pinX, s.pinY], [midX, s.pinY], [midX, t.pinY], [t.pinX, t.pinY]];
+      lcx = midX;
+      lcy = (s.pinY + t.pinY) / 2;
+    } else {
+      const midY = (s.pinY + t.pinY) / 2;
+      pts = [[s.pinX, s.pinY], [s.pinX, midY], [t.pinX, midY], [t.pinX, t.pinY]];
+      lcx = (s.pinX + t.pinX) / 2;
+      lcy = midY;
+    }
+
+    shapes.push(orthConnectorXml(nextId++, pts));
     const label = typeof e.label === 'string' ? esc(e.label) : '';
-    shapes.push(connectorShapeXml(cid, s.pinX, s.pinY, t.pinX, t.pinY, label));
-    connects.push(`    <Connect FromSheet="${cid}" FromCell="BeginX" ToSheet="${sId}" ToCell="PinX"/>`);
-    connects.push(`    <Connect FromSheet="${cid}" FromCell="EndX" ToSheet="${tId}" ToCell="PinX"/>`);
+    if (label) shapes.push(labelShapeXml(nextId++, lcx, lcy, label));
   }
 
   const zip = new JSZip();
@@ -321,7 +382,7 @@ export async function buildVsdxBlob(nodes: Node[], edges: Edge[], diagramName = 
   zip.file('visio/windows.xml', WINDOWS_XML);
   zip.file('visio/pages/pages.xml', pagesXml(pageWidthIn, pageHeightIn, diagramName));
   zip.file('visio/pages/_rels/pages.xml.rels', PAGES_RELS);
-  zip.file('visio/pages/page1.xml', pageContentsXml(shapes, connects));
+  zip.file('visio/pages/page1.xml', pageContentsXml(shapes, []));
 
   return zip.generateAsync({
     type: 'blob',
