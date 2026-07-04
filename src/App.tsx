@@ -3448,7 +3448,17 @@ function App() {
             attributionPosition="bottom-left"
           >
             <Controls />
-            <MiniMap />
+            <MiniMap
+              pannable
+              zoomable
+              position="bottom-right"
+              className="nav-minimap"
+              style={{ bottom: 84 }}
+              ariaLabel="Mini-map — drag or scroll to navigate the canvas"
+              nodeColor="#60a5fa"
+              nodeStrokeColor="#3b82f6"
+              maskColor="rgba(30, 41, 59, 0.45)"
+            />
             <Background 
               variant={BackgroundVariant.Dots} 
               gap={20} 

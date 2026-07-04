@@ -757,6 +757,36 @@ body.dark-mode .toolbar-dropdown-separator {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Navigable mini-map: drag to pan, scroll to zoom. Styled to look interactive
+   and raised above the floating Feedback button so they never overlap. */
+.react-flow__minimap.nav-minimap {
+  border: 1px solid rgba(96, 165, 250, 0.55);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  overflow: visible;
+}
+.react-flow__minimap.nav-minimap:active {
+  cursor: grabbing;
+}
+/* "Drag to navigate" caption floating just above the mini-map. */
+.react-flow__minimap.nav-minimap::before {
+  content: 'Drag / scroll to navigate';
+  position: absolute;
+  top: -22px;
+  right: 0;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 999px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .info-panel {
   background: white;
   padding: 0.75rem 1rem;
