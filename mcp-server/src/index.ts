@@ -152,28 +152,56 @@ server.tool(
 
 // ── Tool 2: validate_architecture ──────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'validate_architecture',
-  'Validate an Azure architecture against the Well-Architected Framework (WAF). Runs deterministic rule-based analysis — detects anti-patterns, missing best practices, and security gaps. Returns a 0-100 score, findings grouped by WAF pillar, and actionable recommendations. No LLM required.',
   {
-    services: z
-      .array(
+    description:
+      'Validate an Azure architecture against the Well-Architected Framework (WAF). Runs deterministic rule-based analysis — detects anti-patterns, missing best practices, and security gaps. Returns a 0-100 score, findings grouped by WAF pillar, and actionable recommendations. No LLM required.',
+    inputSchema: {
+      services: z
+        .array(
+          z.object({
+            name: z.string().describe('Service instance name (e.g. "Web App Backend")'),
+            type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+          }),
+        )
+        .describe('List of Azure services in the architecture'),
+      connections: z
+        .array(
+          z.object({
+            from: z.string().describe('Source service name'),
+            to: z.string().describe('Target service name'),
+            label: z.string().optional().describe('Connection label'),
+          }),
+        )
+        .optional()
+        .describe('Connections between services'),
+    },
+    outputSchema: {
+      score: z.number().describe('Overall WAF score, 0-100'),
+      totalFindings: z.number(),
+      patternsDetected: z.array(z.string()).describe('Architecture-level anti-pattern ids detected'),
+      rulesApplied: z.object({
+        pattern: z.number(),
+        service: z.number(),
+      }),
+      findingsByPillar: z.record(
+        z.string(),
         z.object({
-          name: z.string().describe('Service instance name (e.g. "Web App Backend")'),
-          type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+          count: z.number(),
+          findings: z.array(
+            z.object({
+              severity: z.string(),
+              category: z.string(),
+              issue: z.string(),
+              recommendation: z.string(),
+              resources: z.array(z.string()).optional(),
+            }),
+          ),
         }),
-      )
-      .describe('List of Azure services in the architecture'),
-    connections: z
-      .array(
-        z.object({
-          from: z.string().describe('Source service name'),
-          to: z.string().describe('Target service name'),
-          label: z.string().optional().describe('Connection label'),
-        }),
-      )
-      .optional()
-      .describe('Connections between services'),
+      ).describe('Findings grouped by WAF pillar'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ services, connections }) => {
     const conns = (connections ?? []).map(c => ({
@@ -185,71 +213,115 @@ server.tool(
     const result = detectWafPatterns(services, conns);
     const grouped = groupFindingsByPillar(result.findings);
 
+    const structured = {
+      score: result.score,
+      totalFindings: result.findings.length,
+      patternsDetected: result.patternsDetected,
+      rulesApplied: {
+        pattern: result.patternRulesApplied,
+        service: result.serviceRulesApplied,
+      },
+      findingsByPillar: Object.fromEntries(
+        Object.entries(grouped).map(([pillar, findings]) => [
+          pillar,
+          {
+            count: findings.length,
+            findings: findings.map(f => ({
+              severity: f.severity,
+              category: f.category,
+              issue: f.issue,
+              recommendation: f.recommendation,
+              resources: f.resources,
+            })),
+          },
+        ]),
+      ),
+    };
+
+    const pillarCount = Object.keys(structured.findingsByPillar).length;
+    const summary = `WAF score ${result.score}/100 — ${result.findings.length} finding(s) across ${pillarCount} pillar(s). Patterns detected: ${result.patternsDetected.length ? result.patternsDetected.join(', ') : 'none'}.`;
+
     return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              score: result.score,
-              totalFindings: result.findings.length,
-              patternsDetected: result.patternsDetected,
-              rulesApplied: {
-                pattern: result.patternRulesApplied,
-                service: result.serviceRulesApplied,
-              },
-              findingsByPillar: Object.fromEntries(
-                Object.entries(grouped).map(([pillar, findings]) => [
-                  pillar,
-                  {
-                    count: findings.length,
-                    findings: findings.map(f => ({
-                      severity: f.severity,
-                      category: f.category,
-                      issue: f.issue,
-                      recommendation: f.recommendation,
-                      resources: f.resources,
-                    })),
-                  },
-                ]),
-              ),
-            },
-            null,
-            2,
-          ),
-        },
-      ],
+      content: [{ type: 'text' as const, text: summary }],
+      structuredContent: structured,
     };
   },
 );
 
 // ── Tool 3: estimate_costs ─────────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'estimate_costs',
-  'Estimate monthly Azure costs for a list of services using live-derived Azure Retail Prices (distilled per region). Returns NUMERIC per-service monthly costs (low/expected/high) plus a real total and by-category totals, honoring region and pricing term (pay-as-you-go or 1-year reserved). Services without distilled pricing data fall back to a catalog cost range and are flagged.',
   {
-    services: z
-      .array(
+    description:
+      'Estimate monthly Azure costs for a list of services using live-derived Azure Retail Prices (distilled per region). Returns NUMERIC per-service monthly costs (low/expected/high) plus a real total and by-category totals, honoring region and pricing term (pay-as-you-go or 1-year reserved). Services without distilled pricing data fall back to a catalog cost range and are flagged.',
+    inputSchema: {
+      services: z
+        .array(
+          z.object({
+            name: z.string().describe('Service instance name'),
+            type: z.string().describe('Azure service type'),
+            tier: z
+              .string()
+              .optional()
+              .describe('Pricing tier. Allowed values: basic, standard, premium. Default: standard. Maps to low/expected/high SKU band.'),
+            quantity: z.number().optional().describe('Number of instances (default: 1)'),
+          }),
+        )
+        .describe('List of Azure services to estimate costs for'),
+      region: z
+        .string()
+        .optional()
+        .describe('Azure region (default: eastus2). Available: eastus2, swedencentral, westeurope, canadacentral, brazilsouth, australiaeast, southeastasia, mexicocentral'),
+      term: z
+        .string()
+        .optional()
+        .describe('Pricing term. Allowed values: payg (pay-as-you-go, default) or reserved1yr (1-year reserved / savings plan).'),
+    },
+    outputSchema: {
+      region: z.string(),
+      term: z.string(),
+      currency: z.string(),
+      pricesAsOf: z.string().nullable(),
+      serviceCount: z.number(),
+      hasPricingData: z.boolean(),
+      totalMonthlyCost: z.object({ low: z.number(), expected: z.number(), high: z.number() }),
+      byCategory: z.record(
+        z.string(),
+        z.object({ count: z.number(), services: z.array(z.string()), expectedMonthlyCost: z.number() }),
+      ),
+      estimates: z.array(
         z.object({
-          name: z.string().describe('Service instance name'),
-          type: z.string().describe('Azure service type'),
-          tier: z
-            .string()
-            .optional()
-            .describe('Pricing tier. Allowed values: basic, standard, premium. Default: standard. Maps to low/expected/high SKU band.'),
-          quantity: z.number().optional().describe('Number of instances (default: 1)'),
+          name: z.string(),
+          type: z.string(),
+          category: z.string(),
+          tier: z.string().optional(),
+          quantity: z.number().optional(),
+          hasPricingData: z.boolean(),
+          currency: z.string().optional(),
+          term: z.string().optional(),
+          sampleSku: z.string().optional(),
+          expectedBasis: z.string().optional(),
+          reservedApplied: z.boolean().optional(),
+          monthlyCostPerInstance: z
+            .object({ low: z.number(), expected: z.number(), high: z.number() })
+            .optional(),
+          selectedMonthlyCost: z.number().optional(),
+          totalMonthlyCost: z.number().optional(),
+          pricesAsOf: z.string().nullable().optional(),
+          catalogCostRange: z.string().optional(),
+          note: z.string().optional(),
         }),
-      )
-      .describe('List of Azure services to estimate costs for'),
-    region: z
-      .string()
-      .optional()
-      .describe('Azure region (default: eastus2). Available: eastus2, swedencentral, westeurope, canadacentral, brazilsouth, australiaeast, southeastasia, mexicocentral'),
-    term: z
-      .string()
-      .optional()
-      .describe('Pricing term. Allowed values: payg (pay-as-you-go, default) or reserved1yr (1-year reserved / savings plan).'),
+      ),
+      servicesMissingData: z.array(z.string()),
+      pricingSource: z.object({
+        generatedAt: z.string(),
+        currency: z.string(),
+        regions: z.array(z.string()),
+      }),
+      note: z.string(),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ services, region, term }) => {
     const targetRegion = region ?? 'eastus2';
@@ -344,40 +416,39 @@ server.tool(
       high: Math.round(totals.high * 100) / 100,
     };
 
+    const structured = {
+      region: targetRegion,
+      term: targetTerm,
+      currency,
+      pricesAsOf,
+      serviceCount: services.length,
+      hasPricingData: anyPricingData,
+      totalMonthlyCost: roundedTotals,
+      byCategory: Object.fromEntries(
+        [...categoryTotals.entries()].map(([cat, data]) => [
+          cat,
+          {
+            count: data.count,
+            services: data.services,
+            expectedMonthlyCost: Math.round(data.expectedMonthlyCost * 100) / 100,
+          },
+        ]),
+      ),
+      estimates,
+      servicesMissingData,
+      pricingSource: getPricingMeta(),
+      note:
+        'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). "expected" = a representative typical-deployment SKU (e.g. App Service P1v3, Redis C1, SQL S3, VM D2s v4, AKS Standard); low/high span the full SKU range. Numeric estimates are emitted only for instance-priced services with a trusted representative SKU; usage-based, per-GB, composite-billed (App Gateway, Firewall, VPN, Load Balancer, managed-DB Flexible Server), AI (Foundry), and Microsoft Fabric services report curated catalog ranges instead (P0-1b). For authoritative quotes use the Azure Pricing Calculator.',
+    };
+
+    const missingNote = servicesMissingData.length
+      ? ` ${servicesMissingData.length} service(s) use catalog ranges: ${servicesMissingData.join(', ')}.`
+      : '';
+    const summary = `Estimated total ~$${roundedTotals.expected.toLocaleString()}/mo expected ($${roundedTotals.low.toLocaleString()}–$${roundedTotals.high.toLocaleString()} range) in ${targetRegion} (${targetTerm}, ${currency}).${missingNote}`;
+
     return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              region: targetRegion,
-              term: targetTerm,
-              currency,
-              pricesAsOf,
-              serviceCount: services.length,
-              hasPricingData: anyPricingData,
-              totalMonthlyCost: roundedTotals,
-              byCategory: Object.fromEntries(
-                [...categoryTotals.entries()].map(([cat, data]) => [
-                  cat,
-                  {
-                    count: data.count,
-                    services: data.services,
-                    expectedMonthlyCost: Math.round(data.expectedMonthlyCost * 100) / 100,
-                  },
-                ]),
-              ),
-              estimates,
-              servicesMissingData,
-              pricingSource: getPricingMeta(),
-              note:
-                'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). "expected" = a representative typical-deployment SKU (e.g. App Service P1v3, Redis C1, SQL S3, VM D2s v4, AKS Standard); low/high span the full SKU range. Numeric estimates are emitted only for instance-priced services with a trusted representative SKU; usage-based, per-GB, composite-billed (App Gateway, Firewall, VPN, Load Balancer, managed-DB Flexible Server), AI (Foundry), and Microsoft Fabric services report curated catalog ranges instead (P0-1b). For authoritative quotes use the Azure Pricing Calculator.',
-            },
-            null,
-            2,
-          ),
-        },
-      ],
+      content: [{ type: 'text' as const, text: summary }],
+      structuredContent: structured,
     };
   },
 );
@@ -546,20 +617,41 @@ server.tool(
 
 // ── Tool 5: get_waf_rules ──────────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'get_waf_rules',
-  'Get Azure Well-Architected Framework rules from the Diagram Builder knowledge base. Returns architecture-wide pattern rules and per-service best practices. Optionally filter by WAF pillar.',
   {
-    pillar: z
-      .string()
-      .optional()
-      .describe('Filter rules by WAF pillar. Allowed values: Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency'),
-    serviceType: z
-      .string()
-      .optional()
-      .describe(
-        'Filter rules that apply to a specific Azure service type (e.g. "App Service", "SQL Database")',
+    description:
+      'Get Azure Well-Architected Framework rules from the Diagram Builder knowledge base. Returns architecture-wide pattern rules and per-service best practices. Optionally filter by WAF pillar.',
+    inputSchema: {
+      pillar: z
+        .string()
+        .optional()
+        .describe('Filter rules by WAF pillar. Allowed values: Reliability, Security, Cost Optimization, Operational Excellence, Performance Efficiency'),
+      serviceType: z
+        .string()
+        .optional()
+        .describe(
+          'Filter rules that apply to a specific Azure service type (e.g. "App Service", "SQL Database")',
+        ),
+    },
+    outputSchema: {
+      totalRules: z.number(),
+      filters: z.object({ pillar: z.string(), serviceType: z.string() }),
+      rulesByPillar: z.record(z.string(), z.number()),
+      rules: z.array(
+        z.object({
+          id: z.string(),
+          pillar: z.string(),
+          severity: z.string(),
+          category: z.string(),
+          issue: z.string(),
+          recommendation: z.string(),
+          appliesTo: z.array(z.string()),
+          pattern: z.string().optional(),
+        }),
       ),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ pillar, serviceType }) => {
     let rules = getWafRules(pillar as any);
@@ -578,34 +670,30 @@ server.tool(
       byPillar[r.pillar] = (byPillar[r.pillar] ?? 0) + 1;
     }
 
+    const structured = {
+      totalRules: rules.length,
+      filters: {
+        pillar: pillar ?? 'all',
+        serviceType: serviceType ?? 'all',
+      },
+      rulesByPillar: byPillar,
+      rules: rules.map(r => ({
+        id: r.id,
+        pillar: r.pillar,
+        severity: r.severity,
+        category: r.category,
+        issue: r.issue,
+        recommendation: r.recommendation,
+        appliesTo: r.appliesTo,
+        pattern: r.pattern,
+      })),
+    };
+
+    const summary = `${rules.length} WAF rule(s)${pillar ? ` for pillar "${pillar}"` : ''}${serviceType ? ` applying to "${serviceType}"` : ''}. By pillar: ${Object.entries(byPillar).map(([p, n]) => `${p}: ${n}`).join(', ') || 'none'}.`;
+
     return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              totalRules: rules.length,
-              filters: {
-                pillar: pillar ?? 'all',
-                serviceType: serviceType ?? 'all',
-              },
-              rulesByPillar: byPillar,
-              rules: rules.map(r => ({
-                id: r.id,
-                pillar: r.pillar,
-                severity: r.severity,
-                category: r.category,
-                issue: r.issue,
-                recommendation: r.recommendation,
-                appliesTo: r.appliesTo,
-                pattern: r.pattern,
-              })),
-            },
-            null,
-            2,
-          ),
-        },
-      ],
+      content: [{ type: 'text' as const, text: summary }],
+      structuredContent: structured,
     };
   },
 );
