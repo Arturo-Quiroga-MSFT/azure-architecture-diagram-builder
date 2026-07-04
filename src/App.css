@@ -1209,10 +1209,21 @@ body.dark-mode .btn-premium:hover {
   animation: none;
 }
 
-/* keep a subtle "active" state for the Chat toggle (no loud gradient) */
-.btn-ai-chat.active {
-  background: rgba(255, 255, 255, 0.34);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+/* Clear "on" state for the Chat toggle: a purple AI accent so it's obvious the
+   panel is open (and that clicking again closes it), without turning the
+   resting button into a loud gradient. The dark-mode selector is repeated so
+   it out-specifies the flat `body.dark-mode .btn-ai-chat` reset above. */
+.btn-ai-chat.active,
+body.dark-mode .btn-ai-chat.active {
+  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+  border-color: rgba(196, 181, 253, 0.95);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(139, 92, 246, 0.55);
+  color: #fff;
+}
+.btn-ai-chat.active:hover,
+body.dark-mode .btn-ai-chat.active:hover {
+  background: linear-gradient(135deg, #6D28D9 0%, #4338CA 100%);
+  border-color: rgba(196, 181, 253, 1);
 }
 
 /* drop the first-run Help pulse and the premium shimmer overlay */

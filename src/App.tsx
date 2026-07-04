@@ -2745,7 +2745,10 @@ function App() {
                 <button
                   className={`btn btn-ai-chat${isChatOpen ? ' active' : ''}`}
                   onClick={() => setIsChatOpen((v) => !v)}
-                  title="Refine the diagram conversationally"
+                  aria-pressed={isChatOpen}
+                  title={isChatOpen
+                    ? 'Close Architecture Chat'
+                    : 'Open Architecture Chat — start or refine your diagram in plain English'}
                 >
                   <MessagesSquare size={18} />
                   Chat
