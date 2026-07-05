@@ -207,6 +207,7 @@ C. Monitoring / observability / governance services (Azure Monitor, Log Analytic
         • Do not emit Log Analytics → Azure Monitor as a labeled data-flow edge — that relationship is implicit, not a workflow step. To show alerting, emit an edge FROM Azure Monitor TO an action target (Logic Apps, Action Group, Webhook) with a label like "Trigger alert".
         • Microsoft Sentinel and Defender for Cloud read from Log Analytics (Log Analytics → Sentinel / Defender), not the reverse.
 D. Storage / batch analytics / long-term data (Data Lake, Synapse, Cosmos DB, SQL, Blob, Time Series Insights for historical) belong BELOW the main pipeline. Their edges should come UP from the pipeline.
+   D.1 SINK PLACEMENT — a data store MUST be positioned DOWNSTREAM of every service that writes to or reads from it: to the RIGHT of, or directly BELOW, its writers — never to the LEFT of them. Concretely, if the service that writes to a database sits on the right half of the pipeline (e.g. Azure Functions after an Event Grid hop), put that database on the RIGHT or bottom-RIGHT so the write edge flows FORWARD. Never place the data zone on the far left while its writers are on the far right — that forces long backward (right→left) edges that loop across the whole canvas, which is the single worst blueprint layout mistake. When in doubt, place the data/storage zone as the RIGHTMOST or bottom-rightmost zone.
 E. ML / inference / feedback loops belong adjacent to analytics (typically bottom-right). Feedback edges back into the pipeline should be visually distinct (curve routing OK here).
 F. End-user dashboards / web apps belong on the FAR LEFT (if they trigger flow) or FAR RIGHT (if they consume outputs) — not in the middle row.
 G. On-premises zones sit on the LEFT, connected via an explicit boundary node (Private Link, ExpressRoute, VPN Gateway) before crossing into Azure.
@@ -283,6 +284,16 @@ Now generate a blueprint architecture for the user's request. Return JSON only.`
   for (const e of bp.edges) {
     e.routing = 'orthogonal';
   }
+
+  // NOTE (Phase 2 evaluation, 2026-07): We trialled replacing the AI's
+  // coordinates with an ELK auto-layout (`layoutBlueprint`). Across four
+  // representative diagrams it helped only pure left→right pipelines while
+  // destroying the intentional semantic banding (identity/control up, data
+  // down, observability aside) and often flipping landscape→portrait — both
+  // bad for the blueprint slide use case. So we keep the AI's domain-aware
+  // coordinates + the enforceSpacing() heuristic as the default. The
+  // `blueprintLayout` module and the preview-page toggle are retained for
+  // pipeline-shaped diagrams and future experimentation.
 
   bp.metrics = metrics;
   return bp;

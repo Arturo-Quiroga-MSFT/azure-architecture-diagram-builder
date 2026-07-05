@@ -16,7 +16,7 @@ export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 /**
  * Feature types that can have independent model settings
  */
-export type FeatureType = 'architectureGeneration' | 'validation' | 'deploymentGuide';
+export type FeatureType = 'architectureGeneration' | 'validation' | 'deploymentGuide' | 'blueprint';
 
 /**
  * Per-feature model override settings
@@ -68,6 +68,12 @@ export const FEATURE_CONFIG: Record<FeatureType, {
     description: 'Generating deployment guides and IaC templates',
     recommendedModel: 'gpt-5.2',
     recommendedReasoning: 'medium'
+  },
+  blueprint: {
+    displayName: 'Blueprint Diagrams',
+    description: 'Whiteboard-style blueprint sketches (fast, cost-efficient)',
+    recommendedModel: 'gpt-5.4-mini',
+    recommendedReasoning: 'low'
   }
 };
 

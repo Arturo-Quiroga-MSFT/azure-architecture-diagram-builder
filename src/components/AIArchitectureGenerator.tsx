@@ -9,7 +9,7 @@ import { generateComponentManifest, ComponentManifest } from '../services/compon
 import { exportReferenceArchitectureAsPng } from '../utils/exportReferencePng';
 import { exportBlueprintArchitectureAsPng } from '../utils/exportBlueprintPng';
 import ImageUploader from './ImageUploader';
-import { useModelSettings, MODEL_CONFIG, getAvailableModels, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
+import { useModelSettings, MODEL_CONFIG, getAvailableModels, ModelType, ReasoningEffort, FEATURE_CONFIG, isModelAvailable } from '../stores/modelSettingsStore';
 import { trackImageImport } from '../services/telemetryService';
 import { buildModificationPrompt } from '../services/modificationPrompt';
 import './AIArchitectureGenerator.css';
@@ -236,6 +236,36 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     };
     console.log(`🎯 Generate clicked: dropdown model=${modelSettings.model}, reasoning=${modelSettings.reasoningEffort}, overrides=${JSON.stringify(modelSettings.featureOverrides)}`);
 
+    // Blueprint diagrams default to the fast, cost-efficient model recommended
+    // for the feature (GPT-5.4 Mini) unless the user set an explicit blueprint
+    // override in Model Settings. Topology and other features keep the
+    // toolbar-selected model. Falls back to the toolbar model if the
+    // recommended one isn't deployed/available.
+    const blueprintModelSettings: ModelOverride = (() => {
+      const override = modelSettings.featureOverrides?.blueprint;
+      if (override && isBlueprintCapableModel(override.model)) {
+        const cfg = MODEL_CONFIG[override.model];
+        return {
+          model: override.model,
+          reasoningEffort: cfg.isReasoning
+            ? (override.reasoningEffort || modelSettings.reasoningEffort)
+            : modelSettings.reasoningEffort,
+        };
+      }
+      const rec = FEATURE_CONFIG.blueprint.recommendedModel;
+      if (isModelAvailable(rec) && isBlueprintCapableModel(rec)) {
+        const cfg = MODEL_CONFIG[rec];
+        return {
+          model: rec,
+          reasoningEffort: cfg.isReasoning
+            ? (FEATURE_CONFIG.blueprint.recommendedReasoning || modelSettings.reasoningEffort)
+            : modelSettings.reasoningEffort,
+        };
+      }
+      return currentModelSettings;
+    })();
+    console.log(`📐 Blueprint model: ${blueprintModelSettings.model} (reasoning=${blueprintModelSettings.reasoningEffort})`);
+
     try {
       // ── Reference (Editorial) mode — PNG is the sole deliverable.
       // We deliberately do NOT push a topology onto the canvas: the
@@ -270,7 +300,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
       // Hand-drawn / sketchnote-style nested zones with numbered, labeled
       // arrows. Like reference mode, we do not touch the ReactFlow canvas.
       if (mode === 'blueprint') {
-        const bp = await generateBlueprintArchitectureWithAI(description, currentModelSettings);
+        const bp = await generateBlueprintArchitectureWithAI(description, blueprintModelSettings);
         if (bp.metrics) setAiMetrics(bp.metrics);
 
         onBlueprintArchitecture?.(bp);
@@ -319,7 +349,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         }
 
         const topoCall = (m?: ComponentManifest) => generateArchitectureWithAI(bothContextPrompt, currentModelSettings, m);
-        const bpCall = (m?: ComponentManifest) => generateBlueprintArchitectureWithAI(description, currentModelSettings, m);
+        const bpCall = (m?: ComponentManifest) => generateBlueprintArchitectureWithAI(description, blueprintModelSettings, m);
 
         const t0 = performance.now();
         // Pre-pass: extract a canonical component manifest so topology and
