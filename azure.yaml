@@ -22,3 +22,12 @@ services:
     host: containerapp
     docker:
       path: ./Dockerfile
+  # Decoupled MCP server — its own Container App / FQDN. Build context is the
+  # repo root so the MCP build can read the web app's icon/pricing data.
+  mcp:
+    project: .
+    language: ts
+    host: containerapp
+    docker:
+      path: ./mcp-server/Dockerfile
+      context: .

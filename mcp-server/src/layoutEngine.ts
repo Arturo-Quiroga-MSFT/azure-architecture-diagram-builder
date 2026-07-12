@@ -45,6 +45,14 @@ export interface PositionedNode {
   height: number;
   color: string;
   textColor: string;
+  /** Best-effort estimated monthly cost (total, quantity-adjusted). Optional. */
+  estimatedCost?: number;
+  /** Currency code for estimatedCost (e.g. "USD"). Optional. */
+  costCurrency?: string;
+  /** Curated catalog cost range, shown when no firm numeric estimate exists. */
+  costRange?: string;
+  /** True when the service bills by usage (per-token/-transaction/-GB). */
+  isUsageBased?: boolean;
 }
 
 export interface PositionedEdge {
@@ -71,6 +79,8 @@ export interface LayoutResult {
   groups: PositionedGroup[];
   width: number;
   height: number;
+  /** Layout flow direction, used by the renderer for orthogonal edge routing. */
+  direction: 'TB' | 'LR';
 }
 
 // ── Azure category colors ──────────────────────────────────────────────
@@ -113,7 +123,7 @@ const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 const PADDING = 40;
 
-export function computeLayout(
+function computeFlatLayout(
   services: DiagramService[],
   connections: DiagramConnection[],
   groups: DiagramGroup[],
@@ -254,7 +264,199 @@ export function computeLayout(
   const width = (graphInfo.width ?? 800) + PADDING * 2;
   const height = (graphInfo.height ?? 600) + PADDING * 2;
 
-  return { nodes: positionedNodes, edges: positionedEdges, groups: positionedGroups, width, height };
+  return { nodes: positionedNodes, edges: positionedEdges, groups: positionedGroups, width, height, direction };
+}
+
+// ── Grouped (two-level) layout ─────────────────────────────────────────
+// Lays out each group's members independently, then places the groups as
+// non-overlapping meta-nodes. Combined with the renderer's orthogonal router
+// (which only needs edge endpoints), this produces clean lane-based diagrams
+// without the interleaved/overlapping group boxes the compound layout caused.
+
+const GROUP_INNER_PAD = 16;
+const GROUP_HEADER_H = 28;
+
+interface Rect { x: number; y: number; width: number; height: number }
+
+/** Pick border anchor points on two rects that suit the flow direction. */
+function borderAnchor(a: Rect, b: Rect, direction: 'TB' | 'LR'): { s: { x: number; y: number }; t: { x: number; y: number } } {
+  const acx = a.x + a.width / 2, acy = a.y + a.height / 2;
+  const bcx = b.x + b.width / 2, bcy = b.y + b.height / 2;
+  if (direction === 'LR') {
+    if (bcx >= acx) return { s: { x: a.x + a.width, y: acy }, t: { x: b.x, y: bcy } };
+    return { s: { x: a.x, y: acy }, t: { x: b.x + b.width, y: bcy } };
+  }
+  if (bcy >= acy) return { s: { x: acx, y: a.y + a.height }, t: { x: bcx, y: b.y } };
+  return { s: { x: acx, y: a.y }, t: { x: bcx, y: b.y + b.height } };
+}
+
+/** Lay out one group's members; return positions normalized to (0,0) + size. */
+function subLayoutGroup(
+  members: DiagramService[],
+  connections: DiagramConnection[],
+  direction: 'TB' | 'LR',
+): { pos: Map<string, { x: number; y: number }>; width: number; height: number } {
+  const memberSet = new Set(members.map(m => m.name));
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: direction, nodesep: 45, ranksep: 65, marginx: 0, marginy: 0, ranker: 'network-simplex' });
+  g.setDefaultEdgeLabel(() => ({}));
+  for (const m of members) g.setNode(m.name, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  for (const c of connections) {
+    if (memberSet.has(c.from) && memberSet.has(c.to) && c.from !== c.to) g.setEdge(c.from, c.to, {});
+  }
+  dagre.layout(g);
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const raw = new Map<string, { x: number; y: number }>();
+  for (const m of members) {
+    const n = g.node(m.name);
+    const x = n.x - NODE_WIDTH / 2, y = n.y - NODE_HEIGHT / 2;
+    raw.set(m.name, { x, y });
+    minX = Math.min(minX, x); minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + NODE_WIDTH); maxY = Math.max(maxY, y + NODE_HEIGHT);
+  }
+  const pos = new Map<string, { x: number; y: number }>();
+  for (const [name, p] of raw) pos.set(name, { x: p.x - minX, y: p.y - minY });
+  return { pos, width: maxX - minX, height: maxY - minY };
+}
+
+function computeGroupedLayout(
+  services: DiagramService[],
+  connections: DiagramConnection[],
+  groups: DiagramGroup[],
+  direction: 'TB' | 'LR',
+): LayoutResult | null {
+  const groupMap = new Map(groups.map(g => [g.id, g]));
+  const validGroups = groups.filter(g => services.some(s => s.groupId === g.id));
+  if (validGroups.length === 0) return null;
+
+  // Phase 1: sub-layout each group's members.
+  const sub = new Map<string, { pos: Map<string, { x: number; y: number }>; width: number; height: number }>();
+  for (const grp of validGroups) {
+    const members = services.filter(s => s.groupId === grp.id);
+    sub.set(grp.id, subLayoutGroup(members, connections, direction));
+  }
+  const ungrouped = services.filter(s => !s.groupId || !groupMap.has(s.groupId));
+
+  // Phase 2: lay out groups (and ungrouped nodes) as meta-nodes.
+  const metaKey = (name: string): string => {
+    const svc = services.find(s => s.name === name);
+    return svc && svc.groupId && groupMap.has(svc.groupId) ? `g:${svc.groupId}` : `n:${name}`;
+  };
+  const mg = new dagre.graphlib.Graph();
+  const sizeBoost = services.length >= 16 ? 1.2 : 1.0;
+  mg.setGraph({
+    rankdir: direction,
+    nodesep: Math.round(70 * sizeBoost),
+    ranksep: Math.round(110 * sizeBoost),
+    marginx: PADDING,
+    marginy: PADDING,
+    ranker: 'network-simplex',
+  });
+  mg.setDefaultEdgeLabel(() => ({}));
+  // Effective group width fits both the member layout and the header label.
+  const groupW = new Map<string, number>();
+  for (const grp of validGroups) {
+    const s = sub.get(grp.id)!;
+    const headerW = grp.label.length * 6.8 + 28;
+    const effW = Math.max(s.width, headerW);
+    groupW.set(grp.id, effW);
+    mg.setNode(`g:${grp.id}`, {
+      width: effW + GROUP_INNER_PAD * 2,
+      height: s.height + GROUP_INNER_PAD * 2 + GROUP_HEADER_H,
+    });
+  }
+  for (const svc of ungrouped) mg.setNode(`n:${svc.name}`, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  const seenMeta = new Set<string>();
+  for (const c of connections) {
+    const a = metaKey(c.from), b = metaKey(c.to);
+    if (a === b) continue;
+    const key = `${a}\u0000${b}`;
+    if (seenMeta.has(key)) continue;
+    seenMeta.add(key);
+    if (mg.hasNode(a) && mg.hasNode(b)) mg.setEdge(a, b, {});
+  }
+  dagre.layout(mg);
+
+  // Resolve final node positions + group boxes.
+  const serviceCategories = new Map<string, string>();
+  for (const svc of services) serviceCategories.set(svc.name, resolveCategory(svc.type));
+  const nodePos = new Map<string, { x: number; y: number }>();
+  const positionedGroups: PositionedGroup[] = [];
+
+  validGroups.forEach((grp, idx) => {
+    const meta = mg.node(`g:${grp.id}`);
+    const s = sub.get(grp.id)!;
+    const effW = groupW.get(grp.id)!;
+    const boxLeft = meta.x - meta.width / 2;
+    const boxTop = meta.y - meta.height / 2;
+    const areaLeft = boxLeft + GROUP_INNER_PAD;
+    const areaTop = boxTop + GROUP_INNER_PAD + GROUP_HEADER_H;
+    for (const [name, p] of s.pos) nodePos.set(name, { x: areaLeft + p.x, y: areaTop + p.y });
+    const color = GROUP_COLORS[idx % GROUP_COLORS.length];
+    positionedGroups.push({
+      id: grp.id, label: grp.label,
+      x: areaLeft, y: areaTop, width: effW, height: s.height,
+      color: color.border,
+    });
+  });
+  for (const svc of ungrouped) {
+    const meta = mg.node(`n:${svc.name}`);
+    nodePos.set(svc.name, { x: meta.x - NODE_WIDTH / 2, y: meta.y - NODE_HEIGHT / 2 });
+  }
+
+  const positionedNodes: PositionedNode[] = services.map(svc => {
+    const p = nodePos.get(svc.name) ?? { x: 0, y: 0 };
+    const category = serviceCategories.get(svc.name) ?? 'other';
+    const colors = getCategoryColor(category);
+    return {
+      name: svc.name, type: svc.type, description: svc.description ?? '',
+      category, groupId: svc.groupId ?? null,
+      x: p.x, y: p.y, width: NODE_WIDTH, height: NODE_HEIGHT,
+      color: colors.border, textColor: colors.text,
+    };
+  });
+  const rectOf = new Map(positionedNodes.map(n => [n.name, { x: n.x, y: n.y, width: n.width, height: n.height }]));
+
+  // Edges: border-anchor endpoints; the renderer's orthogonal router draws them.
+  const serviceNames = new Set(services.map(s => s.name));
+  const positionedEdges: PositionedEdge[] = connections
+    .filter(c => serviceNames.has(c.from) && serviceNames.has(c.to) && c.from !== c.to)
+    .map(c => {
+      const ar = rectOf.get(c.from)!, br = rectOf.get(c.to)!;
+      const { s, t } = borderAnchor(ar, br, direction);
+      return { from: c.from, to: c.to, label: c.label ?? '', type: c.type ?? 'sync', points: [s, t] };
+    });
+
+  // Canvas bounds.
+  let maxX = 0, maxY = 0;
+  for (const n of positionedNodes) { maxX = Math.max(maxX, n.x + n.width); maxY = Math.max(maxY, n.y + n.height); }
+  for (const gr of positionedGroups) { maxX = Math.max(maxX, gr.x + gr.width); maxY = Math.max(maxY, gr.y + gr.height); }
+  const width = maxX + PADDING;
+  const height = maxY + PADDING;
+
+  return { nodes: positionedNodes, edges: positionedEdges, groups: positionedGroups, width, height, direction };
+}
+
+/**
+ * Compute a positioned layout for the diagram. When groups are present, uses a
+ * two-level grouped layout (non-overlapping group lanes); otherwise falls back
+ * to a single compound dagre layout.
+ */
+export function computeLayout(
+  services: DiagramService[],
+  connections: DiagramConnection[],
+  groups: DiagramGroup[],
+  direction: 'TB' | 'LR' = 'TB',
+): LayoutResult {
+  if (groups && groups.length > 0) {
+    try {
+      const grouped = computeGroupedLayout(services, connections, groups, direction);
+      if (grouped) return grouped;
+    } catch {
+      // Fall back to the flat compound layout on any grouping error.
+    }
+  }
+  return computeFlatLayout(services, connections, groups, direction);
 }
 
 // ── Category resolver ──────────────────────────────────────────────────

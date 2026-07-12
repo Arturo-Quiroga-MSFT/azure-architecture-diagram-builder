@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-5.4' | 'gpt-5.4-mini' | 'deepseek-v3.2-speciale' | 'deepseek-v4-pro' | 'grok-4.1-fast' | 'grok-4.3' | 'mistral-large-3' | 'kimi-k2-5';
+export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.2-codex' | 'gpt-5.3-codex' | 'gpt-5.4' | 'gpt-5.4-mini' | 'deepseek-v3.2-speciale' | 'deepseek-v4-pro' | 'grok-4.1-fast' | 'grok-4.3' | 'mistral-large-3' | 'kimi-k2-5' | 'kimi-k2-7-code';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -187,6 +187,20 @@ export const MODEL_CONFIG: Record<ModelType, {
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
+  'kimi-k2-7-code': {
+    displayName: 'Kimi K2.7 Code',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE',
+    isReasoning: false,
+    // Kimi K2.7 Code emits an internal reasoning trace (reasoning_content) that
+    // consumes the completion budget before any answer content is produced. A
+    // 16k budget is frequently exhausted by reasoning + large JSON on complex
+    // architectures, truncating (finish_reason=length) with empty content. Give
+    // it a larger budget so reasoning and the JSON answer both fit.
+    maxCompletionTokens: 32000,
+    description: 'MoonshotAI Kimi K2.7 - optimized for code and structured output',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
 };
 
 /**
@@ -211,6 +225,7 @@ export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
   'grok-4.3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43,
   'mistral-large-3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3,
   'kimi-k2-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25,
+  'kimi-k2-7-code': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE,
 };
 
 /**

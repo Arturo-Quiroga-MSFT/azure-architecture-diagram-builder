@@ -23,6 +23,7 @@ function abbreviateModelForFile(model: ModelType): string {
     'grok-4.1-fast': 'grok41fast', 'grok-4.3': 'grok43',
     'mistral-large-3': 'mistrallarge3',
     'kimi-k2-5': 'kimik25',
+    'kimi-k2-7-code': 'kimik27code',
   };
   // Fallback: derive a sane slug from the model id so we never write "unknown"
   return map[model] || String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';

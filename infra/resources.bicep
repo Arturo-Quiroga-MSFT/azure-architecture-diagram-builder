@@ -11,6 +11,10 @@ param deploySpeech bool
 param speechRegion string
 param deployCosmos bool
 
+@secure()
+@description('Optional bearer token required on the decoupled MCP server /mcp endpoint. Empty = open (not recommended for public ingress).')
+param mcpAuthToken string = ''
+
 // Azure OpenAI (passed through to container app env; not provisioned here)
 param azureOpenAiEndpoint string
 @secure()
@@ -247,12 +251,73 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
+// ── MCP Container App (decoupled, own FQDN) ──────────────────────────────────
+// The Azure Architecture Diagram Builder MCP server as its own Container App,
+// so agent traffic scales, releases, and fails independently of the web UI.
+// azd locates it by the 'azd-service-name: mcp' tag (matches azure.yaml).
+var mcpBaseEnv = [
+  { name: 'AZURE_CLIENT_ID', value: appIdentity.properties.clientId }
+  { name: 'MCP_HTTP_HOST', value: '0.0.0.0' }
+  { name: 'MCP_HTTP_PORT', value: '3030' }
+  { name: 'MCP_HTTP_PATH', value: '/mcp' }
+]
+var mcpAuthEnv = empty(mcpAuthToken)
+  ? []
+  : [ { name: 'MCP_AUTH_TOKEN', secretRef: 'mcp-auth-token' } ]
+var mcpSecrets = empty(mcpAuthToken)
+  ? []
+  : [ { name: 'mcp-auth-token', value: mcpAuthToken } ]
+
+resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
+  name: '${abbrs.appContainerApps}diagram-mcp-${resourceToken}'
+  location: location
+  tags: union(tags, { 'azd-service-name': 'mcp' })
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: { '${appIdentity.id}': {} }
+  }
+  properties: {
+    managedEnvironmentId: caEnv.id
+    configuration: {
+      secrets: mcpSecrets
+      ingress: {
+        external: true
+        targetPort: 3030
+        transport: 'auto'
+      }
+      registries: [
+        {
+          server: acr.properties.loginServer
+          identity: appIdentity.id
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: 'mcp'
+          // Placeholder image replaced by 'azd deploy mcp'.
+          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          resources: { cpu: json('0.5'), memory: '1.0Gi' }
+          env: concat(mcpBaseEnv, mcpAuthEnv)
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 5
+      }
+    }
+  }
+}
+
 // ── Outputs ────────────────────────────────────────────────────────────────────
 output registryLoginServer string = acr.properties.loginServer
 output registryName string = acr.name
 output appIdentityPrincipalId string = appIdentity.properties.principalId
 output containerAppName string = containerApp.name
 output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn
+output mcpAppName string = mcpApp.name
+output mcpAppFqdn string = mcpApp.properties.configuration.ingress.fqdn
 output speechRegionOut string = deploySpeech ? speech.location : ''
 output speechResourceId string = deploySpeech ? speech.id : ''
 output cosmosEndpoint string = deployCosmos ? cosmos.properties.documentEndpoint : ''

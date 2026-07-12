@@ -24,6 +24,18 @@
 
 ---
 
+## ✅ Update (2026-07-08)
+
+- **Diagram rendering overhauled** (P1 orthogonal edge routing, P2 non-overlapping
+  two-level grouped layout, P3 node polish: two-line names, inline-SVG icon
+  fallbacks, smarter badges). SVG + HTML output are now at parity.
+- **MCP server decoupled** into its own Azure Container App / FQDN, deployed via
+  `scripts/deploy-mcp.sh` (no azd). Verified live: `/healthz` 200, `/mcp` Bearer-auth
+  enforced, authenticated `initialize` round-trip OK.
+- See **`DEPLOYMENT.md`** for the full deployment + rendering reference.
+
+---
+
 ## ▶️ START HERE (do this first)
 
 **Work in this exact order: `P0-1` → `P0-2` → `P0-3`.**

@@ -56,6 +56,11 @@ param speechRegion string = 'westus2'
 @description('Provision an Azure Cosmos DB account for saving diagrams across sessions.')
 param deployCosmos bool = false
 
+// ── MCP server (decoupled Container App) ──────────────────────────────────────
+@secure()
+@description('Optional bearer token required on the MCP /mcp endpoint. Empty = open.')
+param mcpAuthToken string = ''
+
 // ── Internals ──────────────────────────────────────────────────────────────────
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -80,6 +85,7 @@ module resources './resources.bicep' = {
     deploySpeech: deploySpeech
     speechRegion: speechRegion
     deployCosmos: deployCosmos
+    mcpAuthToken: mcpAuthToken
     azureOpenAiEndpoint: azureOpenAiEndpoint
     azureOpenAiApiKey: azureOpenAiApiKey
     openAiDeploymentGpt51: openAiDeploymentGpt51
@@ -109,6 +115,11 @@ output SERVICE_APP_IDENTITY_PRINCIPAL_ID string = resources.outputs.appIdentityP
 
 // App URL
 output SERVICE_APP_URL string = 'https://${resources.outputs.containerAppFqdn}'
+
+// MCP server (decoupled) — azd locates it by the azd-service-name: mcp tag.
+output SERVICE_MCP_NAME string = resources.outputs.mcpAppName
+output SERVICE_MCP_URL string = 'https://${resources.outputs.mcpAppFqdn}'
+output MCP_ENDPOINT string = 'https://${resources.outputs.mcpAppFqdn}/mcp'
 
 // Azure OpenAI — passed through to build-time Vite variables by the pre-package hook
 output AZURE_OPENAI_ENDPOINT string = azureOpenAiEndpoint

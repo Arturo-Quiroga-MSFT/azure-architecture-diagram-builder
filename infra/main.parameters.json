@@ -43,6 +43,9 @@
     },
     "deployCosmos": {
       "value": false
+    },
+    "mcpAuthToken": {
+      "value": "${MCP_AUTH_TOKEN}"
     }
   }
 }

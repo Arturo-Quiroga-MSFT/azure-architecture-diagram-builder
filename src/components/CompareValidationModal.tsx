@@ -36,6 +36,7 @@ function abbreviateModelForFile(model: ModelType): string {
     'gpt-5.1': 'gpt51', 'gpt-5.2': 'gpt52', 'gpt-5.2-codex': 'gpt52codex',
     'gpt-5.3-codex': 'gpt53codex', 'gpt-5.4': 'gpt54', 'gpt-5.4-mini': 'gpt54mini',
     'deepseek-v3.2-speciale': 'deepseek', 'grok-4.1-fast': 'grok41fast',
+    'kimi-k2-5': 'kimik25', 'kimi-k2-7-code': 'kimik27code',
   };
   return map[model] || 'unknown';
 }

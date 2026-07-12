@@ -718,6 +718,22 @@ server.tool(
       .describe('Diagram direction. Allowed values: TB (top-to-bottom), LR (left-to-right)')
       .optional()
       .describe('Layout direction: TB (top-to-bottom) or LR (left-to-right). Default: TB'),
+    theme: z
+      .string()
+      .optional()
+      .describe('Visual theme for SVG output. Allowed values: light (default), dark.'),
+    region: z
+      .string()
+      .optional()
+      .describe('Azure region used for best-effort per-node cost badges (e.g. eastus2). Default: eastus2. Set to "none" to disable cost badges.'),
+    author: z
+      .string()
+      .optional()
+      .describe('Author shown in the SVG metadata panel (top-right).'),
+    generatedBy: z
+      .string()
+      .optional()
+      .describe('Provenance label for the SVG metadata panel, e.g. the model that produced the design.'),
     services: z
       .array(
         z.object({
@@ -752,7 +768,7 @@ server.tool(
       .optional()
       .describe('Logical service groups (rendered as dashed containers)'),
   },
-  async ({ title, format, direction, services, connections, groups }) => {
+  async ({ title, format, direction, services, connections, groups, theme, region, author, generatedBy }) => {
     const fmt = format ?? 'svg';
     const dir = direction ?? 'TB';
 
@@ -763,9 +779,39 @@ server.tool(
       dir as any,
     );
 
+    // Best-effort per-node cost enrichment (SVG cost badges + total footer).
+    // Uses the same service→pricing resolution as the estimate_costs tool.
+    // Skipped when region === 'none'.
+    if (region !== 'none') {
+      const targetRegion = region ?? 'eastus2';
+      for (const node of layout.nodes) {
+        const resolved = resolveServiceName(node.type);
+        const info = resolved ? SERVICE_CATALOG[resolved] : null;
+        const pricingName = info?.pricingServiceName ?? resolved ?? node.type;
+        const est = estimateServiceCost({ pricingServiceName: pricingName, region: targetRegion });
+        if (est.hasPricingData && est.totalMonthlyCost != null && est.totalMonthlyCost > 0) {
+          node.estimatedCost = est.totalMonthlyCost;
+          node.costCurrency = est.currency ?? 'USD';
+        } else if (info?.costRange) {
+          // No firm numeric estimate (usage-based / composite billing): fall
+          // back to the curated catalog range so the badge isn't blank.
+          node.costRange = info.costRange;
+          node.isUsageBased = info.isUsageBased ?? false;
+        }
+      }
+    }
+
     const output = fmt === 'html'
-      ? renderHtml(layout, title)
-      : renderSvg(layout, title);
+      ? renderHtml(layout, title, {
+          theme: theme === 'dark' ? 'dark' : 'light',
+          author,
+          generatedBy,
+        })
+      : renderSvg(layout, title, {
+          theme: theme === 'dark' ? 'dark' : 'light',
+          author,
+          generatedBy,
+        });
 
     return {
       content: [
@@ -788,6 +834,7 @@ server.tool(
     architecturePrompt: z.string().optional().describe('Original natural-language prompt the diagram was generated from (preserved in the JSON for provenance)'),
     author: z.string().optional().describe('Author shown in the metadata. Default: "Azure Architect"'),
     direction: z.string().optional().describe('Layout direction: TB (top-to-bottom), LR (left-to-right), or auto. Default: auto (picks LR for 4+ groups or dense graphs, TB otherwise).'),
+    region: z.string().optional().describe('Azure region for best-effort per-node pricing embedded in each node (e.g. eastus2). Default: eastus2. Set to "none" to omit pricing.'),
     services: z.array(z.object({
       name: z.string().describe('Service instance name (becomes the node label)'),
       type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
@@ -810,7 +857,7 @@ server.tool(
       services: z.array(z.string()).describe('Service names involved in this step'),
     })).optional().describe('Optional ordered workflow narrative shown in the web app'),
   },
-  async ({ architectureName, architecturePrompt, author, direction, services, connections, groups, workflow }) => {
+  async ({ architectureName, architecturePrompt, author, direction, services, connections, groups, workflow, region }) => {
     // ── Auto direction heuristic ────────────────────────────────────────
     // 'auto' (default) picks LR when many groups would stack too tall in TB:
     //   - 4+ groups OR
@@ -895,6 +942,7 @@ server.tool(
     // ── Service nodes (React Flow) ───────────────────────────────────────
     // Track absolute positions per service id for per-edge handle picking.
     const absoluteByNodeId = new Map<string, { x: number; y: number; width: number; height: number }>();
+    const pricingRegion = region && region !== 'none' ? region : (region === 'none' ? null : 'eastus2');
     const serviceNodes = layout.nodes.map(n => {
       const id = nodeIdByName.get(n.name)!;
       const { iconPath } = resolveIconPath(n.type);
@@ -909,6 +957,29 @@ server.tool(
       const positionAbsolute = { x: n.x, y: n.y };
       absoluteByNodeId.set(id, { x: n.x, y: n.y, width: n.width, height: n.height });
 
+      // Best-effort pricing object (matches the web app's node.data.pricing
+      // shape so imported scenes show cost badges). Numeric estimatedCost is
+      // only present for services with distilled pricing data; usage-based
+      // services carry the flag with a null estimate.
+      let pricing: Record<string, unknown> | undefined;
+      if (pricingRegion) {
+        const resolved = resolveServiceName(n.type);
+        const info = resolved ? SERVICE_CATALOG[resolved] : null;
+        const pricingName = info?.pricingServiceName ?? resolved ?? n.type;
+        const est = estimateServiceCost({ pricingServiceName: pricingName, region: pricingRegion });
+        pricing = {
+          estimatedCost: est.hasPricingData ? est.totalMonthlyCost ?? null : null,
+          tier: est.selectedTier ? est.selectedTier.charAt(0).toUpperCase() + est.selectedTier.slice(1) : 'Standard',
+          skuName: est.sampleSku ?? 'Standard',
+          quantity: 1,
+          region: pricingRegion,
+          unit: est.hasPricingData ? 'per instance/month' : 'usage-based',
+          lastUpdated: new Date().toISOString(),
+          isCustom: false,
+          isUsageBased: info?.isUsageBased ?? false,
+        };
+      }
+
       const node: Record<string, unknown> = {
         id,
         type: 'azureNode',
@@ -918,6 +989,7 @@ server.tool(
           label: n.name,
           iconPath,
           stylePreset: 'presentation',
+          ...(pricing ? { pricing } : {}),
           ...(n.description ? { description: n.description } : {}),
         },
         width: n.width,
@@ -1011,6 +1083,7 @@ server.tool(
           baseFlowAnimated: connectionType !== 'optional',
           flowAnimated: connectionType !== 'optional',
           flowMode: connectionType === 'async' ? 'pulse' : 'directional',
+          pathStyle: 'orthogonal',
           labelOffsetX: dx,
           labelOffsetY: dy,
         },
