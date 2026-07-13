@@ -200,6 +200,27 @@ function wrapName(name: string, maxChars: number): string[] {
   return [lines[0], ellipsize(lines.slice(1).join(' '))];
 }
 
+// Wrap an edge/connection label to at most two lines so richer, more descriptive
+// connection text stays readable instead of stretching into one long chip.
+function wrapLabel(text: string, maxChars = 22): string[] {
+  const t = (text ?? '').trim();
+  if (!t) return [];
+  if (t.length <= maxChars) return [t];
+  const words = t.split(/\s+/);
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of words) {
+    const cand = cur ? `${cur} ${w}` : w;
+    if (cur && cand.length > maxChars) { lines.push(cur); cur = w; }
+    else cur = cand;
+  }
+  if (cur) lines.push(cur);
+  const ellipsize = (l: string) => (l.length > maxChars ? l.slice(0, maxChars - 1).trimEnd() + '\u2026' : l);
+  if (lines.length <= 2) return lines.map((l, i) => (i === 1 ? ellipsize(l) : l));
+  // More than two lines: keep the first, fold the rest into the second.
+  return [lines[0], ellipsize(lines.slice(1).join(' '))];
+}
+
 // ── Edge styling ───────────────────────────────────────────────────────────
 
 const EDGE_STYLES: Record<string, { color: string; dasharray: string }> = {
@@ -343,6 +364,16 @@ function renderNode(node: PositionedNode, theme: Theme): string {
 
 interface Pt { x: number; y: number }
 
+// Axis-aligned rectangle + overlap test, used to keep edge-label chips clear of
+// node cards and group header bands during placement.
+interface LRect { x: number; y: number; w: number; h: number }
+function rectsOverlap(a: LRect, b: LRect, pad = 0): boolean {
+  return !(
+    a.x + a.w + pad < b.x || b.x + b.w + pad < a.x ||
+    a.y + a.h + pad < b.y || b.y + b.h + pad < a.y
+  );
+}
+
 // Build a clean orthogonal (Manhattan) route between an edge's endpoints using
 // a mid-channel trunk. dagre's sparse waypoints, when smoothed, produced long
 // diagonal "sweeps" across the canvas; anchoring to the endpoints and routing
@@ -396,7 +427,9 @@ function edgeLabelAnchor(route: Pt[]): Pt {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-function renderEdge(edge: PositionedEdge, direction: 'TB' | 'LR', labelDy = 0, theme: Theme = LIGHT_THEME): string {
+// Render only the edge path + arrowhead. Labels are rendered separately (and
+// last) so that no later edge line paints over an earlier edge's label chip.
+function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR'): string {
   if (edge.points.length < 2) return '';
 
   const style = EDGE_STYLES[edge.type] ?? EDGE_STYLES.sync;
@@ -414,47 +447,91 @@ function renderEdge(edge: PositionedEdge, direction: 'TB' | 'LR', labelDy = 0, t
     `${last.x - arrowLen * Math.cos(angle + 0.4)},${last.y - arrowLen * Math.sin(angle + 0.4)}`,
   ].join(' ');
 
-  // Label on the trunk, nudged to avoid colliding with neighbours.
-  const anchor = edgeLabelAnchor(route);
-  const lx = anchor.x;
-  const ly = anchor.y + labelDy;
-  const labelSvg = edge.label
-    ? `<g>
-        <rect x="${lx - edge.label.length * 3.5 - 4}" y="${ly - 9}" 
-              width="${edge.label.length * 7 + 8}" height="16" rx="3"
-              fill="${theme.edgeLabelFill}" stroke="${style.color}" stroke-width="0.5" opacity="0.95" />
-        <text x="${lx}" y="${ly + 3}" text-anchor="middle"
-              font-family="Segoe UI, system-ui, sans-serif" font-size="10"
-              fill="${style.color}">${escapeXml(edge.label)}</text>
-      </g>`
-    : '';
-
   return `
     <g class="edge" data-from="${escapeXml(edge.from)}" data-to="${escapeXml(edge.to)}">
       <path d="${pathData}" fill="none" stroke="${style.color}" stroke-width="1.5"
             ${style.dasharray ? `stroke-dasharray="${style.dasharray}"` : ''} />
       <polygon points="${arrowPoints}" fill="${style.color}" />
-      ${labelSvg}
     </g>`;
 }
 
-// Assign a vertical offset to each edge label so labels whose trunk anchors fall
-// in the same coarse grid cell don't stack on top of each other.
-function computeLabelOffsets(edges: PositionedEdge[], direction: 'TB' | 'LR'): number[] {
-  const BUCKET_W = 130;
-  const BUCKET_H = 60;
-  const counters = new Map<string, number>();
-  return edges.map(edge => {
-    if (!edge.label || edge.points.length < 2) return 0;
-    const anchor = edgeLabelAnchor(orthogonalRoute(edge.points, direction));
-    const key = `${Math.round(anchor.x / BUCKET_W)}|${Math.round(anchor.y / BUCKET_H)}`;
-    const idx = counters.get(key) ?? 0;
-    counters.set(key, idx + 1);
-    if (idx === 0) return 0;
-    // -18, +18, -36, +36, ...
-    const step = Math.ceil(idx / 2) * 18;
-    return idx % 2 === 1 ? -step : step;
-  });
+// Geometry for an edge's label chip (wrapped lines + box size + trunk anchor),
+// computed independently of final placement so the layout pass can
+// collision-test candidate positions before committing.
+interface EdgeLabelBox {
+  edge: PositionedEdge;
+  lines: string[];
+  boxW: number;
+  boxH: number;
+  anchor: Pt;
+}
+
+function edgeLabelBox(edge: PositionedEdge, direction: 'TB' | 'LR'): EdgeLabelBox | null {
+  if (edge.points.length < 2 || !edge.label) return null;
+  const route = orthogonalRoute(edge.points, direction);
+  const lines = wrapLabel(edge.label);
+  if (lines.length === 0) return null;
+  const maxLen = Math.max(...lines.map(l => l.length));
+  const boxW = maxLen * 6.2 + 14;      // padX * 2 = 14
+  const boxH = lines.length * 12 + 8;  // lineH * n + padY * 2
+  return { edge, lines, boxW, boxH, anchor: edgeLabelAnchor(route) };
+}
+
+// Render an edge label as an opaque, up-to-two-line chip centered at (cx, cy).
+// Drawn after all paths and nodes so the text is never overpainted.
+function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: Theme = LIGHT_THEME): string {
+  const style = EDGE_STYLES[box.edge.type] ?? EDGE_STYLES.sync;
+  const boxX = cx - box.boxW / 2;
+  const boxY = cy - box.boxH / 2;
+  const firstBaseline = boxY + 4 + 9;  // padY + baseline
+  const tspans = box.lines
+    .map((l, i) => `<tspan x="${cx}" y="${firstBaseline + i * 12}">${escapeXml(l)}</tspan>`)
+    .join('');
+
+  return `
+    <g class="edge-label">
+      <rect x="${boxX}" y="${boxY}" width="${box.boxW}" height="${box.boxH}" rx="4"
+            fill="${theme.edgeLabelFill}" stroke="${style.color}" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+            font-size="10" fill="${style.color}">${tspans}</text>
+    </g>`;
+}
+
+
+// Assign edge-label positions with collision avoidance: chips are nudged
+// along/around their trunk anchor so they don't overlap node cards, group
+// header bands, or previously-placed labels. Returns joined SVG markup.
+function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Theme): string {
+  const obstacles: LRect[] = [
+    ...layout.nodes.map(n => ({ x: n.x, y: n.y, w: n.width, h: n.height })),
+    // Group header band (see renderGroup: y = group.y - 12 - 24, height 24).
+    ...layout.groups.map(g => ({ x: g.x - 12, y: g.y - 36, w: g.width + 24, h: 24 })),
+  ];
+  const dxs = [0, -46, 46, -92, 92, -140, 140];
+  const dys = [0, -20, 20, -40, 40, -62, 62, -84, 84];
+  const candidates = dys
+    .flatMap(dy => dxs.map(dx => ({ dx, dy })))
+    .sort((a, b) => (Math.abs(a.dx) + Math.abs(a.dy)) - (Math.abs(b.dx) + Math.abs(b.dy)));
+
+  const placed: LRect[] = [];
+  return layout.edges
+    .map(edge => {
+      const box = edgeLabelBox(edge, direction);
+      if (!box) return '';
+      let chosen = candidates[0];
+      for (const off of candidates) {
+        const cx = box.anchor.x + off.dx, cy = box.anchor.y + off.dy;
+        const r: LRect = { x: cx - box.boxW / 2, y: cy - box.boxH / 2, w: box.boxW, h: box.boxH };
+        const hit =
+          obstacles.some(o => rectsOverlap(r, o, 2)) ||
+          placed.some(o => rectsOverlap(r, o, 4));
+        if (!hit) { chosen = off; break; }
+      }
+      const cx = box.anchor.x + chosen.dx, cy = box.anchor.y + chosen.dy;
+      placed.push({ x: cx - box.boxW / 2, y: cy - box.boxH / 2, w: box.boxW, h: box.boxH });
+      return renderEdgeLabelChip(box, cx, cy, theme);
+    })
+    .join('\n');
 }
 
 function renderGroup(group: PositionedGroup): string {
@@ -496,9 +573,21 @@ export interface RenderSvgOptions {
 
 export function renderSvg(layout: LayoutResult, title?: string, options: RenderSvgOptions = {}): string {
   const theme = resolveTheme(options.theme);
+  const edgeDir: 'TB' | 'LR' = layout.direction ?? 'TB';
+
+  // Center the title, but keep it clear of the top-right metadata panel on
+  // narrow canvases (approx panel width 210 + margins). Nudge the anchor left
+  // just enough that the title's right edge stops before the panel.
+  const metaReserveW = 222;
+  let titleX = layout.width / 2;
+  if (title) {
+    const halfW = title.length * 5.2; // ~half text width at 16px bold
+    const panelLeft = layout.width - metaReserveW;
+    if (titleX + halfW > panelLeft) titleX = Math.max(halfW + 12, panelLeft - halfW);
+  }
 
   const titleBar = title
-    ? `<text x="${layout.width / 2}" y="24" text-anchor="middle"
+    ? `<text x="${titleX}" y="24" text-anchor="middle"
             font-family="Segoe UI, system-ui, sans-serif" font-size="16" font-weight="700"
             fill="${theme.nameText}">${escapeXml(title)}</text>`
     : '';
@@ -506,17 +595,27 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   const titleOffset = title ? 40 : 0;
   const totalHeight = layout.height + titleOffset;
 
-  // Build legend from unique categories
+  // ── Footer band (below the diagram): wrapped legend, then cost total ──
+  // A dedicated band under the canvas keeps the legend and cost total from
+  // overlapping each other, the last group's border, or the watermark.
   const categories = [...new Set(layout.nodes.map(n => n.category))].sort();
-  const legendY = totalHeight - 20;
+  const legendItemW = 168;
+  const legendCols = Math.max(1, Math.floor((layout.width - 40) / legendItemW));
+  const legendRows = Math.max(1, Math.ceil(categories.length / legendCols));
+  const legendRowH = 18;
+  const footerTop = totalHeight + 22;
   const legend = categories
     .map((cat, i) => {
       const icon = CATEGORY_ICONS[cat] ?? '☁️';
-      const x = 20 + i * 160;
-      return `<text x="${x}" y="${legendY}" font-family="Segoe UI, system-ui, sans-serif" 
+      const col = i % legendCols;
+      const row = Math.floor(i / legendCols);
+      const x = 20 + col * legendItemW;
+      const y = footerTop + row * legendRowH;
+      return `<text x="${x}" y="${y}" font-family="Segoe UI, system-ui, sans-serif"
                     font-size="10" fill="${theme.legendText}">${icon} ${escapeXml(cat)}</text>`;
     })
     .join('\n');
+  const costY = footerTop + legendRows * legendRowH + 6;
 
   // Total estimated monthly cost across nodes that carry a firm estimate.
   const costedNodes = layout.nodes.filter(n => n.estimatedCost != null && n.estimatedCost > 0);
@@ -532,7 +631,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
     ? `Est. total ~$${fmtCost(totalCost)}/mo (${escapeXml(currency)}, ${costedNodes.length} of ${layout.nodes.length} priced${rangeNote})`
     : `Usage-based pricing — ${rangeNodes.length} of ${layout.nodes.length} services shown as catalog ranges`;
   const totalCostFooter = costedNodes.length > 0 || rangeNodes.length > 0
-    ? `<text x="${layout.width - 10}" y="${legendY}" text-anchor="end"
+    ? `<text x="20" y="${costY}" text-anchor="start"
             font-family="Segoe UI, system-ui, sans-serif" font-size="11" font-weight="600"
             fill="${theme.costText}">${footerText}</text>`
     : '';
@@ -557,7 +656,11 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
         .join('\n')}
     </g>`;
 
-  const totalWithLegend = totalHeight + 30;
+  // Total canvas height = diagram + footer band (legend rows + cost row) + pad.
+  const totalWithLegend = costY + 22;
+
+  // Collision-aware edge labels (kept off nodes + group headers).
+  const edgeLabelsMarkup = placeEdgeLabels(layout, edgeDir, theme);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" 
@@ -581,11 +684,14 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
     <!-- Groups (background) -->
     ${layout.groups.map(renderGroup).join('\n')}
 
-    <!-- Edges -->
-    ${(() => { const dir = layout.direction ?? 'TB'; const offs = computeLabelOffsets(layout.edges, dir); return layout.edges.map((e, i) => renderEdge(e, dir, offs[i], theme)).join('\n'); })()}
+    <!-- Edge paths (drawn first so nothing paints over labels) -->
+    ${layout.edges.map(e => renderEdgePath(e, edgeDir)).join('\n')}
 
     <!-- Nodes (foreground) -->
     ${layout.nodes.map(n => renderNode(n, theme)).join('\n')}
+
+    <!-- Edge labels (top-most for legibility; collision-avoided) -->
+    ${edgeLabelsMarkup}
   </g>
 
   <!-- Legend -->

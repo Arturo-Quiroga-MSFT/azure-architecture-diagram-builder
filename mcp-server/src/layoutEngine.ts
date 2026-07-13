@@ -117,6 +117,21 @@ function getCategoryColor(category: string) {
   return CATEGORY_COLORS[category] ?? CATEGORY_COLORS['other'];
 }
 
+// Stable group header color: map common tier/label keywords to a fixed palette
+// entry so a given tier (e.g. "Data Tier") keeps the same color across diagrams
+// regardless of its position. Falls back to index-based assignment for labels
+// that don't match a known tier keyword.
+function groupColorFor(label: string, idx: number): { bg: string; border: string } {
+  const l = label.toLowerCase();
+  if (/identity|entra|\baad\b|auth/.test(l)) return GROUP_COLORS[2];              // yellow
+  if (/data|database|storage|\bsql\b|cosmos|cache|persist/.test(l)) return GROUP_COLORS[1]; // green
+  if (/security|\bops\b|monitor|governance|observ|backup|defender|sentinel/.test(l)) return GROUP_COLORS[4]; // red
+  if (/\bapi\b|gateway|apim|integration|messaging|event|queue|bus/.test(l)) return GROUP_COLORS[5]; // teal
+  if (/edge|ingress|front|\bcdn\b|\bdns\b|\bwaf\b|perimeter|network/.test(l)) return GROUP_COLORS[0]; // blue
+  if (/app|compute|web|frontend|backend|application|service|processing|tier/.test(l)) return GROUP_COLORS[3]; // purple
+  return GROUP_COLORS[idx % GROUP_COLORS.length];
+}
+
 // ── Layout computation ─────────────────────────────────────────────────
 
 const NODE_WIDTH = 200;
@@ -239,7 +254,7 @@ function computeFlatLayout(
   // Extract positioned groups
   const positionedGroups: PositionedGroup[] = groups.map((group, idx) => {
     const gNode = g.node(`group-${group.id}`);
-    const groupColor = GROUP_COLORS[idx % GROUP_COLORS.length];
+    const groupColor = groupColorFor(group.label, idx);
     if (!gNode) {
       return {
         id: group.id,
@@ -392,7 +407,7 @@ function computeGroupedLayout(
     const areaLeft = boxLeft + GROUP_INNER_PAD;
     const areaTop = boxTop + GROUP_INNER_PAD + GROUP_HEADER_H;
     for (const [name, p] of s.pos) nodePos.set(name, { x: areaLeft + p.x, y: areaTop + p.y });
-    const color = GROUP_COLORS[idx % GROUP_COLORS.length];
+    const color = groupColorFor(grp.label, idx);
     positionedGroups.push({
       id: grp.id, label: grp.label,
       x: areaLeft, y: areaTop, width: effW, height: s.height,
