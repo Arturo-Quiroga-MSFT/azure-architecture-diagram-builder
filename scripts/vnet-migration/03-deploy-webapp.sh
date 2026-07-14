@@ -86,7 +86,13 @@ if az containerapp show -n "$NEW_APP" -g "$RG" -o none 2>/dev/null; then
   echo "✓ App $NEW_APP already exists — updating image to $ACR_IMAGE"
   az containerapp registry set -n "$NEW_APP" -g "$RG" \
     --server "$ACR.azurecr.io" --username "$ACR_USER" --password "$ACR_PW" -o none
-  az containerapp update -n "$NEW_APP" -g "$RG" --image "$ACR_IMAGE" -o none
+  # The :vnet tag string is unchanged between deploys, so ACA would NOT create a
+  # new revision (it only diffs the template, not the resolved digest). Force a
+  # unique revision suffix so the new image digest is actually pulled and served.
+  REV_SUFFIX="v$(date +%Y%m%d%H%M%S)"
+  echo "  ↻ forcing new revision: $REV_SUFFIX"
+  az containerapp update -n "$NEW_APP" -g "$RG" --image "$ACR_IMAGE" \
+    --revision-suffix "$REV_SUFFIX" -o none
 else
   echo "🚀 Creating $NEW_APP in $NEW_ENV ..."
   az containerapp create -n "$NEW_APP" -g "$RG" \
