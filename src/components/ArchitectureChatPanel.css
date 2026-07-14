@@ -144,6 +144,38 @@
 }
 .arch-chat-chip:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Per-turn follow-up suggestions rendered under the latest reply. */
+.arch-chat-followups {
+  margin: 0.4rem 0 0.2rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed rgba(167, 139, 250, 0.25);
+}
+.arch-chat-followups-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #c4b5fd;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.5rem;
+}
+/* Compact horizontal wrap for the follow-up chips (vs. the stacked empty state). */
+.arch-chat-suggestions-inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.arch-chat-suggestions-inline .arch-chat-chip {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+  border-radius: 999px;
+}
+.arch-chat-chip-followup {
+  background: rgba(139, 92, 246, 0.14);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
 .arch-chat-msg {
   display: flex;
   gap: 0.45rem;

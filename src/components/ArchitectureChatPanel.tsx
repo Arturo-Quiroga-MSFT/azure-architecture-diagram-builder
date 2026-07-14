@@ -107,6 +107,9 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  // Suggestions the user has already picked this session, so follow-up chips
+  // keep advancing instead of re-offering the same ideas.
+  const [usedSuggestions, setUsedSuggestions] = useState<Set<string>>(new Set());
   const [modelSettings] = useModelSettings();
 
   const threadRef = useRef<HTMLDivElement>(null);
@@ -115,6 +118,18 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   const configured = isAzureOpenAIConfigured();
   const hasDiagram = currentArchitecture.nodes.some((n) => n.type === 'azureNode');
   const modelName = MODEL_CONFIG[modelSettings.model]?.displayName || modelSettings.model;
+
+  const markUsed = (s: string) =>
+    setUsedSuggestions((prev) => (prev.has(s) ? prev : new Set(prev).add(s)));
+
+  // Live, context-aware follow-ups shown under the latest reply during an active
+  // chat. Recomputed from the current (post-change) canvas, so they evolve as the
+  // diagram grows; already-picked ideas are filtered out.
+  const followUps = hasDiagram
+    ? computeRefineSuggestions(currentArchitecture.nodes)
+        .filter((s) => !usedSuggestions.has(s))
+        .slice(0, 3)
+    : [];
 
   // Auto-scroll to the newest message.
   useEffect(() => {
@@ -231,7 +246,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
                   key={s}
                   className="arch-chat-chip"
                   disabled={isSending || !configured}
-                  onClick={() => send(s)}
+                  onClick={() => { markUsed(s); send(s); }}
                 >
                   {s}
                 </button>
@@ -242,7 +257,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
                   key={s}
                   className="arch-chat-chip arch-chat-chip-advanced"
                   disabled={isSending || !configured}
-                  onClick={() => send(s)}
+                  onClick={() => { markUsed(s); send(s); }}
                 >
                   {s}
                 </button>
@@ -276,6 +291,26 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
           <div className="arch-chat-msg arch-chat-msg-assistant">
             <Loader2 size={15} className="arch-chat-msg-icon spin" />
             <div className="arch-chat-bubble arch-chat-bubble-pending">Updating the diagram…</div>
+          </div>
+        )}
+
+        {messages.length > 0 && configured && !isSending && followUps.length > 0 && (
+          <div className="arch-chat-followups">
+            <div className="arch-chat-followups-label">
+              <Sparkles size={12} /> Suggested next steps
+            </div>
+            <div className="arch-chat-suggestions arch-chat-suggestions-inline">
+              {followUps.map((s) => (
+                <button
+                  key={s}
+                  className="arch-chat-chip arch-chat-chip-followup"
+                  disabled={isSending || !configured}
+                  onClick={() => { markUsed(s); send(s); }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
