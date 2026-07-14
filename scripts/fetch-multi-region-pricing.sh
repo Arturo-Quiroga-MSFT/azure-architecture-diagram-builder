@@ -143,20 +143,26 @@ fetch_pricing() {
   local filter="serviceName eq '$service' and armRegionName eq '$region' and priceType eq 'Consumption'"
   
   # Fetch with pagination (limit to 1000 items per service/region to capture Foundry services)
-  # Use --data-urlencode to properly encode the filter parameter
-  curl -s -G "https://prices.azure.com/api/retail/prices" \
-    --data-urlencode "api-version=2023-01-01-preview" \
-    --data-urlencode "\$filter=$filter" \
-    --data-urlencode "\$top=1000" \
-    -o "$output_file"
-  
-  # Check if successful
-  if [ -s "$output_file" ]; then
-    local item_count=$(jq '.Items | length' "$output_file" 2>/dev/null)
-    echo "    ✓ Downloaded $item_count items"
-  else
-    echo "    ✗ Failed to download"
-  fi
+  # Retry on rate-limiting / non-JSON bodies so we never persist an error string
+  # (e.g. "Too many requests...") into a pricing file, which would break the build.
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    curl -s -G "https://prices.azure.com/api/retail/prices" \
+      --data-urlencode "api-version=2023-01-01-preview" \
+      --data-urlencode "\$filter=$filter" \
+      --data-urlencode "\$top=1000" \
+      -o "$output_file"
+
+    if [ -s "$output_file" ] && jq -e '.Items' "$output_file" >/dev/null 2>&1; then
+      local item_count=$(jq '.Items | length' "$output_file" 2>/dev/null)
+      echo "    ✓ Downloaded $item_count items"
+      return 0
+    fi
+    echo "    ⚠ attempt $attempt: invalid/rate-limited response, retrying..."
+    sleep 5
+  done
+  echo "    ✗ Failed to download valid JSON for $service in $region"
+  return 1
 }
 
 # Function to fetch global service pricing (no region filter)
@@ -169,20 +175,25 @@ fetch_global_pricing() {
   # Build filter without region
   local filter="serviceName eq '$service' and priceType eq 'Consumption'"
   
-  # Fetch with pagination
-  curl -s -G "https://prices.azure.com/api/retail/prices" \
-    --data-urlencode "api-version=2023-01-01-preview" \
-    --data-urlencode "\$filter=$filter" \
-    --data-urlencode "\$top=1000" \
-    -o "$output_file"
-  
-  # Check if successful
-  if [ -s "$output_file" ]; then
-    local item_count=$(jq '.Items | length' "$output_file" 2>/dev/null)
-    echo "    ✓ Downloaded $item_count items (global)"
-  else
-    echo "    ✗ Failed to download"
-  fi
+  # Retry on rate-limiting / non-JSON bodies (same guard as fetch_pricing).
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    curl -s -G "https://prices.azure.com/api/retail/prices" \
+      --data-urlencode "api-version=2023-01-01-preview" \
+      --data-urlencode "\$filter=$filter" \
+      --data-urlencode "\$top=1000" \
+      -o "$output_file"
+
+    if [ -s "$output_file" ] && jq -e '.Items' "$output_file" >/dev/null 2>&1; then
+      local item_count=$(jq '.Items | length' "$output_file" 2>/dev/null)
+      echo "    ✓ Downloaded $item_count items (global)"
+      return 0
+    fi
+    echo "    ⚠ attempt $attempt: invalid/rate-limited response, retrying..."
+    sleep 5
+  done
+  echo "    ✗ Failed to download valid JSON for $service (global)"
+  return 1
 }
 
 # Iterate through regions and services
