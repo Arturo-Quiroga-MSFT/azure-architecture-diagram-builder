@@ -280,6 +280,45 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
+// ── Admin: read persisted feedback (protected) ──────────────────────────────
+// Lets an operator read verbatim comments from Cosmos server-side — the app
+// reaches Cosmos via the private endpoint, so this works even though the
+// account has public network access disabled. Protected by a shared admin
+// token (FEEDBACK_ADMIN_TOKEN); the endpoint is disabled (503) when unset.
+const FEEDBACK_ADMIN_TOKEN = process.env.FEEDBACK_ADMIN_TOKEN || '';
+
+function adminTokenMatches(presented) {
+  if (!presented || presented.length !== FEEDBACK_ADMIN_TOKEN.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(FEEDBACK_ADMIN_TOKEN));
+}
+
+app.get('/api/feedback/list', async (req, res) => {
+  if (!FEEDBACK_ADMIN_TOKEN) {
+    return res.status(503).json({ error: 'Feedback admin endpoint is not configured' });
+  }
+  const auth = req.get('authorization') || '';
+  const presented = auth.startsWith('Bearer ') ? auth.slice(7) : (req.get('x-admin-token') || '');
+  if (!adminTokenMatches(presented)) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+
+  const container = getFeedbackContainer();
+  if (!container) {
+    return res.status(503).json({ error: 'Feedback storage is not configured' });
+  }
+
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 1000);
+  try {
+    const { resources } = await container.items
+      .query('SELECT c.id, c.rating, c.category, c.comment, c.context, c.createdAt FROM c ORDER BY c.createdAt DESC')
+      .fetchAll();
+    res.json({ count: Math.min(resources.length, limit), items: resources.slice(0, limit) });
+  } catch (err) {
+    console.error('[feedback/list] error:', err.message);
+    res.status(500).json({ error: 'Failed to read feedback' });
+  }
+});
+
 const PORT = parseInt(process.env.TOKEN_SERVER_PORT || '3001', 10);
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`[speech-token] Listening on 127.0.0.1:${PORT}`);
