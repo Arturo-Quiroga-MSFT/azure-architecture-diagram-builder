@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Azure Diagram Builder — Usage Report</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* Header */
+header.report {
+  background: var(--cp-bg-elevated);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  padding: 32px 34px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  margin-bottom: 22px;
+}
+.brandrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--cp-accent); flex: none; }
+header.report h1 { margin: 0; font-size: 1.9rem; letter-spacing: -0.02em; }
+.subtitle { color: var(--cp-text-muted); margin: 10px 0 0; font-size: 1.02rem; }
+.meta { color: var(--cp-text-soft); font-size: 0.85rem; margin-top: 14px; display: flex; gap: 8px 18px; flex-wrap: wrap; }
+.meta code { font-family: Consolas, "Courier New", Courier, monospace; background: var(--cp-surface-soft); padding: 1px 7px; border-radius: 6px; border: 1px solid var(--cp-border); }
+
+.callout {
+  margin-top: 20px;
+  border-left: 4px solid var(--cp-warning);
+  background: var(--cp-accent-soft);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 0.9rem;
+  color: var(--cp-text-muted);
+}
+.callout strong { color: var(--cp-text); }
+.callout ul { margin: 8px 0 0; padding-left: 20px; }
+.callout li { margin: 3px 0; }
+
+/* Section */
+section { margin-top: 34px; }
+.section-title { font-size: 1.25rem; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+.section-title::before { content: ""; width: 4px; height: 20px; border-radius: 3px; background: var(--cp-accent); display: inline-block; }
+.section-sub { color: var(--cp-text-soft); font-size: 0.88rem; margin: 0 0 18px; }
+
+/* KPI grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.kpi {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.kpi .val { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; color: var(--cp-accent); }
+.kpi .lbl { font-size: 0.82rem; color: var(--cp-text-muted); margin-top: 2px; }
+.kpi .sub { font-size: 0.74rem; color: var(--cp-text-soft); margin-top: 6px; }
+
+/* Cards / charts */
+.cards { display: grid; gap: 18px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+.card {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.card h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.card .hint { color: var(--cp-text-soft); font-size: 0.8rem; margin: 0 0 14px; }
+.chart-box { position: relative; height: 300px; }
+.chart-box.tall { height: 380px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--cp-border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
+th { background: var(--cp-surface-soft); color: var(--cp-text-muted); font-weight: 600; position: sticky; top: 0; }
+tbody tr:hover { background: var(--cp-accent-soft); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.mono { font-family: Consolas, "Courier New", Courier, monospace; font-size: 0.8rem; color: var(--cp-text-muted); }
+.bar-cell { position: relative; }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 0.74rem; font-weight: 600; background: var(--cp-accent-soft); color: var(--cp-accent); }
+
+footer.report { margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--cp-border); color: var(--cp-text-soft); font-size: 0.82rem; }
+.theme-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 50;
+  background: var(--cp-surface); color: var(--cp-text);
+  border: 1px solid var(--cp-border); border-radius: 999px;
+  padding: 7px 14px; font-size: 0.8rem; cursor: pointer;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  font-family: inherit;
+}
+.theme-toggle:hover { border-color: var(--cp-border-strong); }
+@media print {
+  .theme-toggle { display: none; }
+  body { background: #fff; }
+  .card, .kpi, header.report { box-shadow: none; break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle">◐ Theme</button>
+<div class="wrap">
+
+  <header class="report">
+    <div class="brandrow"><span class="brand-dot"></span><h1>Azure Diagram Builder — Usage Report</h1></div>
+    <p class="subtitle">Executive usage analysis for the <strong>Azure Architecture Diagram Builder</strong> (<a href="https://aka.ms/diagram-builder" style="color:var(--cp-link)">aka.ms/diagram-builder</a>).</p>
+    <div class="meta">
+      <span><strong>Requested window:</strong> 2026-01-01 → 2026-07-14</span>
+      <span><strong>Actual data coverage:</strong> 2026-04-17 → 2026-07-14 (~89 days)</span>
+      <span>Source: <code>aq-app-insights-001</code></span>
+      <span>Generated 2026-07-14</span>
+    </div>
+    <div class="callout">
+      <strong>Data coverage &amp; methodology — read first</strong>
+      <ul>
+        <li><strong>Telemetry launched 2026-04-17.</strong> There is no data for Jan 1 – Apr 16; every figure reflects the ~89-day window from Apr 17 onward.</li>
+        <li><strong>"Users" = unique anonymous browsers</strong> (cookie-based ID), a reach proxy — cleared cookies / incognito / new device each count as a new user, so counts may overstate unique people.</li>
+        <li>Counts use Application Insights <code>dcount()</code> (~1–2% approximation); browser telemetry is not bot-filtered. Volumes are organically distributed, so confidence is high.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <section id="kpis">
+    <h2 class="section-title">Headline KPIs</h2>
+    <p class="section-sub">Totals across the coverage window.</p>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="val">767</div><div class="lbl">Unique users</div><div class="sub">anonymous browsers</div></div>
+      <div class="kpi"><div class="val">1,110</div><div class="lbl">Sessions</div><div class="sub">1.4 per user</div></div>
+      <div class="kpi"><div class="val">6,995</div><div class="lbl">Tracked events</div><div class="sub">13 feature types</div></div>
+      <div class="kpi"><div class="val">1,565</div><div class="lbl">Architectures generated</div><div class="sub">by 587 users</div></div>
+      <div class="kpi"><div class="val">52</div><div class="lbl">Countries</div><div class="sub">377 cities</div></div>
+      <div class="kpi"><div class="val">4.35</div><div class="lbl">Avg feedback rating</div><div class="sub">48 submissions</div></div>
+    </div>
+  </section>
+
+  <!-- Growth -->
+  <section id="growth">
+    <h2 class="section-title">Adoption &amp; growth</h2>
+    <p class="section-sub">Monthly active users, sessions and events. July is a partial month (14 days) yet already the largest — strong, accelerating adoption.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Monthly activity</h3><p class="hint">Users &amp; sessions (bars, left axis) vs. events (line, right axis)</p><div class="chart-box"><canvas id="growthChart"></canvas></div></div>
+      <div class="card"><h3>Feature growth over time</h3><p class="hint">Events per feature per month — usage broadening across capabilities</p><div class="chart-box"><canvas id="featureGrowthChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- Feature usage -->
+  <section id="features">
+    <h2 class="section-title">Feature usage</h2>
+    <p class="section-sub">AI generation is the core loop; export and validation show downstream value realization.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Events by feature</h3><p class="hint">Total instances over the window</p><div class="chart-box tall"><canvas id="featureChart"></canvas></div></div>
+      <div class="card"><h3>Export formats</h3><p class="hint">909 exports — users take real artifacts away</p><div class="chart-box tall"><canvas id="exportChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- AI models -->
+  <section id="models">
+    <h2 class="section-title">AI model usage</h2>
+    <p class="section-sub">3,210 model calls · 20.3M tokens. GPT-5.2 is the workhorse default; a long tail of 17 models is actively exercised.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Calls by model (top 12)</h3><p class="hint">Share of the 3,210 AI calls</p><div class="chart-box tall"><canvas id="modelChart"></canvas></div></div>
+      <div class="card"><h3>Avg latency vs. tokens (top 12)</h3><p class="hint">Avg latency (s) — reasoning-heavy models cost more time</p><div class="chart-box tall"><canvas id="latencyChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- Geography -->
+  <section id="geo">
+    <h2 class="section-title">Geographic reach</h2>
+    <p class="section-sub">Global footprint across 52 countries; US-led with strong EMEA and APAC presence.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Top 12 countries by users</h3><div class="chart-box tall"><canvas id="countryChart"></canvas></div></div>
+      <div class="card"><h3>Azure region preferences</h3><p class="hint">Pricing region selected in-app (region changes)</p><div class="chart-box tall"><canvas id="regionChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- Quality / feedback -->
+  <section id="quality">
+    <h2 class="section-title">Quality &amp; feedback</h2>
+    <p class="section-sub">73% of ratings are 5-star; WAF validation scores cluster in the low-60s, signalling real architectural rigor.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Feedback rating distribution</h3><p class="hint">48 submissions · avg 4.35 / 5</p><div class="chart-box"><canvas id="ratingChart"></canvas></div></div>
+      <div class="card"><h3>WAF validation score by model</h3><p class="hint">Avg Well-Architected score (models with ≥3 validations)</p><div class="chart-box"><canvas id="wafChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- Power users table -->
+  <section id="power">
+    <h2 class="section-title">Power users</h2>
+    <p class="section-sub">Top 12 by event volume — a committed core driving deep, repeat engagement.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>User (anon)</th><th class="num">Events</th><th class="num">Sessions</th><th class="num">Features</th><th>Country</th><th>City</th></tr></thead>
+        <tbody id="powerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="report">
+    <p><strong>Methodology.</strong> Data pulled from Azure Application Insights custom events emitted by the Diagram Builder web app, filtered to 13 first-party feature events (Foundry agent traces sharing the resource are excluded). "Users"/"Sessions" via <code>dcount(user_Id)</code> / <code>dcount(session_Id)</code>. Verbatim feedback comments are stored in Cosmos DB (not shown here for privacy). Coverage window: 2026-04-17 → 2026-07-14.</p>
+    <p>Generated 2026-07-14 · Azure Architecture Diagram Builder · Subscription <code>ARTURO-MngEnvMCAP094150</code></p>
+  </footer>
+
+</div>
+
+<script>
+// ---- Data ----
+const DATA = {
+  months: ["Apr","May","Jun","Jul*"],
+  monthlyUsers: [4,109,314,365],
+  monthlySessions: [11,172,458,472],
+  monthlyEvents: [82,1370,2509,3034],
+  featureGrowth: {
+    "AI generation":      [40,676,1039,1455],
+    "Architecture gen":   [21,250,462,832],
+    "Diagram export":     [11,173,423,302],
+    "WAF validation":     [1,74,109,105],
+    "Deploy guide":       [1,21,49,24]
+  },
+  features: [
+    ["AI model usage",3210],["Architecture generated",1565],["Diagram exported",909],
+    ["Region changed",417],["Architecture validated",289],["Start fresh",123],
+    ["Image imported",111],["Deploy guide generated",95],["Models compared",81],
+    ["Version operation",56],["Recommendations applied",51],["User feedback",48],["Template imported",40]
+  ],
+  exports: [
+    ["json",302],["png",183],["drawio",102],["pptx",81],["svg",67],["html",38],
+    ["csv",38],["workflow-anim",32],["animated-svg",23],["vsdx",20]
+  ],
+  models: [
+    ["GPT-5.2",1389,58.5],["GPT-5.4",395,75.2],["GPT-5.1",376,52.8],["Grok 4.1 Fast",167,10.9],
+    ["GPT-5.4 Mini",133,27.7],["GPT-5.6 Luna",127,16.2],["GPT-5.3 Codex",96,49.8],
+    ["DeepSeek V3.2",77,25.7],["GPT-5.2 Codex",77,29.9],["DeepSeek V4 Pro",76,38.2],
+    ["Kimi K2.5",76,52.2],["Mistral Large 3",70,41.9]
+  ],
+  countries: [
+    ["United States",299],["India",98],["United Kingdom",80],["Australia",43],
+    ["Netherlands",35],["Canada",24],["Japan",14],["South Africa",13],
+    ["Switzerland",12],["Germany",11],["Singapore",9],["Greece",9]
+  ],
+  regions: [
+    ["westeurope",117],["eastus2",112],["australiaeast",73],["swedencentral",37],
+    ["canadacentral",29],["southeastasia",20],["brazilsouth",16],["mexicocentral",13]
+  ],
+  ratings: { "5★":35, "4★":5, "3★":1, "2★":4, "1★":3 },
+  waf: [
+    ["gpt-5.6-sol",76.0],["gpt-5.1",65.7],["gpt-5.4",64.2],["gpt-5.2",63.5],
+    ["gpt-5.2-codex",60.0],["gpt-5.3-codex",56.3]
+  ],
+  power: [
+    ["uadN2x5…FEbEG",805,34,13,"United States","Boydton"],
+    ["0buyeHz…vJNrZ",510,49,13,"United States","Boydton"],
+    ["H3Q2jG5…DTfwH2",277,16,8,"Canada","Burlington"],
+    ["vpJhmCv…xp+6a6",228,3,8,"Canada","Burlington"],
+    ["hgOTm0d…Sg2zxF",113,11,5,"Greece","Souda"],
+    ["ZI8GB9b…kxtH32",98,1,4,"Canada","Burlington"],
+    ["/jpYzdd…Ur56ab",91,12,6,"Canada","Burlington"],
+    ["uZ3mU/J…ibJeA2",81,6,6,"Mexico","Toluca De Lerdo"],
+    ["Qd9dzcK…AY7Om",79,7,8,"Canada","Burlington"],
+    ["/lgFccU…fN0Yc",76,3,6,"Netherlands","Amsterdam"],
+    ["BQEQX3o…16msh",57,9,8,"Greece","Athina"],
+    ["MjuQO82…P7JhS",55,2,8,"United States","Boydton"]
+  ]
+};
+
+// ---- Theme-aware chart palette ----
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function palette(n){
+  // rose-anchored categorical ramp that reads well in both themes
+  const base = ["#b11f4b","#d4517a","#e88aa6","#8a1a41","#c76b8e","#f0a9c0","#e0648a","#a83d63","#d98fac","#7a1638","#cf7b98","#efb6c9"];
+  const out = []; for(let i=0;i<n;i++) out.push(base[i%base.length]); return out;
+}
+function chartDefaults(){
+  const text = cssVar('--cp-text-muted') || '#5c5c5c';
+  const grid = cssVar('--cp-border') || '#dedede';
+  Chart.defaults.color = text;
+  Chart.defaults.font.family = '"Segoe UI", Aptos, Calibri, sans-serif';
+  Chart.defaults.borderColor = grid;
+  return { text, grid };
+}
+
+let CHARTS = [];
+function destroyAll(){ CHARTS.forEach(c=>c.destroy()); CHARTS = []; }
+
+function buildCharts(){
+  destroyAll();
+  const { grid } = chartDefaults();
+  const accent = cssVar('--cp-accent');
+  const link = cssVar('--cp-link');
+  const success = cssVar('--cp-success');
+  const warning = cssVar('--cp-warning');
+  const gridCfg = { grid: { color: grid, drawBorder:false } };
+
+  // Growth combo
+  CHARTS.push(new Chart(document.getElementById('growthChart'), {
+    data: {
+      labels: DATA.months,
+      datasets: [
+        { type:'bar', label:'Users', data:DATA.monthlyUsers, backgroundColor:accent, yAxisID:'y', borderRadius:6 },
+        { type:'bar', label:'Sessions', data:DATA.monthlySessions, backgroundColor:link, yAxisID:'y', borderRadius:6 },
+        { type:'line', label:'Events', data:DATA.monthlyEvents, borderColor:warning, backgroundColor:warning, yAxisID:'y1', tension:0.35, borderWidth:3, pointRadius:4 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ ...gridCfg, position:'left', title:{display:true,text:'Users / Sessions'} },
+               y1:{ position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Events'} } },
+      plugins:{ legend:{ position:'bottom' } } }
+  }));
+
+  // Feature growth stacked
+  const fgColors = palette(Object.keys(DATA.featureGrowth).length);
+  CHARTS.push(new Chart(document.getElementById('featureGrowthChart'), {
+    type:'line',
+    data:{ labels:DATA.months, datasets:Object.entries(DATA.featureGrowth).map(([k,v],i)=>({
+      label:k, data:v, borderColor:fgColors[i], backgroundColor:fgColors[i]+'33', tension:0.35, borderWidth:2.5, pointRadius:3, fill:false })) },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{...gridCfg}, x:{grid:{display:false}} }, plugins:{ legend:{position:'bottom'} } }
+  }));
+
+  // Feature horizontal bar
+  CHARTS.push(new Chart(document.getElementById('featureChart'), {
+    type:'bar',
+    data:{ labels:DATA.features.map(f=>f[0]), datasets:[{ data:DATA.features.map(f=>f[1]), backgroundColor:palette(DATA.features.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  // Export bar
+  CHARTS.push(new Chart(document.getElementById('exportChart'), {
+    type:'bar',
+    data:{ labels:DATA.exports.map(f=>f[0]), datasets:[{ data:DATA.exports.map(f=>f[1]), backgroundColor:palette(DATA.exports.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  // Model doughnut
+  CHARTS.push(new Chart(document.getElementById('modelChart'), {
+    type:'doughnut',
+    data:{ labels:DATA.models.map(m=>m[0]), datasets:[{ data:DATA.models.map(m=>m[1]), backgroundColor:palette(DATA.models.length), borderWidth:2, borderColor:cssVar('--cp-surface') }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right', labels:{boxWidth:12, font:{size:11}}} }, cutout:'55%' }
+  }));
+
+  // Latency bar
+  CHARTS.push(new Chart(document.getElementById('latencyChart'), {
+    type:'bar',
+    data:{ labels:DATA.models.map(m=>m[0]), datasets:[{ label:'Avg latency (s)', data:DATA.models.map(m=>m[2]), backgroundColor:palette(DATA.models.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg, title:{display:true,text:'seconds'}}, y:{grid:{display:false}} } }
+  }));
+
+  // Country bar
+  CHARTS.push(new Chart(document.getElementById('countryChart'), {
+    type:'bar',
+    data:{ labels:DATA.countries.map(c=>c[0]), datasets:[{ data:DATA.countries.map(c=>c[1]), backgroundColor:accent, borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  // Region bar
+  CHARTS.push(new Chart(document.getElementById('regionChart'), {
+    type:'bar',
+    data:{ labels:DATA.regions.map(r=>r[0]), datasets:[{ data:DATA.regions.map(r=>r[1]), backgroundColor:link, borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  // Rating bar (colored by sentiment)
+  const rlabels = Object.keys(DATA.ratings);
+  const rcolors = [success, success, warning, cssVar('--cp-danger'), cssVar('--cp-danger')];
+  CHARTS.push(new Chart(document.getElementById('ratingChart'), {
+    type:'bar',
+    data:{ labels:rlabels, datasets:[{ data:Object.values(DATA.ratings), backgroundColor:rcolors, borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{...gridCfg}, x:{grid:{display:false}} } }
+  }));
+
+  // WAF bar
+  CHARTS.push(new Chart(document.getElementById('wafChart'), {
+    type:'bar',
+    data:{ labels:DATA.waf.map(w=>w[0]), datasets:[{ label:'Avg WAF score', data:DATA.waf.map(w=>w[1]), backgroundColor:palette(DATA.waf.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg, min:0, max:100, title:{display:true,text:'score / 100'}}, y:{grid:{display:false}} } }
+  }));
+}
+
+// Power users table
+(function(){
+  const b = document.getElementById('powerBody');
+  DATA.power.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="num">${i+1}</td><td class="mono">${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td>`;
+    b.appendChild(tr);
+  });
+})();
+
+buildCharts();
+
+// Theme toggle
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur==='dark'?'light':'dark');
+  buildCharts();
+});
+</script>
+</body>
+</html>
