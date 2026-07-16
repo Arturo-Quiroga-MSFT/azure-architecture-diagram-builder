@@ -68,7 +68,9 @@ import { exportAndDownloadDrawio } from './services/drawioExporter';
 import { buildVsdxBlob } from './services/visioVsdxExporter';
 import { exportDiagramAsPptx, exportArchitectureDeck, type DeckService } from './services/pptxExporter';
 import { extractArchitectureFromArm, summarizeCoverage } from './services/armExtractor';
-import { queryResourceGroupResources, buildArchitectureFromResources } from './services/resourceGraphAdapter';
+import { buildArchitectureFromResources } from './services/resourceGraphAdapter';
+import { getResources as getAzureResources } from './services/azureImportProvider';
+import { isDelegatedAuthConfigured, getSignedInName, consumeReopenFlag } from './services/msalAuth';
 import { exportDiagramAsHtml } from './services/htmlDiagramExporter';
 import {
   applyLayoutPreset,
@@ -157,6 +159,14 @@ function App() {
 
   const [isImportingTemplate, setIsImportingTemplate] = useState(false);
   const [isAzureImportOpen, setIsAzureImportOpen] = useState(false);
+  // After a delegated sign-in redirect returns, re-open the "Import from Azure"
+  // modal so the user lands back where they left off (now signed in).
+  useEffect(() => {
+    if (!isDelegatedAuthConfigured()) return;
+    getSignedInName().then((name) => {
+      if (name && consumeReopenFlag()) setIsAzureImportOpen(true);
+    });
+  }, []);
   const [importFormatLabel, setImportFormatLabel] = useState('Template');
   const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -2619,7 +2629,7 @@ function App() {
   // Edges are inferred from resource IDs embedded in properties. The same
   // deterministic mapping is used as the file-based ARM import.
   const importFromAzure = useCallback(async (subscriptionId: string, resourceGroup: string) => {
-    const resources = await queryResourceGroupResources(subscriptionId, resourceGroup);
+    const resources = await getAzureResources(subscriptionId, resourceGroup);
     const { architecture, coverage } = buildArchitectureFromResources(resources);
     if (architecture.services.length === 0) {
       throw new Error('No mappable Azure resources were found in this resource group.');

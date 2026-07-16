@@ -2,24 +2,31 @@
 // Licensed under the MIT License.
 
 import React, { useEffect, useState } from 'react';
-import { X, DownloadCloud, RefreshCw, AlertTriangle } from 'lucide-react';
+import { X, DownloadCloud, RefreshCw, AlertTriangle, LogIn } from 'lucide-react';
+import { AzureImportDisabledError } from '../services/azureImport';
 import {
-  listSubscriptions,
-  listResourceGroups,
-  AzureImportDisabledError,
+  isDelegatedMode,
+  ensureSignedIn,
+  getSubscriptions,
+  getResourceGroups,
   type AzureSubscription,
   type AzureResourceGroup,
-} from '../services/azureImport';
+} from '../services/azureImportProvider';
+import { getSignedInName } from '../services/msalAuth';
 import './AzureImportModal.css';
 
 interface AzureImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Runs the export + deterministic extraction + apply; resolves when done. */
+  /** Runs the query + deterministic mapping + apply; resolves when done. */
   onImport: (subscriptionId: string, resourceGroup: string) => Promise<void>;
 }
 
 const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, onImport }) => {
+  const delegated = isDelegatedMode();
+  const [account, setAccount] = useState<string | undefined>(undefined);
+  const [needsSignIn, setNeedsSignIn] = useState(delegated);
+  const [signingIn, setSigningIn] = useState(false);
   const [subs, setSubs] = useState<AzureSubscription[]>([]);
   const [groups, setGroups] = useState<AzureResourceGroup[]>([]);
   const [subId, setSubId] = useState('');
@@ -30,13 +37,10 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
   const [disabled, setDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load subscriptions when the modal opens.
-  useEffect(() => {
-    if (!isOpen) return;
-    setError(null);
-    setDisabled(false);
+  const loadSubs = () => {
     setLoadingSubs(true);
-    listSubscriptions()
+    setError(null);
+    getSubscriptions()
       .then((s) => {
         setSubs(s);
         if (s.length === 1) setSubId(s[0].subscriptionId);
@@ -46,6 +50,20 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
         else setError(e.message || 'Failed to list subscriptions');
       })
       .finally(() => setLoadingSubs(false));
+  };
+
+  // On open: server mode loads subs immediately; delegated mode loads subs only
+  // once the user is signed in (otherwise show the sign-in gate).
+  useEffect(() => {
+    if (!isOpen) return;
+    setError(null);
+    setDisabled(false);
+    if (!delegated) { setNeedsSignIn(false); loadSubs(); return; }
+    getSignedInName().then((name) => {
+      if (name) { setAccount(name); setNeedsSignIn(false); loadSubs(); }
+      else { setNeedsSignIn(true); }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Load resource groups when a subscription is chosen.
@@ -53,13 +71,28 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
     if (!subId) { setGroups([]); setRg(''); return; }
     setLoadingGroups(true);
     setError(null);
-    listResourceGroups(subId)
+    getResourceGroups(subId)
       .then(setGroups)
       .catch((e) => setError(e.message || 'Failed to list resource groups'))
       .finally(() => setLoadingGroups(false));
   }, [subId]);
 
   if (!isOpen) return null;
+
+  const handleSignIn = async () => {
+    setSigningIn(true);
+    setError(null);
+    try {
+      const name = await ensureSignedIn();
+      setAccount(name);
+      setNeedsSignIn(false);
+      loadSubs();
+    } catch (e: any) {
+      setError(e?.message || 'Sign-in failed');
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   const handleImport = async () => {
     if (!subId || !rg) return;
@@ -102,11 +135,24 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
                 </p>
               </div>
             </div>
+          ) : needsSignIn ? (
+            <div className="azimp-signin">
+              <p className="azimp-intro">
+                Sign in with your Azure account to reverse-engineer a resource group you have access to.
+                We request read-only <strong>Azure Service Management</strong> access and query only what
+                <strong> your</strong> permissions allow — nothing is stored.
+              </p>
+              <button className="btn-primary azimp-signin-btn" onClick={handleSignIn} disabled={signingIn}>
+                <LogIn size={16} />
+                {signingIn ? 'Signing in…' : 'Sign in to Azure'}
+              </button>
+            </div>
           ) : (
             <>
               <p className="azimp-intro">
-                Reverse-engineer a deployed resource group into a diagram. The template is exported
-                server-side and mapped deterministically — a faithful mirror of what's actually running.
+                Reverse-engineer a deployed resource group into a diagram — a faithful mirror of what's
+                actually running, mapped deterministically from Azure Resource Graph.
+                {account && <> Signed in as <strong>{account}</strong>.</>}
               </p>
 
               <div className="form-group">
@@ -146,7 +192,7 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
               {importing && (
                 <div className="azimp-progress">
                   <RefreshCw size={16} className="spin-icon" />
-                  Exporting <strong>{rg}</strong> and building the diagram… large resource groups can take a minute.
+                  Scanning <strong>{rg}</strong> and building the diagram…
                 </div>
               )}
             </>
@@ -157,7 +203,7 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
 
         <div className="modal-actions">
           <button className="btn-secondary" onClick={onClose} disabled={importing}>Cancel</button>
-          {!disabled && (
+          {!disabled && !needsSignIn && (
             <button className="btn-primary" onClick={handleImport} disabled={!subId || !rg || importing}>
               {importing ? 'Importing…' : 'Import resource group'}
             </button>

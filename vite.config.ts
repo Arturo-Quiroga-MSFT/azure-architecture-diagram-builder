@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    // Allow the MSAL sign-in popup to communicate back to the opener window.
+    // Without this, the Microsoft login redirect can split the popup into a
+    // separate browsing-context group and MSAL's postMessage handshake times out.
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    },
     proxy: {
       // Forward /api/ to the local speech token server (mirrors nginx in production)
       '/api': {
