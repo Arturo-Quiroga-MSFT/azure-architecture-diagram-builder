@@ -90,6 +90,9 @@ az acr build --registry acrazurediagrams1767583743 \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25=$VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE=$VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE" \
     --build-arg "VITE_SPEECH_REGION=$VITE_SPEECH_REGION" \
+    --build-arg "VITE_AZURE_AD_CLIENT_ID=${VITE_AZURE_AD_CLIENT_ID:-}" \
+    --build-arg "VITE_AZURE_AD_AUTHORITY=${VITE_AZURE_AD_AUTHORITY:-}" \
+    --build-arg "VITE_ARM_SCOPE=${VITE_ARM_SCOPE:-}" \
     .
 
 echo "🔄 Updating Container App..."
