@@ -11,6 +11,8 @@ export interface DiagramVersion {
   timestamp: number;
   diagramName: string;
   architecturePrompt?: string;
+  /** The first prompt of the diagram lineage (survives chat refinements). */
+  originalPrompt?: string;
   validationScore?: number;
   parentVersionId?: string;
   improvementsApplied?: string[];
@@ -149,6 +151,7 @@ export const createSnapshot = async (
   diagramName: string,
   options?: {
     architecturePrompt?: string;
+    originalPrompt?: string;
     validationScore?: number;
     parentVersionId?: string;
     improvementsApplied?: string[];

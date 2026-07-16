@@ -12,6 +12,7 @@
     "dev:avatar": "concurrently --names \"token,vite\" --prefix-colors \"cyan,blue\" \"bash scripts/start-token-server.sh\" \"vite --port 3002 --strictPort\"",
     "demo:record": "node scripts/demo-recording.mjs",
     "pricing:refresh": "cd scripts && bash fetch-multi-region-pricing.sh",
+    "test:arm": "node scripts/test-arm-extractor.mjs",
     "mcp:build": "cd mcp-server && npm run build",
     "mcp:start": "node mcp-server/dist/index.js"
   },

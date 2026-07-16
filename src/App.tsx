@@ -20,7 +20,7 @@ import { captureDiagramAsPng, captureDiagramAsSvg } from './utils/captureCanvas'
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -43,6 +43,7 @@ import ValidationModal from './components/ValidationModal';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
 import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
+import AzureImportModal from './components/AzureImportModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
 import CompareModelsModal from './components/CompareModelsModal';
 import CompareValidationModal from './components/CompareValidationModal';
@@ -65,7 +66,9 @@ import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType } from './stores/modelSe
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import { exportAndDownloadDrawio } from './services/drawioExporter';
 import { buildVsdxBlob } from './services/visioVsdxExporter';
-import { exportDiagramAsPptx } from './services/pptxExporter';
+import { exportDiagramAsPptx, exportArchitectureDeck, type DeckService } from './services/pptxExporter';
+import { extractArchitectureFromArm, summarizeCoverage } from './services/armExtractor';
+import { queryResourceGroupResources, buildArchitectureFromResources } from './services/resourceGraphAdapter';
 import { exportDiagramAsHtml } from './services/htmlDiagramExporter';
 import {
   applyLayoutPreset,
@@ -144,11 +147,16 @@ function App() {
   const [nodes, setNodes, onNodesChangeBase] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [architecturePrompt, setArchitecturePrompt] = useState<string>('');
+  // The FIRST prompt of the current diagram lineage. Unlike architecturePrompt
+  // (which each chat refinement overwrites), this is captured once when the
+  // canvas is empty so the customer deck's "brief" reflects the original ask.
+  const [originalPrompt, setOriginalPrompt] = useState<string>('');
   const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const [isImportingTemplate, setIsImportingTemplate] = useState(false);
+  const [isAzureImportOpen, setIsAzureImportOpen] = useState(false);
   const [importFormatLabel, setImportFormatLabel] = useState('Template');
   const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
@@ -1286,7 +1294,155 @@ function App() {
     }, 800);
   }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData]);
 
-  // ── az prototype export removed (feature unused) ─────────────────────
+  const exportCustomerDeck = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) return;
+
+    const azureNodes = nodes.filter(n => n.type === 'azureNode');
+    if (azureNodes.length === 0) {
+      alert('Add or generate an architecture first, then export a customer deck.');
+      return;
+    }
+
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+    setTimeout(async () => {
+      try {
+        const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+          excludePanels: true,
+        });
+
+        // Service inventory from the diagram nodes. Group membership is via
+        // React Flow's parent link (parentNode/parentId) → the group node's
+        // label; category is derived from the icon path (/Icons/<category>/…).
+        const groupLabelById = new Map<string, string>();
+        nodes.filter(n => n.type === 'groupNode').forEach(g => {
+          const label = (g.data?.label as string) || '';
+          if (label) groupLabelById.set(g.id, label);
+        });
+        const categoryFromIcon = (iconPath?: string): string | undefined => {
+          const m = iconPath?.match(/\/Icons\/([^/]+)\//i);
+          if (!m) return undefined;
+          return m[1].replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        };
+        const services: DeckService[] = azureNodes.map(n => {
+          const parentId = (n as Node & { parentNode?: string; parentId?: string }).parentNode
+            ?? (n as Node & { parentNode?: string; parentId?: string }).parentId;
+          return {
+            name: (n.data?.label as string) || 'Unnamed service',
+            category: categoryFromIcon(n.data?.iconPath as string),
+            group: (parentId ? groupLabelById.get(parentId) : undefined) || undefined,
+          };
+        });
+
+        // Optional WAF review
+        const validation = validationResult ? {
+          overallScore: validationResult.overallScore,
+          overallLabel: bandLabel(validationResult.overallScore),
+          summary: validationResult.summary,
+          pillars: validationResult.pillars.map(p => ({ pillar: p.pillar, score: p.score, maturity: bandLabel(p.score) })),
+          findings: (validationResult.quickWins.length > 0
+            ? validationResult.quickWins
+            : validationResult.pillars.flatMap(p => p.findings)
+          )
+            .slice()
+            .sort((a, b) => {
+              const rank = { critical: 0, high: 1, medium: 2, low: 3 } as Record<string, number>;
+              return (rank[a.severity] ?? 9) - (rank[b.severity] ?? 9);
+            })
+            .slice(0, 6)
+            .map(f => ({ severity: f.severity, category: f.category, issue: f.issue, recommendation: f.recommendation })),
+          modelUsed: validationResult.modelUsed,
+        } : null;
+
+        // Optional cost estimate — enriched to mirror the Cost Intelligence
+        // report (annual projection, fixed vs usage split, top drivers %, and
+        // an optional multi-region comparison).
+        const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
+        const hasCost = breakdown.totalMonthlyCost > 0;
+
+        // Multi-region comparison (best-effort; reprices over local pricing data)
+        let regions: Array<{ name: string; flag?: string; monthly: number; annual: number; isCurrent: boolean; isCheapest: boolean }> | undefined;
+        if (hasCost) {
+          try {
+            const results: { info: RegionInfo; total: number }[] = [];
+            for (const rInfo of AVAILABLE_REGIONS) {
+              try {
+                const repriced = await refreshAllNodePricing(nodes, rInfo.id);
+                const rb = calculateCostBreakdown(repriced, rInfo.id, pricingMode);
+                results.push({ info: rInfo, total: rb.totalMonthlyCost });
+              } catch { /* skip a region that fails to reprice */ }
+            }
+            results.sort((a, b) => a.total - b.total);
+            if (results.length > 1) {
+              const min = results[0].total;
+              const activeRegion = getActiveRegion();
+              regions = results.map(r => ({
+                name: r.info.displayName,
+                flag: r.info.flag,
+                monthly: r.total,
+                annual: r.total * 12,
+                isCurrent: r.info.id === activeRegion,
+                isCheapest: r.total === min,
+              }));
+            }
+          } catch { /* multi-region is optional */ }
+        }
+
+        const azureServiceNodes = nodes.filter(n => n.type === 'azureNode');
+        const fixedCost = hasCost
+          ? breakdown.byService
+              .filter(svc => { const node = azureServiceNodes.find(n => n.id === svc.nodeId); return !(node?.data?.pricing as any)?.isUsageBased; })
+              .reduce((sum, svc) => sum + svc.cost, 0)
+          : 0;
+        const cost = hasCost ? {
+          totalMonthly: breakdown.totalMonthlyCost,
+          annual: breakdown.totalMonthlyCost * 12,
+          currency: breakdown.currency || 'USD',
+          term: breakdown.pricingTerm,
+          region: breakdown.region,
+          pricesAsOf: breakdown.pricesAsOf,
+          fixedCost,
+          usageCost: breakdown.totalMonthlyCost - fixedCost,
+          byCategory: breakdown.byCategory
+            .slice()
+            .sort((a, b) => b.cost - a.cost)
+            .map(c => ({ category: c.category, cost: c.cost, percentage: c.percentage })),
+          topServices: breakdown.byService
+            .slice()
+            .sort((a, b) => b.cost - a.cost)
+            .slice(0, 10)
+            .map(s => ({
+              serviceName: s.serviceName,
+              cost: s.cost,
+              tier: s.tier,
+              percentage: breakdown.totalMonthlyCost > 0 ? (s.cost / breakdown.totalMonthlyCost) * 100 : 0,
+            })),
+          regions,
+        } : null;
+
+        const fileName = await exportArchitectureDeck(imageDataUrl, {
+          diagramName: titleBlockData.architectureName || 'Azure Architecture',
+          author: titleBlockData.author || 'Azure Architect',
+          date: titleBlockData.date || new Date().toLocaleDateString(),
+          isDarkMode,
+          prompt: (originalPrompt || architecturePrompt) || undefined,
+          model: generatedWithModel?.name,
+          services,
+          validation,
+          cost,
+        });
+
+        recordExport('pptx', fileName);
+        trackExport('pptx-deck', azureNodes.length);
+      } catch (err) {
+        console.error('Error exporting customer deck:', err);
+        alert('Failed to export the customer deck. Please try again.');
+      }
+    }, 800);
+  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, validationResult, pricingMode, architecturePrompt, originalPrompt, generatedWithModel]);
+
+  // ── az prototype export removed (feature unused) ───────────────────────
 
   const saveDiagram = useCallback(() => {
     const flow = reactFlowInstance?.toObject();
@@ -1298,6 +1454,7 @@ function App() {
       },
       workflow: workflow.length > 0 ? workflow : undefined,
       architecturePrompt: architecturePrompt || undefined,
+      originalPrompt: originalPrompt || architecturePrompt || undefined,
     };
     const dataStr = JSON.stringify(diagramData, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
@@ -1309,7 +1466,7 @@ function App() {
     link.click();
     recordExport('json', fileName);
     trackExport('json', nodes.filter(n => n.type === 'azureNode').length);
-  }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt, nodes]);
+  }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt, originalPrompt, nodes]);
 
   const exportCostBreakdown = useCallback(() => {
     // Calculate the cost breakdown
@@ -1701,6 +1858,8 @@ function App() {
       if (flow.architecturePrompt) {
         setArchitecturePrompt(flow.architecturePrompt);
       }
+      // Restore the original brief (fall back to the saved prompt).
+      setOriginalPrompt(flow.originalPrompt || flow.architecturePrompt || '');
     },
     [setNodes, setEdges, reactFlowInstance]
   );
@@ -1763,6 +1922,7 @@ function App() {
       if (version.architecturePrompt) {
         setArchitecturePrompt(version.architecturePrompt);
       }
+      setOriginalPrompt(version.originalPrompt || version.architecturePrompt || '');
       
       console.log('✅ Version restored successfully');
       trackVersionOperation('restore');
@@ -1781,6 +1941,7 @@ function App() {
         titleBlockData.architectureName,
         {
           architecturePrompt,
+          originalPrompt: originalPrompt || architecturePrompt || undefined,
           validationScore: validationResult?.overallScore,
           notes: notes || 'Manual snapshot',
           metadata: titleBlockData,
@@ -1793,11 +1954,15 @@ function App() {
       console.error('Failed to save manual snapshot:', error);
       throw error;
     }
-  }, [nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow]);
+  }, [nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow]);
 
   const handleAIGenerate = useCallback(async (architecture: any, prompt: string, autoSnapshot: boolean = true) => {
     try {
       console.log('Generating architecture from:', architecture);
+      // A generation while a diagram already exists is a refinement (the modal
+      // builds a modification prompt); only the first, from-empty generation
+      // establishes the original brief.
+      const isRefinement = nodes.length > 0;
       // Capture (or clear) the editorial reference-architecture payload so the
       // Export menu can re-emit the publication-style PNG on demand.
       setLastReferenceArchitecture(architecture?.__referenceArchitecture ?? null);
@@ -1843,6 +2008,7 @@ function App() {
             titleBlockData.architectureName,
             {
               architecturePrompt: architecturePrompt || 'Previous version',
+              originalPrompt: originalPrompt || architecturePrompt || undefined,
               validationScore: validationResult?.overallScore,
               notes: 'Auto-saved before AI regeneration',
               metadata: titleBlockData,
@@ -1867,6 +2033,9 @@ function App() {
 
       // Store the prompt and workflow for display
       setArchitecturePrompt(prompt);
+      // Preserve the ORIGINAL prompt across chat refinements so the customer
+      // deck's "brief" always shows the first ask, not the latest tweak.
+      if (!isRefinement) setOriginalPrompt(prompt);
 
       // Pick up an architecture name from the AI payload (manifest.title in
       // Both mode) or derive a short title from the prompt so the banner
@@ -2318,7 +2487,7 @@ function App() {
       console.error('Error in handleAIGenerate:', error);
       alert('Failed to generate diagram. Check console for details.');
     }
-  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle]);
+  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle]);
 
   // ── az prototype import ──────────────────────────────────────────────
   // (Import az prototype UI removed — feature unused.)
@@ -2390,6 +2559,24 @@ function App() {
 
       setImportFormatLabel(detection.label);
       const filenames = fileContents.map(f => f.name);
+      const extraCount = filenames.length > 1 ? ` (+${filenames.length - 1} files)` : '';
+
+      // ── ARM: deterministic extraction (faithful mirror of the template) ──
+      // Parse resources + real dependsOn/resourceId edges directly instead of
+      // asking the LLM to interpret. Falls back to the LLM path only when the
+      // template contains no recognizable resources.
+      if (detection.format === 'arm') {
+        const template = JSON.parse(fileContents[0].text);
+        const { architecture, coverage } = extractArchitectureFromArm(template);
+        if (architecture.services.length > 0) {
+          clearSourceModel();
+          const promptLabel = `ARM Template: ${filenames[0]}${extraCount} — ${summarizeCoverage(coverage)}`;
+          trackTemplateImport('arm', filenames[0], filenames.length);
+          handleAIGenerate(architecture, promptLabel);
+          return;
+        }
+        console.warn('Deterministic ARM extraction found no mappable resources; falling back to LLM.');
+      }
 
       let content: string | object;
       if (detection.format === 'arm') {
@@ -2413,7 +2600,6 @@ function App() {
       clearSourceModel();
 
       // Build descriptive prompt label
-      const extraCount = filenames.length > 1 ? ` (+${filenames.length - 1} files)` : '';
       const promptLabel = `${detection.label} Template: ${filenames[0]}${extraCount}`;
 
       trackTemplateImport(detection.format, filenames[0], filenames.length);
@@ -2427,6 +2613,22 @@ function App() {
       event.target.value = '';
     }
   }, [handleAIGenerate, detectIaCFormat]);
+
+  // Reverse-engineer a live Azure resource group into a diagram via Azure
+  // Resource Graph (Reader-sufficient, returns only real top-level resources).
+  // Edges are inferred from resource IDs embedded in properties. The same
+  // deterministic mapping is used as the file-based ARM import.
+  const importFromAzure = useCallback(async (subscriptionId: string, resourceGroup: string) => {
+    const resources = await queryResourceGroupResources(subscriptionId, resourceGroup);
+    const { architecture, coverage } = buildArchitectureFromResources(resources);
+    if (architecture.services.length === 0) {
+      throw new Error('No mappable Azure resources were found in this resource group.');
+    }
+    clearSourceModel();
+    const promptLabel = `Azure RG: ${resourceGroup} — ${summarizeCoverage(coverage)}`;
+    trackTemplateImport('arm', `rg:${resourceGroup}`, 1);
+    handleAIGenerate(architecture, promptLabel);
+  }, [handleAIGenerate]);
 
   const handleAlign = useCallback((type: string) => {
     const selectedNodes = nodes.filter(n => n.selected);
@@ -2808,6 +3010,14 @@ function App() {
                     disabled={isImportingTemplate}
                   />
                 </label>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setIsAzureImportOpen(true)}
+                  title="Reverse-engineer a live Azure resource group into a diagram (local / self-host)"
+                >
+                  <DownloadCloud size={18} />
+                  Import from Azure
+                </button>
               </div>
 
               <div className="toolbar-group">
@@ -2972,6 +3182,19 @@ function App() {
                       <button
                         className="toolbar-dropdown-item"
                         role="menuitem"
+                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          exportCustomerDeck();
+                        }}
+                        title="Export a customer-ready PowerPoint deck: title, diagram, services, plus WAF review and cost estimate when available"
+                      >
+                        <Presentation size={18} />
+                        Export Customer Deck (PPTX)
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
                         onClick={() => {
                           setIsExportMenuOpen(false);
                           exportAsDrawio();
@@ -3073,6 +3296,7 @@ function App() {
                       setNodes([]);
                       setEdges([]);
                       setArchitecturePrompt('');
+                      setOriginalPrompt('');
                       setWorkflow([]);
                       setGeneratedWithModel(null);
                       setValidationResult(null);
@@ -3892,6 +4116,11 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         onSave={handleSaveSnapshot}
         diagramName={titleBlockData.architectureName}
         serviceCount={nodes.filter(n => n.type === 'azureNode').length}
+      />
+      <AzureImportModal
+        isOpen={isAzureImportOpen}
+        onClose={() => setIsAzureImportOpen(false)}
+        onImport={importFromAzure}
       />
       <CompareModelsModal
         isOpen={isCompareModelsOpen}

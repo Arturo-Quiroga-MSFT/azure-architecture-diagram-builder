@@ -97,6 +97,7 @@ const PANEL_CLASSES = [
   'workflow-panel',
   'alignment-toolbar',
   'icon-palette',
+  'canvas-nav-hint',
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────

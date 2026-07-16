@@ -237,6 +237,113 @@ app.get('/api/ice-token', async (_req, res) => {
 });
 
 // ── Feedback (Cosmos DB) ──────────────────────────────────────────────────────
+// ── Azure resource import (Resource Graph) ────────────────────────────────
+// Lets an operator reverse-engineer a live Resource Group into a diagram by
+// querying Azure Resource Graph server-side (via DefaultAzureCredential) and
+// letting the client map the result deterministically. Resource Graph is
+// Reader-sufficient and returns only real top-level resources.
+//
+// SECURITY: these routes let the *server identity* enumerate and export
+// resources, so they are DISABLED by default and only enabled when
+// AZURE_IMPORT_ENABLED=true. Leave unset on any shared/public deployment —
+// the app's managed identity must never be exposed through /api/. Intended for
+// local dev (`az login`) and single-tenant self-host.
+const AZURE_IMPORT_ENABLED = String(process.env.AZURE_IMPORT_ENABLED || '').toLowerCase() === 'true';
+const ARM_BASE = 'https://management.azure.com';
+const GUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+// Azure RG names: letters, digits, '.', '_', '-', '(', ')'; 1-90 chars; no trailing period.
+const RG_NAME_RE = /^[A-Za-z0-9._()-]{1,90}$/;
+
+async function armToken() {
+  const { token } = await credential.getToken('https://management.azure.com/.default');
+  return token;
+}
+
+// Guard applied to every /api/azure/* route.
+function requireAzureImport(_req, res, next) {
+  if (!AZURE_IMPORT_ENABLED) {
+    return res.status(503).json({ error: 'Azure import is disabled. Set AZURE_IMPORT_ENABLED=true to enable (local / self-host only).' });
+  }
+  next();
+}
+
+app.get('/api/azure/subscriptions', requireAzureImport, async (_req, res) => {
+  try {
+    const token = await armToken();
+    const r = await fetch(`${ARM_BASE}/subscriptions?api-version=2022-12-01`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!r.ok) {
+      const body = await r.text().catch(() => '');
+      console.error(`[azure-import] subscriptions ${r.status}: ${body.slice(0, 300)}`);
+      return res.status(502).json({ error: `Failed to list subscriptions (${r.status})` });
+    }
+    const data = await r.json();
+    const subs = (data.value || []).map((s) => ({ subscriptionId: s.subscriptionId, displayName: s.displayName }));
+    res.json({ subscriptions: subs });
+  } catch (err) {
+    console.error('[azure-import] subscriptions error:', err.message);
+    res.status(500).json({ error: 'Failed to list subscriptions' });
+  }
+});
+
+app.get('/api/azure/resource-groups', requireAzureImport, async (req, res) => {
+  const subscriptionId = String(req.query.subscriptionId || '');
+  if (!GUID_RE.test(subscriptionId)) {
+    return res.status(400).json({ error: 'invalid subscriptionId' });
+  }
+  try {
+    const token = await armToken();
+    const r = await fetch(`${ARM_BASE}/subscriptions/${subscriptionId}/resourcegroups?api-version=2021-04-01`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!r.ok) {
+      const body = await r.text().catch(() => '');
+      console.error(`[azure-import] resource-groups ${r.status}: ${body.slice(0, 300)}`);
+      return res.status(502).json({ error: `Failed to list resource groups (${r.status})` });
+    }
+    const data = await r.json();
+    const groups = (data.value || []).map((g) => ({ name: g.name, location: g.location })).sort((a, b) => a.name.localeCompare(b.name));
+    res.json({ resourceGroups: groups });
+  } catch (err) {
+    console.error('[azure-import] resource-groups error:', err.message);
+    res.status(500).json({ error: 'Failed to list resource groups' });
+  }
+});
+
+app.post('/api/azure/resource-graph', requireAzureImport, async (req, res) => {
+  const { subscriptionId, resourceGroup } = req.body || {};
+  if (!GUID_RE.test(String(subscriptionId || ''))) {
+    return res.status(400).json({ error: 'invalid subscriptionId' });
+  }
+  if (!RG_NAME_RE.test(String(resourceGroup || '')) || String(resourceGroup).endsWith('.')) {
+    return res.status(400).json({ error: 'invalid resourceGroup' });
+  }
+  try {
+    const token = await armToken();
+    // Reader-sufficient: returns top-level resources only (no ARM export noise).
+    // resourceGroup is validated above; strip single quotes defensively so it
+    // cannot break out of the KQL string literal.
+    const rg = String(resourceGroup).replace(/'/g, '');
+    const query = `Resources | where resourceGroup =~ '${rg}' | project id, name, type, kind, location, properties | limit 1000`;
+    const r = await fetch(`${ARM_BASE}/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscriptions: [subscriptionId], query, options: { resultFormat: 'objectArray' } }),
+    });
+    if (!r.ok) {
+      const body = await r.text().catch(() => '');
+      console.error(`[azure-import] resource-graph ${r.status}: ${body.slice(0, 300)}`);
+      return res.status(502).json({ error: `Resource Graph query failed (${r.status})` });
+    }
+    const data = await r.json();
+    res.json({ resources: Array.isArray(data.data) ? data.data : [] });
+  } catch (err) {
+    console.error('[azure-import] resource-graph error:', err.message);
+    res.status(500).json({ error: 'Resource Graph query failed' });
+  }
+});
+
 app.post('/api/feedback', async (req, res) => {
   const container = getFeedbackContainer();
   if (!container) {
