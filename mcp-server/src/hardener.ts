@@ -133,7 +133,7 @@ export function hardenArchitecture(
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
-    if (anchor) { const s = addConnection({ from: 'Entra ID', to: anchor.name, label: 'authN/authZ', type: 'sync' }); if (s) conns.push(s); }
+    if (anchor) { const s = addConnection({ from: 'Entra ID', to: anchor.name, label: 'Authenticate and authorize access', type: 'sync' }); if (s) conns.push(s); }
     if (added) changes.push({ pattern: 'no-identity', action: 'Added Microsoft Entra ID for centralized authentication', addedServices: ['Entra ID'], addedConnections: conns });
   }
 
@@ -148,7 +148,7 @@ export function hardenArchitecture(
       HARDEN_EDGE_GROUP,
     );
     const conns: string[] = [];
-    if (entry) { const s = addConnection({ from: 'Front Door', to: entry.name, label: 'route', type: 'sync' }); if (s) conns.push(s); }
+    if (entry) { const s = addConnection({ from: 'Front Door', to: entry.name, label: 'Route global traffic to entry point', type: 'sync' }); if (s) conns.push(s); }
     const cleared = [patterns.has('single-region') ? 'single-region' : '', patterns.has('no-waf') ? 'no-waf' : ''].filter(Boolean).join(' + ') || 'no-waf';
     if (addedFd) changes.push({ pattern: cleared, action: 'Added Azure Front Door as global edge (enables WAF + multi-region failover)', addedServices: ['Front Door'], addedConnections: conns });
   }
@@ -159,7 +159,7 @@ export function hardenArchitecture(
       HARDEN_EDGE_GROUP,
     );
     const conns: string[] = [];
-    if (fd) { const s = addConnection({ from: fd.name, to: 'WAF Policy', label: 'inspect', type: 'sync' }); if (s) conns.push(s); }
+    if (fd) { const s = addConnection({ from: fd.name, to: 'WAF Policy', label: 'Inspect requests for web threats', type: 'sync' }); if (s) conns.push(s); }
     if (addedWaf) changes.push({ pattern: 'no-waf', action: 'Added Web Application Firewall policy on the edge', addedServices: ['WAF Policy'], addedConnections: conns });
   }
 
@@ -172,7 +172,7 @@ export function hardenArchitecture(
       HARDEN_GATEWAY_GROUP,
     );
     const conns: string[] = [];
-    if (backend) { const s = addConnection({ from: 'API Management', to: backend.name, label: 'gateway', type: 'sync' }); if (s) conns.push(s); }
+    if (backend) { const s = addConnection({ from: 'API Management', to: backend.name, label: 'Proxy and secure backend API', type: 'sync' }); if (s) conns.push(s); }
     if (addedApim && patterns.has('no-api-gateway')) changes.push({ pattern: 'no-api-gateway', action: 'Added API Management as the unified API gateway', addedServices: ['API Management'], addedConnections: conns });
   }
 
@@ -188,8 +188,8 @@ export function hardenArchitecture(
           // Drop the direct edge; route frontend → APIM → db instead.
           const idx = connections.indexOf(c);
           if (idx >= 0) connections.splice(idx, 1);
-          const a = addConnection({ from: c.from, to: apim.name, label: 'api', type: 'sync' });
-          const b = addConnection({ from: apim.name, to: c.to, label: 'data', type: 'sync' });
+          const a = addConnection({ from: c.from, to: apim.name, label: 'Send API request through gateway', type: 'sync' });
+          const b = addConnection({ from: apim.name, to: c.to, label: 'Forward request to backend service', type: 'sync' });
           if (a) rewired.push(a);
           if (b) rewired.push(b);
         }
@@ -209,7 +209,7 @@ export function hardenArchitecture(
         { name: replicaName, type: primary.type, description: 'Geo-replicated read replica', groupId: primary.groupId },
       );
       const conns: string[] = [];
-      const s = addConnection({ from: primary.name, to: replicaName, label: 'geo-replicate', type: 'async' });
+      const s = addConnection({ from: primary.name, to: replicaName, label: 'Geo-replicate data for failover', type: 'async' });
       if (s) conns.push(s);
       if (added) changes.push({ pattern: 'single-database', action: `Added a geo-replicated replica of ${primary.name}`, addedServices: [replicaName], addedConnections: conns });
     }
@@ -223,7 +223,7 @@ export function hardenArchitecture(
       compute?.groupId ? undefined : undefined,
     );
     const conns: string[] = [];
-    if (compute) { const s = addConnection({ from: compute.name, to: 'Redis Cache', label: 'cache', type: 'sync' }); if (s) conns.push(s); }
+    if (compute) { const s = addConnection({ from: compute.name, to: 'Redis Cache', label: 'Cache hot data for low latency', type: 'sync' }); if (s) conns.push(s); }
     if (added) changes.push({ pattern: 'no-cache', action: 'Added Azure Cache for Redis between compute and data tiers', addedServices: ['Redis Cache'], addedConnections: conns });
   }
 
@@ -235,7 +235,7 @@ export function hardenArchitecture(
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
-    if (compute) { const s = addConnection({ from: compute.name, to: 'Key Vault', label: 'secrets', type: 'sync' }); if (s) conns.push(s); }
+    if (compute) { const s = addConnection({ from: compute.name, to: 'Key Vault', label: 'Retrieve secrets and certificates', type: 'sync' }); if (s) conns.push(s); }
     if (added) changes.push({ pattern: 'no-key-vault', action: 'Added Azure Key Vault for secrets management', addedServices: ['Key Vault'], addedConnections: conns });
   }
 
@@ -247,7 +247,7 @@ export function hardenArchitecture(
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
-    if (db) { const s = addConnection({ from: db.name, to: 'Azure Backup', label: 'backup', type: 'async' }); if (s) conns.push(s); }
+    if (db) { const s = addConnection({ from: db.name, to: 'Azure Backup', label: 'Back up for point-in-time restore', type: 'async' }); if (s) conns.push(s); }
     if (added) changes.push({ pattern: 'no-backup', action: 'Added Azure Backup for disaster recovery', addedServices: ['Azure Backup'], addedConnections: conns });
   }
 
@@ -263,8 +263,8 @@ export function hardenArchitecture(
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
-    if (compute) { const s = addConnection({ from: compute.name, to: 'App Insights', label: 'telemetry', type: 'async' }); if (s) conns.push(s); }
-    const s2 = addConnection({ from: 'App Insights', to: 'Azure Monitor', label: 'metrics', type: 'async' });
+    if (compute) { const s = addConnection({ from: compute.name, to: 'App Insights', label: 'Emit application telemetry', type: 'async' }); if (s) conns.push(s); }
+    const s2 = addConnection({ from: 'App Insights', to: 'Azure Monitor', label: 'Forward metrics and alerts', type: 'async' });
     if (s2) conns.push(s2);
     const added = [addedAi ? 'App Insights' : '', addedMon ? 'Azure Monitor' : ''].filter(Boolean);
     if (added.length) changes.push({ pattern: 'no-monitoring', action: 'Added Application Insights + Azure Monitor for observability', addedServices: added, addedConnections: conns });
