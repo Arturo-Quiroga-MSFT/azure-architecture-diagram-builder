@@ -127,7 +127,7 @@ function chip(slide, x, y, w, label, color) {
     { text: 'Assigns services to logical groups', options: { bullet: true, breakLine: true } },
     { text: 'Declares connections + a workflow narrative', options: { bullet: true, breakLine: true } },
     { text: 'Outputs JSON only — no coordinates, no styling', options: { bullet: true } },
-  ], { x: M + 0.35, y: cy + 0.95, w: colW - 0.7, h: ch - 1.2, fontFace: BODY, fontSize: 14.5, color: INK, lineSpacingMultiple: 1.25, margin: 0 });
+  ], { x: M + 0.35, y: cy + 0.95, w: colW - 0.7, h: ch - 1.2, fontFace: BODY, fontSize: 14.5, color: INK, lineSpacingMultiple: 1.25, valign: 'top', margin: 0 });
 
   // Deterministic column
   const x2 = M + colW + 0.5;
@@ -140,7 +140,7 @@ function chip(slide, x, y, w, label, color) {
     { text: 'Renders groups as containers, typed edges', options: { bullet: true, breakLine: true } },
     { text: 'Computes every position (Dagre / ELK)', options: { bullet: true, breakLine: true } },
     { text: 'Prices services from Azure Retail Prices data', options: { bullet: true } },
-  ], { x: x2 + 0.35, y: cy + 0.95, w: colW - 0.7, h: ch - 1.2, fontFace: BODY, fontSize: 14.5, color: INK, lineSpacingMultiple: 1.25, margin: 0 });
+  ], { x: x2 + 0.35, y: cy + 0.95, w: colW - 0.7, h: ch - 1.2, fontFace: BODY, fontSize: 14.5, color: INK, lineSpacingMultiple: 1.25, valign: 'top', margin: 0 });
 
   s.addText('Why it matters: reproducible, model-swappable, and correct-by-construction — not "AI magic."',
     { x: M, y: 6.55, w: W - 2 * M, h: 0.4, fontFace: HDR, fontSize: 12.5, color: DET, margin: 0 });
@@ -181,7 +181,7 @@ function stageSlide(idx, heading, bullets, codeTitle, codeLines, opts = {}) {
   s.addText(heading, { x: M, y: 1.55, w: W - 2 * M, h: 0.55, fontFace: HDR, fontSize: 24, bold: true, color: INK, margin: 0 });
   const bodyTop = 2.35;
   const leftW = codeLines ? 5.7 : (W - 2 * M);
-  s.addText(bullets, { x: M, y: bodyTop, w: leftW, h: 4.2, fontFace: BODY, fontSize: 15, color: INK, lineSpacingMultiple: 1.28, margin: 0,
+  s.addText(bullets, { x: M, y: bodyTop, w: leftW, h: 4.2, fontFace: BODY, fontSize: 15, color: INK, lineSpacingMultiple: 1.28, valign: 'top', margin: 0,
     // bullets is a rich-text array already
   });
   if (codeLines) {
@@ -189,7 +189,7 @@ function stageSlide(idx, heading, bullets, codeTitle, codeLines, opts = {}) {
     card(s, cx, cy, cw, chh, PANEL2, BORDER);
     s.addText(codeTitle, { x: cx + 0.25, y: cy + 0.16, w: cw - 0.5, h: 0.3, fontFace: HDR, fontSize: 10.5, color: (opts.codeColor || DET), charSpacing: 1, margin: 0 });
     s.addShape(pres.shapes.LINE, { x: cx + 0.25, y: cy + 0.52, w: cw - 0.5, h: 0, line: { color: BORDER, width: 1 } });
-    s.addText(codeLines, { x: cx + 0.25, y: cy + 0.62, w: cw - 0.5, h: chh - 0.8, fontFace: HDR, fontSize: opts.codeSize || 10, color: INK, lineSpacingMultiple: 1.12, margin: 0 });
+    s.addText(codeLines, { x: cx + 0.25, y: cy + 0.62, w: cw - 0.5, h: chh - 0.8, fontFace: HDR, fontSize: opts.codeSize || 10, color: INK, lineSpacingMultiple: 1.12, valign: 'top', margin: 0 });
   }
   footer(s, opts.page);
   return s;
