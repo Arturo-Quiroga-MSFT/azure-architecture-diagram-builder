@@ -30,20 +30,23 @@ interface ArchitectureChatPanelProps {
 // Cold start: when the canvas is empty, offer complete starter architectures
 // so Chat works as a first-class entry point (not just a refinement tool).
 const STARTER_SUGGESTIONS = [
-  'Three-tier web app with App Service, SQL Database, and Redis cache',
-  'Event-driven order processing with Service Bus and Azure Functions',
-  'Secure AI chat app with Azure OpenAI and private endpoints',
-  'Serverless REST API with Functions, Cosmos DB, and a Storage queue',
+  'Customer-facing web app on App Service with Azure SQL and Redis, fronted by Front Door with WAF and Application Insights',
+  'Order-processing pipeline: Service Bus queue to Azure Functions to Cosmos DB, with dead-lettering and secrets in Key Vault',
+  'Internal REST API on Container Apps backed by Azure SQL, secured with Entra ID and API Management',
+  'Document-processing workflow: Blob Storage triggers Functions to run Azure AI Document Intelligence, results in Cosmos DB',
+  'Secure AI assistant: Azure OpenAI behind private endpoints, exposed through API Management with managed identity',
 ];
 
 // Cold start (advanced): richer, enterprise-grade patterns revealed behind a
 // "More ideas" toggle so first-timers aren't overwhelmed but power users can
 // see the tool's ceiling.
 const ADVANCED_STARTER_SUGGESTIONS = [
-  'Hub-and-spoke landing zone with Azure Firewall and private DNS',
-  'Multi-region active-active web app with Front Door and geo-replicated SQL',
-  'RAG chat app: Azure OpenAI + AI Search + Cosmos DB, all behind private endpoints',
-  'Event-driven microservices on AKS with Service Bus, KEDA autoscaling, and Key Vault',
+  'Multi-region active-active e-commerce platform: Front Door, AKS in paired regions, geo-replicated Cosmos DB, and Service Bus for order events',
+  'HIPAA-compliant healthcare data platform: private-endpoint ingestion, AKS clinical workloads, Azure API for FHIR, and Purview governance',
+  'Enterprise landing zone: hub-and-spoke with Azure Firewall, Bastion, private DNS zones, and centralized Log Analytics',
+  'Real-time fraud detection: Event Hubs to Stream Analytics to Azure ML scoring to Cosmos DB, with Event Grid alerting',
+  'RAG knowledge platform: Azure OpenAI + AI Search + Cosmos DB, ingestion via Functions, all behind private endpoints with Entra ID',
+  'Event-driven microservices on AKS: KEDA autoscaling from Service Bus, Key Vault CSI driver, and private-link Container Registry',
 ];
 
 // Warm start: once a diagram exists, offer incremental refinements. Used as a
