@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, X, Loader2, Clock, Zap, Brain, Network, PenTool, Layers } from 'lucide-react';
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';import { generateReferenceArchitectureWithAI } from '../services/referenceArchitectureAI';
 import { generateBlueprintArchitectureWithAI } from '../services/blueprintArchitectureAI';
@@ -15,6 +15,11 @@ import { buildModificationPrompt } from '../services/modificationPrompt';
 import './AIArchitectureGenerator.css';
 
 type GenerationMode = 'topology' | 'reference' | 'blueprint' | 'both';
+
+// After a successful generation the modal stays open this long so the user can
+// review metrics or type a follow-up modification, then auto-closes. Typing a
+// modification or regenerating cancels the pending close (see scheduleAutoClose).
+const AUTO_CLOSE_MS = 45000;
 
 // Blueprint diagrams require general-purpose OpenAI models.
 // - Non-OpenAI partner deployments (DeepSeek, Grok, Mistral, Kimi, etc. —
@@ -83,6 +88,28 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     setMode(m);
     localStorage.setItem('aiGenerator.mode', m);
   };
+
+  // Pending auto-close timer. Tracked in a ref so we can cancel it when the
+  // user starts typing a modification or regenerates (which previously stacked
+  // timers and could close the modal mid-edit), and clean it up on unmount.
+  const autoCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelAutoClose = () => {
+    if (autoCloseTimer.current) {
+      clearTimeout(autoCloseTimer.current);
+      autoCloseTimer.current = null;
+    }
+  };
+  const scheduleAutoClose = () => {
+    cancelAutoClose();
+    autoCloseTimer.current = setTimeout(() => {
+      autoCloseTimer.current = null;
+      setIsOpen(false);
+      setAiMetrics(null);
+      setUploadedImageUrl(null);
+    }, AUTO_CLOSE_MS);
+  };
+  // Clear any pending timer when the component unmounts.
+  useEffect(() => cancelAutoClose, []);
 
 
   // Opt-in: also download an editorial PNG when generating in reference mode.
@@ -224,6 +251,9 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
       return;
     }
 
+    // Regenerating cancels any pending auto-close so a stale timer from the
+    // previous run can't close the modal mid-generation or stack up.
+    cancelAutoClose();
     setIsGenerating(true);
     setError('');
     setAiMetrics(null); // Clear previous metrics
@@ -288,11 +318,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         }
 
         setDescription('');
-        setTimeout(() => {
-          setIsOpen(false);
-          setAiMetrics(null);
-          setUploadedImageUrl(null);
-        }, 45000);
+        scheduleAutoClose();
         return;
       }
 
@@ -313,11 +339,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         }
 
         setDescription('');
-        setTimeout(() => {
-          setIsOpen(false);
-          setAiMetrics(null);
-          setUploadedImageUrl(null);
-        }, 45000);
+        scheduleAutoClose();
         return;
       }
 
@@ -414,11 +436,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
         }
 
         setDescription('');
-        setTimeout(() => {
-          setIsOpen(false);
-          setAiMetrics(null);
-          setUploadedImageUrl(null);
-        }, 45000);
+        scheduleAutoClose();
         return;
       }
 
@@ -441,11 +459,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
       setDescription('');
       
       // Close modal shortly after successful generation
-      setTimeout(() => {
-        setIsOpen(false);
-        setAiMetrics(null);
-        setUploadedImageUrl(null);
-      }, 45000); // Give user 45 seconds to review results or type a modification
+      scheduleAutoClose(); // Give user 45s to review results or type a modification
     } catch (err: any) {
       setError(err.message || 'Failed to generate architecture. Please try again.');
     } finally {
@@ -515,6 +529,9 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
                   value={description}
                   onChange={(e) => {
                     setDescription(e.target.value);
+                    // Typing a modification cancels the pending auto-close so
+                    // the modal doesn't disappear mid-edit.
+                    cancelAutoClose();
                     // Clear imageAnalyzed flag if user clears the text
                     if (!e.target.value.includes('[Analyzed from uploaded diagram]')) {
                       setImageAnalyzed(false);
