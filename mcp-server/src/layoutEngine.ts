@@ -461,15 +461,70 @@ function computeGroupedLayout(
   });
   const rectOf = new Map(positionedNodes.map(n => [n.name, { x: n.x, y: n.y, width: n.width, height: n.height }]));
 
-  // Edges: border-anchor endpoints; the renderer's orthogonal router draws them.
+  // Edges: distributed border ports. Instead of every edge touching a node at
+  // the center of one side (which pinches many edges into a single point), we
+  // group all edges that use the same node side and spread them evenly along
+  // that side, ordered by the opposite endpoint's position to reduce crossings.
   const serviceNames = new Set(services.map(s => s.name));
-  const positionedEdges: PositionedEdge[] = connections
-    .filter(c => serviceNames.has(c.from) && serviceNames.has(c.to) && c.from !== c.to)
-    .map(c => {
-      const ar = rectOf.get(c.from)!, br = rectOf.get(c.to)!;
-      const { s, t } = borderAnchor(ar, br, direction);
-      return { from: c.from, to: c.to, label: c.label ?? '', type: c.type ?? 'sync', points: [s, t] };
+  const validConns = connections.filter(
+    c => serviceNames.has(c.from) && serviceNames.has(c.to) && c.from !== c.to,
+  );
+
+  type Side = 'L' | 'R' | 'T' | 'B';
+  // Pass 1: which side of each endpoint the edge uses (center-to-center).
+  const sides = validConns.map(c => {
+    const a = rectOf.get(c.from)!, b = rectOf.get(c.to)!;
+    const acx = a.x + a.width / 2, acy = a.y + a.height / 2;
+    const bcx = b.x + b.width / 2, bcy = b.y + b.height / 2;
+    if (direction === 'LR') {
+      return bcx >= acx ? { s: 'R' as Side, t: 'L' as Side } : { s: 'L' as Side, t: 'R' as Side };
+    }
+    return bcy >= acy ? { s: 'B' as Side, t: 'T' as Side } : { s: 'T' as Side, t: 'B' as Side };
+  });
+
+  // Pass 2: bucket every edge-end by (node, side).
+  interface EndRef { edgeIdx: number; role: 's' | 't'; sortKey: number }
+  const buckets = new Map<string, EndRef[]>();
+  const perp = (side: Side, other: Rect) =>
+    side === 'L' || side === 'R' ? other.y + other.height / 2 : other.x + other.width / 2;
+  const push = (node: string, side: Side, ref: EndRef) => {
+    const key = `${node}\u0000${side}`;
+    const arr = buckets.get(key); if (arr) arr.push(ref); else buckets.set(key, [ref]);
+  };
+  validConns.forEach((c, i) => {
+    const a = rectOf.get(c.from)!, b = rectOf.get(c.to)!;
+    push(c.from, sides[i].s, { edgeIdx: i, role: 's', sortKey: perp(sides[i].s, b) });
+    push(c.to, sides[i].t, { edgeIdx: i, role: 't', sortKey: perp(sides[i].t, a) });
+  });
+
+  // Pass 3: distribute ports along each side, ordered by sortKey.
+  const anchors: Array<{ s?: { x: number; y: number }; t?: { x: number; y: number } }> =
+    validConns.map(() => ({}));
+  const PORT_MARGIN = 14;
+  for (const [key, list] of buckets) {
+    const sep = key.indexOf('\u0000');
+    const node = key.slice(0, sep);
+    const side = key.slice(sep + 1) as Side;
+    const r = rectOf.get(node)!;
+    list.sort((p, q) => p.sortKey - q.sortKey);
+    const vertical = side === 'L' || side === 'R';
+    const start = vertical ? r.y + PORT_MARGIN : r.x + PORT_MARGIN;
+    const span = (vertical ? r.height : r.width) - 2 * PORT_MARGIN;
+    const fixed = side === 'R' ? r.x + r.width : side === 'L' ? r.x : side === 'B' ? r.y + r.height : r.y;
+    const k = list.length;
+    list.forEach((e, idx) => {
+      const pos = start + (span * (idx + 1)) / (k + 1); // k=1 → center
+      const pt = vertical ? { x: fixed, y: pos } : { x: pos, y: fixed };
+      if (e.role === 's') anchors[e.edgeIdx].s = pt; else anchors[e.edgeIdx].t = pt;
     });
+  }
+
+  const positionedEdges: PositionedEdge[] = validConns.map((c, i) => {
+    const fallback = borderAnchor(rectOf.get(c.from)!, rectOf.get(c.to)!, direction);
+    const s = anchors[i].s ?? fallback.s;
+    const t = anchors[i].t ?? fallback.t;
+    return { from: c.from, to: c.to, label: c.label ?? '', type: c.type ?? 'sync', points: [s, t] };
+  });
 
   // Canvas bounds.
   let maxX = 0, maxY = 0;
