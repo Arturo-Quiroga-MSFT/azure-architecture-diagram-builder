@@ -70,6 +70,14 @@ const iconMap: Record<string, { iconFile: string; category: string }> = JSON.par
 type IconEntry = { iconFile: string; category: string };
 const ICON_MAP = iconMap as Record<string, IconEntry>;
 
+// Shared guidance for connection/edge labels. Terse one-word labels ("data",
+// "cache", "sync") make diagrams hard to read; this steers the calling model to
+// write descriptive, action-oriented phrases like the web app produces.
+const CONN_LABEL_DESC =
+  'Descriptive, action-oriented label for what actually flows across this connection — a 3-6 word phrase, not a single generic word. ' +
+  'Good: "Submit FHIR bundle for ingestion", "Publish order-placed events", "Query product catalog", "Cache session tokens", "Replicate writes to secondary region", "Authenticate via OAuth token". ' +
+  'Avoid vague one-word labels like "data", "sync", "cache", "traffic", or "secrets" — say what moves and why.';
+
 // Reverse map: icon file stem → canonical service name. Lets import_architecture
 // recover a service type from a React Flow node's iconPath when the scene has no
 // explicit type field.
@@ -496,7 +504,7 @@ server.tool(
         z.object({
           from: z.string().describe('Source service name'),
           to: z.string().describe('Target service name'),
-          label: z.string().optional().describe('Connection label'),
+          label: z.string().optional().describe(CONN_LABEL_DESC),
           type: z
             .string()
             .optional()
@@ -962,7 +970,7 @@ server.registerTool(
 
 server.tool(
   'render_diagram',
-  'Render a professional Azure architecture diagram as SVG (for embedding in markdown/SpecKit docs) or as self-contained interactive HTML (with pan, zoom, hover tooltips). Replaces Mermaid text diagrams with Azure-branded visuals using official category colors, dagre layout, and directional edges.',
+  'Render a professional Azure architecture diagram as SVG (for embedding in markdown/SpecKit docs) or as self-contained interactive HTML (with pan, zoom, hover tooltips). Replaces Mermaid text diagrams with Azure-branded visuals using official category colors, dagre layout, and directional edges. IMPORTANT: give every connection a descriptive, action-oriented label (a 3-6 word phrase describing what flows and why, e.g. "Submit FHIR bundle for ingestion"), not a terse one-word label like "data" or "sync" — readable edge labels are what make the diagram understandable.',
   {
     title: z
       .string()
@@ -1009,7 +1017,7 @@ server.tool(
         z.object({
           from: z.string().describe('Source service name'),
           to: z.string().describe('Target service name'),
-          label: z.string().optional().describe('Connection label'),
+          label: z.string().optional().describe(CONN_LABEL_DESC),
           type: z
             .string()
             .optional()
@@ -1017,7 +1025,7 @@ server.tool(
         }),
       )
       .optional()
-      .describe('Connections between services'),
+      .describe('Connections between services. Label each one descriptively so a reader understands the data flow.'),
     groups: z
       .array(
         z.object({
