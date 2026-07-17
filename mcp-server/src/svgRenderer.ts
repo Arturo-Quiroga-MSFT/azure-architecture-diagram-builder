@@ -378,28 +378,141 @@ function rectsOverlap(a: LRect, b: LRect, pad = 0): boolean {
   );
 }
 
-// Build a clean orthogonal (Manhattan) route between an edge's endpoints using
-// a mid-channel trunk. dagre's sparse waypoints, when smoothed, produced long
-// diagonal "sweeps" across the canvas; anchoring to the endpoints and routing
-// through the midpoint channel yields predictable horizontal/vertical segments.
-function orthogonalRoute(points: Pt[], direction: 'TB' | 'LR'): Pt[] {
-  const s = points[0];
-  const t = points[points.length - 1];
-  let raw: Pt[];
-  if (direction === 'LR') {
-    const midX = (s.x + t.x) / 2;
-    raw = [s, { x: midX, y: s.y }, { x: midX, y: t.y }, t];
-  } else {
-    const midY = (s.y + t.y) / 2;
-    raw = [s, { x: s.x, y: midY }, { x: t.x, y: midY }, t];
+// Build a clean orthogonal (Manhattan) route between an edge's endpoints.
+//
+// The trunk (the long mid-channel segment) is shifted into a clear gutter so it
+// avoids zone containers and non-endpoint node cards instead of cutting straight
+// through them. Falls back to the plain midpoint elbow when no clear channel is
+// found, so routing never regresses.
+
+// A rectangle to route around, tagged with what it is so an edge can ignore its
+// own endpoints' node cards and parent zone boxes.
+interface RouteObstacle extends LRect { kind: 'node' | 'group'; id: string; groupId?: string | null }
+
+// Full zone container box as drawn by renderGroup (x-12, y-36, w+24, h+48).
+function buildRouteObstacles(layout: LayoutResult): RouteObstacle[] {
+  const obs: RouteObstacle[] = [];
+  for (const n of layout.nodes) {
+    obs.push({ x: n.x, y: n.y, w: n.width, h: n.height, kind: 'node', id: n.name, groupId: n.groupId ?? null });
   }
-  // Collapse near-duplicate points (endpoints sharing a row/column → straight line).
+  for (const g of layout.groups) {
+    obs.push({ x: g.x - 12, y: g.y - 36, w: g.width + 24, h: g.height + 48, kind: 'group', id: g.id });
+  }
+  return obs;
+}
+
+// Does the axis-aligned segment a→b cross any non-ignored obstacle?
+function segHitsObstacles(a: Pt, b: Pt, obstacles: RouteObstacle[], ignore: (o: RouteObstacle) => boolean, pad = 6): boolean {
+  const seg: LRect = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
+  return obstacles.some(o => !ignore(o) && rectsOverlap(seg, o, pad));
+}
+
+function collapsePoints(raw: Pt[]): Pt[] {
   const out: Pt[] = [];
   for (const p of raw) {
     const last = out[out.length - 1];
     if (!last || Math.abs(last.x - p.x) > 0.5 || Math.abs(last.y - p.y) > 0.5) out.push(p);
   }
-  return out.length >= 2 ? out : [s, t];
+  return out;
+}
+
+function routeClear(pts: Pt[], obstacles: RouteObstacle[], ignore: (o: RouteObstacle) => boolean): boolean {
+  for (let i = 0; i < pts.length - 1; i++) {
+    if (segHitsObstacles(pts[i], pts[i + 1], obstacles, ignore)) return false;
+  }
+  return true;
+}
+
+function orthogonalRoute(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): Pt[] {
+  const s = edge.points[0];
+  const t = edge.points[edge.points.length - 1];
+
+  // Ignore the edge's own endpoint cards and their parent zone boxes — an edge
+  // legitimately exits/enters those.
+  const fromNode = obstacles.find(o => o.kind === 'node' && o.id === edge.from);
+  const toNode = obstacles.find(o => o.kind === 'node' && o.id === edge.to);
+  const fromG = fromNode?.groupId ?? null;
+  const toG = toNode?.groupId ?? null;
+  const ignore = (o: RouteObstacle): boolean =>
+    (o.kind === 'node' && (o.id === edge.from || o.id === edge.to)) ||
+    (o.kind === 'group' && ((fromG != null && o.id === fromG) || (toG != null && o.id === toG)));
+
+  const midpointRoute = (): Pt[] => {
+    const raw: Pt[] = direction === 'LR'
+      ? [s, { x: (s.x + t.x) / 2, y: s.y }, { x: (s.x + t.x) / 2, y: t.y }, t]
+      : [s, { x: s.x, y: (s.y + t.y) / 2 }, { x: t.x, y: (s.y + t.y) / 2 }, t];
+    const c = collapsePoints(raw);
+    return c.length >= 2 ? c : [s, t];
+  };
+
+  // No obstacle data → preserve the original midpoint behavior.
+  if (obstacles.length === 0) return midpointRoute();
+
+  const active = obstacles.filter(o => !ignore(o));
+
+  // Strategy A — 3-segment trunk: shift the mid-channel trunk into a clear gutter.
+  const mid = direction === 'LR' ? (s.x + t.x) / 2 : (s.y + t.y) / 2;
+  const lo = direction === 'LR' ? Math.min(s.x, t.x) : Math.min(s.y, t.y);
+  const hi = direction === 'LR' ? Math.max(s.x, t.x) : Math.max(s.y, t.y);
+  const span = Math.max(hi - lo, 0);
+  const reach = span / 2 + 160; // allow routing a bit past the endpoints into a gutter
+  const step = 16;
+  const trunkOffsets: number[] = [0];
+  for (let d = step; d <= reach; d += step) { trunkOffsets.push(d); trunkOffsets.push(-d); }
+
+  for (const off of trunkOffsets) {
+    const trunk = mid + off;
+    const raw: Pt[] = direction === 'LR'
+      ? [s, { x: trunk, y: s.y }, { x: trunk, y: t.y }, t]
+      : [s, { x: s.x, y: trunk }, { x: t.x, y: trunk }, t];
+    const pts = collapsePoints(raw);
+    if (pts.length >= 2 && routeClear(pts, active, () => false)) return pts;
+  }
+
+  // Strategy B — side detour: exit the source, travel along a side lane parallel
+  // to the flow, then enter the target. Handles a zone sitting directly between
+  // vertically/horizontally separated endpoints (which no trunk shift can clear).
+  // Lanes are kept a label's width inside the canvas so detoured edges + their
+  // label chips never spill off the edge of the diagram.
+  if (active.length > 0) {
+    const e = 24;
+    const LANE_MARGIN = 80;
+    if (direction === 'TB') {
+      const clampLo = LANE_MARGIN, clampHi = canvas.w - LANE_MARGIN;
+      const secMin = Math.min(...active.map(o => o.x)) - 40;
+      const secMax = Math.max(...active.map(o => o.x + o.w)) + 40;
+      const sy = s.y + (t.y >= s.y ? e : -e);
+      const ty = t.y + (t.y >= s.y ? -e : e);
+      const lanes = laneCandidates(s.x, t.x, secMin, secMax).filter(v => v >= clampLo && v <= clampHi);
+      for (const laneX of lanes) {
+        const pts = collapsePoints([s, { x: s.x, y: sy }, { x: laneX, y: sy }, { x: laneX, y: ty }, { x: t.x, y: ty }, t]);
+        if (pts.length >= 2 && routeClear(pts, active, () => false)) return pts;
+      }
+    } else {
+      const clampLo = LANE_MARGIN, clampHi = canvas.h - LANE_MARGIN;
+      const secMin = Math.min(...active.map(o => o.y)) - 40;
+      const secMax = Math.max(...active.map(o => o.y + o.h)) + 40;
+      const sx = s.x + (t.x >= s.x ? e : -e);
+      const tx = t.x + (t.x >= s.x ? -e : e);
+      const lanes = laneCandidates(s.y, t.y, secMin, secMax).filter(v => v >= clampLo && v <= clampHi);
+      for (const laneY of lanes) {
+        const pts = collapsePoints([s, { x: sx, y: s.y }, { x: sx, y: laneY }, { x: tx, y: laneY }, { x: tx, y: t.y }, t]);
+        if (pts.length >= 2 && routeClear(pts, active, () => false)) return pts;
+      }
+    }
+  }
+
+  // Nothing clear — fall back to the midpoint elbow (no regression).
+  return midpointRoute();
+}
+
+// Candidate side-lane positions for a detour, ordered so the shortest detour
+// (closest to an endpoint) is tried first, then outward toward the side gutters.
+function laneCandidates(a: number, b: number, secMin: number, secMax: number): number[] {
+  const set = new Set<number>([a, b, secMin, secMax]);
+  for (let v = secMin; v <= secMax; v += 40) set.add(v);
+  const pref = (v: number) => Math.min(Math.abs(v - a), Math.abs(v - b));
+  return [...set].sort((p, q) => pref(p) - pref(q));
 }
 
 // Emit an SVG path for an orthogonal point list with rounded corners.
@@ -433,11 +546,11 @@ function edgeLabelAnchor(route: Pt[]): Pt {
 
 // Render only the edge path + arrowhead. Labels are rendered separately (and
 // last) so that no later edge line paints over an earlier edge's label chip.
-function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR'): string {
+function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): string {
   if (edge.points.length < 2) return '';
 
   const style = EDGE_STYLES[edge.type] ?? EDGE_STYLES.sync;
-  const route = orthogonalRoute(edge.points, direction);
+  const route = orthogonalRoute(edge, direction, obstacles, canvas);
   const pathData = roundedOrthoPathD(route);
 
   // Arrowhead from the last orthogonal segment (always axis-aligned now).
@@ -470,9 +583,9 @@ interface EdgeLabelBox {
   anchor: Pt;
 }
 
-function edgeLabelBox(edge: PositionedEdge, direction: 'TB' | 'LR'): EdgeLabelBox | null {
+function edgeLabelBox(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): EdgeLabelBox | null {
   if (edge.points.length < 2 || !edge.label) return null;
-  const route = orthogonalRoute(edge.points, direction);
+  const route = orthogonalRoute(edge, direction, obstacles, canvas);
   const lines = wrapLabel(edge.label);
   if (lines.length === 0) return null;
   const maxLen = Math.max(...lines.map(l => l.length));
@@ -505,7 +618,7 @@ function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: T
 // Assign edge-label positions with collision avoidance: chips are nudged
 // along/around their trunk anchor so they don't overlap node cards, group
 // header bands, or previously-placed labels. Returns joined SVG markup.
-function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Theme): string {
+function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Theme, routeObstacles: RouteObstacle[], canvas: { w: number; h: number }): string {
   const obstacles: LRect[] = [
     ...layout.nodes.map(n => ({ x: n.x, y: n.y, w: n.width, h: n.height })),
     // Group header band (see renderGroup: y = group.y - 12 - 24, height 24).
@@ -520,7 +633,7 @@ function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Th
   const placed: LRect[] = [];
   return layout.edges
     .map(edge => {
-      const box = edgeLabelBox(edge, direction);
+      const box = edgeLabelBox(edge, direction, routeObstacles, canvas);
       if (!box) return '';
       let chosen = candidates[0];
       for (const off of candidates) {
@@ -578,6 +691,9 @@ export interface RenderSvgOptions {
 export function renderSvg(layout: LayoutResult, title?: string, options: RenderSvgOptions = {}): string {
   const theme = resolveTheme(options.theme);
   const edgeDir: 'TB' | 'LR' = layout.direction ?? 'TB';
+  // Zone + node rectangles the edge router steers trunks around.
+  const routeObstacles = buildRouteObstacles(layout);
+  const routeCanvas = { w: layout.width, h: layout.height };
 
   // Center the title, but keep it clear of the top-right metadata panel on
   // narrow canvases (approx panel width 210 + margins). Nudge the anchor left
@@ -664,7 +780,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   const totalWithLegend = costY + 22;
 
   // Collision-aware edge labels (kept off nodes + group headers).
-  const edgeLabelsMarkup = placeEdgeLabels(layout, edgeDir, theme);
+  const edgeLabelsMarkup = placeEdgeLabels(layout, edgeDir, theme, routeObstacles, routeCanvas);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" 
@@ -689,7 +805,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
     ${layout.groups.map(renderGroup).join('\n')}
 
     <!-- Edge paths (drawn first so nothing paints over labels) -->
-    ${layout.edges.map(e => renderEdgePath(e, edgeDir)).join('\n')}
+    ${layout.edges.map(e => renderEdgePath(e, edgeDir, routeObstacles, routeCanvas)).join('\n')}
 
     <!-- Nodes (foreground) -->
     ${layout.nodes.map(n => renderNode(n, theme)).join('\n')}
