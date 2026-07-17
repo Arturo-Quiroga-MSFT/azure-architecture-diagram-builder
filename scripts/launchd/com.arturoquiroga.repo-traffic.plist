@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.arturoquiroga.repo-traffic</string>
+
+    <!-- Wrapper handles PATH, cd, auth check, logging, and CSV append. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/arturoquiroga/REPOSITORIES/AZURE-DIAGRAMS/scripts/repo-traffic-cron.sh</string>
+    </array>
+
+    <!-- Run once per day at 09:05 local time. GitHub only keeps a 14-day
+         window, so a daily snapshot builds the long-term trend. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>5</integer>
+    </dict>
+
+    <!-- If the Mac was asleep/off at 09:05, run as soon as it wakes. -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/arturoquiroga/REPOSITORIES/AZURE-DIAGRAMS</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>HOME</key>
+        <string>/Users/arturoquiroga</string>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!-- launchd-level stdout/stderr (the wrapper also keeps its own log). -->
+    <key>StandardOutPath</key>
+    <string>/Users/arturoquiroga/REPOSITORIES/AZURE-DIAGRAMS/usage-reports/repo-traffic-launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/arturoquiroga/REPOSITORIES/AZURE-DIAGRAMS/usage-reports/repo-traffic-launchd.err.log</string>
+</dict>
+</plist>

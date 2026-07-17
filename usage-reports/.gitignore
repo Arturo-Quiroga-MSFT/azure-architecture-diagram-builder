@@ -1,0 +1,4 @@
+# Local scheduler output — not for version control
+repo-traffic-cron.log
+repo-traffic-launchd.out.log
+repo-traffic-launchd.err.log

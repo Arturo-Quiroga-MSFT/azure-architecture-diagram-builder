@@ -1,0 +1,7 @@
+{
+  "name": "github-traffic-deck",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node build.mjs" },
+  "dependencies": { "pptxgenjs": "^4.0.1" }
+}
