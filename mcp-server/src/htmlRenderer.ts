@@ -233,23 +233,122 @@ const container = document.getElementById('container');
 const canvas = document.getElementById('canvas');
 const tooltip = document.getElementById('tooltip');
 
-// ── Orthogonal edge routing (mirrors the SVG renderer) ──
-function orthogonalRoute(points, direction) {
-  const s = points[0], t = points[points.length - 1];
-  let raw;
-  if (direction === 'LR') {
-    const midX = (s.x + t.x) / 2;
-    raw = [s, { x: midX, y: s.y }, { x: midX, y: t.y }, t];
-  } else {
-    const midY = (s.y + t.y) / 2;
-    raw = [s, { x: s.x, y: midY }, { x: t.x, y: midY }, t];
-  }
+// ── Obstacle-aware orthogonal edge routing (mirrors the SVG renderer) ──
+function rectsOverlap(a, b, pad) {
+  pad = pad || 0;
+  return !(a.x + a.w + pad < b.x || b.x + b.w + pad < a.x ||
+           a.y + a.h + pad < b.y || b.y + b.h + pad < a.y);
+}
+function buildRouteObstacles() {
+  const obs = [];
+  layout.nodes.forEach(function (n) {
+    obs.push({ x: n.x, y: n.y, w: n.width, h: n.height, kind: 'node', id: n.name, groupId: (n.groupId != null ? n.groupId : null) });
+  });
+  layout.groups.forEach(function (g) {
+    // Full zone container box as drawn in render() (x-12, y-32, w+24, h+44).
+    obs.push({ x: g.x - 12, y: g.y - 32, w: g.width + 24, h: g.height + 44, kind: 'group', id: g.id });
+  });
+  return obs;
+}
+function collapsePoints(raw) {
   const out = [];
-  for (const p of raw) {
-    const last = out[out.length - 1];
+  for (var i = 0; i < raw.length; i++) {
+    const p = raw[i], last = out[out.length - 1];
     if (!last || Math.abs(last.x - p.x) > 0.5 || Math.abs(last.y - p.y) > 0.5) out.push(p);
   }
-  return out.length >= 2 ? out : [s, t];
+  return out;
+}
+function segHitsObstacles(a, b, obstacles, pad) {
+  pad = (pad == null ? 6 : pad);
+  const seg = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
+  return obstacles.some(function (o) { return rectsOverlap(seg, o, pad); });
+}
+function routeClear(pts, obstacles) {
+  for (var i = 0; i < pts.length - 1; i++) {
+    if (segHitsObstacles(pts[i], pts[i + 1], obstacles)) return false;
+  }
+  return true;
+}
+function laneCandidates(a, b, secMin, secMax) {
+  const seen = {}, uniq = [], list = [a, b, secMin, secMax];
+  for (var v = secMin; v <= secMax; v += 40) list.push(v);
+  list.forEach(function (x) { const k = String(Math.round(x)); if (!seen[k]) { seen[k] = 1; uniq.push(x); } });
+  function pref(x) { return Math.min(Math.abs(x - a), Math.abs(x - b)); }
+  uniq.sort(function (p, q) { return pref(p) - pref(q); });
+  return uniq;
+}
+function orthogonalRoute(edge, direction, obstacles, canvas) {
+  obstacles = obstacles || [];
+  canvas = canvas || { w: Infinity, h: Infinity };
+  const s = edge.points[0], t = edge.points[edge.points.length - 1];
+  var fromNode = null, toNode = null;
+  obstacles.forEach(function (o) {
+    if (o.kind === 'node' && o.id === edge.from) fromNode = o;
+    if (o.kind === 'node' && o.id === edge.to) toNode = o;
+  });
+  const fromG = fromNode ? fromNode.groupId : null;
+  const toG = toNode ? toNode.groupId : null;
+  function keep(o) {
+    const isEndpointNode = o.kind === 'node' && (o.id === edge.from || o.id === edge.to);
+    const isEndpointGroup = o.kind === 'group' && ((fromG != null && o.id === fromG) || (toG != null && o.id === toG));
+    return !isEndpointNode && !isEndpointGroup;
+  }
+  function midpointRoute() {
+    var raw;
+    if (direction === 'LR') { var mx = (s.x + t.x) / 2; raw = [s, { x: mx, y: s.y }, { x: mx, y: t.y }, t]; }
+    else { var my = (s.y + t.y) / 2; raw = [s, { x: s.x, y: my }, { x: t.x, y: my }, t]; }
+    const c = collapsePoints(raw);
+    return c.length >= 2 ? c : [s, t];
+  }
+  if (obstacles.length === 0) return midpointRoute();
+  const active = obstacles.filter(keep);
+
+  // Strategy A — shift the mid-channel trunk into a clear gutter.
+  const mid = direction === 'LR' ? (s.x + t.x) / 2 : (s.y + t.y) / 2;
+  const lo = direction === 'LR' ? Math.min(s.x, t.x) : Math.min(s.y, t.y);
+  const hi = direction === 'LR' ? Math.max(s.x, t.x) : Math.max(s.y, t.y);
+  const reach = Math.max(hi - lo, 0) / 2 + 160;
+  const offsets = [0];
+  for (var dd = 16; dd <= reach; dd += 16) { offsets.push(dd); offsets.push(-dd); }
+  for (var oi = 0; oi < offsets.length; oi++) {
+    const trunk = mid + offsets[oi];
+    var rawA = direction === 'LR'
+      ? [s, { x: trunk, y: s.y }, { x: trunk, y: t.y }, t]
+      : [s, { x: s.x, y: trunk }, { x: t.x, y: trunk }, t];
+    const ptsA = collapsePoints(rawA);
+    if (ptsA.length >= 2 && routeClear(ptsA, active)) return ptsA;
+  }
+
+  // Strategy B — side detour around a zone sitting between the endpoints.
+  if (active.length > 0) {
+    const e = 24, LANE_MARGIN = 80;
+    if (direction === 'TB') {
+      const clampLo = LANE_MARGIN, clampHi = canvas.w - LANE_MARGIN;
+      const secMin = Math.min.apply(null, active.map(function (o) { return o.x; })) - 40;
+      const secMax = Math.max.apply(null, active.map(function (o) { return o.x + o.w; })) + 40;
+      const sy = s.y + (t.y >= s.y ? e : -e);
+      const ty = t.y + (t.y >= s.y ? -e : e);
+      const lanes = laneCandidates(s.x, t.x, secMin, secMax).filter(function (x) { return x >= clampLo && x <= clampHi; });
+      for (var li = 0; li < lanes.length; li++) {
+        const laneX = lanes[li];
+        const pts = collapsePoints([s, { x: s.x, y: sy }, { x: laneX, y: sy }, { x: laneX, y: ty }, { x: t.x, y: ty }, t]);
+        if (pts.length >= 2 && routeClear(pts, active)) return pts;
+      }
+    } else {
+      const clampLo = LANE_MARGIN, clampHi = canvas.h - LANE_MARGIN;
+      const secMin = Math.min.apply(null, active.map(function (o) { return o.y; })) - 40;
+      const secMax = Math.max.apply(null, active.map(function (o) { return o.y + o.h; })) + 40;
+      const sx = s.x + (t.x >= s.x ? e : -e);
+      const tx = t.x + (t.x >= s.x ? -e : e);
+      const lanes = laneCandidates(s.y, t.y, secMin, secMax).filter(function (y) { return y >= clampLo && y <= clampHi; });
+      for (var lj = 0; lj < lanes.length; lj++) {
+        const laneY = lanes[lj];
+        const pts = collapsePoints([s, { x: sx, y: s.y }, { x: sx, y: laneY }, { x: tx, y: laneY }, { x: tx, y: t.y }, t]);
+        if (pts.length >= 2 && routeClear(pts, active)) return pts;
+      }
+    }
+  }
+  return midpointRoute();
 }
 function roundedOrthoPathD(pts, radius) {
   radius = radius || 10;
@@ -323,11 +422,13 @@ function render() {
   svg.appendChild(defs);
 
   const edgeDir = layout.direction || 'TB';
+  const routeObstacles = buildRouteObstacles();
+  const routeCanvas = { w: layout.width, h: layout.height };
   layout.edges.forEach(e => {
     if (e.points.length < 2) return;
     const eType = e.type || 'sync';
     const color = EDGE_COLORS[eType] || EDGE_COLORS.sync;
-    const route = orthogonalRoute(e.points, edgeDir);
+    const route = orthogonalRoute(e, edgeDir, routeObstacles, routeCanvas);
     const d = roundedOrthoPathD(route);
     const path = document.createElementNS(svgNs, 'path');
     path.setAttribute('d', d);
