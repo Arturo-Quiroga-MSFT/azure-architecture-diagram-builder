@@ -25,6 +25,20 @@ import { ApplicationInsights, ICustomProperties } from '@microsoft/applicationin
  */
 
 let appInsights: ApplicationInsights | null = null;
+const TELEMETRY_SCHEMA_VERSION = '2.0.0';
+const WORKFLOW_ID_KEY = 'aadb.telemetry.workflowId';
+
+function getWorkflowId(): string {
+  const existing = sessionStorage.getItem(WORKFLOW_ID_KEY);
+  if (existing) return existing;
+  const workflowId = crypto.randomUUID();
+  sessionStorage.setItem(WORKFLOW_ID_KEY, workflowId);
+  return workflowId;
+}
+
+function rotateWorkflowId(): void {
+  sessionStorage.setItem(WORKFLOW_ID_KEY, crypto.randomUUID());
+}
 
 /**
  * Initialize Application Insights. Call once at app startup.
@@ -73,8 +87,15 @@ export function trackEvent(
   measurements?: Record<string, number>
 ): void {
   if (!appInsights) return;
+  const context = {
+    schemaVersion: TELEMETRY_SCHEMA_VERSION,
+    appVersion: import.meta.env.VITE_APP_VERSION || 'development',
+    environment: import.meta.env.MODE,
+    featureVersion: properties?.featureVersion || '1',
+    workflowId: getWorkflowId(),
+  };
   appInsights.trackEvent(
-    { name, properties, measurements },
+    { name, properties: { ...context, ...properties }, measurements },
   );
 }
 
@@ -324,6 +345,7 @@ export function trackRegionChange(region: string): void {
  */
 export function trackStartFresh(): void {
   trackEvent('Start_Fresh');
+  rotateWorkflowId();
 }
 
 /**

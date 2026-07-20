@@ -1,0 +1,10 @@
+
+node_modules
+dist
+dist-server
+.env
+.env.*
+npm-debug.log
+infra
+scripts
+*.md

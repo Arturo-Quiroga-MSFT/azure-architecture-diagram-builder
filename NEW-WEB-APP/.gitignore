@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-server/
+*.tsbuildinfo
+infra/main.json
+scripts/config.sh
+.env
+.env.*
+!.env.example
