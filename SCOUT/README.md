@@ -20,22 +20,46 @@ Azure architectures conversationally.
 > Only `/mcp` speaks MCP on that host; `/healthz` falls through to the web-app
 > SPA, so don't use it as the server URL.
 
-## Tools exposed
+## Capabilities
+
+The current server exposes **12 tools, 3 resources, and 3 prompts**.
+
+### Tools
 
 | Tool | Purpose |
 | --- | --- |
 | `list_services` | Browse the Azure service catalog (categories, aliases, pricing, cost ranges). |
 | `validate_architecture` | Score a design against Well-Architected Framework rules (deterministic, no LLM). |
 | `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot — region- and term-aware (PAYG / 1-year reserved), with by-category totals. Instance-priced services use a representative SKU; Microsoft Fabric uses F-SKU capacity; usage-based services (AI, per-GB storage, composite networking) report curated catalog ranges. |
-| `generate_bicep` | Emit deployable Bicep with Well-Architected secure defaults pre-set (HTTPS-only + TLS 1.2, managed identity, Key Vault soft-delete/purge, health check, autoscale, staging slots, Storage/Cosmos/Redis hardening, KV role assignments) and a structured map of which WAF finding each setting resolves. Design-time only. |
 | `generate_manifest` | Emit an `az prototype` interchange manifest. |
+| `generate_bicep` | Emit deployable Bicep with Well-Architected secure defaults and a map of which finding each setting resolves. Design-time only. |
+| `generate_terraform` | Emit Terraform for the architecture with secure defaults. Design-time only. |
+| `generate_deployment_guide` | Generate a deployment runbook with prerequisites, IaC commands, hardening checks, smoke tests, and teardown. |
+| `harden_architecture` | Add topology-level safeguards that address recurring WAF findings, then return the hardened architecture. |
+| `import_architecture` | Normalize a saved AADB or React Flow architecture for use by the other tools. |
 | `get_waf_rules` | Query WAF rules by pillar or service type. |
 | `render_diagram` | Render an architecture diagram as SVG (static) or interactive HTML. Now supports a **light/dark theme**, **per-node cost badges**, a **total-cost/usage footer**, a **metadata panel** (author/date/provenance), and **filled group headers**. See [Output enhancements](#output-enhancements-july-2026). |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app. Now emits a per-node **`pricing`** object and edge **`pathStyle`** for near-full parity with app-generated scenes. |
 
 **Structured outputs:** `validate_architecture`, `estimate_costs`, and `get_waf_rules` return typed `structuredContent` (validated against a declared `outputSchema`) alongside a concise human summary, and carry read-only/idempotent tool annotations — so agents can consume the data machine-readably instead of parsing prose.
 
-### New `render_diagram` parameters
+### Resources
+
+| Resource | URI | Purpose |
+| --- | --- | --- |
+| `service-catalog` | `azure://catalog/services` | Azure services, aliases, categories, and pricing metadata. |
+| `waf-rules` | `azure://waf/rules` | Architecture and service-level Well-Architected rules. |
+| `pricing-meta` | `azure://pricing/meta` | Regions and service entries available to cost estimation. |
+
+### Prompts
+
+| Prompt | Purpose |
+| --- | --- |
+| `design-secure-web-app` | Design, validate, harden, cost, render, and generate IaC for a secure web app. |
+| `design-event-driven-platform` | Run the full workflow for an event-driven or streaming architecture. |
+| `harden-and-cost` | Harden and cost an existing or imported architecture. |
+
+### `render_diagram` parameters
 
 | Parameter | Values | Effect |
 | --- | --- | --- |
@@ -48,20 +72,16 @@ The cost enrichment reuses the same `resolveServiceName → pricingServiceName �
 
 ## Artifacts
 
-- [`test-1.md`](test-1.md) — a sample Scout session: generate → validate (WAF
-  52) → harden (WAF 65) → cost/IaC next steps.
-- [`test-prompts.md`](test-prompts.md) — copy-paste prompts to exercise all 8
-  tools individually, an end-to-end chain, and edge/negative cases.
-- [`comparison/`](comparison/) — side-by-side artifacts (same prompt) from Scout
-  vs. the AADB web app that drove the output-enhancement work:
-  - `scout-generated/` — Scout's `render_diagram` SVGs + `export_reactflow_scene`
-    scene JSON + the `chat.md` transcript.
-  - `aadb-app-generated/` — the web app's SVG (a 1.9 MB `foreignObject` DOM
-    snapshot), scene JSON, and PNG.
+Generated Scout outputs are intentionally local and ignored by Git. Dated
+folders can contain diagrams, IaC, and deployment guides from an evaluation
+session. For example, the local `17-july-2026/` session contains:
 
-Generated diagram exports (`*.svg`, etc.) produced during Scout sessions are
-ignored by git (see the repo `.gitignore`); only this README and the sample
-`test-1.md` are tracked.
+- `vineguard-architecture.svg` and `vineguard-architecture.html`
+- `vineguard-main.bicep` and `vineguard-main.tf`
+- `vineguard-deployment-guide.md`
+
+Only this integration guide is tracked under `SCOUT/`. Do not commit generated
+exports, local transcripts, or credentials.
 
 ## Output enhancements (July 2026)
 
@@ -128,46 +148,30 @@ cd .. && bash scripts/deploy-mcp-instance.sh
 
 `deploy-mcp-instance.sh` is idempotent: it runs `az acr build` (which rebuilds
 and recompiles from source in the cloud), rolls out a new Container App
-revision, and reuses the existing `mcp-auth-token`. **The endpoint URL and
-bearer token do not change**, so no reconfiguration is needed in Scout.
+revision, and reuses the configured `mcp-auth-token`. The endpoint URL remains
+stable.
 
+## Configure the server in Scout
 
-
-
-HOW TO CONFIGURE MCP SERVER IN SCOUT:
-
-
-Ran terminal command: az containerapp secret show --name azure-diagram-builder-mcp --resource-group azure-diagrams-mcp-rg --secret-name mcp-auth-token --query value -o tsv
-
-Everything's confirmed. Here are your exact **Add MCP Server** values for SCOUT:
+In Scout's **Add MCP Server** dialog, use:
 
 | Dialog field | Value |
 | --- | --- |
 | **Server name** | `Azure Architecture Diagram Builder` (or `AADB`) |
 | **Tab** | **Remote / Local URL** |
 | **URL** | `https://azure-diagram-builder-mcp.victorioussmoke-95d145bd.eastus2.azurecontainerapps.io/mcp` |
-| **Bearer token** | `2BpQ6gjvJFDRaw3fwipUoA0pH9J2dsdtPyThxb1O2zw=` |
+| **Bearer token** | Obtain the current value from the app owner through an approved secret channel. |
 | **Tool-call timeout** | Leave blank (default ~60), or `120` if renders time out |
 
-Verification results:
-- **App status:** `Running` ✅
-- **FQDN:** matches the documented endpoint ✅ (remember the `/mcp` suffix — that's the only path that speaks MCP)
-- **Token:** stored as secret `mcp-auth-token`, value retrieved above ✅
+Scout should discover 12 tools, 3 resources, and 3 prompts. If discovery returns
+zero capabilities, verify the `/mcp` suffix, the bearer-token value, and that no
+leading or trailing whitespace was included.
 
+### Credential handling
 
-
-Once added, Scout should discover 12 tools (plus 3 resources and 3 prompts). If it shows 0, re-check the `/mcp` suffix and that the token was pasted without trailing spaces.
-
-> ⚠️ **Security:** the bearer token above is a **live credential** committed in
-> plaintext. Treat it as compromised — rotate it and avoid committing the new
-> value. To rotate:
-> ```sh
-> NEW=$(openssl rand -base64 32)
-> az containerapp secret set --name azure-diagram-builder-mcp \
->   --resource-group azure-diagrams-mcp-rg \
->   --secrets mcp-auth-token="$NEW"
-> # then update the token in Scout's Add-MCP dialog
-> ```
-> Prefer keeping the token only in `scripts/.env.mcp-instance` (git-ignored),
-> not in tracked docs.
-
+- Never paste bearer tokens into tracked files, issue descriptions, screenshots,
+  transcripts, or shell history.
+- Keep local deployment values in `scripts/.env.mcp-instance`, which is ignored
+  by Git.
+- Rotate a token immediately if it is disclosed, then update Scout through the
+  same approved secret channel.

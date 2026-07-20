@@ -57,10 +57,9 @@ DONOTTRACK/
 Copilot-Studio-Stuff/
 model-mgmt/
 
-# Scout test artifacts — keep the README and the sample, ignore generated exports
+# Scout test artifacts — keep the integration guide, ignore generated exports
 SCOUT/*
 !SCOUT/README.md
-!SCOUT/test-1.md
 Ben-and-team/
 
 # Local-only collaboration notes (untracked per request)
