@@ -20,6 +20,7 @@ import {
   type Severity,
 } from '../data/wafRules';
 import type { ValidationFinding } from './architectureValidator';
+import { resolveServiceName } from '../data/serviceIconMapping';
 
 interface ServiceInput {
   name: string;
@@ -71,7 +72,7 @@ const FRONTEND_TYPES = new Set([
 ]);
 
 const CACHE_TYPES = new Set([
-  'redis cache', 'azure cache for redis', 'cdn', 'content delivery network',
+  'redis cache', 'azure managed redis', 'cdn', 'content delivery network',
 ]);
 
 const MONITORING_TYPES = new Set([
@@ -102,7 +103,7 @@ const API_GATEWAY_TYPES = new Set([
 ]);
 
 function normalizeType(type: string): string {
-  return type.toLowerCase().trim();
+  return (resolveServiceName(type) ?? type).toLowerCase().trim();
 }
 
 function hasServiceOfType(services: ServiceInput[], typeSet: Set<string>): boolean {

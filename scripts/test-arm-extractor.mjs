@@ -18,7 +18,7 @@
 
 import { build } from 'esbuild';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -35,7 +35,7 @@ await build({
   outfile,
   logLevel: 'silent',
 });
-const { extractArchitectureFromArm } = await import(outfile);
+const { extractArchitectureFromArm } = await import(pathToFileURL(outfile).href);
 
 // Expectations: each fixture must map at least this many services and edges,
 // fold the vast majority of resources (noise), and skip almost nothing.
