@@ -29,6 +29,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '..', '..');
 const regionsRoot = resolve(repoRoot, 'src', 'data', 'pricing', 'regions');
 const outPath = resolve(here, '..', 'src', 'pricing.generated.json');
+const checkOnly = process.argv.includes('--check');
 
 // Files kept as honest catalog ranges. Foundry (AI) meters are usage-based
 // (per-token / per-transaction) so a representative monthly is misleading; they
@@ -250,10 +251,10 @@ function main() {
 
   const regions = readdirSync(regionsRoot, { withFileTypes: true })
     .filter((d) => d.isDirectory())
-    .map((d) => d.name);
+    .map((d) => d.name)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
   const out = {
-    generatedAt: new Date().toISOString(),
     source: 'src/data/pricing/regions (Azure Retail Prices snapshot)',
     hoursPerMonth: HOURS_PER_MONTH,
     currency: 'USD',
@@ -263,7 +264,9 @@ function main() {
   let totalEntries = 0;
   for (const region of regions) {
     const dir = resolve(regionsRoot, region);
-    const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
+    const files = readdirSync(dir)
+      .filter((f) => f.endsWith('.json'))
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const regionMap = {};
     for (const file of files) {
       const stem = basename(file, '.json');
@@ -279,9 +282,36 @@ function main() {
     out.regions[region] = regionMap;
   }
 
-  writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n', 'utf8');
+  const latestPriceDate = Object.values(out.regions)
+    .flatMap((region) => Object.values(region))
+    .map((entry) => entry.pricesAsOf)
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+  if (!latestPriceDate) {
+    console.error('[sync-pricing] no source price dates found');
+    process.exit(1);
+  }
+
+  const deterministicOut = {
+    generatedAt: `${latestPriceDate}T00:00:00.000Z`,
+    ...out,
+  };
+  const output = JSON.stringify(deterministicOut, null, 2) + '\n';
+  if (checkOnly) {
+    if (!existsSync(outPath)) {
+      console.error(`[sync-pricing] missing generated pricing sidecar: ${outPath}`);
+      process.exit(1);
+    }
+    if (readFileSync(outPath, 'utf8') !== output) {
+      console.error('[sync-pricing] generated pricing sidecar is stale; run npm run sync:pricing');
+      process.exit(1);
+    }
+  } else {
+    writeFileSync(outPath, output, 'utf8');
+  }
   console.log(
-    `[sync-pricing] wrote ${outPath} — ${regions.length} regions, ${totalEntries} service entries`,
+    `[sync-pricing] ${checkOnly ? 'verified' : 'wrote'} ${outPath} — ${regions.length} regions, ${totalEntries} service entries`,
   );
 }
 

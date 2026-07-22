@@ -10,8 +10,8 @@ Microsoft Fabric is used throughout as the worked example (see commit history on
 
 ## Integration points
 
-A platform touches five places. Only the first three are required; the last two
-improve quality and parity.
+A platform has one service metadata source. Generated MCP files must not be
+edited by hand.
 
 | # | File / location | Purpose |
 |---|---|---|
@@ -19,7 +19,7 @@ improve quality and parity.
 | 2 | `src/utils/iconLoader.ts` (`iconCategories`) | Adds the palette category |
 | 3 | `src/data/serviceIconMapping.ts` (`SERVICE_ICON_MAP` + category union) | Maps service names/aliases → icon + pricing flags |
 | 4 | `src/data/azurePricing.ts` (`FALLBACK_PRICING`, `USAGE_BASED_SERVICES`) | Cost estimates |
-| 5 | `src/services/azureOpenAI.ts` (generation prompt) + `mcp-server` icon map | AI hints + MCP parity |
+| 5 | `src/services/azureOpenAI.ts` (generation prompt) | Optional AI hints |
 
 ## Step 1 — Get the official icons
 
@@ -130,14 +130,17 @@ applies the cost model, e.g.:
 > their category to "fabric", and include "Microsoft Fabric Capacity" (the billed
 > F SKU) and "OneLake" — items consume the shared capacity, which carries the cost.
 
-## Step 7 — Refresh MCP parity (optional)
+## Step 7 — Generate and validate MCP parity
 
-If the repo's MCP server is used, regenerate its icon map so it resolves the new
-icons too:
+Regenerate the MCP icon map, embedded SVGs, and service catalog from the web
+mapping:
 
 ```bash
 cd mcp-server && npm run sync:icons
 ```
+
+Do not edit `mcp-server/src/serviceCatalog.generated.json` or either icon
+sidecar. `npm run icons:check` fails if generated data drifts from the source.
 
 ## Step 8 — Verify
 
@@ -163,4 +166,5 @@ Then in the UI:
 - [ ] Pricing modeled (fixed / usage / $0‑rolls‑up) with sourced numbers
 - [ ] Generation prompt hint added
 - [ ] MCP icon map regenerated (if applicable)
+- [ ] `npm run icons:check` passes with no alias or catalog drift
 - [ ] `npm run build` passes; verified in the UI

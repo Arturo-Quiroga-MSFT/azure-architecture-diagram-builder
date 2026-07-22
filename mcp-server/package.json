@@ -9,9 +9,13 @@
   },
   "scripts": {
     "sync:icons": "node scripts/sync-icon-map.mjs",
+    "sync:icons:check": "node scripts/sync-icon-map.mjs --check",
     "sync:pricing": "node scripts/sync-pricing-data.mjs",
-    "prebuild": "npm run sync:icons && npm run sync:pricing",
-    "build": "tsc && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json && cp src/pricing.generated.json dist/pricing.generated.json",
+    "sync:pricing:check": "node scripts/sync-pricing-data.mjs --check",
+    "prebuild": "npm run sync:icons:check && npm run sync:pricing:check",
+    "build": "tsc && node scripts/copy-generated-assets.mjs",
+    "test": "npm run sync:icons:check && npm run sync:pricing:check && node scripts/test-catalog.mjs",
+    "test:smoke": "node scripts/test-mcp-smoke.mjs",
     "start": "node dist/index.js",
     "start:http": "node dist/index.js --http",
     "dev": "tsc --watch"
