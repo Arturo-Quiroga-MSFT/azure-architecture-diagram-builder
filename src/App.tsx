@@ -81,6 +81,7 @@ import {
 } from './utils/layoutPresets';
 import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
 import { fitAllGroupsToContent } from './utils/groupUtils';
+import { preserveManualLayout } from './utils/preserveManualLayout';
 import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh, trackValidationFindings } from './services/telemetryService';
 import { classifyValidationTopics } from './services/validationConsensus';
 import type { IaCFormat } from './services/azureOpenAI';
@@ -2033,9 +2034,13 @@ function App() {
         console.log('ℹ️ No existing nodes to snapshot');
       }
 
-      // Clear existing diagram when generating new architecture
-      setNodes([]);
-      setEdges([]);
+      // Fresh generations replace an empty canvas. Refinements keep the
+      // current canvas visible until the merged topology is ready, preventing
+      // layout flicker and preserving the user's editorial context.
+      if (!isRefinement) {
+        setNodes([]);
+        setEdges([]);
+      }
       setArchitecturePrompt('');
       setWorkflow([]);
       setGeneratedWithModel(null);
@@ -2407,9 +2412,15 @@ function App() {
       };
     });
 
+    // Existing services/groups retain their manually edited geometry during a
+    // refinement. New elements use the generated layout positions.
+    const finalNodes = isRefinement
+      ? preserveManualLayout(nodes, newNodes)
+      : newNodes;
+
     // Add the new nodes and edges
-    console.log(`Setting ${newNodes.length} nodes and ${newEdges.length} edges`);
-    setNodes(newNodes);
+    console.log(`Setting ${finalNodes.length} nodes and ${newEdges.length} edges`);
+    setNodes(finalNodes);
     setEdges(newEdges);
 
     // Set the model badge from metrics
@@ -2487,12 +2498,13 @@ function App() {
       setIsFeedbackToastOpen(true);
     }
 
-    // Fit view after a short delay to allow nodes to render
-    setTimeout(() => {
-      if (reactFlowInstance) {
-        reactFlowInstance.fitView({ padding: 0.2 });
-      }
-    }, 100);
+    // A refinement keeps the user's pan/zoom. Only frame a newly generated
+    // diagram, where no prior editorial viewport exists.
+    if (!isRefinement) {
+      setTimeout(() => {
+        reactFlowInstance?.fitView({ padding: 0.2 });
+      }, 100);
+    }
     } catch (error) {
       console.error('Error in handleAIGenerate:', error);
       alert('Failed to generate diagram. Check console for details.');
