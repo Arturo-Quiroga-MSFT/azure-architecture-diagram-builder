@@ -12,6 +12,7 @@ export function createDemoInsights(): InsightsResponse {
       { name: 'Export', sessions: 203, conversion: 48.6 },
       { name: 'Deployment guide', sessions: 74, conversion: 17.7 },
     ],
+    validationHandoff: { shown: 0, started: 0, dismissed: 0, startRate: 0 },
     models: [
       { model: 'gpt-5.4', calls: 614, totalTokens: 4281000, averageLatencyMs: 12800, p95LatencyMs: 28100, validationScore: 86, critiqueWins: 42 },
       { model: 'gpt-5.4-mini', calls: 487, totalTokens: 2195000, averageLatencyMs: 6900, p95LatencyMs: 14400, validationScore: 78, critiqueWins: 19 },

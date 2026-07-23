@@ -63,8 +63,9 @@ export async function getInsights(range: TimeRange): Promise<InsightsResponse> {
 
   const client = new LogsQueryClient(new DefaultAzureCredential());
   const timespan = { duration: durationByRange[range] };
-  const [funnel, models, findings, reliability, cohorts, releases, cities] = await Promise.all([
+  const [funnel, handoff, models, findings, reliability, cohorts, releases, cities] = await Promise.all([
     client.queryWorkspace(workspaceId, queries.journeyFunnel, timespan),
+    client.queryWorkspace(workspaceId, queries.validationHandoff, timespan),
     client.queryWorkspace(workspaceId, queries.modelEfficiency, timespan),
     client.queryWorkspace(workspaceId, queries.validationFindings, timespan),
     client.queryWorkspace(workspaceId, queries.reliability, timespan),
@@ -76,7 +77,10 @@ export async function getInsights(range: TimeRange): Promise<InsightsResponse> {
   const funnelOrder = ['Architecture_Generated', 'Architecture_Validated', 'Recommendations_Applied', 'Diagram_Exported', 'DeploymentGuide_Generated'];
   const funnelNames = ['Generate', 'Validate', 'Apply guidance', 'Export', 'Deployment guide'];
   const funnelCounts = new Map(tableRows(funnel).map((row) => [String(row[0]), Number(row[1])]));
+  const handoffCounts = new Map(tableRows(handoff).map((row) => [String(row[0]), Number(row[1])]));
   const baseSessions = funnelCounts.get('Architecture_Generated') || 1;
+  const handoffShown = handoffCounts.get('shown') || 0;
+  const handoffStarted = handoffCounts.get('started') || 0;
   const result: InsightsResponse = {
     generatedAt: new Date().toISOString(),
     source: 'azure-monitor',
@@ -84,6 +88,12 @@ export async function getInsights(range: TimeRange): Promise<InsightsResponse> {
       const sessions = funnelCounts.get(eventName) || 0;
       return { name: funnelNames[index], sessions, conversion: Number((sessions * 100 / baseSessions).toFixed(1)) };
     }),
+    validationHandoff: {
+      shown: handoffShown,
+      started: handoffStarted,
+      dismissed: handoffCounts.get('dismissed') || 0,
+      startRate: handoffShown > 0 ? Number((handoffStarted * 100 / handoffShown).toFixed(1)) : 0,
+    },
     models: tableRows(models).map((row) => ({
       model: String(row[0]), calls: Number(row[1]), totalTokens: Number(row[2]), averageLatencyMs: Number(row[3]),
       p95LatencyMs: Number(row[4]), validationScore: 0, critiqueWins: 0,
@@ -105,9 +115,16 @@ function deriveRecommendations(insights: InsightsResponse): Recommendation[] {
   const recommendations: Recommendation[] = [];
   const validate = insights.funnel.find((step) => step.name === 'Validate');
   if (validate && validate.conversion < 70) recommendations.push({
-    id: 'validation-dropoff', priority: 'high', title: 'Reduce the validation handoff',
-    evidence: `${validate.conversion}% of generation sessions continue to validation.`,
-    action: 'Offer validation directly in the generation success state and compare conversion by release.', source: 'rules',
+    id: 'validation-dropoff',
+    priority: insights.validationHandoff.shown > 0 && insights.validationHandoff.startRate >= 40 ? 'medium' : 'high',
+    title: insights.validationHandoff.shown > 0 ? 'Monitor validation handoff conversion' : 'Reduce the validation handoff',
+    evidence: insights.validationHandoff.shown > 0
+      ? `${insights.validationHandoff.startRate}% of ${insights.validationHandoff.shown} validation prompts were started; ${validate.conversion}% of generation sessions completed validation.`
+      : `${validate.conversion}% of generation sessions continue to validation.`,
+    action: insights.validationHandoff.shown > 0
+      ? 'Compare prompt starts with completed validations and tune the success-moment copy or placement if the gap remains.'
+      : 'Offer validation directly in the generation success state and compare conversion by release.',
+    source: 'rules',
   });
   const topFinding = insights.findings[0];
   if (topFinding) recommendations.push({

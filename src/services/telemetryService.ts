@@ -159,6 +159,19 @@ export function trackValidation(params: {
   });
 }
 
+export function trackValidationHandoff(params: {
+  action: 'shown' | 'started' | 'dismissed';
+  source: 'generation' | 'modification';
+  serviceCount: number;
+}): void {
+  trackEvent('Validation_Handoff', {
+    action: params.action,
+    source: params.source,
+  }, {
+    serviceCount: params.serviceCount,
+  });
+}
+
 /**
  * Track a multi-model validation comparison run. Powers the "best validator
  * model" leaderboard: which models score architectures how, and how strong the

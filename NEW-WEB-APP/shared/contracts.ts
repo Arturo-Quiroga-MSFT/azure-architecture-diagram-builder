@@ -45,6 +45,13 @@ export interface FunnelStep {
   conversion: number;
 }
 
+export interface ValidationHandoffInsight {
+  shown: number;
+  started: number;
+  dismissed: number;
+  startRate: number;
+}
+
 export interface ModelInsight {
   model: string;
   calls: number;
@@ -105,6 +112,7 @@ export interface InsightsResponse {
   generatedAt: string;
   source: 'azure-monitor' | 'demo';
   funnel: FunnelStep[];
+  validationHandoff: ValidationHandoffInsight;
   models: ModelInsight[];
   findings: FindingInsight[];
   reliability: ReliabilityInsight[];

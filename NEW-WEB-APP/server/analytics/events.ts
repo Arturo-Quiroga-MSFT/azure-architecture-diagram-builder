@@ -2,6 +2,7 @@
 export const AADB_EVENTS = [
   'Architecture_Generated',
   'Architecture_Validated',
+  'Validation_Handoff',
   'Validation_Compared',
   'Validation_Critique_Ranked',
   'Validation_Findings',

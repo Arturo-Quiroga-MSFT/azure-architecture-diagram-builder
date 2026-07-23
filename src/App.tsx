@@ -26,7 +26,7 @@ import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
 import ArchitectureChatPanel from './components/ArchitectureChatPanel';
-import HelpLearnPanel from './components/HelpLearnPanel';
+import HelpLearnPanel from './components/GuidedHelpPanel';
 import { exportReferenceArchitectureAsPng } from './utils/exportReferencePng';
 import type { ReferenceArchitecture } from './services/referenceArchitectureAI';
 import { exportBlueprintArchitectureAsPng } from './utils/exportBlueprintPng';
@@ -82,11 +82,12 @@ import {
 import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
 import { fitAllGroupsToContent } from './utils/groupUtils';
 import { preserveManualLayout } from './utils/preserveManualLayout';
-import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh, trackValidationFindings } from './services/telemetryService';
+import { trackArchitectureGeneration, trackValidation, trackValidationHandoff, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh, trackValidationFindings } from './services/telemetryService';
 import { classifyValidationTopics } from './services/validationConsensus';
 import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
+import ValidationHandoffToast from './components/ValidationHandoffToast';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
@@ -223,15 +224,27 @@ function App() {
   const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isFeedbackToastOpen, setIsFeedbackToastOpen] = useState(false);
+  const [validationHandoff, setValidationHandoff] = useState<{
+    source: 'generation' | 'modification';
+    serviceCount: number;
+  } | null>(null);
   const [feedbackPreselectedRating, setFeedbackPreselectedRating] = useState<number | undefined>(undefined);
   const [feedbackFabPulse, setFeedbackFabPulse] = useState(false);
   // Counts successful AI generations this session so we can ask for feedback
   // after a "success moment" (the 2nd diagram) rather than nagging up front.
   const generationCountRef = useRef(0);
+  const feedbackAfterValidationRef = useRef(false);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [lastReferenceArchitecture, setLastReferenceArchitecture] = useState<ReferenceArchitecture | null>(null);
   const [lastBlueprintArchitecture, setLastBlueprintArchitecture] = useState<BlueprintArchitecture | null>(null);
   const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
+
+  useEffect(() => {
+    if (nodes.length === 0) {
+      setValidationHandoff(null);
+      feedbackAfterValidationRef.current = false;
+    }
+  }, [nodes.length]);
 
   // First-visit nudge: open the Architecture Chat once so new users have an
   // obvious starting point. We set the flag immediately so it only ever
@@ -1974,6 +1987,9 @@ function App() {
       // builds a modification prompt); only the first, from-empty generation
       // establishes the original brief.
       const isRefinement = nodes.length > 0;
+      setValidationResult(null);
+      setValidationHandoff(null);
+      feedbackAfterValidationRef.current = false;
       // Capture (or clear) the editorial reference-architecture payload so the
       // Export menu can re-emit the publication-style PNG on demand.
       setLastReferenceArchitecture(architecture?.__referenceArchitecture ?? null);
@@ -2483,6 +2499,13 @@ function App() {
       isModification: nodes.length > 0,
     });
 
+    const handoffContext = {
+      source: isRefinement ? 'modification' as const : 'generation' as const,
+      serviceCount: services.length,
+    };
+    setValidationHandoff(handoffContext);
+    trackValidationHandoff({ action: 'shown', ...handoffContext });
+
     // ── Success-moment feedback ask ──────────────────────────────────────
     // After the 2nd successful generation this session, surface the one-click
     // toast — the user now has a real opinion. Fires once and only if they
@@ -2495,7 +2518,7 @@ function App() {
       /* sessionStorage unavailable — ignore */
     }
     if (!feedbackAlreadyDone && generationCountRef.current === 2 && !isFeedbackModalOpen) {
-      setIsFeedbackToastOpen(true);
+      feedbackAfterValidationRef.current = true;
     }
 
     // A refinement keeps the user's pan/zoom. Only frame a newly generated
@@ -2751,6 +2774,8 @@ function App() {
       return;
     }
 
+    setValidationHandoff(null);
+
     // Capture diagram snapshot BEFORE opening the modal overlay
     let diagramImageDataUrl: string | undefined;
     if (reactFlowWrapper.current && reactFlowInstance) {
@@ -2825,16 +2850,39 @@ function App() {
         serviceCount: services.length,
         topics: classifyValidationTopics(result).map(t => ({ id: t.id, label: t.label, pillar: t.pillar, severity: t.severity })),
       });
+      if (feedbackAfterValidationRef.current && !isFeedbackModalOpen) {
+        feedbackAfterValidationRef.current = false;
+        setIsFeedbackToastOpen(true);
+      }
       // Collapse panels to maximize diagram view
       setPanelsCollapsedSignal(prev => prev + 1);
     } catch (error: any) {
       console.error('Validation error:', error);
       alert(`Failed to validate architecture: ${error.message}`);
+      feedbackAfterValidationRef.current = false;
       setIsValidationModalOpen(false);
     } finally {
       setIsValidating(false);
     }
-  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, reactFlowInstance]);
+  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, reactFlowInstance, isFeedbackModalOpen]);
+
+  const handleValidationHandoffStart = useCallback(() => {
+    if (!validationHandoff) return;
+    trackValidationHandoff({ action: 'started', ...validationHandoff });
+    setValidationHandoff(null);
+    setIsFeedbackToastOpen(false);
+    void handleValidateArchitecture();
+  }, [handleValidateArchitecture, validationHandoff]);
+
+  const handleValidationHandoffDismiss = useCallback(() => {
+    if (!validationHandoff) return;
+    trackValidationHandoff({ action: 'dismissed', ...validationHandoff });
+    setValidationHandoff(null);
+    if (feedbackAfterValidationRef.current && !isFeedbackModalOpen) {
+      feedbackAfterValidationRef.current = false;
+      setIsFeedbackToastOpen(true);
+    }
+  }, [isFeedbackModalOpen, validationHandoff]);
 
   const handleGenerateDeploymentGuide = useCallback(async () => {
     if (nodes.length === 0) {
@@ -4215,6 +4263,14 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
               .map(child => child.data.label || child.data.serviceName || 'Unknown'),
           }))}
         architectureDescription={architecturePrompt || titleBlockData.architectureName}
+      />
+
+      <ValidationHandoffToast
+        isOpen={validationHandoff !== null && !focusMode}
+        isModification={validationHandoff?.source === 'modification'}
+        isChatOpen={isChatOpen}
+        onValidate={handleValidationHandoffStart}
+        onDismiss={handleValidationHandoffDismiss}
       />
 
       <button
