@@ -1,0 +1,162 @@
+.validation-handoff {
+  position: fixed;
+  right: 20px;
+  bottom: 230px;
+  z-index: 940;
+  width: min(360px, calc(100vw - 40px));
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #0078d4;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: validationHandoffIn 0.25s ease-out;
+  backdrop-filter: blur(8px);
+}
+
+.validation-handoff-with-chat {
+  right: 480px;
+}
+
+@keyframes validationHandoffIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.validation-handoff-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  color: #94a3b8;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.validation-handoff-close:hover {
+  color: #334155;
+  background: #f1f5f9;
+}
+
+.validation-handoff-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: #0078d4;
+  border-radius: 8px;
+}
+
+.validation-handoff-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 12px;
+}
+
+.validation-handoff-content strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.validation-handoff-content > span {
+  color: #475569;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.validation-handoff-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.validation-handoff-primary,
+.validation-handoff-secondary {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.validation-handoff-primary {
+  color: #ffffff;
+  background: #0078d4;
+  border: 1px solid #0078d4;
+}
+
+.validation-handoff-primary:hover {
+  background: #106ebe;
+  border-color: #106ebe;
+}
+
+.validation-handoff-secondary {
+  color: #475569;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.validation-handoff-secondary:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+body.dark-mode .validation-handoff {
+  background: rgba(30, 30, 30, 0.97);
+  border-color: #1e3a5f;
+  border-left-color: #60a5fa;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+body.dark-mode .validation-handoff-icon {
+  color: #0f172a;
+  background: #60a5fa;
+}
+
+body.dark-mode .validation-handoff-content strong,
+body.dark-mode .validation-handoff-secondary:hover {
+  color: #f8fafc;
+}
+
+body.dark-mode .validation-handoff-content > span,
+body.dark-mode .validation-handoff-secondary {
+  color: #cbd5e1;
+}
+
+body.dark-mode .validation-handoff-secondary:hover,
+body.dark-mode .validation-handoff-close:hover {
+  background: #2a2a2a;
+}
+
+@media (max-width: 640px) {
+  .validation-handoff {
+    right: 12px;
+    bottom: 220px;
+    width: calc(100vw - 24px);
+  }
+}
+
+@media (max-width: 900px) {
+  .validation-handoff-with-chat {
+    right: 12px;
+    bottom: 12px;
+    z-index: 1110;
+  }
+}

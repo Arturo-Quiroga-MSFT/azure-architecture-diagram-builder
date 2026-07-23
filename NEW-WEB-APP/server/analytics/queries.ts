@@ -4,7 +4,7 @@ import { AADB_EVENTS } from './events.js';
 export type QueryName =
   | 'overviewMetrics' | 'activityTrend' | 'featureUsage' | 'journeyFunnel'
   | 'modelEfficiency' | 'validationFindings' | 'reliability' | 'retention'
-  | 'releaseImpact' | 'cityUsage';
+  | 'releaseImpact' | 'cityUsage' | 'validationHandoff';
 
 const eventList = AADB_EVENTS.map((name) => `"${name}"`).join(', ');
 const base = `AppEvents | where Name in (${eventList})`;
@@ -22,6 +22,11 @@ export const queries: Record<QueryName, string> = {
 | where Name in ("Architecture_Generated", "Architecture_Validated", "Recommendations_Applied", "Diagram_Exported", "DeploymentGuide_Generated")
 | summarize Sessions=dcount(SessionId) by Name
 | order by Sessions desc`,
+  validationHandoff: `${base}
+| where Name == "Validation_Handoff"
+| extend Action=tolower(tostring(Properties.action))
+| summarize Count=count() by Action
+| project Action, Count`,
   modelEfficiency: `${base}
 | where Name == "AI_Model_Usage"
 | extend Model=tolower(tostring(Properties.model)), Tokens=todouble(Measurements.totalTokens), Latency=todouble(Measurements.elapsedTimeMs)

@@ -2,6 +2,7 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
+import { AADB_EVENTS } from './analytics/events.js';
 
 describe('analytics API', () => {
   it('returns a typed overview using demo data when no workspace is configured', async () => {
@@ -21,6 +22,7 @@ describe('analytics API', () => {
     const response = await request(createApp()).get('/api/analytics/insights?range=7d');
     expect(response.status).toBe(200);
     expect(response.body.funnel).toHaveLength(5);
+    expect(response.body.validationHandoff).toEqual({ shown: 0, started: 0, dismissed: 0, startRate: 0 });
     expect(response.body.cities[0]).toMatchObject({ city: 'Boydton', country: 'United States', users: 169 });
     expect(response.body.recommendations[0].evidence).toBeTruthy();
     expect(JSON.stringify(response.body)).not.toContain('queryWorkspace');
@@ -30,5 +32,9 @@ describe('analytics API', () => {
     const response = await request(createApp()).get('/api/feedback');
     expect(response.status).toBe(200);
     expect(response.body.source).toBe('unavailable');
+  });
+
+  it('keeps validation handoff telemetry in the product event catalog', () => {
+    expect(AADB_EVENTS).toContain('Validation_Handoff');
   });
 });
