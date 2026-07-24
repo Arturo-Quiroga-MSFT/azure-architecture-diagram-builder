@@ -1,0 +1,96 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden scenario > allocates deterministic private-endpoint IPs 1`] = `
+[
+  {
+    "allocatedIp": "10.21.2.4",
+    "name": "pe-aoai",
+    "privateDnsZone": "privatelink.openai.azure.com",
+    "service": "aoai",
+    "subnet": "private-endpoints",
+  },
+  {
+    "allocatedIp": "10.21.2.5",
+    "name": "pe-cosmos",
+    "privateDnsZone": "privatelink.documents.azure.com",
+    "service": "state-cosmos",
+    "subnet": "private-endpoints",
+  },
+  {
+    "allocatedIp": "10.21.2.6",
+    "name": "pe-keyvault",
+    "privateDnsZone": "privatelink.vaultcore.azure.net",
+    "service": "app-kv",
+    "subnet": "private-endpoints",
+  },
+  {
+    "allocatedIp": "10.21.2.7",
+    "name": "pe-search",
+    "privateDnsZone": "privatelink.search.windows.net",
+    "service": "search",
+    "subnet": "private-endpoints",
+  },
+  {
+    "allocatedIp": "10.21.2.8",
+    "name": "pe-storage",
+    "privateDnsZone": "privatelink.blob.core.windows.net",
+    "service": "docs-storage",
+    "subnet": "private-endpoints",
+  },
+]
+`;
+
+exports[`golden scenario > produces a stable, deterministic subnet plan 1`] = `
+[
+  {
+    "addressPrefix": "10.20.0.0/26",
+    "region": "eastus2",
+    "reservedAddresses": 5,
+    "role": "AzureFirewallSubnet",
+    "subnet": "AzureFirewallSubnet",
+    "totalAddresses": 64,
+    "usableAddresses": 59,
+    "vnet": "hub-vnet",
+  },
+  {
+    "addressPrefix": "10.20.0.64/27",
+    "region": "eastus2",
+    "reservedAddresses": 5,
+    "role": "GatewaySubnet",
+    "subnet": "GatewaySubnet",
+    "totalAddresses": 32,
+    "usableAddresses": 27,
+    "vnet": "hub-vnet",
+  },
+  {
+    "addressPrefix": "10.20.1.0/24",
+    "region": "eastus2",
+    "reservedAddresses": 5,
+    "role": "management",
+    "subnet": "management",
+    "totalAddresses": 256,
+    "usableAddresses": 251,
+    "vnet": "hub-vnet",
+  },
+  {
+    "addressPrefix": "10.21.0.0/23",
+    "region": "eastus2",
+    "reservedAddresses": 5,
+    "role": "workload",
+    "subnet": "container-apps",
+    "totalAddresses": 512,
+    "usableAddresses": 507,
+    "vnet": "spoke-ai-vnet",
+  },
+  {
+    "addressPrefix": "10.21.2.0/24",
+    "region": "eastus2",
+    "reservedAddresses": 5,
+    "role": "privateEndpoints",
+    "subnet": "private-endpoints",
+    "totalAddresses": 256,
+    "usableAddresses": 251,
+    "vnet": "spoke-ai-vnet",
+  },
+]
+`;
