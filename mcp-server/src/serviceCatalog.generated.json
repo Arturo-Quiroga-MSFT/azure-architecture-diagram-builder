@@ -1,52 +1,58 @@
 {
   "Azure OpenAI": {
     "displayName": "Azure OpenAI",
-    "iconFile": "03438-icon-service-Azure-OpenAI",
-    "category": "ai + machine learning",
     "aliases": [
       "OpenAI",
       "Azure OpenAI Service",
       "GPT",
       "ChatGPT"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure OpenAI",
+    "isUsageBased": true,
+    "costRange": "$1-200/mo (token-based)"
   },
   "Cognitive Services": {
     "displayName": "Cognitive Services",
-    "iconFile": "10162-icon-service-Cognitive-Services",
-    "category": "ai + machine learning",
     "aliases": [
       "Azure Cognitive Services",
       "Cognitive Service"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Cognitive Services",
+    "isUsageBased": true,
+    "costRange": "$0-500/mo (varies by service)"
   },
   "Computer Vision": {
     "displayName": "Computer Vision",
-    "iconFile": "00792-icon-service-Computer-Vision",
-    "category": "ai + machine learning",
     "aliases": [
       "Vision",
       "Azure Vision",
       "Azure AI Vision",
       "Image Analysis"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Vision",
+    "isUsageBased": true,
+    "costRange": "$150-1500/mo"
   },
   "Custom Vision": {
     "displayName": "Custom Vision",
-    "iconFile": "00793-icon-service-Custom-Vision",
-    "category": "ai + machine learning",
     "aliases": [
       "Azure Custom Vision",
       "Custom Vision Service"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Custom Vision",
+    "isUsageBased": true,
+    "costRange": "$0-300/mo"
   },
   "Speech Services": {
     "displayName": "Speech Services",
-    "iconFile": "00797-icon-service-Speech-Services",
-    "category": "ai + machine learning",
     "aliases": [
       "Speech",
       "Azure Speech",
@@ -54,48 +60,56 @@
       "Speech-to-Text",
       "Text-to-Speech"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Speech",
+    "isUsageBased": true,
+    "costRange": "$100-1000/mo"
   },
   "Translator": {
     "displayName": "Translator",
-    "iconFile": "00800-icon-service-Translator-Text",
-    "category": "ai + machine learning",
     "aliases": [
       "Translator Text",
       "Azure Translator",
       "Azure AI Translator",
       "Translation"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Translator",
+    "isUsageBased": true,
+    "costRange": "$100-1000/mo"
   },
   "Language": {
     "displayName": "Language",
-    "iconFile": "02876-icon-service-Language",
-    "category": "ai + machine learning",
     "aliases": [
       "Azure Language",
       "Azure AI Language",
       "Text Analytics",
       "NLP"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Language",
+    "isUsageBased": true,
+    "costRange": "$25-250/mo"
   },
   "Document Intelligence": {
     "displayName": "Document Intelligence",
-    "iconFile": "02749-icon-service-Azure-Applied-AI-Services",
-    "category": "ai + machine learning",
     "aliases": [
       "Form Recognizer",
       "Azure Document Intelligence",
       "Azure AI Document Intelligence",
       "Form Processing"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Document Intelligence",
+    "isUsageBased": true,
+    "costRange": "$0-500/mo"
   },
   "Azure Machine Learning": {
     "displayName": "Azure Machine Learning",
-    "iconFile": "038470510-icon-service-Azure-Machine-Learning",
-    "category": "ai + machine learning",
     "aliases": [
       "Machine Learning",
       "ML",
@@ -110,35 +124,39 @@
       "Azure Machine Learning Service",
       "AzureML"
     ],
-    "reverseLookupPriority": 100
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Machine Learning",
+    "isUsageBased": true,
+    "costRange": "$0-5000/mo (varies greatly)"
   },
   "AML Online Endpoint": {
     "displayName": "AML Online Endpoint",
-    "iconFile": "038470510-icon-service-Azure-Machine-Learning",
-    "category": "ai + machine learning",
     "aliases": [
       "Online Endpoint",
       "AML Endpoint",
       "Managed Online Endpoint",
       "Real-time Endpoint"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (routing only)"
   },
   "AML Batch Endpoint": {
     "displayName": "AML Batch Endpoint",
-    "iconFile": "038470510-icon-service-Azure-Machine-Learning",
-    "category": "ai + machine learning",
     "aliases": [
       "Batch Endpoint",
       "AML Batch",
       "Batch Inference Endpoint"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (routing only)"
   },
   "AML Deployment": {
     "displayName": "AML Deployment",
-    "iconFile": "038470510-icon-service-Azure-Machine-Learning",
-    "category": "ai + machine learning",
     "aliases": [
       "Online Deployment",
       "Batch Deployment",
@@ -147,12 +165,13 @@
       "Shared Deployment",
       "Dedicated Deployment"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (config only)"
   },
   "AML Managed Compute": {
     "displayName": "AML Managed Compute",
-    "iconFile": "10021-icon-service-Virtual-Machine",
-    "category": "compute",
     "aliases": [
       "AML Compute",
       "ML Compute",
@@ -162,12 +181,14 @@
       "AML Managed Compute (CPU/GPU)",
       "Managed Compute (CPU/GPU)"
     ],
-    "reverseLookupPriority": 0
+    "category": "compute",
+    "hasPricingData": true,
+    "pricingServiceName": "Virtual Machines",
+    "isUsageBased": false,
+    "costRange": "$50-2000/mo (per instance)"
   },
   "Batch Compute Pool": {
     "displayName": "Batch Compute Pool",
-    "iconFile": "10031-icon-service-Batch-Accounts",
-    "category": "compute",
     "aliases": [
       "Batch Pool",
       "AML Batch Compute",
@@ -175,226 +196,255 @@
       "Dedicated Batch Compute",
       "Batch Compute (auto-scale)"
     ],
-    "reverseLookupPriority": 0
+    "category": "compute",
+    "hasPricingData": true,
+    "pricingServiceName": "Batch",
+    "isUsageBased": true,
+    "costRange": "$0-2000/mo (scale-to-zero capable)"
   },
   "Azure AI Search": {
     "displayName": "Azure AI Search",
-    "iconFile": "10044-icon-service-Cognitive-Search",
-    "category": "ai + machine learning",
     "aliases": [
       "Azure Cognitive Search",
       "Cognitive Search",
       "Azure Search",
       "AI Search"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$75-2500/mo"
   },
   "Microsoft Foundry": {
     "displayName": "Microsoft Foundry",
-    "iconFile": "035746832-icon-service-AI-Foundry",
-    "category": "ai + machine learning",
     "aliases": [
       "AI Foundry",
       "Azure AI Foundry",
       "Azure AI Studio",
       "Microsoft AI Foundry"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "Platform (underlying services billed separately)"
   },
   "Foundry Application": {
     "displayName": "Foundry Application",
-    "iconFile": "036509374-icon-service-Foundry-Application",
-    "category": "ai + machine learning",
     "aliases": [
       "Microsoft Foundry Application",
       "Azure AI Foundry Application",
       "Agent Application"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "Legacy application boundary"
   },
   "Foundry Project": {
     "displayName": "Foundry Project",
-    "iconFile": "036509415-icon-service-Foundry-Project",
-    "category": "ai + machine learning",
     "aliases": [
       "Foundry Projects",
       "Microsoft Foundry Project",
       "Azure AI Foundry Project",
       "AI Foundry Project"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (project boundary)"
   },
   "Foundry IQ": {
     "displayName": "Foundry IQ",
-    "iconFile": "038470497-icon-service-Azure-AI-Foundry-IQ",
-    "category": "ai + machine learning",
     "aliases": [
       "Microsoft Foundry IQ",
       "Azure AI Foundry IQ",
       "AI Foundry IQ"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "Usage-based (supporting services)"
   },
   "Microsoft Foundry Agent Service": {
     "displayName": "Microsoft Foundry Agent Service",
-    "iconFile": "038470523-icon-service-Foundry-Agent-Service",
-    "category": "ai + machine learning",
     "aliases": [
       "Foundry Agent Service",
       "Azure AI Foundry Agent Service",
       "Azure AI Agent Service",
       "AI Foundry Agent Service"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "Usage-based (models and tools)"
   },
   "Microsoft Foundry Control Plane": {
     "displayName": "Microsoft Foundry Control Plane",
-    "iconFile": "038470534-icon-service-Foundry-Control-Plane",
-    "category": "ai + machine learning",
     "aliases": [
       "Foundry Control Plane",
       "Azure AI Foundry Control Plane",
       "AI Foundry Control Plane"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (management plane)"
   },
   "Foundry Labs": {
     "displayName": "Foundry Labs",
-    "iconFile": "038470555-icon-service-Foundry-Labs",
-    "category": "ai + machine learning",
     "aliases": [
       "Microsoft Foundry Labs",
       "Azure AI Foundry Labs",
       "AI Foundry Labs"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "Preview and experimental services"
   },
   "Foundry Local": {
     "displayName": "Foundry Local",
-    "iconFile": "038470593-icon-service-Foundry-Local",
-    "category": "ai + machine learning",
     "aliases": [
       "Microsoft Foundry Local",
       "Azure AI Foundry Local",
       "AI Foundry Local"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "Local runtime"
   },
   "Microsoft Foundry Models": {
     "displayName": "Microsoft Foundry Models",
-    "iconFile": "038470614-icon-service-Foundry-Models",
-    "category": "ai + machine learning",
     "aliases": [
       "Foundry Models",
       "Azure AI Foundry Models",
       "AI Foundry Models",
       "Azure AI Model Catalog"
     ],
-    "reverseLookupPriority": 0
+    "category": "ai + machine learning",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "Usage-based (model dependent)"
   },
   "AI Gateway": {
     "displayName": "AI Gateway",
-    "iconFile": "037838045-icon-service-AI-Gateway",
-    "category": "new icons",
     "aliases": [
       "Azure AI Gateway",
       "Generative AI Gateway",
       "GenAI Gateway"
     ],
-    "reverseLookupPriority": 0
+    "category": "new icons",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "Capability (uses API Management)"
   },
   "Virtual Machines": {
     "displayName": "Virtual Machines",
-    "iconFile": "10021-icon-service-Virtual-Machine",
-    "category": "compute",
     "aliases": [
       "VM",
       "VMs",
       "Virtual Machine",
       "Azure VM"
     ],
-    "reverseLookupPriority": 100
+    "category": "compute",
+    "hasPricingData": true,
+    "pricingServiceName": "Virtual Machines",
+    "isUsageBased": false,
+    "costRange": "$13-17340/mo (per instance)"
   },
   "App Service": {
     "displayName": "App Service",
-    "iconFile": "10035-icon-service-App-Services",
-    "category": "app services",
     "aliases": [
       "Azure App Service",
       "Web App",
       "App Services"
     ],
-    "reverseLookupPriority": 0
+    "category": "app services",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure App Service",
+    "isUsageBased": false,
+    "costRange": "$13-730/mo (per instance)"
   },
   "Functions": {
     "displayName": "Azure Functions",
-    "iconFile": "10029-icon-service-Function-Apps",
-    "category": "compute",
     "aliases": [
       "Function App",
       "Functions",
       "Serverless Functions"
     ],
-    "reverseLookupPriority": 0
+    "category": "compute",
+    "hasPricingData": true,
+    "pricingServiceName": "Functions",
+    "isUsageBased": true,
+    "costRange": "$0-160/mo (consumption-based)"
   },
   "Container Instances": {
     "displayName": "Container Instances",
-    "iconFile": "10104-icon-service-Container-Instances",
-    "category": "containers",
     "aliases": [
       "ACI",
       "Azure Container Instances",
       "Container Instance"
     ],
-    "reverseLookupPriority": 0
+    "category": "containers",
+    "hasPricingData": true,
+    "pricingServiceName": "Container Instances",
+    "isUsageBased": true,
+    "costRange": "$0-500/mo (per-second billing)"
   },
   "Kubernetes Service": {
     "displayName": "Azure Kubernetes Service",
-    "iconFile": "10023-icon-service-Kubernetes-Services",
-    "category": "containers",
     "aliases": [
       "AKS",
       "Kubernetes",
       "K8s"
     ],
-    "reverseLookupPriority": 0
+    "category": "containers",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Kubernetes Service",
+    "isUsageBased": false,
+    "costRange": "$73/mo + node costs"
   },
   "Container Registry": {
     "displayName": "Container Registry",
-    "iconFile": "10105-icon-service-Container-Registries",
-    "category": "containers",
     "aliases": [
       "ACR",
       "Azure Container Registry"
     ],
-    "reverseLookupPriority": 0
+    "category": "containers",
+    "hasPricingData": true,
+    "pricingServiceName": "Container Registry",
+    "isUsageBased": false,
+    "costRange": "$5-1000/mo"
   },
   "Azure Cosmos DB": {
     "displayName": "Azure Cosmos DB",
-    "iconFile": "10121-icon-service-Azure-Cosmos-DB",
-    "category": "databases",
     "aliases": [
       "Cosmos DB",
       "CosmosDB",
       "Cosmos"
     ],
-    "reverseLookupPriority": 0
+    "category": "databases",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Cosmos DB",
+    "isUsageBased": true,
+    "costRange": "$24-29185/mo"
   },
   "SQL Database": {
     "displayName": "SQL Database",
-    "iconFile": "02390-icon-service-Azure-SQL",
-    "category": "databases",
     "aliases": [
       "Azure SQL",
       "Azure SQL Database",
       "SQL DB"
     ],
-    "reverseLookupPriority": 0
+    "category": "databases",
+    "hasPricingData": true,
+    "pricingServiceName": "SQL Database",
+    "isUsageBased": false,
+    "costRange": "$5-43800/mo"
   },
   "PostgreSQL": {
     "displayName": "Azure Database for PostgreSQL",
-    "iconFile": "02827-icon-service-Azure-Database-PostgreSQL-Server-Group",
-    "category": "databases",
     "aliases": [
       "PostgreSQL",
       "Postgres",
@@ -405,539 +455,626 @@
       "Azure PostgreSQL Flexible Server",
       "PostgreSQL Server"
     ],
-    "reverseLookupPriority": 0
+    "category": "databases",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Database for PostgreSQL",
+    "isUsageBased": false,
+    "costRange": "$5-11240/mo"
   },
   "MySQL": {
     "displayName": "Azure Database for MySQL",
-    "iconFile": "10122-icon-service-Azure-Database-MySQL-Server",
-    "category": "databases",
     "aliases": [
       "MySQL",
       "Azure MySQL",
       "Azure Database for MySQL"
     ],
-    "reverseLookupPriority": 0
+    "category": "databases",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Database for MySQL",
+    "isUsageBased": false,
+    "costRange": "$5-9800/mo"
   },
   "Redis Cache": {
     "displayName": "Azure Cache for Redis",
-    "iconFile": "10137-icon-service-Cache-Redis",
-    "category": "databases",
     "aliases": [
       "Redis",
       "Redis Cache",
       "Cache",
       "Azure Cache for Redis"
     ],
-    "reverseLookupPriority": 0
+    "category": "databases",
+    "hasPricingData": true,
+    "pricingServiceName": "Redis Cache",
+    "isUsageBased": false,
+    "costRange": "$16-13600/mo"
   },
   "Azure Managed Redis": {
     "displayName": "Azure Managed Redis",
-    "iconFile": "03675-icon-service-Azure-Managed-Redis",
-    "category": "databases",
     "aliases": [
       "Managed Redis",
       "AMR"
     ],
-    "reverseLookupPriority": 0
+    "category": "databases",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "Tier and capacity dependent"
   },
   "Storage Account": {
     "displayName": "Storage Account",
-    "iconFile": "10086-icon-service-Storage-Accounts",
-    "category": "storage",
     "aliases": [
       "Storage",
       "Blob Storage",
       "Azure Storage",
       "Storage Accounts"
     ],
-    "reverseLookupPriority": 0
+    "category": "storage",
+    "hasPricingData": true,
+    "pricingServiceName": "Storage",
+    "isUsageBased": true,
+    "costRange": "$0.02-184/mo (per GB)"
   },
   "Application Gateway": {
     "displayName": "Application Gateway",
-    "iconFile": "10076-icon-service-Application-Gateways",
-    "category": "networking",
     "aliases": [
       "App Gateway",
       "Azure Application Gateway"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Application Gateway",
+    "isUsageBased": false,
+    "costRange": "$125-1200/mo"
   },
   "Azure Front Door": {
     "displayName": "Azure Front Door",
-    "iconFile": "10073-icon-service-Front-Door-and-CDN-Profiles",
-    "category": "networking",
     "aliases": [
       "Front Door",
       "AFD"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Front Door Service",
+    "isUsageBased": true,
+    "costRange": "$35-412/mo + traffic"
   },
   "CDN": {
     "displayName": "Content Delivery Network",
-    "iconFile": "00056-icon-service-CDN-Profiles",
-    "category": "networking",
     "aliases": [
       "Azure CDN",
       "CDN",
       "Content Delivery"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Content Delivery Network",
+    "isUsageBased": true,
+    "costRange": "$0.081-0.20 per GB"
   },
   "Data Factory": {
     "displayName": "Azure Data Factory",
-    "iconFile": "10126-icon-service-Data-Factories",
-    "category": "analytics",
     "aliases": [
       "Data Factory",
       "ADF"
     ],
-    "reverseLookupPriority": 0
+    "category": "analytics",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Data Factory",
+    "isUsageBased": true,
+    "costRange": "$0.50-2.50 per 1000 activities"
   },
   "Azure Synapse Analytics": {
     "displayName": "Azure Synapse Analytics",
-    "iconFile": "00606-icon-service-Azure-Synapse-Analytics",
-    "category": "analytics",
     "aliases": [
       "Synapse",
       "Synapse Analytics",
       "Azure Synapse"
     ],
-    "reverseLookupPriority": 0
+    "category": "analytics",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Synapse Analytics",
+    "isUsageBased": true,
+    "costRange": "$5-8000/mo + compute"
   },
   "Stream Analytics": {
     "displayName": "Azure Stream Analytics",
-    "iconFile": "00042-icon-service-Stream-Analytics-Jobs",
-    "category": "analytics",
     "aliases": [
       "Stream Analytics",
       "ASA",
       "Azure Stream Analytics"
     ],
-    "reverseLookupPriority": 0
+    "category": "analytics",
+    "hasPricingData": true,
+    "pricingServiceName": "Stream Analytics",
+    "isUsageBased": true,
+    "costRange": "$0.11 per streaming unit/hour"
   },
   "Event Hubs": {
     "displayName": "Event Hubs",
-    "iconFile": "00039-icon-service-Event-Hubs",
-    "category": "analytics",
     "aliases": [
       "Azure Event Hubs",
       "Event Hub"
     ],
-    "reverseLookupPriority": 0
+    "category": "analytics",
+    "hasPricingData": true,
+    "pricingServiceName": "Event Hubs",
+    "isUsageBased": true,
+    "costRange": "$11-6849/mo"
   },
   "Service Bus": {
     "displayName": "Service Bus",
-    "iconFile": "10836-icon-service-Azure-Service-Bus",
-    "category": "integration",
     "aliases": [
       "Azure Service Bus",
       "Message Queue"
     ],
-    "reverseLookupPriority": 0
+    "category": "integration",
+    "hasPricingData": true,
+    "pricingServiceName": "Service Bus",
+    "isUsageBased": true,
+    "costRange": "$0-10/mo + messages"
   },
   "Logic Apps": {
     "displayName": "Logic Apps",
-    "iconFile": "02631-icon-service-Logic-Apps",
-    "category": "integration",
     "aliases": [
       "Azure Logic Apps",
       "Logic App"
     ],
-    "reverseLookupPriority": 0
+    "category": "integration",
+    "hasPricingData": true,
+    "pricingServiceName": "Logic Apps",
+    "isUsageBased": true,
+    "costRange": "$0-1000/mo (per action)"
   },
   "Key Vault": {
     "displayName": "Key Vault",
-    "iconFile": "10245-icon-service-Key-Vaults",
-    "category": "security",
     "aliases": [
       "Azure Key Vault",
       "Secrets Management"
     ],
-    "reverseLookupPriority": 0
+    "category": "security",
+    "hasPricingData": true,
+    "pricingServiceName": "Key Vault",
+    "isUsageBased": true,
+    "costRange": "$0.03 per 10K operations"
   },
   "Application Insights": {
     "displayName": "Application Insights",
-    "iconFile": "00012-icon-service-Application-Insights",
-    "category": "monitor",
     "aliases": [
       "App Insights",
       "Azure Application Insights",
       "Monitoring"
     ],
-    "reverseLookupPriority": 0
+    "category": "monitor",
+    "hasPricingData": true,
+    "pricingServiceName": "Application Insights",
+    "isUsageBased": true,
+    "costRange": "$2.30 per GB ingested"
   },
   "Log Analytics": {
     "displayName": "Log Analytics",
-    "iconFile": "00009-icon-service-Log-Analytics-Workspaces",
-    "category": "monitor",
     "aliases": [
       "Azure Log Analytics",
       "LA",
       "Log Analytics Workspace"
     ],
-    "reverseLookupPriority": 0
+    "category": "monitor",
+    "hasPricingData": true,
+    "pricingServiceName": "Log Analytics",
+    "isUsageBased": true,
+    "costRange": "$2.76 per GB ingested"
   },
   "API Management": {
     "displayName": "API Management",
-    "iconFile": "10042-icon-service-API-Management-Services",
-    "category": "integration",
     "aliases": [
       "APIM",
       "Azure API Management",
       "API Gateway"
     ],
-    "reverseLookupPriority": 0
+    "category": "integration",
+    "hasPricingData": true,
+    "pricingServiceName": "API Management",
+    "isUsageBased": false,
+    "costRange": "$50-2800/mo"
   },
   "Azure Managed Grafana": {
     "displayName": "Azure Managed Grafana",
-    "iconFile": "02905-icon-service-Azure-Managed-Grafana",
-    "category": "other",
     "aliases": [
       "Managed Grafana",
       "Grafana",
       "Azure Grafana"
     ],
-    "reverseLookupPriority": 0
+    "category": "other",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Managed Grafana",
+    "isUsageBased": false,
+    "costRange": "$10-300/mo"
   },
   "Power BI Embedded": {
     "displayName": "Power BI Embedded",
-    "iconFile": "03332-icon-service-Power-BI-Embedded",
-    "category": "analytics",
     "aliases": [
       "Power BI",
       "PowerBI",
       "Power BI Dashboard",
       "PBI"
     ],
-    "reverseLookupPriority": 0
+    "category": "analytics",
+    "hasPricingData": true,
+    "pricingServiceName": "Power BI Embedded",
+    "isUsageBased": false,
+    "costRange": "$735-4,700/mo"
   },
   "Azure Dashboard": {
     "displayName": "Azure Dashboard",
-    "iconFile": "02488-icon-service-Azure-Monitor-Dashboard",
-    "category": "other",
     "aliases": [
       "Azure Portal Dashboard",
       "Dashboard",
       "Azure Monitor Dashboard"
     ],
-    "reverseLookupPriority": 0
+    "category": "other",
+    "hasPricingData": false,
+    "pricingServiceName": "Azure Dashboard",
+    "isUsageBased": false,
+    "costRange": "Free"
   },
   "Azure Workbooks": {
     "displayName": "Azure Workbooks",
-    "iconFile": "02189-icon-service-Azure-Workbooks",
-    "category": "analytics",
     "aliases": [
       "Workbooks",
       "Monitor Workbooks",
       "Azure Monitor Workbooks"
     ],
-    "reverseLookupPriority": 0
+    "category": "analytics",
+    "hasPricingData": false,
+    "pricingServiceName": "Azure Workbooks",
+    "isUsageBased": false,
+    "costRange": "Free (data costs apply)"
   },
   "IoT Hub": {
     "displayName": "Azure IoT Hub",
-    "iconFile": "10182-icon-service-IoT-Hub",
-    "category": "iot",
     "aliases": [
       "Azure IoT Hub",
       "IoT",
       "IoT Hub"
     ],
-    "reverseLookupPriority": 0
+    "category": "iot",
+    "hasPricingData": true,
+    "pricingServiceName": "IoT Hub",
+    "isUsageBased": true,
+    "costRange": "$0-5000/mo"
   },
   "IoT Central": {
     "displayName": "Azure IoT Central",
-    "iconFile": "10184-icon-service-IoT-Central-Applications",
-    "category": "iot",
     "aliases": [
       "Azure IoT Central",
       "IoT Central"
     ],
-    "reverseLookupPriority": 0
+    "category": "iot",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "$0-250/mo"
   },
   "Digital Twins": {
     "displayName": "Azure Digital Twins",
-    "iconFile": "01030-icon-service-Digital-Twins",
-    "category": "iot",
     "aliases": [
       "Azure Digital Twins",
       "Digital Twin"
     ],
-    "reverseLookupPriority": 0
+    "category": "iot",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "$0-1000/mo"
   },
   "Container Apps": {
     "displayName": "Azure Container Apps",
-    "iconFile": "02989-icon-service-Container-Apps-Environments",
-    "category": "other",
     "aliases": [
       "Azure Container Apps",
       "Container App",
       "ACA"
     ],
-    "reverseLookupPriority": 0
+    "category": "other",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Container Apps",
+    "isUsageBased": true,
+    "costRange": "$0-500/mo (consumption-based)"
   },
   "Virtual Network": {
     "displayName": "Virtual Network",
-    "iconFile": "10061-icon-service-Virtual-Networks",
-    "category": "networking",
     "aliases": [
       "VNet",
       "Azure Virtual Network",
       "VNET"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Virtual Network",
+    "isUsageBased": false,
+    "costRange": "$0-7.30/mo (peering)"
   },
   "Load Balancer": {
     "displayName": "Azure Load Balancer",
-    "iconFile": "10062-icon-service-Load-Balancers",
-    "category": "networking",
     "aliases": [
       "Azure Load Balancer",
       "LB"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Load Balancer",
+    "isUsageBased": false,
+    "costRange": "$18-730/mo"
   },
   "Azure Firewall": {
     "displayName": "Azure Firewall",
-    "iconFile": "10084-icon-service-Firewalls",
-    "category": "networking",
     "aliases": [
       "Firewall"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Firewall",
+    "isUsageBased": false,
+    "costRange": "$438-1095/mo"
   },
   "VPN Gateway": {
     "displayName": "VPN Gateway",
-    "iconFile": "10063-icon-service-Virtual-Network-Gateways",
-    "category": "networking",
     "aliases": [
       "Azure VPN Gateway",
       "VPN",
       "Virtual Network Gateway"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "VPN Gateway",
+    "isUsageBased": false,
+    "costRange": "$26-361/mo"
   },
   "ExpressRoute": {
     "displayName": "ExpressRoute",
-    "iconFile": "10079-icon-service-ExpressRoute-Circuits",
-    "category": "networking",
     "aliases": [
       "Azure ExpressRoute",
       "Express Route"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "ExpressRoute",
+    "isUsageBased": false,
+    "costRange": "$55-580/mo"
   },
   "Traffic Manager": {
     "displayName": "Azure Traffic Manager",
-    "iconFile": "10065-icon-service-Traffic-Manager-Profiles",
-    "category": "networking",
     "aliases": [
       "Azure Traffic Manager"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Traffic Manager",
+    "isUsageBased": true,
+    "costRange": "$0.54 per million queries"
   },
   "Event Grid": {
     "displayName": "Azure Event Grid",
-    "iconFile": "10206-icon-service-Event-Grid-Topics",
-    "category": "integration",
     "aliases": [
       "Azure Event Grid"
     ],
-    "reverseLookupPriority": 0
+    "category": "integration",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Event Grid",
+    "isUsageBased": true,
+    "costRange": "$0.30 per million operations"
   },
   "SignalR Service": {
     "displayName": "Azure SignalR Service",
-    "iconFile": "10052-icon-service-SignalR",
-    "category": "web",
     "aliases": [
       "SignalR",
       "Azure SignalR",
       "Azure SignalR Service"
     ],
-    "reverseLookupPriority": 0
+    "category": "web",
+    "hasPricingData": true,
+    "pricingServiceName": "SignalR",
+    "isUsageBased": true,
+    "costRange": "$0-49/mo per unit"
   },
   "Notification Hubs": {
     "displayName": "Azure Notification Hubs",
-    "iconFile": "10045-icon-service-Notification-Hubs",
-    "category": "iot",
     "aliases": [
       "Notification Hub",
       "Azure Notification Hubs",
       "Push Notifications"
     ],
-    "reverseLookupPriority": 0
+    "category": "iot",
+    "hasPricingData": true,
+    "pricingServiceName": "Notification Hubs",
+    "isUsageBased": true,
+    "costRange": "$0-200/mo"
   },
   "Static Web Apps": {
     "displayName": "Azure Static Web Apps",
-    "iconFile": "01007-icon-service-Static-Apps",
-    "category": "web",
     "aliases": [
       "Static Web App",
       "Azure Static Web Apps",
       "Azure Static Web App",
       "SWA"
     ],
-    "reverseLookupPriority": 0
+    "category": "web",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0-9/mo"
   },
   "Azure Monitor": {
     "displayName": "Azure Monitor",
-    "iconFile": "00001-icon-service-Monitor",
-    "category": "monitor",
     "aliases": [
       "Monitor"
     ],
-    "reverseLookupPriority": 0
+    "category": "monitor",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Monitor",
+    "isUsageBased": true,
+    "costRange": "$2.30 per GB ingested"
   },
   "Microsoft Defender for Cloud": {
     "displayName": "Microsoft Defender for Cloud",
-    "iconFile": "10241-icon-service-Microsoft-Defender-for-Cloud",
-    "category": "security",
     "aliases": [
       "Defender for Cloud",
       "Azure Defender",
       "Security Center"
     ],
-    "reverseLookupPriority": 0
+    "category": "security",
+    "hasPricingData": true,
+    "pricingServiceName": "Microsoft Defender for Cloud",
+    "isUsageBased": false,
+    "costRange": "$0-15/mo per server"
   },
   "Microsoft Entra ID": {
     "displayName": "Microsoft Entra ID",
-    "iconFile": "10340-icon-service-Entra-Identity-Roles-and-Administrators",
-    "category": "identity",
     "aliases": [
       "Entra ID",
       "Azure AD",
       "Azure Active Directory",
       "Active Directory"
     ],
-    "reverseLookupPriority": 0
+    "category": "identity",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0-9/mo per user"
   },
   "Backup": {
     "displayName": "Azure Backup",
-    "iconFile": "00017-icon-service-Recovery-Services-Vaults",
-    "category": "management + governance",
     "aliases": [
       "Azure Backup",
       "Recovery Services",
       "Recovery Services Vault"
     ],
-    "reverseLookupPriority": 0
+    "category": "management + governance",
+    "hasPricingData": true,
+    "pricingServiceName": "Backup",
+    "isUsageBased": true,
+    "costRange": "$5-25/mo per instance"
   },
   "Network Watcher": {
     "displayName": "Network Watcher",
-    "iconFile": "10066-icon-service-Network-Watcher",
-    "category": "networking",
     "aliases": [
       "Azure Network Watcher"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": true,
+    "pricingServiceName": "Network Watcher",
+    "isUsageBased": true,
+    "costRange": "$0-10/mo per resource"
   },
   "Azure Bastion": {
     "displayName": "Azure Bastion",
-    "iconFile": "02422-icon-service-Bastions",
-    "category": "networking",
     "aliases": [
       "Bastion",
       "Bastion Host"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$138-876/mo"
   },
   "Azure DDoS Protection": {
     "displayName": "Azure DDoS Protection",
-    "iconFile": "10072-icon-service-DDoS-Protection-Plans",
-    "category": "networking",
     "aliases": [
       "DDoS Protection",
       "DDoS",
       "DDoS Protection Plan"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$2944/mo"
   },
   "Azure Policy": {
     "displayName": "Azure Policy",
-    "iconFile": "10316-icon-service-Policy",
-    "category": "management + governance",
     "aliases": [
       "Policy",
       "Azure Policies",
       "Governance Policy"
     ],
-    "reverseLookupPriority": 0
+    "category": "management + governance",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (included)"
   },
   "Microsoft Sentinel": {
     "displayName": "Microsoft Sentinel",
-    "iconFile": "10248-icon-service-Azure-Sentinel",
-    "category": "security",
     "aliases": [
       "Sentinel",
       "Azure Sentinel",
       "SIEM",
       "Azure SIEM"
     ],
-    "reverseLookupPriority": 0
+    "category": "security",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "$2.46 per GB ingested"
   },
   "Web Application Firewall": {
     "displayName": "Web Application Firewall",
-    "iconFile": "10362-icon-service-Web-Application-Firewall-Policies(WAF)",
-    "category": "networking",
     "aliases": [
       "WAF",
       "Azure WAF",
       "WAF Policy",
       "Web Application Firewall Policy"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$100-500/mo"
   },
   "Private Link": {
     "displayName": "Azure Private Link",
-    "iconFile": "00427-icon-service-Private-Link",
-    "category": "networking",
     "aliases": [
       "Azure Private Link",
       "Private Endpoint",
       "Private Endpoints",
       "Azure Private Endpoint"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$7.30/mo per endpoint"
   },
   "Azure DNS": {
     "displayName": "Azure DNS",
-    "iconFile": "10064-icon-service-DNS-Zones",
-    "category": "networking",
     "aliases": [
       "DNS",
       "DNS Zone",
       "DNS Zones",
       "Private DNS"
     ],
-    "reverseLookupPriority": 0
+    "category": "networking",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "$0.50/mo per zone"
   },
   "Azure API for FHIR": {
     "displayName": "Azure API for FHIR",
-    "iconFile": "10212-icon-service-Azure-API-for-FHIR",
-    "category": "integration",
     "aliases": [
       "FHIR",
       "Azure Health Data Services",
       "Health Data Services",
       "FHIR Service"
     ],
-    "reverseLookupPriority": 0
+    "category": "integration",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "$0-3000/mo"
   },
   "Microsoft Purview": {
     "displayName": "Microsoft Purview",
-    "iconFile": "10314-icon-service-Azure-Purview-Accounts",
-    "category": "management + governance",
     "aliases": [
       "Purview",
       "Azure Purview",
       "Data Governance",
       "Data Catalog"
     ],
-    "reverseLookupPriority": 0
+    "category": "management + governance",
+    "hasPricingData": true,
+    "pricingServiceName": "Microsoft Purview",
+    "isUsageBased": false,
+    "costRange": "$0.50-240/mo"
   },
   "Data Lake Storage": {
     "displayName": "Azure Data Lake Storage",
-    "iconFile": "10090-icon-service-Data-Lake-Storage-Gen1",
-    "category": "storage",
     "aliases": [
       "Data Lake",
       "Azure Data Lake",
@@ -945,23 +1082,25 @@
       "ADLS",
       "Azure Data Lake Storage Gen2"
     ],
-    "reverseLookupPriority": 0
+    "category": "storage",
+    "hasPricingData": false,
+    "isUsageBased": true,
+    "costRange": "$0.02-0.15 per GB/mo"
   },
   "Microsoft Fabric": {
     "displayName": "Microsoft Fabric",
-    "iconFile": "microsoft-fabric",
-    "category": "fabric",
     "aliases": [
       "Fabric",
       "MS Fabric",
       "Fabric Platform"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "Platform (see Fabric Capacity)"
   },
   "Microsoft Fabric Capacity": {
     "displayName": "Microsoft Fabric Capacity",
-    "iconFile": "fabric-capacity",
-    "category": "fabric",
     "aliases": [
       "Fabric Capacity",
       "Fabric F SKU",
@@ -970,23 +1109,27 @@
       "Capacity Unit",
       "F SKU"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": true,
+    "pricingServiceName": "Microsoft Fabric Capacity",
+    "isUsageBased": false,
+    "costRange": "$263-8,410/mo (F2-F64, PAYG)"
   },
   "OneLake": {
     "displayName": "OneLake",
-    "iconFile": "onelake",
-    "category": "fabric",
     "aliases": [
       "One Lake",
       "Fabric OneLake",
       "OneLake Storage"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": true,
+    "pricingServiceName": "OneLake Storage",
+    "isUsageBased": true,
+    "costRange": "~$0.023–0.041 per GB/mo (Hot, region-dependent)"
   },
   "Lakehouse": {
     "displayName": "Lakehouse",
-    "iconFile": "fabric-lakehouse",
-    "category": "fabric",
     "aliases": [
       "Fabric Lakehouse",
       "Lake House",
@@ -994,167 +1137,186 @@
       "Lakehouse (Silver)",
       "Lakehouse (Gold)"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Warehouse": {
     "displayName": "Warehouse",
-    "iconFile": "fabric-warehouse",
-    "category": "fabric",
     "aliases": [
       "Fabric Warehouse",
       "Data Warehouse (Fabric)",
       "Warehouse (Gold)"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Eventhouse": {
     "displayName": "Eventhouse",
-    "iconFile": "fabric-eventhouse",
-    "category": "fabric",
     "aliases": [
       "Fabric Eventhouse",
       "Event House"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Eventstream": {
     "displayName": "Eventstream",
-    "iconFile": "fabric-eventstream",
-    "category": "fabric",
     "aliases": [
       "Fabric Eventstream",
       "Event Stream"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "KQL Database": {
     "displayName": "KQL Database",
-    "iconFile": "fabric-kql-database",
-    "category": "fabric",
     "aliases": [
       "Fabric KQL Database",
       "Kusto Database (Fabric)"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Fabric Notebook": {
     "displayName": "Fabric Notebook",
-    "iconFile": "fabric-notebook",
-    "category": "fabric",
     "aliases": [
       "Fabric Spark Notebook"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Fabric Data Pipeline": {
     "displayName": "Fabric Data Pipeline",
-    "iconFile": "fabric-data-pipeline",
-    "category": "fabric",
     "aliases": [
       "Fabric Pipeline",
       "Data Pipeline (Fabric)"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Fabric Data Factory": {
     "displayName": "Fabric Data Factory",
-    "iconFile": "fabric-data-factory",
-    "category": "fabric",
     "aliases": [
       "Data Factory (Fabric)"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Dataflow Gen2": {
     "displayName": "Dataflow Gen2",
-    "iconFile": "fabric-dataflow-gen2",
-    "category": "fabric",
     "aliases": [
       "Fabric Dataflow",
       "Dataflow Gen 2"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Datamart": {
     "displayName": "Datamart",
-    "iconFile": "fabric-datamart",
-    "category": "fabric",
     "aliases": [
       "Fabric Datamart"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Semantic Model": {
     "displayName": "Semantic Model",
-    "iconFile": "fabric-semantic-model",
-    "category": "fabric",
     "aliases": [
       "Power BI Semantic Model",
       "Power BI Dataset",
       "Direct Lake Semantic Model"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Power BI Report": {
     "displayName": "Power BI Report",
-    "iconFile": "fabric-power-bi-report",
-    "category": "fabric",
     "aliases": [
       "Fabric Report",
       "Fabric Power BI Report"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Fabric SQL Database": {
     "displayName": "Fabric SQL Database",
-    "iconFile": "fabric-sql-database",
-    "category": "fabric",
     "aliases": [
       "SQL Database (Fabric)",
       "Fabric SQL DB"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Mirrored Database": {
     "displayName": "Mirrored Database",
-    "iconFile": "fabric-mirrored-database",
-    "category": "fabric",
     "aliases": [
       "Fabric Mirroring",
       "Database Mirroring (Fabric)",
       "Mirrored DB"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (free mirroring up to capacity size)"
   },
   "Real-Time Dashboard": {
     "displayName": "Real-Time Dashboard",
-    "iconFile": "fabric-real-time-dashboard",
-    "category": "fabric",
     "aliases": [
       "Fabric Real-Time Dashboard",
       "Real Time Dashboard",
       "Real-Time Intelligence"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Fabric Spark Job": {
     "displayName": "Fabric Spark Job",
-    "iconFile": "fabric-spark-job",
-    "category": "fabric",
     "aliases": [
       "Spark Job Definition",
       "Fabric Spark"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   },
   "Fabric Data Agent": {
     "displayName": "Fabric Data Agent",
-    "iconFile": "fabric-data-agent",
-    "category": "fabric",
     "aliases": [
       "Data Agent (Fabric)",
       "Fabric AI Skill"
     ],
-    "reverseLookupPriority": 0
+    "category": "fabric",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$0 (consumes Fabric capacity)"
   }
 }

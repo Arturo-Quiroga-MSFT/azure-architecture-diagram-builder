@@ -37,7 +37,7 @@ graph TB
 
     subgraph "Data Layer"
         PricingData[(Pricing JSON Files<br/>49-71 services × 8 regions)]
-        IconData[(SVG Icons<br/>714 files in 29 categories)]
+        IconData[(SVG Icons<br/>746 files in 31 categories)]
         Mappings[Service & Icon Mappings<br/>incl. Microsoft Fabric]
     end
 
@@ -334,7 +334,7 @@ azure-diagrams/
 ├── mcp-server/                         # MCP server (8 tools, stdio + Streamable-HTTP, Bearer auth)
 │   └── src/                            # serviceCatalog, wafDetector, layoutEngine, svgRenderer, htmlRenderer
 │
-├── Azure_Public_Service_Icons/        # 714 SVG files in 29 categories
+├── Azure_Public_Service_Icons/        # 714 Azure V24 + 32 supplemental SVGs
 ├── infra/                             # Bicep infrastructure (azd template)
 │   ├── main.bicep                     # Subscription-scoped entry; creates RG, emits outputs
 │   ├── resources.bicep                # All Azure resources (ACR, ACA, Log Analytics, Speech, Cosmos)
@@ -401,7 +401,7 @@ azure-diagrams/
 
 ### Data Management
 - **JSON files** - cached regional pricing per region (49-71 services × 8 regions), including Microsoft Fabric capacity & OneLake meters; refresh with `npm run pricing:refresh`
-- **SVG files** - Azure service icons (714 files) plus the Microsoft Fabric icon set
+- **SVG files** - 714 Azure V24 icons plus 32 classified supplemental icons
 - **In-memory caching** - Performance optimization
 - **localStorage** - Model settings, per-feature overrides, version history, export history
 
@@ -425,9 +425,9 @@ azure-diagrams/
 - **Model Override**: Settings captured at click time from `useModelSettings()` hook and passed explicitly to API
 
 ### 2. Icon Matching System
-- **Challenge**: Map AI-generated service names to 714 icon files
+- **Challenge**: Map AI-generated service names to 746 icon files
 - **Solution**: Two-path resolution system
-  - **Path 1 (Direct)**: `getServiceIconMapping()` matches service name or aliases against 68 mapped services with exact icon file paths and categories
+  - **Path 1 (Direct)**: `getServiceIconMapping()` matches service names or aliases against 104 mapped services with exact icon file paths and categories
   - **Path 2 (Fuzzy fallback)**: Loads all icons from a category and applies multi-stage matching: exact → multi-word → primary word → first icon in category
   - Service icon mapping file (945 lines) maps AI names directly to icon paths, pricing flags, and display names
   - Service name normalization mappings (1,163 lines)
@@ -522,7 +522,7 @@ The app uses a three-layer mapping system to handle service name variations:
 
 ## Performance Optimizations
 
-1. **Icon Preloading**: Loads all 714 icons on app mount (async)
+1. **Icon Preloading**: Loads all 746 icons on app mount (async)
 2. **Pricing Cache**: Two-level cache (raw JSON + parsed tiers)
 3. **Lazy Loading**: Pricing data fetched only for used services
 4. **Parallel Processing**: Icons and pricing load simultaneously
@@ -786,4 +786,4 @@ Key architectural decisions:
 - **azd template** (`azure.yaml` + `infra/`) for one-command provision and deploy, qualifying for Azure-Samples gallery
 - **Azure Container Apps deployment** with ACR builds and auto-scaling (1–3 replicas)
 
-The system successfully handles the complexity of 714 icons (plus the Microsoft Fabric set), per-region pricing across 8 regions, 12 AI models, and variable service naming conventions to deliver a seamless user experience.
+The system handles 714 official Azure V24 icons plus 32 classified supplements, per-region pricing across 8 regions, 12 AI models, and variable service naming conventions.

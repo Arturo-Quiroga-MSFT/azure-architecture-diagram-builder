@@ -191,8 +191,8 @@ A built-in feedback widget captures a rating, category, and free-text comment. S
 - Cloud sync with shareable URLs
 
 ### 🎨 Professional Diagramming
-- **714 Official Azure Icons + Microsoft Fabric icon set** — complete service library across 29 categories, now including Microsoft Fabric
-- **89+ AI-mapped services** — with pricing, categories, and icon resolution (including ~21 Microsoft Fabric items)
+- **746 architecture icons across 31 categories** — all 714 official Azure V24 icons plus 32 classified Microsoft Fabric and repository supplements
+- **104 AI-mapped services** — with pricing, categories, and icon resolution, including Microsoft Foundry and Fabric
 - **Smart Grouping** — Logical organization (Frontend, Backend, Data, Security)
 - **Editable Connections** — Labels, animations, custom styling
 - **Alignment Tools** — Professional layout assistance
@@ -880,7 +880,7 @@ azure-diagrams/
 │   ├── update_aca.sh         # Author's ACA deployment (hardcoded resources)
 │   ├── deploy-mcp-instance.sh  # Deploy the isolated MCP server ACA instance
 │   └── fetch-multi-region-pricing.sh  # Refresh per-region pricing (npm run pricing:refresh)
-├── Azure_Public_Service_Icons/  # 714 official Azure icons (29 categories)
+├── Azure_Public_Service_Icons/  # 714 official Azure V24 + 32 supplemental SVGs
 ├── mcp-server/               # MCP server (12 tools + 3 resources + 3 prompts, stdio + HTTP, Bearer auth)
 │   └── src/                  # serviceCatalog, wafDetector, layoutEngine, svgRenderer, htmlRenderer
 ├── SCOUT/                    # Microsoft Scout integration notes & sample session
@@ -1111,7 +1111,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 This project is licensed under the [MIT License](LICENSE).
 
-This project uses the official Microsoft Azure icon library. Please refer to [Microsoft's usage guidelines](https://docs.microsoft.com/en-us/azure/architecture/icons/) for the icons.
+This project uses the official Microsoft Azure icon library. See [Microsoft's usage guidelines](https://learn.microsoft.com/azure/architecture/icons/) and the repository's [pinned refresh workflow](DOCS/ICON-REFRESH.md).
 
 ---
 

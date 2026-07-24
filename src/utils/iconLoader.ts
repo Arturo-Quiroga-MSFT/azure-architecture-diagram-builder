@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import iconPathRedirects from '../data/iconPathRedirects.generated.json';
+
 export interface AzureIcon {
   id: string;
   name: string;
@@ -18,6 +20,7 @@ export const iconCategories = [
   'compute',
   'containers',
   'databases',
+  'developer tools',
   'devops',
   'fabric',
   'general',
@@ -104,8 +107,14 @@ export async function loadIcon(path: string): Promise<string> {
       import: 'default'
     });
     
-    if (iconModules[path]) {
-      const url = await iconModules[path]();
+    const prefix = '/Azure_Public_Service_Icons/Icons/';
+    const relativePath = path.replace(/\\/g, '/').replace(prefix, '');
+    const resolvedPath = iconPathRedirects[relativePath as keyof typeof iconPathRedirects]
+      ? `${prefix}${iconPathRedirects[relativePath as keyof typeof iconPathRedirects]}`
+      : path;
+
+    if (iconModules[resolvedPath]) {
+      const url = await iconModules[resolvedPath]();
       return url as string;
     }
     

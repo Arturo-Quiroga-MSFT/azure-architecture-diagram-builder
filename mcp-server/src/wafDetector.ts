@@ -10,6 +10,8 @@
  * without any LLM calls — pure rule-based analysis.
  */
 
+import { resolveServiceName } from './serviceCatalog.js';
+
 // ── Types ──────────────────────────────────────────────────────────────
 
 export type WafPillar =
@@ -133,7 +135,7 @@ const FRONTEND_TYPES = new Set([
 ]);
 
 const CACHE_TYPES = new Set([
-  'redis cache', 'azure cache for redis', 'cdn', 'content delivery network',
+  'redis cache', 'azure managed redis', 'cdn', 'content delivery network',
 ]);
 
 const MONITORING_TYPES = new Set([
@@ -158,7 +160,7 @@ const API_GATEWAY_TYPES = new Set([
 // ── Helpers ────────────────────────────────────────────────────────────
 
 function norm(t: string): string {
-  return t.toLowerCase().trim();
+  return (resolveServiceName(t) ?? t).toLowerCase().trim();
 }
 
 function hasType(services: ServiceInput[], typeSet: Set<string>): boolean {

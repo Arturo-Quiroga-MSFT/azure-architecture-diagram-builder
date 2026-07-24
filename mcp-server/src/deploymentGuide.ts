@@ -39,7 +39,7 @@ const SMOKE_TESTS: Record<string, string> = {
   'Azure Cosmos DB': 'Open Data Explorer; confirm the account shows continuous backup + failover.',
   'SQL Database': 'Connect with a least-privilege identity; confirm TDE and auditing are on.',
   'Redis Cache': 'Connect over TLS 6380; confirm the non-SSL 6379 port is refused.',
-  'Azure Cognitive Search': 'Query the search endpoint with an AAD token (keys disabled).',
+  'Azure AI Search': 'Query the search endpoint with an AAD token (keys disabled).',
   'API Management': 'Call a published API through the gateway; confirm the WAF/policy applies.',
   'Azure OpenAI': 'Send a completion request via managed identity; confirm no key is embedded.',
   'Application Insights': 'Confirm telemetry is arriving in the Live Metrics blade.',

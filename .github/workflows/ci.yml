@@ -35,8 +35,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
       - name: Build (tsc + vite)
         run: npm run build
+
+      - name: Verify generated files are committed
+        run: git diff --exit-code
 
   build-mcp:
     name: Build (MCP server)
@@ -56,6 +65,17 @@ jobs:
         working-directory: mcp-server
         run: npm ci
 
+      - name: Test catalog
+        working-directory: mcp-server
+        run: npm test
+
       - name: Build
         working-directory: mcp-server
         run: npm run build
+
+      - name: Smoke-test local MCP server
+        working-directory: mcp-server
+        run: npm run test:smoke
+
+      - name: Verify generated files are committed
+        run: git diff --exit-code

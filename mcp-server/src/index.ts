@@ -63,11 +63,14 @@ import { importArchitecture } from './importer.js';
 // paths that match what the React Flow web app expects.
 // Loaded at runtime via fs to avoid Node ESM JSON-import-attribute issues.
 const __thisDir = dirname(fileURLToPath(import.meta.url));
-const iconMap: Record<string, { iconFile: string; category: string }> = JSON.parse(
+const iconMap: Record<string, { iconFile: string; category: string; reverseLookupPriority?: number }> = JSON.parse(
   readFileSync(resolvePath(__thisDir, 'iconMap.generated.json'), 'utf8'),
 );
+const legacyIconTypes: Record<string, string> = JSON.parse(
+  readFileSync(resolvePath(__thisDir, 'legacyIconTypes.generated.json'), 'utf8'),
+);
 
-type IconEntry = { iconFile: string; category: string };
+type IconEntry = { iconFile: string; category: string; reverseLookupPriority?: number };
 const ICON_MAP = iconMap as Record<string, IconEntry>;
 
 // Shared guidance for connection/edge labels. Terse one-word labels ("data",
@@ -82,9 +85,14 @@ const CONN_LABEL_DESC =
 // recover a service type from a React Flow node's iconPath when the scene has no
 // explicit type field.
 const ICON_FILE_TO_TYPE: Record<string, string> = (() => {
-  const out: Record<string, string> = {};
+  const out: Record<string, string> = { ...legacyIconTypes };
+  const priorities: Record<string, number> = {};
   for (const [name, entry] of Object.entries(ICON_MAP)) {
-    if (entry?.iconFile && !out[entry.iconFile]) out[entry.iconFile] = name;
+    const priority = entry.reverseLookupPriority ?? 0;
+    if (entry?.iconFile && (!out[entry.iconFile] || priority > (priorities[entry.iconFile] ?? 0))) {
+      out[entry.iconFile] = name;
+      priorities[entry.iconFile] = priority;
+    }
   }
   return out;
 })();
@@ -98,10 +106,10 @@ function resolveIconPath(serviceType: string): { iconPath: string; category: str
       category: entry.category,
     };
   }
-  // Fallback: unknown service — use a generic icon path slot
+  // Fallback: unknown services use V24's official generic All Resources glyph.
   return {
-    iconPath: '/Azure_Public_Service_Icons/Icons/other/generic-service.svg',
-    category: 'other',
+    iconPath: '/Azure_Public_Service_Icons/Icons/general/10001-icon-service-All-Resources.svg',
+    category: 'general',
   };
 }
 
@@ -1255,6 +1263,7 @@ server.tool(
         positionAbsolute,
         data: {
           label: n.name,
+          azureServiceType: resolveServiceName(n.type) ?? n.type,
           iconPath,
           stylePreset: 'presentation',
           ...(pricing ? { pricing } : {}),

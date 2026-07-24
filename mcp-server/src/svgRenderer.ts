@@ -28,18 +28,14 @@ import type { LayoutResult, PositionedNode, PositionedEdge, PositionedGroup } fr
 // Loaded at runtime via fs to avoid ESM JSON-import-attribute friction.
 const __iconDir = dirname(fileURLToPath(import.meta.url));
 
-function loadJson<T>(file: string, fallback: T): T {
-  try {
-    return JSON.parse(readFileSync(resolvePath(__iconDir, file), 'utf8')) as T;
-  } catch {
-    return fallback;
-  }
+function loadJson<T>(file: string): T {
+  return JSON.parse(readFileSync(resolvePath(__iconDir, file), 'utf8')) as T;
 }
 
-const ICON_MAP = loadJson<Record<string, { iconFile: string; category: string; aliases?: string[] }>>(
-  'iconMap.generated.json', {},
+const ICON_MAP = loadJson<Record<string, { displayName?: string; iconFile: string; category: string; aliases?: string[] }>>(
+  'iconMap.generated.json',
 );
-const ICON_SVGS = loadJson<Record<string, string>>('iconSvgs.generated.json', {});
+const ICON_SVGS = loadJson<Record<string, string>>('iconSvgs.generated.json');
 
 // Build a case-insensitive lookup from every service name + alias to its icon
 // data URI, so any real-world type string resolves to the official glyph.
@@ -48,8 +44,17 @@ const ICON_BY_NAME: Record<string, string> = (() => {
   for (const [key, entry] of Object.entries(ICON_MAP)) {
     const dataUri = ICON_SVGS[entry.iconFile];
     if (!dataUri) continue;
-    const names = [key, ...(entry.aliases ?? [])];
-    for (const n of names) out[n.toLowerCase()] = dataUri;
+    const names = [key, entry.displayName, ...(entry.aliases ?? [])].filter(
+      (name): name is string => Boolean(name),
+    );
+    for (const n of names) {
+      const normalized = n.toLowerCase();
+      const existing = out[normalized];
+      if (existing && existing !== dataUri) {
+        throw new Error(`Conflicting icon mapping for "${n}"`);
+      }
+      out[normalized] = dataUri;
+    }
   }
   return out;
 })();

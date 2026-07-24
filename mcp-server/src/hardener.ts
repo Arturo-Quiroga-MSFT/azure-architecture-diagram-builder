@@ -15,6 +15,7 @@
  */
 
 import { detectWafPatterns, type ServiceInput, type ConnectionInput } from './wafDetector.js';
+import { resolveServiceName } from './serviceCatalog.js';
 
 export interface HardenService extends ServiceInput {
   description?: string;
@@ -55,7 +56,7 @@ export interface HardenResult {
   note: string;
 }
 
-const norm = (t: string): string => t.toLowerCase().trim();
+const norm = (t: string): string => (resolveServiceName(t) ?? t).toLowerCase().trim();
 
 // Minimal type sets mirroring wafDetector's classification, used only to pick
 // anchor nodes (which compute to wire Key Vault to, which DB to replicate, …).
