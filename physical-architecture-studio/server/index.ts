@@ -19,6 +19,9 @@ import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildScene } from "../core/diagram/scene.js";
 import { buildTraceability } from "../core/traceability/map.js";
+import { safeParseAadbManifest } from "../core/bridge/aadbManifest.js";
+import { promoteFromAadb } from "../core/bridge/promote.js";
+import { physicalToAadb } from "../core/bridge/toAadb.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -67,6 +70,35 @@ app.post("/api/traceability", (req, res) => {
   const parsed = validateManifest(req.body);
   if (!parsed.schemaValid) return res.status(400).json(parsed);
   res.json(buildTraceability(req.body));
+});
+
+// --- AADB bridge ---------------------------------------------------------
+// Promote an AADB concept manifest into a physical manifest + validation.
+app.post("/api/bridge/import", (req, res) => {
+  const parsed = safeParseAadbManifest(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      ok: false,
+      error: "Not a valid AADB manifest (schemaVersion 1.0 expected).",
+      issues: parsed.error.issues.map(
+        (i) => `${i.path.join(".") || "(root)"}: ${i.message}`,
+      ),
+    });
+  }
+  const promotion = promoteFromAadb(parsed.data);
+  res.json({
+    manifest: promotion.manifest,
+    unmapped: promotion.unmapped,
+    notes: promotion.notes,
+    validation: validateManifest(promotion.manifest),
+  });
+});
+
+// Return a physical manifest to AADB's interchange format.
+app.post("/api/bridge/export", (req, res) => {
+  const parsed = validateManifest(req.body);
+  if (!parsed.schemaValid) return res.status(400).json(parsed);
+  res.json(physicalToAadb(req.body));
 });
 
 // Serve the built SPA in production. Compiled server lives at

@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { regulatedAiAssistant } from "../scenarios/regulated-ai-assistant.js";
+import aadbSample from "../scenarios/aadb-concept-sample.json";
 import type { PhysicalManifest } from "../core/manifest/schema.js";
 import { validateParsedManifest } from "../core/validation/validate.js";
 import { analyzeIpam } from "../core/ipam/engine.js";
@@ -7,6 +8,9 @@ import { generateBicep } from "../core/bicep/generate.js";
 import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildTraceability } from "../core/traceability/map.js";
+import { safeParseAadbManifest } from "../core/bridge/aadbManifest.js";
+import { promoteFromAadb } from "../core/bridge/promote.js";
+import { physicalToAadb } from "../core/bridge/toAadb.js";
 
 type View = "concept" | "physical";
 type Tab = "inspector" | "bicep" | "terraform" | "trace";
@@ -29,10 +33,14 @@ export function App() {
   const [tab, setTab] = useState<Tab>("inspector");
   const [overlap, setOverlap] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [baseManifest, setBaseManifest] = useState<PhysicalManifest>(regulatedAiAssistant);
+  const [sourceLabel, setSourceLabel] = useState("Built-in golden scenario");
+  const [promotion, setPromotion] = useState<{ notes: string[]; unmapped: string[] } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const manifest = useMemo(
-    () => (overlap ? withInjectedOverlap(regulatedAiAssistant) : regulatedAiAssistant),
-    [overlap],
+    () => (overlap ? withInjectedOverlap(baseManifest) : baseManifest),
+    [overlap, baseManifest],
   );
 
   const validation = useMemo(() => validateParsedManifest(manifest), [manifest]);
@@ -60,6 +68,53 @@ export function App() {
     download("main.tf", terraform);
     download("ip-plan.csv", csv);
     download("manifest.json", JSON.stringify(manifest, null, 2));
+  }
+
+  /** Promote an AADB concept manifest into this studio's physical manifest. */
+  function loadAadb(raw: unknown, label: string) {
+    const parsed = safeParseAadbManifest(raw);
+    if (!parsed.success) {
+      alert("Not a valid AADB manifest (schemaVersion 1.0 expected).");
+      return;
+    }
+    const result = promoteFromAadb(parsed.data);
+    setBaseManifest(result.manifest);
+    setSourceLabel(label);
+    setPromotion({ notes: result.notes, unmapped: result.unmapped });
+    setOverlap(false);
+    setSelected(null);
+    setView("physical");
+  }
+
+  function importAadbSample() {
+    loadAadb(aadbSample, `AADB concept: ${(aadbSample as { project: { name: string } }).project.name}`);
+  }
+
+  function onPickAadbFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    file.text().then((text) => {
+      try {
+        loadAadb(JSON.parse(text), `AADB file: ${file.name}`);
+      } catch {
+        alert("Could not parse that file as JSON.");
+      }
+    });
+    e.target.value = "";
+  }
+
+  /** Return the current physical design to AADB's interchange format. */
+  function returnToAadb() {
+    const aadb = physicalToAadb(baseManifest);
+    download(`${baseManifest.metadata.name}.aadb.json`, JSON.stringify(aadb, null, 2));
+  }
+
+  function resetToGolden() {
+    setBaseManifest(regulatedAiAssistant);
+    setSourceLabel("Built-in golden scenario");
+    setPromotion(null);
+    setOverlap(false);
+    setSelected(null);
   }
 
   return (
@@ -98,6 +153,47 @@ export function App() {
         <button className="btn" onClick={exportPackage}>
           Export
         </button>
+        <span className="sep" />
+        <button className="btn accent" onClick={importAadbSample} title="Promote the bundled AADB concept into a physical design">
+          Import from AADB
+        </button>
+        <button className="btn" onClick={() => fileRef.current?.click()} title="Promote an AADB-exported JSON file">
+          Import file…
+        </button>
+        <button className="btn" onClick={returnToAadb} title="Return this physical design to AADB's interchange format">
+          Return to AADB
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          style={{ display: "none" }}
+          onChange={onPickAadbFile}
+        />
+      </div>
+
+      {/* --- Source / promotion banner --- */}
+      <div className="srcbar">
+        <span className="src-label">
+          Source: <strong>{sourceLabel}</strong>
+        </span>
+        {promotion && (
+          <>
+            {promotion.notes.map((n, i) => (
+              <span className="src-note" key={i}>
+                {n}
+              </span>
+            ))}
+            {promotion.unmapped.length > 0 && (
+              <span className="src-warn">
+                Unmapped: {promotion.unmapped.join(", ")}
+              </span>
+            )}
+            <button className="btn tiny" onClick={resetToGolden}>
+              Back to golden scenario
+            </button>
+          </>
+        )}
       </div>
 
       {/* --- Body --- */}

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "source": "azure-diagram-builder",
+  "createdAt": "2026-07-24T15:30:00Z",
+  "project": {
+    "name": "Regulated AI Knowledge Assistant",
+    "location": "eastus2",
+    "iacTool": "bicep"
+  },
+  "architecture": {
+    "services": [
+      {
+        "id": "svc-app",
+        "name": "Knowledge Assistant App",
+        "type": "Azure Container Apps",
+        "category": "containers",
+        "description": "Chat application serving grounded answers",
+        "groupId": "app-tier"
+      },
+      {
+        "id": "svc-aoai",
+        "name": "Azure OpenAI",
+        "type": "Azure OpenAI",
+        "category": "ai + machine learning",
+        "description": "GPT-4o deployment for reasoning and generation",
+        "groupId": "ai-tier"
+      },
+      {
+        "id": "svc-search",
+        "name": "AI Search",
+        "type": "Azure AI Search",
+        "category": "ai + machine learning",
+        "description": "Vector + hybrid retrieval over enterprise documents",
+        "groupId": "ai-tier"
+      },
+      {
+        "id": "svc-storage",
+        "name": "Documents Storage",
+        "type": "Storage Account",
+        "category": "storage",
+        "description": "Source documents and chunked content",
+        "groupId": "data-tier"
+      },
+      {
+        "id": "svc-cosmos",
+        "name": "Conversation State",
+        "type": "Azure Cosmos DB",
+        "category": "databases",
+        "description": "Chat history and session state",
+        "groupId": "data-tier"
+      },
+      {
+        "id": "svc-kv",
+        "name": "App Secrets",
+        "type": "Key Vault",
+        "category": "security",
+        "description": "Keys, secrets and connection strings",
+        "groupId": "app-tier"
+      },
+      {
+        "id": "svc-appi",
+        "name": "App Insights",
+        "type": "Application Insights",
+        "category": "devops",
+        "description": "Application telemetry",
+        "groupId": "ops-tier"
+      },
+      {
+        "id": "svc-law",
+        "name": "Log Analytics",
+        "type": "Log Analytics Workspace",
+        "category": "management + governance",
+        "description": "Central logging",
+        "groupId": "ops-tier"
+      }
+    ],
+    "connections": [
+      { "from": "Knowledge Assistant App", "to": "Azure OpenAI", "label": "generate", "type": "sync" },
+      { "from": "Knowledge Assistant App", "to": "AI Search", "label": "retrieve", "type": "sync" },
+      { "from": "AI Search", "to": "Documents Storage", "label": "index", "type": "async" },
+      { "from": "Knowledge Assistant App", "to": "Conversation State", "label": "persist", "type": "sync" },
+      { "from": "Knowledge Assistant App", "to": "App Secrets", "label": "read secrets", "type": "sync" }
+    ],
+    "groups": [
+      { "id": "app-tier", "label": "Application" },
+      { "id": "ai-tier", "label": "AI Services" },
+      { "id": "data-tier", "label": "Data" },
+      { "id": "ops-tier", "label": "Operations" }
+    ],
+    "workflow": [
+      { "step": 1, "description": "User asks a question", "services": ["Knowledge Assistant App"] },
+      { "step": 2, "description": "App retrieves grounding context", "services": ["AI Search", "Documents Storage"] },
+      { "step": 3, "description": "App generates a grounded answer", "services": ["Azure OpenAI"] }
+    ]
+  }
+}

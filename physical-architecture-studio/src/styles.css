@@ -29,7 +29,7 @@ body {
 
 .app {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   height: 100vh;
 }
 
@@ -85,6 +85,45 @@ select, .btn {
   padding: 6px 10px;
   font-size: 12px;
   cursor: pointer;
+}
+.btn.accent {
+  background: var(--accent);
+  color: #05203f;
+  font-weight: 600;
+  border-color: var(--accent);
+}
+.btn.tiny { padding: 3px 8px; font-size: 11px; }
+.sep {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  margin: 0 2px;
+}
+
+/* --- Source / promotion banner -------------------------------------------*/
+.srcbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 6px 16px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.src-label { color: var(--muted); }
+.src-label strong { color: var(--text); }
+.src-note {
+  color: var(--muted);
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.src-warn {
+  color: #ffdf9e;
+  background: rgba(242, 181, 68, 0.12);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 /* --- Body -----------------------------------------------------------------*/
