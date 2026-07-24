@@ -15,7 +15,7 @@ import type { z } from "zod";
 import type { serviceKindSchema } from "../manifest/schema.js";
 import type { AadbManifest, AadbService, AadbConnection } from "./aadbManifest.js";
 import { parseAadbManifest } from "./aadbManifest.js";
-import { mapAadbService, mapKind, type ServiceMapEntry } from "./serviceMap.js";
+import { mapAadbService, mapIconStem, mapKind, type ServiceMapEntry } from "./serviceMap.js";
 
 type ServiceKind = z.infer<typeof serviceKindSchema>;
 
@@ -47,20 +47,6 @@ export interface ReactFlowScene {
   architecturePrompt?: string;
 }
 
-/** Exact icon-file stems (lowercased) -> service kind. */
-const ICON_STEM_TO_KIND: Record<string, ServiceKind> = {
-  "azure-openai": "azureOpenAI",
-  "cognitive-services": "aiFoundry",
-  "azure-cognitive-search": "aiSearch",
-  "storage-account": "storageAccount",
-  "azure-cosmos-db": "cosmosDb",
-  "key-vault": "keyVault",
-  "app-service": "appService",
-  "application-insights": "applicationInsights",
-  "log-analytics": "logAnalytics",
-  "02989-icon-service-container-apps-environments": "containerAppsEnvironment",
-};
-
 /** Substring keywords (checked against icon stem, then label) -> service kind. */
 const KEYWORD_TO_KIND: Array<[string, ServiceKind]> = [
   ["openai", "azureOpenAI"],
@@ -71,11 +57,24 @@ const KEYWORD_TO_KIND: Array<[string, ServiceKind]> = [
   ["foundry", "aiFoundry"],
   ["ai-studio", "aiFoundry"],
   ["cosmos", "cosmosDb"],
+  ["sql-database", "sqlDatabase"],
+  ["postgres", "postgresql"],
+  ["mysql", "mysql"],
+  ["redis", "redis"],
   ["blob", "storageAccount"],
   ["storage", "storageAccount"],
   ["key-vault", "keyVault"],
   ["keyvault", "keyVault"],
+  ["container-registry", "containerRegistry"],
+  ["event-hub", "eventHubs"],
+  ["service-bus", "serviceBus"],
+  ["kubernetes", "aks"],
   ["container-app", "containerAppsEnvironment"],
+  ["container-instance", "containerInstances"],
+  ["function", "functions"],
+  ["virtual-machine", "virtualMachine"],
+  ["application-gateway", "applicationGateway"],
+  ["api-management", "apiManagement"],
   ["application-insights", "applicationInsights"],
   ["app-insights", "applicationInsights"],
   ["log-analytics", "logAnalytics"],
@@ -96,8 +95,9 @@ export function resolveNodeKind(
   label?: string,
 ): ServiceMapEntry | undefined {
   const stem = stemOf(iconPath);
-  if (stem && ICON_STEM_TO_KIND[stem]) return mapKind(ICON_STEM_TO_KIND[stem]);
   if (stem) {
+    const byStem = mapIconStem(stem);
+    if (byStem) return byStem;
     for (const [kw, kind] of KEYWORD_TO_KIND) {
       if (stem.includes(kw)) return mapKind(kind);
     }

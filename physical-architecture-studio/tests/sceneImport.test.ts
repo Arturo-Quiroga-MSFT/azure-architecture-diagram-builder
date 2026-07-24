@@ -130,3 +130,64 @@ describe("importAnyAadb (scene format)", () => {
     if (!outcome.ok) expect(outcome.error).toMatch(/Unrecognized/);
   });
 });
+
+describe("event-driven AKS scene (expanded catalog)", () => {
+  const aksScene = {
+    nodes: [
+      svcNode("aks", "Azure Kubernetes Service", "containers/azure-kubernetes-service"),
+      svcNode("sb", "Service Bus", "integration/service-bus"),
+      svcNode("acr", "Container Registry", "containers/container-registry"),
+      svcNode("agw", "Application Gateway", "networking/application-gateway"),
+      svcNode("kv", "Key Vault", "security/key-vault"),
+      svcNode("mon", "Azure Monitor", "monitor/00001-icon-service-Monitor"),
+      // Infrastructure / global — should be recognized, not "unmapped".
+      svcNode("vnet", "Virtual Network", "networking/10061-icon-service-Virtual-Networks"),
+      svcNode("pl", "Azure Private Link", "networking/private-link"),
+      svcNode("entra", "Microsoft Entra ID", "identity/10340-icon-service-Entra-Identity-Roles-and-Administrators"),
+    ],
+    edges: [],
+    metadata: { architectureName: "Event-driven Microservices on AKS" },
+  };
+
+  it("maps AKS, Service Bus, ACR, App Gateway and produces PEs", () => {
+    const outcome = importAnyAadb(aksScene);
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    const spoke = outcome.manifest.landingZones.find((l) => l.kind === "application")!;
+    const kinds = spoke.services.map((s) => s.kind).sort();
+    expect(kinds).toContain("aks");
+    expect(kinds).toContain("serviceBus");
+    expect(kinds).toContain("containerRegistry");
+    expect(kinds).toContain("applicationGateway");
+    // Service Bus + Container Registry + Key Vault => 3 private endpoints
+    expect(spoke.privateEndpoints.length).toBe(3);
+    // Ingress present => an app-gateway subnet is added
+    expect(spoke.vnets[0].subnets.some((s) => s.name === "app-gateway")).toBe(true);
+  });
+
+  it("recognizes infrastructure/global nodes instead of flagging them unmapped", () => {
+    const outcome = importAnyAadb(aksScene);
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(outcome.unmapped).toEqual([]);
+    const infraNote = outcome.notes.find((n) => n.includes("platform/global"));
+    expect(infraNote).toBeDefined();
+    expect(infraNote).toMatch(/Virtual Network/);
+    expect(infraNote).toMatch(/Microsoft Entra ID/);
+  });
+
+  it("still validates cleanly (no CIDR errors)", () => {
+    const outcome = importAnyAadb(aksScene);
+    if (!outcome.ok) throw new Error("import failed");
+    expect(validateParsedManifest(outcome.manifest).ok).toBe(true);
+  });
+});
+
+function svcNode(id: string, label: string, iconTail: string) {
+  return {
+    id,
+    type: "azureNode",
+    position: { x: 0, y: 0 },
+    data: { label, iconPath: `/Azure_Public_Service_Icons/Icons/${iconTail}.svg` },
+  };
+}

@@ -23,7 +23,14 @@ const MAP: Partial<Record<ServiceKind, PrivateLinkMapping>> = {
   aiSearch: { groupId: "searchService", memberName: "searchService" },
   storageAccount: { groupId: "blob", memberName: "blob" },
   cosmosDb: { groupId: "Sql", memberName: "Sql" },
+  sqlDatabase: { groupId: "sqlServer", memberName: "sqlServer" },
+  postgresql: { groupId: "postgresqlServer", memberName: "postgresqlServer" },
+  mysql: { groupId: "mysqlServer", memberName: "mysqlServer" },
+  redis: { groupId: "redisCache", memberName: "redisCache" },
   keyVault: { groupId: "vault", memberName: "default" },
+  containerRegistry: { groupId: "registry", memberName: "registry" },
+  eventHubs: { groupId: "namespace", memberName: "namespace" },
+  serviceBus: { groupId: "namespace", memberName: "namespace" },
 };
 
 /** Look up the Private Link mapping for a service kind, or a safe fallback. */

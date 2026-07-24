@@ -23,7 +23,7 @@ import type {
   PrivateDnsZone,
 } from "../manifest/schema.js";
 import type { AadbManifest } from "./aadbManifest.js";
-import { mapAadbService } from "./serviceMap.js";
+import { mapAadbService, isInfrastructure } from "./serviceMap.js";
 
 export interface PromotionResult {
   manifest: PhysicalManifest;
@@ -42,6 +42,7 @@ const PLAN = {
   spokeVnet: "10.21.0.0/16",
   workloadSubnet: "10.21.0.0/23",
   privateEndpointSubnet: "10.21.2.0/24",
+  appGatewaySubnet: "10.21.3.0/24",
   onPrem: "10.0.0.0/16",
 } as const;
 
@@ -53,27 +54,38 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
   const services: WorkloadService[] = [];
   const privateEndpoints: PrivateEndpoint[] = [];
   const dnsZones = new Map<string, PrivateDnsZone>();
-  let hasCompute = false;
+  const infrastructure: string[] = [];
+  // The workload subnet can carry a single delegation; pick by priority:
+  // Container Apps > App Service/Functions > none.
+  let workloadDelegation: Subnet["delegation"] = "none";
+  let hasIngress = false;
 
   for (const svc of aadb.architecture.services) {
     const entry = mapAadbService(svc.type) ?? mapAadbService(svc.name);
     if (!entry) {
-      unmapped.push(`${svc.name} (${svc.type})`);
+      // Recognized platform/global construct vs. genuinely unknown service.
+      if (isInfrastructure(svc.type) || isInfrastructure(svc.name)) {
+        infrastructure.push(svc.name);
+      } else {
+        unmapped.push(`${svc.name} (${svc.type})`);
+      }
       continue;
     }
     // Stable, filesystem-safe service name derived from the AADB id/name.
     const name = slug(svc.name || svc.id);
-    services.push({
-      name,
-      kind: entry.kind,
-      privateOnly: entry.privateEndpoint,
-    });
+    const isPrivate = entry.cls === "privateEndpoint";
+    services.push({ name, kind: entry.kind, privateOnly: isPrivate });
 
-    if (entry.kind === "containerAppsEnvironment" || entry.kind === "appService") {
-      hasCompute = true;
+    if (entry.cls === "compute" && entry.delegation && entry.delegation !== "none") {
+      if (entry.delegation === "Microsoft.App/environments") {
+        workloadDelegation = "Microsoft.App/environments";
+      } else if (workloadDelegation === "none") {
+        workloadDelegation = entry.delegation;
+      }
     }
+    if (entry.cls === "ingress") hasIngress = true;
 
-    if (entry.privateEndpoint && entry.privateDnsZone) {
+    if (isPrivate && entry.privateDnsZone) {
       privateEndpoints.push({
         name: `pe-${name}`,
         service: name,
@@ -89,6 +101,11 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
     }
   }
 
+  if (infrastructure.length > 0) {
+    notes.push(
+      `${infrastructure.length} platform/global construct(s) recognized and handled by the landing zone: ${infrastructure.join(", ")}.`,
+    );
+  }
   if (unmapped.length > 0) {
     notes.push(
       `${unmapped.length} service(s) had no Azure mapping and were skipped: ${unmapped.join(", ")}.`,
@@ -98,15 +115,15 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
     `Applied ALZ hub/spoke plan: hub ${PLAN.hubVnet}, spoke ${PLAN.spokeVnet}, on-prem ${PLAN.onPrem}.`,
   );
   notes.push(
-    `${privateEndpoints.length} private endpoint(s) and ${dnsZones.size} private DNS zone(s) generated deterministically.`,
+    `${services.length} workload service(s), ${privateEndpoints.length} private endpoint(s), ${dnsZones.size} private DNS zone(s).`,
   );
 
   const spokeSubnets: Subnet[] = [
     {
-      name: "container-apps",
+      name: "workload",
       role: "workload",
       addressPrefix: PLAN.workloadSubnet,
-      delegation: hasCompute ? "Microsoft.App/environments" : "none",
+      delegation: workloadDelegation,
       privateEndpointSubnet: false,
     },
     {
@@ -117,6 +134,16 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
       privateEndpointSubnet: true,
     },
   ];
+  if (hasIngress) {
+    notes.push("Added an application-gateway subnet for ingress.");
+    spokeSubnets.push({
+      name: "app-gateway",
+      role: "workload",
+      addressPrefix: PLAN.appGatewaySubnet,
+      delegation: "none",
+      privateEndpointSubnet: false,
+    });
+  }
 
   const manifest: PhysicalManifest = {
     apiVersion: "aadb.physical/v1alpha1",

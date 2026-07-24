@@ -78,18 +78,36 @@ export const privateDnsZoneSchema = z.object({
 });
 export type PrivateDnsZone = z.infer<typeof privateDnsZoneSchema>;
 
-/** Workload service kinds supported by the MVP golden scenario. */
+/** Workload service kinds the studio can model as deployable resources. */
 export const serviceKindSchema = z.enum([
+  // AI + data (private-endpoint capable)
   "aiFoundry",
   "azureOpenAI",
   "aiSearch",
   "storageAccount",
   "cosmosDb",
+  "sqlDatabase",
+  "postgresql",
+  "mysql",
+  "redis",
   "keyVault",
+  "containerRegistry",
+  "eventHubs",
+  "serviceBus",
+  // Compute / workload hosts
   "containerAppsEnvironment",
+  "aks",
   "appService",
+  "functions",
+  "containerInstances",
+  "virtualMachine",
+  // Ingress / edge
+  "applicationGateway",
+  "apiManagement",
+  // Observability
   "applicationInsights",
   "logAnalytics",
+  "azureMonitor",
 ]);
 
 export const workloadServiceSchema = z.object({
