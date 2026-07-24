@@ -8,9 +8,8 @@ import { generateBicep } from "../core/bicep/generate.js";
 import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildTraceability } from "../core/traceability/map.js";
-import { safeParseAadbManifest } from "../core/bridge/aadbManifest.js";
-import { promoteFromAadb } from "../core/bridge/promote.js";
 import { physicalToAadb } from "../core/bridge/toAadb.js";
+import { importAnyAadb } from "../core/bridge/importAny.js";
 
 type View = "concept" | "physical";
 type Tab = "inspector" | "bicep" | "terraform" | "trace";
@@ -70,17 +69,16 @@ export function App() {
     download("manifest.json", JSON.stringify(manifest, null, 2));
   }
 
-  /** Promote an AADB concept manifest into this studio's physical manifest. */
+  /** Promote an AADB export (manifest OR ReactFlow scene) into a physical manifest. */
   function loadAadb(raw: unknown, label: string) {
-    const parsed = safeParseAadbManifest(raw);
-    if (!parsed.success) {
-      alert("Not a valid AADB manifest (schemaVersion 1.0 expected).");
+    const outcome = importAnyAadb(raw);
+    if (!outcome.ok) {
+      alert(outcome.error);
       return;
     }
-    const result = promoteFromAadb(parsed.data);
-    setBaseManifest(result.manifest);
-    setSourceLabel(label);
-    setPromotion({ notes: result.notes, unmapped: result.unmapped });
+    setBaseManifest(outcome.manifest);
+    setSourceLabel(`${label} (${outcome.format})`);
+    setPromotion({ notes: outcome.notes, unmapped: outcome.unmapped });
     setOverlap(false);
     setSelected(null);
     setView("physical");

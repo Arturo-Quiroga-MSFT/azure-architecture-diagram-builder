@@ -19,9 +19,8 @@ import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildScene } from "../core/diagram/scene.js";
 import { buildTraceability } from "../core/traceability/map.js";
-import { safeParseAadbManifest } from "../core/bridge/aadbManifest.js";
-import { promoteFromAadb } from "../core/bridge/promote.js";
 import { physicalToAadb } from "../core/bridge/toAadb.js";
+import { importAnyAadb } from "../core/bridge/importAny.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -73,24 +72,18 @@ app.post("/api/traceability", (req, res) => {
 });
 
 // --- AADB bridge ---------------------------------------------------------
-// Promote an AADB concept manifest into a physical manifest + validation.
+// Promote an AADB export (manifest OR ReactFlow scene) into a physical manifest.
 app.post("/api/bridge/import", (req, res) => {
-  const parsed = safeParseAadbManifest(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({
-      ok: false,
-      error: "Not a valid AADB manifest (schemaVersion 1.0 expected).",
-      issues: parsed.error.issues.map(
-        (i) => `${i.path.join(".") || "(root)"}: ${i.message}`,
-      ),
-    });
+  const outcome = importAnyAadb(req.body);
+  if (!outcome.ok) {
+    return res.status(400).json({ ok: false, error: outcome.error });
   }
-  const promotion = promoteFromAadb(parsed.data);
   res.json({
-    manifest: promotion.manifest,
-    unmapped: promotion.unmapped,
-    notes: promotion.notes,
-    validation: validateManifest(promotion.manifest),
+    format: outcome.format,
+    manifest: outcome.manifest,
+    unmapped: outcome.unmapped,
+    notes: outcome.notes,
+    validation: validateManifest(outcome.manifest),
   });
 });
 
