@@ -103,6 +103,29 @@ describe("scene detection + node resolution", () => {
     expect(resolveNodeKind(undefined, "AML Online Endpoint")?.kind).toBe("azureMachineLearning");
     expect(resolveNodeKind("/x/logic-apps.svg")?.kind).toBe("logicApps");
   });
+
+  it("resolves the extended common-service catalog", () => {
+    const cases: Array<[string, string]> = [
+      ["/x/azure-speech.svg", "speechServices"],
+      ["/x/computer-vision.svg", "computerVision"],
+      ["/x/translator.svg", "translator"],
+      ["/x/language.svg", "language"],
+      ["/x/10052-icon-service-SignalR.svg", "signalR"],
+      ["/x/10182-icon-service-IoT-Hub.svg", "iotHub"],
+      ["/x/01030-icon-service-Digital-Twins.svg", "digitalTwins"],
+      ["/x/data-factory.svg", "dataFactory"],
+      ["/x/azure-synapse-analytics.svg", "synapse"],
+      ["/x/10031-icon-service-Batch-Accounts.svg", "batch"],
+      ["/x/stream-analytics.svg", "streamAnalytics"],
+      ["/x/01007-icon-service-Static-Apps.svg", "staticWebApps"],
+      ["/x/10184-icon-service-IoT-Central-Applications.svg", "iotCentral"],
+      ["/x/03332-icon-service-Power-BI-Embedded.svg", "powerBiEmbedded"],
+      ["/x/02905-icon-service-Azure-Managed-Grafana.svg", "grafana"],
+    ];
+    for (const [icon, kind] of cases) {
+      expect(resolveNodeKind(icon)?.kind, icon).toBe(kind);
+    }
+  });
 });
 
 describe("importAnyAadb (scene format)", () => {

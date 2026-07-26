@@ -98,6 +98,17 @@ export const serviceKindSchema = z.enum([
   "documentIntelligence",
   "azureMachineLearning",
   "logicApps",
+  "computerVision",
+  "speechServices",
+  "translator",
+  "language",
+  "customVision",
+  "signalR",
+  "iotHub",
+  "digitalTwins",
+  "dataFactory",
+  "synapse",
+  "batch",
   // Compute / workload hosts
   "containerAppsEnvironment",
   "aks",
@@ -108,10 +119,17 @@ export const serviceKindSchema = z.enum([
   // Ingress / edge
   "applicationGateway",
   "apiManagement",
+  // Analytics / integration / IoT (workload, no private endpoint)
+  "streamAnalytics",
+  "notificationHubs",
+  "staticWebApps",
+  "iotCentral",
   // Observability
   "applicationInsights",
   "logAnalytics",
   "azureMonitor",
+  "powerBiEmbedded",
+  "grafana",
 ]);
 
 export const workloadServiceSchema = z.object({

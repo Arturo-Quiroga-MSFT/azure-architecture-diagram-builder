@@ -35,6 +35,17 @@ const MAP: Partial<Record<ServiceKind, PrivateLinkMapping>> = {
   documentIntelligence: { groupId: "account", memberName: "default" },
   azureMachineLearning: { groupId: "amlworkspace", memberName: "default" },
   logicApps: { groupId: "sites", memberName: "sites" },
+  computerVision: { groupId: "account", memberName: "default" },
+  speechServices: { groupId: "account", memberName: "default" },
+  translator: { groupId: "account", memberName: "default" },
+  language: { groupId: "account", memberName: "default" },
+  customVision: { groupId: "account", memberName: "default" },
+  signalR: { groupId: "signalr", memberName: "signalr" },
+  iotHub: { groupId: "iotHub", memberName: "iotHub" },
+  digitalTwins: { groupId: "API", memberName: "API" },
+  dataFactory: { groupId: "dataFactory", memberName: "dataFactory" },
+  synapse: { groupId: "Sql", memberName: "Sql" },
+  batch: { groupId: "batchAccount", memberName: "batchAccount" },
 };
 
 /** Look up the Private Link mapping for a service kind, or a safe fallback. */
