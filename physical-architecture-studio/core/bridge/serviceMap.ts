@@ -185,6 +185,24 @@ export const SERVICE_MAP: ServiceMapEntry[] = [
     iconStems: ["document-intelligence"],
     aliases: ["document intelligence", "azure document intelligence", "form recognizer", "doc intelligence"],
   },
+  {
+    kind: "azureMachineLearning",
+    cls: "privateEndpoint",
+    aadbType: "Azure Machine Learning",
+    aadbCategory: "ai + machine learning",
+    privateDnsZone: "privatelink.api.azureml.ms",
+    iconStems: ["azure-machine-learning"],
+    aliases: ["azure machine learning", "aml", "aml online endpoint", "machine learning", "ml online endpoint", "azure ml"],
+  },
+  {
+    kind: "logicApps",
+    cls: "privateEndpoint",
+    aadbType: "Logic Apps",
+    aadbCategory: "integration",
+    privateDnsZone: "privatelink.azurewebsites.net",
+    iconStems: ["logic-apps"],
+    aliases: ["logic apps", "azure logic apps", "logic app"],
+  },
 
   // --- Compute / workload hosts ------------------------------------------
   {

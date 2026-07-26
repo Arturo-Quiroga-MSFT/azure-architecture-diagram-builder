@@ -33,6 +33,8 @@ const MAP: Partial<Record<ServiceKind, PrivateLinkMapping>> = {
   serviceBus: { groupId: "namespace", memberName: "namespace" },
   eventGrid: { groupId: "topic", memberName: "topic" },
   documentIntelligence: { groupId: "account", memberName: "default" },
+  azureMachineLearning: { groupId: "amlworkspace", memberName: "default" },
+  logicApps: { groupId: "sites", memberName: "sites" },
 };
 
 /** Look up the Private Link mapping for a service kind, or a safe fallback. */

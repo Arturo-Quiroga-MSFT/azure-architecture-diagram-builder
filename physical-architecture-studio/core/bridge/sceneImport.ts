@@ -71,6 +71,8 @@ const KEYWORD_TO_KIND: Array<[string, ServiceKind]> = [
   ["service-bus", "serviceBus"],
   ["document-intelligence", "documentIntelligence"],
   ["form-recognizer", "documentIntelligence"],
+  ["machine-learning", "azureMachineLearning"],
+  ["logic-apps", "logicApps"],
   ["kubernetes", "aks"],
   ["container-app", "containerAppsEnvironment"],
   ["container-instance", "containerInstances"],

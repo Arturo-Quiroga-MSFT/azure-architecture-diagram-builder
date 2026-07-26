@@ -97,6 +97,12 @@ describe("scene detection + node resolution", () => {
     expect(resolveNodeKind("/x/document-intelligence.svg")?.kind).toBe("documentIntelligence");
     expect(resolveNodeKind(undefined, "Form Recognizer")?.kind).toBe("documentIntelligence");
   });
+
+  it("resolves Azure Machine Learning and Logic Apps", () => {
+    expect(resolveNodeKind("/x/azure-machine-learning.svg")?.kind).toBe("azureMachineLearning");
+    expect(resolveNodeKind(undefined, "AML Online Endpoint")?.kind).toBe("azureMachineLearning");
+    expect(resolveNodeKind("/x/logic-apps.svg")?.kind).toBe("logicApps");
+  });
 });
 
 describe("importAnyAadb (scene format)", () => {
