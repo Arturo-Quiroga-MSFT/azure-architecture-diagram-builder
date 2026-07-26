@@ -9,6 +9,12 @@ function clone<T>(v: T): T {
   return JSON.parse(JSON.stringify(v)) as T;
 }
 
+/** Look landing zones up by role rather than array position. */
+const app = (m: PhysicalManifest) =>
+  m.landingZones.find((z) => z.kind === "application")!;
+const hub = (m: PhysicalManifest) =>
+  m.landingZones.find((z) => z.platformSubscription === "connectivity")!;
+
 describe("golden scenario", () => {
   it("parses against the manifest schema", () => {
     expect(() => parseManifest(regulatedAiAssistant)).not.toThrow();
@@ -38,10 +44,10 @@ describe("overlap detection", () => {
   it("flags a spoke that overlaps the hub", () => {
     const m = clone(regulatedAiAssistant) as PhysicalManifest;
     // Make the spoke collide with the hub 10.20.0.0/16.
-    m.landingZones[1].vnets[0].addressSpace = ["10.20.0.0/16"];
+    app(m).vnets[0].addressSpace = ["10.20.0.0/16"];
     // Keep subnets inside the (now overlapping) space to isolate VNET_OVERLAP.
-    m.landingZones[1].vnets[0].subnets[0].addressPrefix = "10.20.0.0/23";
-    m.landingZones[1].vnets[0].subnets[1].addressPrefix = "10.20.2.0/24";
+    app(m).vnets[0].subnets[0].addressPrefix = "10.20.0.0/23";
+    app(m).vnets[0].subnets[1].addressPrefix = "10.20.2.0/24";
     const report = validateParsedManifest(m);
     expect(report.ok).toBe(false);
     expect(report.findings.some((f) => f.code === "VNET_OVERLAP")).toBe(true);
@@ -56,14 +62,14 @@ describe("overlap detection", () => {
 
   it("flags two subnets that overlap within a VNet", () => {
     const m = clone(regulatedAiAssistant) as PhysicalManifest;
-    m.landingZones[1].vnets[0].subnets[1].addressPrefix = "10.21.0.0/23";
+    app(m).vnets[0].subnets[1].addressPrefix = "10.21.0.0/23";
     const report = validateParsedManifest(m);
     expect(report.findings.some((f) => f.code === "SUBNET_OVERLAP")).toBe(true);
   });
 
   it("flags a subnet outside its VNet address space", () => {
     const m = clone(regulatedAiAssistant) as PhysicalManifest;
-    m.landingZones[1].vnets[0].subnets[0].addressPrefix = "10.99.0.0/23";
+    app(m).vnets[0].subnets[0].addressPrefix = "10.99.0.0/23";
     const report = validateParsedManifest(m);
     expect(report.findings.some((f) => f.code === "SUBNET_OUT_OF_VNET")).toBe(true);
   });
@@ -72,14 +78,14 @@ describe("overlap detection", () => {
 describe("special subnet rules", () => {
   it("rejects an AzureFirewallSubnet smaller than /26", () => {
     const m = clone(regulatedAiAssistant) as PhysicalManifest;
-    m.landingZones[0].vnets[0].subnets[0].addressPrefix = "10.20.0.0/27";
+    hub(m).vnets[0].subnets[0].addressPrefix = "10.20.0.0/27";
     const report = validateParsedManifest(m);
     expect(report.findings.some((f) => f.code === "SPECIAL_SUBNET_PREFIX")).toBe(true);
   });
 
   it("rejects a GatewaySubnet with the wrong name", () => {
     const m = clone(regulatedAiAssistant) as PhysicalManifest;
-    m.landingZones[0].vnets[0].subnets[1].name = "gw";
+    hub(m).vnets[0].subnets[1].name = "gw";
     const report = validateParsedManifest(m);
     expect(report.findings.some((f) => f.code === "SPECIAL_SUBNET_NAME")).toBe(true);
   });
@@ -97,7 +103,7 @@ describe("private endpoint allocation", () => {
 
   it("errors when a PE targets an unknown subnet", () => {
     const m = clone(regulatedAiAssistant) as PhysicalManifest;
-    m.landingZones[1].privateEndpoints[0].subnet = "does-not-exist";
+    app(m).privateEndpoints[0].subnet = "does-not-exist";
     const report = validateParsedManifest(m);
     expect(report.findings.some((f) => f.code === "PE_SUBNET_MISSING")).toBe(true);
   });

@@ -99,6 +99,19 @@ export const regulatedAiAssistant: PhysicalManifest = {
       privateEndpoints: [],
     },
     {
+      // ALZ management platform subscription: shared observability services.
+      name: "management",
+      kind: "platform",
+      platformSubscription: "management",
+      managementGroup: "management",
+      vnets: [],
+      services: [
+        { name: "app-insights", kind: "applicationInsights", privateOnly: false },
+        { name: "law", kind: "logAnalytics", privateOnly: false },
+      ],
+      privateEndpoints: [],
+    },
+    {
       name: "ai-workload-spoke",
       kind: "application",
       archetype: "corp",
@@ -133,8 +146,6 @@ export const regulatedAiAssistant: PhysicalManifest = {
         { name: "state-cosmos", kind: "cosmosDb", privateOnly: true },
         { name: "app-kv", kind: "keyVault", privateOnly: true },
         { name: "aca-env", kind: "containerAppsEnvironment", privateOnly: true },
-        { name: "app-insights", kind: "applicationInsights", privateOnly: false },
-        { name: "law", kind: "logAnalytics", privateOnly: false },
       ],
       privateEndpoints: [
         {

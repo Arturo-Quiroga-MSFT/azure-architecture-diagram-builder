@@ -217,7 +217,11 @@ export const landingZoneSchema = z.object({
   archetype: landingZoneArchetypeSchema.optional(),
   /** Management group this landing zone's subscription(s) sit under. */
   managementGroup: z.string().optional(),
-  vnets: z.array(virtualNetworkSchema).min(1),
+  /**
+   * VNets in this landing zone. Empty for platform subscriptions that host no
+   * network of their own (management, security), which is normal in ALZ.
+   */
+  vnets: z.array(virtualNetworkSchema).default([]),
   firewall: firewallSchema.optional(),
   gateway: gatewaySchema.optional(),
   services: z.array(workloadServiceSchema).default([]),

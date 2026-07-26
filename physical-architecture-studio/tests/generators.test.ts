@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { generateBicep } from "../core/bicep/generate.js";
+import {
+  generateManagementGroupsBicep,
+  generateManagementGroupsTerraform,
+} from "../core/bicep/managementGroups.js";
 import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildScene } from "../core/diagram/scene.js";
@@ -77,5 +81,63 @@ describe("traceability", () => {
     const spoke = rows.find((r) => r.element === "spoke-ai-vnet");
     expect(spoke?.bicep).toContain("module vnet_spoke_ai_vnet");
     expect(spoke?.terraform).toBe("module.vnet_spoke_ai_vnet");
+  });
+});
+
+describe("Virtual WAN emission", () => {
+  const vwan = {
+    ...regulatedAiAssistant,
+    networkTopology: "virtualWan" as const,
+  };
+
+  it("Bicep emits a virtual WAN and managed hub instead of a hub VNet", () => {
+    const bicep = generateBicep(vwan);
+    expect(bicep).toContain("br/public:avm/res/network/virtual-wan");
+    expect(bicep).toContain("br/public:avm/res/network/virtual-hub");
+    expect(bicep).toContain("Virtual WAN (Microsoft-managed hub)");
+    // The customer-managed hub VNet is no longer emitted.
+    expect(bicep).not.toContain("name: 'hub-vnet'");
+    // Spokes are still emitted.
+    expect(bicep).toContain("name: 'spoke-ai-vnet'");
+  });
+
+  it("Terraform emits the AVM virtual WAN module with hubs", () => {
+    const tf = generateTerraform(vwan);
+    expect(tf).toContain("Azure/avm-res-network-virtualwan/azurerm");
+    expect(tf).toContain("virtual_hubs");
+    expect(tf).not.toContain('name                = "hub-vnet"');
+  });
+
+  it("hub & spoke output is unchanged (no Virtual WAN resources)", () => {
+    const bicep = generateBicep(regulatedAiAssistant);
+    expect(bicep).not.toContain("virtual-wan");
+    expect(bicep).toContain("name: 'hub-vnet'");
+  });
+});
+
+describe("management group hierarchy emission", () => {
+  it("Bicep emits a tenant-scoped ALZ hierarchy", () => {
+    const bicep = generateManagementGroupsBicep(regulatedAiAssistant);
+    expect(bicep).toContain("targetScope = 'tenant'");
+    expect(bicep).toContain("Microsoft.Management/managementGroups@");
+    for (const name of ["Platform", "Landing zones", "Sandbox", "Decommissioned"]) {
+      expect(bicep).toContain(`displayName: '${name}'`);
+    }
+    // Platform subscriptions and archetypes.
+    expect(bicep).toContain("displayName: 'connectivity'");
+    expect(bicep).toContain("displayName: 'corp'");
+  });
+
+  it("Terraform emits the same hierarchy", () => {
+    const tf = generateManagementGroupsTerraform(regulatedAiAssistant);
+    expect(tf).toContain("azurerm_management_group");
+    expect(tf).toContain('display_name               = "Platform"');
+    expect(tf).toContain("parent_management_group_id");
+  });
+
+  it("emits nothing when no hierarchy is declared", () => {
+    const m = { ...regulatedAiAssistant, managementGroups: undefined };
+    expect(generateManagementGroupsBicep(m)).toBe("");
+    expect(generateManagementGroupsTerraform(m)).toBe("");
   });
 });

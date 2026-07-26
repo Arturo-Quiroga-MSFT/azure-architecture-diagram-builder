@@ -6,3 +6,6 @@ out/
 .env
 .env.*
 AQ-test-artifacts/
+
+# Large Microsoft-published reference PDFs kept locally for authoring only.
+AZURE-LANDING-ZONES-INFO/*.pdf

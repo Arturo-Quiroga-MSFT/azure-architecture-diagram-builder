@@ -15,6 +15,10 @@ import { dirname, join } from "node:path";
 import { regulatedAiAssistant } from "../scenarios/regulated-ai-assistant.js";
 import { validateManifest } from "../core/validation/validate.js";
 import { generateBicep } from "../core/bicep/generate.js";
+import {
+  generateManagementGroupsBicep,
+  generateManagementGroupsTerraform,
+} from "../core/bicep/managementGroups.js";
 import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildScene } from "../core/diagram/scene.js";
@@ -69,6 +73,17 @@ app.post("/api/traceability", (req, res) => {
   const parsed = validateManifest(req.body);
   if (!parsed.schemaValid) return res.status(400).json(parsed);
   res.json(buildTraceability(req.body));
+});
+
+// ALZ management group hierarchy (tenant-scoped, separate deployment).
+app.post("/api/management-groups/:format", (req, res) => {
+  const parsed = validateManifest(req.body);
+  if (!parsed.schemaValid) return res.status(400).json(parsed);
+  const body =
+    req.params.format === "terraform"
+      ? generateManagementGroupsTerraform(req.body)
+      : generateManagementGroupsBicep(req.body);
+  res.type("text/plain").send(body);
 });
 
 // --- AADB bridge ---------------------------------------------------------

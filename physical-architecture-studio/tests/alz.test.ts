@@ -8,6 +8,12 @@ function clone(m: PhysicalManifest): PhysicalManifest {
   return JSON.parse(JSON.stringify(m)) as PhysicalManifest;
 }
 
+/** Look landing zones up by role rather than array position. */
+const app = (m: PhysicalManifest) =>
+  m.landingZones.find((z) => z.kind === "application")!;
+const hub = (m: PhysicalManifest) =>
+  m.landingZones.find((z) => z.platformSubscription === "connectivity")!;
+
 describe("ALZ conformance — golden scenario", () => {
   it("is fully conformant with no findings", () => {
     const report = checkAlzConformance(regulatedAiAssistant);
@@ -39,14 +45,14 @@ describe("ALZ conformance — composition rules", () => {
 
   it("flags an application landing zone with no Corp/Online archetype", () => {
     const m = clone(regulatedAiAssistant);
-    delete m.landingZones[1].archetype;
+    delete app(m).archetype;
     const report = checkAlzConformance(m);
     expect(report.findings.some((f) => f.code === "ALZ_NO_ARCHETYPE")).toBe(true);
   });
 
   it("flags private endpoints placed in the platform landing zone", () => {
     const m = clone(regulatedAiAssistant);
-    m.landingZones[0].privateEndpoints = [
+    hub(m).privateEndpoints = [
       {
         name: "pe-oops",
         service: "aoai",
@@ -63,7 +69,7 @@ describe("ALZ conformance — composition rules", () => {
 describe("ALZ conformance — network topology rules", () => {
   it("hub & spoke requires firewall and gateway subnets in the hub", () => {
     const m = clone(regulatedAiAssistant);
-    m.landingZones[0].vnets[0].subnets = m.landingZones[0].vnets[0].subnets.filter(
+    hub(m).vnets[0].subnets = hub(m).vnets[0].subnets.filter(
       (s) => s.role !== "AzureFirewallSubnet" && s.role !== "GatewaySubnet",
     );
     const codes = checkAlzConformance(m).findings.map((f) => f.code);
@@ -82,7 +88,7 @@ describe("ALZ conformance — network topology rules", () => {
   it("Virtual WAN is clean when the hub declares no managed subnets", () => {
     const m = clone(regulatedAiAssistant);
     m.networkTopology = "virtualWan";
-    m.landingZones[0].vnets[0].subnets = m.landingZones[0].vnets[0].subnets.filter(
+    hub(m).vnets[0].subnets = hub(m).vnets[0].subnets.filter(
       (s) => s.role === "management",
     );
     expect(

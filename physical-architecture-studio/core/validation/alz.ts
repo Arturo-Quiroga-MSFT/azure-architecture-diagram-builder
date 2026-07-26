@@ -137,6 +137,19 @@ export function checkAlzConformance(manifest: PhysicalManifest): AlzReport {
       "No management group hierarchy declared. ALZ governs subscriptions through a management group hierarchy (Platform, Landing zones, Sandbox, Decommissioned) for policy inheritance.",
   });
 
+  // --- Observability belongs to the management platform subscription -------
+  const OBSERVABILITY = new Set(["logAnalytics", "azureMonitor", "applicationInsights"]);
+  const strayObservability = appZones
+    .flatMap((z) => z.services)
+    .filter((s) => OBSERVABILITY.has(s.kind));
+  check(strayObservability.length === 0, {
+    severity: "info",
+    code: "ALZ_OBSERVABILITY_IN_APP_LZ",
+    message: `Observability services (${strayObservability
+      .map((s) => s.name)
+      .join(", ")}) sit in an application landing zone. ALZ centralizes Log Analytics and Azure Monitor in the management platform subscription.`,
+  });
+
   return {
     ok: findings.every((f) => f.severity !== "error"),
     topology,

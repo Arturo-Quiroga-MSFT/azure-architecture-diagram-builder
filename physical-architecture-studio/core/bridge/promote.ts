@@ -52,6 +52,12 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
   const unmapped: string[] = [];
 
   const services: WorkloadService[] = [];
+  /**
+   * Observability services belong to the MANAGEMENT platform subscription in
+   * ALZ (Log Analytics, Azure Monitor are shared platform services), not to the
+   * application landing zone.
+   */
+  const managementServices: WorkloadService[] = [];
   const privateEndpoints: PrivateEndpoint[] = [];
   const dnsZones = new Map<string, PrivateDnsZone>();
   const infrastructure: string[] = [];
@@ -74,6 +80,10 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
     // Stable, filesystem-safe service name derived from the AADB id/name.
     const name = slug(svc.name || svc.id);
     const isPrivate = entry.cls === "privateEndpoint";
+    if (entry.cls === "observability") {
+      managementServices.push({ name, kind: entry.kind, privateOnly: false });
+      continue;
+    }
     services.push({ name, kind: entry.kind, privateOnly: isPrivate });
 
     if (entry.cls === "compute" && entry.delegation && entry.delegation !== "none") {
@@ -117,6 +127,11 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
   notes.push(
     `${services.length} workload service(s), ${privateEndpoints.length} private endpoint(s), ${dnsZones.size} private DNS zone(s).`,
   );
+  if (managementServices.length > 0) {
+    notes.push(
+      `${managementServices.length} observability service(s) placed in the management platform subscription per ALZ.`,
+    );
+  }
 
   const spokeSubnets: Subnet[] = [
     {
@@ -202,6 +217,16 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
         firewall: { name: "hub-firewall", vnet: "hub-vnet", skuTier: "Premium" },
         gateway: { name: "hub-er-gateway", vnet: "hub-vnet", kind: "expressRoute" },
         services: [],
+        privateEndpoints: [],
+      },
+      {
+        // ALZ management platform subscription: shared observability services.
+        name: "management",
+        kind: "platform",
+        platformSubscription: "management",
+        managementGroup: "management",
+        vnets: [],
+        services: managementServices,
         privateEndpoints: [],
       },
       {
