@@ -37,7 +37,8 @@ body {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  flex-wrap: wrap;
   padding: 10px 16px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
@@ -58,6 +59,7 @@ body {
 
 .seg {
   display: inline-flex;
+  flex: none;
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -70,6 +72,7 @@ body {
   padding: 6px 14px;
   cursor: pointer;
   font-size: 12px;
+  white-space: nowrap;
 }
 .seg button.active {
   background: var(--accent);
@@ -85,6 +88,8 @@ select, .btn {
   padding: 6px 10px;
   font-size: 12px;
   cursor: pointer;
+  white-space: nowrap;
+  flex: none;
 }
 .btn.accent {
   background: var(--accent);
@@ -226,7 +231,8 @@ select, .btn {
 .tabs { display: flex; border-bottom: 1px solid var(--border); }
 .tabs button {
   flex: 1; background: transparent; border: none; color: var(--muted);
-  padding: 8px; cursor: pointer; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 8px 4px; cursor: pointer; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.4px; white-space: nowrap;
 }
 .tabs button.active { color: var(--text); border-bottom: 2px solid var(--accent); }
 pre.code {

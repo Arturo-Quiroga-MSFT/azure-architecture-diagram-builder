@@ -5,6 +5,7 @@ import type { PhysicalManifest } from "../core/manifest/schema.js";
 import { validateParsedManifest } from "../core/validation/validate.js";
 import { analyzeIpam } from "../core/ipam/engine.js";
 import { generateBicep } from "../core/bicep/generate.js";
+import { generateManagementGroupsBicep } from "../core/bicep/managementGroups.js";
 import { generateTerraform } from "../core/terraform/generate.js";
 import { generateIpPlanCsv } from "../core/export/ipPlan.js";
 import { buildTraceability } from "../core/traceability/map.js";
@@ -12,7 +13,8 @@ import { physicalToAadb } from "../core/bridge/toAadb.js";
 import { importAnyAadb } from "../core/bridge/importAny.js";
 
 type View = "concept" | "physical";
-type Tab = "inspector" | "bicep" | "terraform" | "trace";
+type Tab = "inspector" | "bicep" | "terraform" | "mgmt" | "trace";
+type Topology = PhysicalManifest["networkTopology"];
 
 function clone(m: PhysicalManifest): PhysicalManifest {
   return JSON.parse(JSON.stringify(m)) as PhysicalManifest;
@@ -31,22 +33,28 @@ export function App() {
   const [view, setView] = useState<View>("concept");
   const [tab, setTab] = useState<Tab>("inspector");
   const [overlap, setOverlap] = useState(false);
+  const [topology, setTopology] = useState<Topology>("hubSpoke");
   const [selected, setSelected] = useState<string | null>(null);
   const [baseManifest, setBaseManifest] = useState<PhysicalManifest>(regulatedAiAssistant);
   const [sourceLabel, setSourceLabel] = useState("Built-in golden scenario");
   const [promotion, setPromotion] = useState<{ notes: string[]; unmapped: string[] } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const manifest = useMemo(
-    () => (overlap ? withInjectedOverlap(baseManifest) : baseManifest),
-    [overlap, baseManifest],
-  );
+  const manifest = useMemo(() => {
+    const base = overlap ? withInjectedOverlap(baseManifest) : baseManifest;
+    // The topology toggle overrides the manifest so the ALZ rules and the IaC
+    // emitters can be exercised without re-authoring the scenario.
+    return base.networkTopology === topology
+      ? base
+      : { ...base, networkTopology: topology };
+  }, [overlap, baseManifest, topology]);
 
   const validation = useMemo(() => validateParsedManifest(manifest), [manifest]);
   const ipam = useMemo(() => analyzeIpam(manifest), [manifest]);
   const bicep = useMemo(() => generateBicep(manifest), [manifest]);
   const terraform = useMemo(() => generateTerraform(manifest), [manifest]);
   const csv = useMemo(() => generateIpPlanCsv(manifest), [manifest]);
+  const mgmtGroups = useMemo(() => generateManagementGroupsBicep(manifest), [manifest]);
   const trace = useMemo(() => buildTraceability(manifest), [manifest]);
 
   const errors = validation.findings.filter((f) => f.severity === "error");
@@ -67,6 +75,7 @@ export function App() {
     download("main.tf", terraform);
     download("ip-plan.csv", csv);
     download("manifest.json", JSON.stringify(manifest, null, 2));
+    if (mgmtGroups) download("managementGroups.bicep", mgmtGroups);
   }
 
   /** Promote an AADB export (manifest OR ReactFlow scene) into a physical manifest. */
@@ -143,6 +152,20 @@ export function App() {
             onClick={() => setView("physical")}
           >
             Physical
+          </button>
+        </div>
+        <div className="seg" title="ALZ network topology">
+          <button
+            className={topology === "hubSpoke" ? "active" : ""}
+            onClick={() => setTopology("hubSpoke")}
+          >
+            Hub &amp; spoke
+          </button>
+          <button
+            className={topology === "virtualWan" ? "active" : ""}
+            onClick={() => setTopology("virtualWan")}
+          >
+            Virtual WAN
           </button>
         </div>
         <button className="btn" onClick={() => setOverlap((v) => !v)}>
@@ -256,13 +279,13 @@ export function App() {
         {/* Right: inspector / IaC / trace */}
         <div className="col">
           <div className="tabs">
-            {(["inspector", "bicep", "terraform", "trace"] as Tab[]).map((t) => (
+            {(["inspector", "bicep", "terraform", "mgmt", "trace"] as Tab[]).map((t) => (
               <button
                 key={t}
                 className={tab === t ? "active" : ""}
                 onClick={() => setTab(t)}
               >
-                {t}
+                {t === "mgmt" ? "mgmt groups" : t}
               </button>
             ))}
           </div>
@@ -271,6 +294,16 @@ export function App() {
           )}
           {tab === "bicep" && <pre className="code">{bicep}</pre>}
           {tab === "terraform" && <pre className="code">{terraform}</pre>}
+          {tab === "mgmt" && (
+            mgmtGroups ? (
+              <pre className="code">{mgmtGroups}</pre>
+            ) : (
+              <p className="hint">
+                This manifest declares no management group hierarchy, so nothing
+                is generated.
+              </p>
+            )
+          )}
           {tab === "trace" && (
             <table className="trace">
               <thead>
