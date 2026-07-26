@@ -35,6 +35,9 @@ export function App() {
   const [overlap, setOverlap] = useState(false);
   const [topology, setTopology] = useState<Topology>("hubSpoke");
   const [selected, setSelected] = useState<string | null>(null);
+  /** Width of the right-hand inspector/IaC pane, in px (drag to resize). */
+  const [rightWidth, setRightWidth] = useState(340);
+  const draggingRef = useRef(false);
   const [baseManifest, setBaseManifest] = useState<PhysicalManifest>(regulatedAiAssistant);
   const [sourceLabel, setSourceLabel] = useState("Built-in golden scenario");
   const [promotion, setPromotion] = useState<{ notes: string[]; unmapped: string[] } | null>(null);
@@ -122,6 +125,28 @@ export function App() {
     setPromotion(null);
     setOverlap(false);
     setSelected(null);
+  }
+
+  // --- Right pane resizing -------------------------------------------------
+  function clampWidth(px: number) {
+    // Keep at least ~520px for the canvas, and a readable minimum for the pane.
+    const max = Math.max(340, window.innerWidth - 520);
+    return Math.min(Math.max(px, 280), max);
+  }
+
+  function onResizeStart(e: React.PointerEvent<HTMLDivElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    draggingRef.current = true;
+  }
+
+  function onResizeMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!draggingRef.current) return;
+    setRightWidth(clampWidth(window.innerWidth - e.clientX));
+  }
+
+  function onResizeEnd(e: React.PointerEvent<HTMLDivElement>) {
+    draggingRef.current = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
   }
 
   return (
@@ -218,7 +243,10 @@ export function App() {
       </div>
 
       {/* --- Body --- */}
-      <div className="body">
+      <div
+        className="body"
+        style={{ gridTemplateColumns: `300px 1fr 6px ${rightWidth}px` }}
+      >
         {/* Left: workload inputs */}
         <div className="col">
           <div className="section-title">Workload</div>
@@ -275,6 +303,19 @@ export function App() {
             )}
           </div>
         </div>
+
+        {/* Drag to resize the inspector / IaC pane; double-click to reset. */}
+        <div
+          className="resizer"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize inspector pane"
+          title="Drag to resize · double-click to reset"
+          onPointerDown={onResizeStart}
+          onPointerMove={onResizeMove}
+          onPointerUp={onResizeEnd}
+          onDoubleClick={() => setRightWidth(340)}
+        />
 
         {/* Right: inspector / IaC / trace */}
         <div className="col">

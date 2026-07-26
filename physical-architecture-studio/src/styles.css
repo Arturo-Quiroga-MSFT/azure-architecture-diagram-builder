@@ -134,8 +134,20 @@ select, .btn {
 /* --- Body -----------------------------------------------------------------*/
 .body {
   display: grid;
-  grid-template-columns: 300px 1fr 340px;
+  grid-template-columns: 300px 1fr 6px 340px;
   min-height: 0;
+}
+
+/* Draggable divider between the canvas and the inspector pane. */
+.resizer {
+  cursor: col-resize;
+  background: var(--border);
+  transition: background 0.15s ease;
+  touch-action: none;
+}
+.resizer:hover,
+.resizer:active {
+  background: var(--accent);
 }
 .col {
   min-height: 0;
