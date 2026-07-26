@@ -1,11 +1,13 @@
 /**
- * Golden scenario: "Regulated AI Knowledge Assistant" on an AI Foundry Landing
- * Zone (AVM-aligned, CAF/WAF hub-spoke).
+ * Golden scenario: "Regulated AI Knowledge Assistant".
  *
- * This is the single deeply-implemented reference workload the Technical Preview
- * demonstrates. It models:
- *   - a PLATFORM connectivity hub (Azure Firewall + ExpressRoute gateway + DNS)
- *   - an APPLICATION spoke (Container Apps workload + private endpoints)
+ * Per CAF guidance there is NO separate "AI landing zone" — AI workloads are
+ * deployed into an ordinary APPLICATION landing zone, governed by the same ALZ
+ * design areas as any other workload. This scenario therefore models:
+ *   - a PLATFORM landing zone / connectivity subscription (hub, Azure Firewall,
+ *     ExpressRoute gateway, DNS)
+ *   - an APPLICATION landing zone (Corp archetype) hosting the AI workload,
+ *     its subnets and private endpoints
  *   - private-only AI services (Azure OpenAI, AI Search, Storage, Cosmos, KV)
  *   - private DNS zones for privatelink resolution
  *   - an on-premises range for hybrid overlap validation
@@ -22,7 +24,7 @@ export const regulatedAiAssistant: PhysicalManifest = {
   metadata: {
     name: "regulated-ai-knowledge-assistant",
     description:
-      "Regulated AI knowledge assistant connecting on-premises data to private Azure AI services through an AI Foundry hub/spoke landing zone.",
+      "Regulated AI knowledge assistant connecting on-premises data to private Azure AI services. The AI workload runs in an application landing zone; connectivity is provided by the platform landing zone hub.",
     sovereignProfile: "azure-public-regulated",
   },
   regions: {
@@ -31,6 +33,14 @@ export const regulatedAiAssistant: PhysicalManifest = {
   },
   onPremises: {
     addressSpaces: ["10.0.0.0/16"],
+  },
+  networkTopology: "hubSpoke",
+  managementGroups: {
+    intermediateRoot: "alz",
+    platform: ["management", "identity", "connectivity", "security"],
+    landingZones: ["corp", "online"],
+    sandbox: true,
+    decommissioned: true,
   },
   privateDnsZones: [
     { zone: "privatelink.openai.azure.com", linkedVnets: ["spoke-ai-vnet"] },
@@ -43,6 +53,8 @@ export const regulatedAiAssistant: PhysicalManifest = {
     {
       name: "connectivity-hub",
       kind: "platform",
+      platformSubscription: "connectivity",
+      managementGroup: "connectivity",
       vnets: [
         {
           name: "hub-vnet",
@@ -89,6 +101,8 @@ export const regulatedAiAssistant: PhysicalManifest = {
     {
       name: "ai-workload-spoke",
       kind: "application",
+      archetype: "corp",
+      managementGroup: "corp",
       vnets: [
         {
           name: "spoke-ai-vnet",

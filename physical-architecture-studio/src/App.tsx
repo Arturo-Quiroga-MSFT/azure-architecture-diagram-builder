@@ -313,6 +313,28 @@ export function App() {
           Policy profile {validation.findings.length - errors.length - warnings.length >= 0 ? "" : ""}
           {warnings.length} warnings
         </span>
+        {validation.alz && (
+          <span
+            className="badge"
+            title={
+              validation.alz.findings.length
+                ? validation.alz.findings.map((f) => `[${f.code}] ${f.message}`).join("\n")
+                : "Conforms to the CAF Azure landing zone reference architecture"
+            }
+          >
+            <span
+              className={`dot ${
+                validation.alz.findings.some((f) => f.severity === "error")
+                  ? "err"
+                  : validation.alz.findings.length
+                    ? "warn"
+                    : "ok"
+              }`}
+            />
+            ALZ {validation.alz.passed}/{validation.alz.total} ·{" "}
+            {validation.alz.topology === "virtualWan" ? "Virtual WAN" : "hub & spoke"}
+          </span>
+        )}
         <span className="findings">
           {errors.length} errors · {warnings.length} warnings ·{" "}
           {ipam.privateEndpoints.length} private endpoints

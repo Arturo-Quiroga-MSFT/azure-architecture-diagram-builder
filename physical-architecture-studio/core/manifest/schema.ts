@@ -29,6 +29,34 @@ export const azureRegionSchema = z.string().min(2).describe("Azure region short 
 /** Landing zone classification, aligned to CAF Enterprise-Scale. */
 export const landingZoneKindSchema = z.enum(["platform", "application"]);
 
+/**
+ * ALZ network topology. CAF supports two options for the connectivity design:
+ * traditional hub & spoke, or Microsoft-managed Virtual WAN hubs.
+ * https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/
+ */
+export const networkTopologySchema = z.enum(["hubSpoke", "virtualWan"]);
+
+/**
+ * The four recommended PLATFORM landing zone subscriptions. A platform landing
+ * zone provides shared services (identity, connectivity, management, security)
+ * consumed by every application landing zone.
+ */
+export const platformSubscriptionSchema = z.enum([
+  "management",
+  "identity",
+  "connectivity",
+  "security",
+]);
+
+/**
+ * Application landing zone archetype. Application landing zones are nested under
+ * these management groups to inherit the matching Azure Policy set.
+ *   corp   - internally facing, no direct public ingress/egress
+ *   online - internet facing
+ *   sandbox - experimentation, isolated from corp/online policy
+ */
+export const landingZoneArchetypeSchema = z.enum(["corp", "online", "sandbox"]);
+
 /** Subnet delegations we support in the MVP scenario. */
 export const subnetDelegationSchema = z.enum([
   "Microsoft.App/environments",
@@ -176,6 +204,19 @@ export const gatewaySchema = z.object({
 export const landingZoneSchema = z.object({
   name: z.string().min(1),
   kind: landingZoneKindSchema,
+  /**
+   * For a PLATFORM landing zone: which of the four recommended platform
+   * subscriptions this represents (management / identity / connectivity /
+   * security). Connectivity hosts the hub network, firewall and gateways.
+   */
+  platformSubscription: platformSubscriptionSchema.optional(),
+  /**
+   * For an APPLICATION landing zone: the management group archetype it is
+   * nested under, which determines the inherited Azure Policy set.
+   */
+  archetype: landingZoneArchetypeSchema.optional(),
+  /** Management group this landing zone's subscription(s) sit under. */
+  managementGroup: z.string().optional(),
   vnets: z.array(virtualNetworkSchema).min(1),
   firewall: firewallSchema.optional(),
   gateway: gatewaySchema.optional(),
@@ -183,6 +224,28 @@ export const landingZoneSchema = z.object({
   privateEndpoints: z.array(privateEndpointSchema).default([]),
 });
 export type LandingZone = z.infer<typeof landingZoneSchema>;
+
+/**
+ * Management group hierarchy, per the ALZ reference architecture:
+ *   Tenant root > Intermediate root > { Platform (Management, Identity,
+ *   Connectivity, Security), Landing zones (Corp, Online), Sandbox,
+ *   Decommissioned }
+ * Modeled so the studio can show policy inheritance and governance scope.
+ */
+export const managementGroupsSchema = z.object({
+  /** Intermediate root management group id, e.g. "contoso". */
+  intermediateRoot: z.string().default("alz"),
+  platform: z.array(z.string()).default([
+    "management",
+    "identity",
+    "connectivity",
+    "security",
+  ]),
+  landingZones: z.array(z.string()).default(["corp", "online"]),
+  sandbox: z.boolean().default(true),
+  decommissioned: z.boolean().default(true),
+});
+export type ManagementGroups = z.infer<typeof managementGroupsSchema>;
 
 export const physicalManifestSchema = z.object({
   apiVersion: z.literal("aadb.physical/v1alpha1"),
@@ -202,6 +265,10 @@ export const physicalManifestSchema = z.object({
   onPremises: z.object({
     addressSpaces: z.array(cidrSchema).default([]),
   }),
+  /** ALZ connectivity design: hub & spoke (default) or Virtual WAN. */
+  networkTopology: networkTopologySchema.default("hubSpoke"),
+  /** ALZ management group hierarchy (governance / policy inheritance). */
+  managementGroups: managementGroupsSchema.optional(),
   privateDnsZones: z.array(privateDnsZoneSchema).default([]),
   landingZones: z.array(landingZoneSchema).min(1),
 });

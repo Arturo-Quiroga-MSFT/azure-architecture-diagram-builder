@@ -10,6 +10,7 @@ import {
   type PhysicalManifest,
 } from "../manifest/schema.js";
 import { analyzeIpam, type IpamReport, type IpamFinding } from "../ipam/engine.js";
+import { checkAlzConformance, type AlzReport } from "./alz.js";
 
 export interface ValidationReport {
   ok: boolean;
@@ -17,6 +18,8 @@ export interface ValidationReport {
   schemaValid: boolean;
   schemaErrors: string[];
   ipam?: IpamReport;
+  /** Azure Landing Zone conformance (advisory). */
+  alz?: AlzReport;
   /** Convenience roll-up of all IPAM findings. */
   findings: IpamFinding[];
 }
@@ -44,6 +47,7 @@ export function validateManifest(input: unknown): ValidationReport {
     schemaValid: true,
     schemaErrors: [],
     ipam,
+    alz: checkAlzConformance(parsed.data),
     findings: ipam.findings,
   };
 }
@@ -58,6 +62,7 @@ export function validateParsedManifest(
     schemaValid: true,
     schemaErrors: [],
     ipam,
+    alz: checkAlzConformance(manifest),
     findings: ipam.findings,
   };
 }

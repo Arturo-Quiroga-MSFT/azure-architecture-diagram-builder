@@ -154,11 +154,21 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
     },
     regions: { primary: region },
     onPremises: { addressSpaces: [PLAN.onPrem] },
+    networkTopology: "hubSpoke",
+    managementGroups: {
+      intermediateRoot: "alz",
+      platform: ["management", "identity", "connectivity", "security"],
+      landingZones: ["corp", "online"],
+      sandbox: true,
+      decommissioned: true,
+    },
     privateDnsZones: Array.from(dnsZones.values()),
     landingZones: [
       {
         name: "connectivity-hub",
         kind: "platform",
+        platformSubscription: "connectivity",
+        managementGroup: "connectivity",
         vnets: [
           {
             name: "hub-vnet",
@@ -197,6 +207,8 @@ export function promoteFromAadb(aadb: AadbManifest): PromotionResult {
       {
         name: "ai-workload-spoke",
         kind: "application",
+        archetype: "corp",
+        managementGroup: "corp",
         vnets: [
           {
             name: "spoke-ai-vnet",
