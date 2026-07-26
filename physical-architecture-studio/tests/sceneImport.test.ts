@@ -89,6 +89,14 @@ describe("scene detection + node resolution", () => {
     expect(resolveNodeKind(undefined, "Azure Cosmos DB")?.kind).toBe("cosmosDb");
     expect(resolveNodeKind("/x/mystery.svg", "Documents Storage")?.kind).toBe("storageAccount");
   });
+
+  it("resolves Event Grid and Document Intelligence", () => {
+    expect(
+      resolveNodeKind("/x/10206-icon-service-Event-Grid-Topics.svg")?.kind,
+    ).toBe("eventGrid");
+    expect(resolveNodeKind("/x/document-intelligence.svg")?.kind).toBe("documentIntelligence");
+    expect(resolveNodeKind(undefined, "Form Recognizer")?.kind).toBe("documentIntelligence");
+  });
 });
 
 describe("importAnyAadb (scene format)", () => {

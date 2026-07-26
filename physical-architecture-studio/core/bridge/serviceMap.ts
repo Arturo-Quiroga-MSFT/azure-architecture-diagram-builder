@@ -167,6 +167,24 @@ export const SERVICE_MAP: ServiceMapEntry[] = [
     iconStems: ["service-bus"],
     aliases: ["service bus", "azure service bus", "servicebus"],
   },
+  {
+    kind: "eventGrid",
+    cls: "privateEndpoint",
+    aadbType: "Event Grid",
+    aadbCategory: "integration",
+    privateDnsZone: "privatelink.eventgrid.azure.net",
+    iconStems: ["10206-icon-service-event-grid-topics"],
+    aliases: ["event grid", "azure event grid", "eventgrid", "event grid topic"],
+  },
+  {
+    kind: "documentIntelligence",
+    cls: "privateEndpoint",
+    aadbType: "Document Intelligence",
+    aadbCategory: "ai + machine learning",
+    privateDnsZone: "privatelink.cognitiveservices.azure.com",
+    iconStems: ["document-intelligence"],
+    aliases: ["document intelligence", "azure document intelligence", "form recognizer", "doc intelligence"],
+  },
 
   // --- Compute / workload hosts ------------------------------------------
   {

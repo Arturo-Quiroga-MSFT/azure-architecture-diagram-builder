@@ -94,6 +94,8 @@ export const serviceKindSchema = z.enum([
   "containerRegistry",
   "eventHubs",
   "serviceBus",
+  "eventGrid",
+  "documentIntelligence",
   // Compute / workload hosts
   "containerAppsEnvironment",
   "aks",

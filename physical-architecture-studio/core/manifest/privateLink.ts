@@ -31,6 +31,8 @@ const MAP: Partial<Record<ServiceKind, PrivateLinkMapping>> = {
   containerRegistry: { groupId: "registry", memberName: "registry" },
   eventHubs: { groupId: "namespace", memberName: "namespace" },
   serviceBus: { groupId: "namespace", memberName: "namespace" },
+  eventGrid: { groupId: "topic", memberName: "topic" },
+  documentIntelligence: { groupId: "account", memberName: "default" },
 };
 
 /** Look up the Private Link mapping for a service kind, or a safe fallback. */
