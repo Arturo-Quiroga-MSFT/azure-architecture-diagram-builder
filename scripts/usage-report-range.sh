@@ -50,13 +50,26 @@ json_to_md_table () {
   '
 }
 
+# Duplicate-row guard. A diagnostic setting named "ALL" on the App Insights
+# component (created 2026-07-14, deleted 2026-07-27) exported allLogs to a
+# second Log Analytics workspace. The component query API returns the union of
+# the native workspace data AND that exported copy, so every row from
+# 2026-07-14 onward comes back exactly twice. The app only ever sent one event.
+# Deleting the setting stops future duplication, but the already-exported copy
+# still lives in the second workspace, so historical queries stay 2x.
+# Dedup on (session_Id, name, timestamp, user_Id) reproduces the workspace
+# ground-truth count exactly (validated 2,032 == 2,032 over a 2-day window).
+DEDUP_PREAMBLE=$'let _ce = customEvents | summarize take_any(*) by session_Id, name, timestamp, user_Id;\nlet _pv = pageViews | summarize take_any(*) by session_Id, name, timestamp, user_Id;\n'
+
 run_kql () {
   local title="$1"; local query="$2"
   echo "▶ $title"
   echo -e "\n## $title\n" >> "$REPORT"
+  local dq
+  dq="${DEDUP_PREAMBLE}$(printf '%s' "$query" | sed -e 's/customEvents/_ce/g' -e 's/pageViews/_pv/g')"
   local result
   if ! result=$(az monitor app-insights query --app "$APP" -g "$RG" \
-        --analytics-query "$query" --offset "$OFFSET" 2>&1); then
+        --analytics-query "$dq" --offset "$OFFSET" 2>&1); then
     echo "_query failed_" >> "$REPORT"
     echo '```' >> "$REPORT"; echo "$result" >> "$REPORT"; echo '```' >> "$REPORT"
     return

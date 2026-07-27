@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -65,13 +66,39 @@ GROWTH_FEATURES = {
     "DeploymentGuide_Generated": "Deploy guide",
 }
 
+# ─── Duplicate-row guard ────────────────────────────────────────────────
+# A diagnostic setting named "ALL" on the App Insights component (created
+# 2026-07-14, deleted 2026-07-27) exported allLogs to a second Log Analytics
+# workspace. The App Insights component query API returns the union of the
+# native workspace data AND that exported copy, so every row from 2026-07-14
+# onward comes back exactly twice. The app itself only ever sent one event —
+# verified in-browser (one /v2/track payload) and against the linked workspace
+# (AppEvents ratio 1.00).
+#
+# Deleting the setting stops future duplication, but the already-exported copy
+# still lives in the second workspace, so historical queries stay 2x. Dedup on
+# (session_Id, name, timestamp, user_Id) reproduces the workspace ground-truth
+# count exactly (validated: 2,032 == 2,032 over a 2-day window; dropping
+# user_Id under-counts at 2,014).
+DEDUP_PREAMBLE = (
+    "let _ce = customEvents | summarize take_any(*) by session_Id, name, timestamp, user_Id;\n"
+    "let _pv = pageViews | summarize take_any(*) by session_Id, name, timestamp, user_Id;\n"
+)
+
+
+def dedup(query: str) -> str:
+    """Point a query at deduplicated views of customEvents / pageViews."""
+    q = re.sub(r"\bcustomEvents\b", "_ce", query)
+    q = re.sub(r"\bpageViews\b", "_pv", q)
+    return DEDUP_PREAMBLE + q
+
 
 def run_kql(query: str, offset: str) -> list[list]:
     """Run a KQL query via az CLI and return the first table's rows (list of lists)."""
     cmd = [
         "az", "monitor", "app-insights", "query",
         "--app", APP, "-g", RG,
-        "--analytics-query", query,
+        "--analytics-query", dedup(query),
         "--offset", offset,
         "-o", "json",
     ]
@@ -90,7 +117,7 @@ def cols(query: str, offset: str) -> tuple[list[str], list[list]]:
     cmd = [
         "az", "monitor", "app-insights", "query",
         "--app", APP, "-g", RG,
-        "--analytics-query", query,
+        "--analytics-query", dedup(query),
         "--offset", offset,
         "-o", "json",
     ]

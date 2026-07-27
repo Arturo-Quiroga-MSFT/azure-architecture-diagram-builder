@@ -64,4 +64,9 @@ Ben-and-team/
 
 # Local-only collaboration notes (untracked per request)
 Architect_Agent_AIDC_collaboration/
+claude-critiques-guidance/
 usage-reports/
+.env.mcp
+
+# Local rollback snapshots of Azure resource config (may embed resource IDs)
+.backups/
