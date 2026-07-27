@@ -43,6 +43,37 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     isUsageBased: true,
     costRange: '$1-200/mo (token-based)'
   },
+
+  // Microsoft Foundry — the agent/model platform formerly branded Azure AI
+  // Foundry and, before that, Azure AI Studio. Listed immediately after Azure
+  // OpenAI so its aliases win over any later entry. Reported missing by a user:
+  // without an entry here it is absent from the KNOWN SERVICES list in the
+  // generation prompt, so the model never emits it and any hand-placed node
+  // renders without an icon.
+  'Microsoft Foundry': {
+    displayName: 'Microsoft Foundry',
+    aliases: [
+      'Foundry',
+      'AI Foundry',
+      'Azure Foundry',
+      'Azure AI Foundry',
+      'Microsoft AI Foundry',
+      'Foundry Project',
+      'Azure AI Foundry Project',
+      'Foundry Agent Service',
+      'Azure AI Foundry Agent Service',
+      'Microsoft Foundry Agent Service',
+      'Azure AI Studio',
+      'AI Studio',
+      'Azure AI Hub',
+      'AI Hub'
+    ],
+    iconFile: '03513-icon-service-AI-Studio',
+    category: 'ai + machine learning',
+    hasPricingData: false,
+    isUsageBased: true,
+    costRange: 'Usage-based (model, agent and tool consumption)'
+  },
   
   'Cognitive Services': {
     displayName: 'Cognitive Services',

@@ -9,6 +9,26 @@
       "ChatGPT"
     ]
   },
+  "Microsoft Foundry": {
+    "iconFile": "03513-icon-service-AI-Studio",
+    "category": "ai + machine learning",
+    "aliases": [
+      "Foundry",
+      "AI Foundry",
+      "Azure Foundry",
+      "Azure AI Foundry",
+      "Microsoft AI Foundry",
+      "Foundry Project",
+      "Azure AI Foundry Project",
+      "Foundry Agent Service",
+      "Azure AI Foundry Agent Service",
+      "Microsoft Foundry Agent Service",
+      "Azure AI Studio",
+      "AI Studio",
+      "Azure AI Hub",
+      "AI Hub"
+    ]
+  },
   "Cognitive Services": {
     "iconFile": "cognitive-services",
     "category": "ai + machine learning",
