@@ -9,7 +9,8 @@
 import { Node } from 'reactflow';
 import { 
   NodePricingConfig, 
-  CostBreakdown
+  CostBreakdown,
+  PricingTier
 } from '../types/pricing';
 import { 
   getServicePricing, 
@@ -162,13 +163,17 @@ export async function updateNodePricing(
     const pricing = await getServicePricing(serviceType, serviceName, region);
     
     if (pricing) {
-      const cost = calculateMonthlyCost(pricing, tier, quantity);
+      // `estimatedCost` is PER UNIT everywhere else in the system —
+      // calculateCostBreakdown and AzureNode both multiply it by quantity
+      // themselves. Storing a quantity-multiplied total here would be counted
+      // twice (quantity squared). Price one unit and let the callers scale it.
+      const unitCost = calculateMonthlyCost(pricing, tier, 1);
       // Refresh the real 1-year Savings Plan rate for the (possibly new) tier.
       const selectedTier = pricing.tiers.find(t => t.skuName === tier || t.name === tier);
 
       return {
         ...currentConfig,
-        estimatedCost: cost,
+        estimatedCost: unitCost,
         tier,
         quantity,
         region,
@@ -186,7 +191,7 @@ export async function updateNodePricing(
       
       return {
         ...currentConfig,
-        estimatedCost: basePrice * quantity,
+        estimatedCost: basePrice,
         tier,
         quantity,
         region,
@@ -214,6 +219,30 @@ export function setCustomPricing(
     isCustom: true,
     lastUpdated: new Date().toISOString()
   };
+}
+
+/**
+ * Tiers/SKUs a service can be switched to, for the per-node cost editor.
+ *
+ * Estimates otherwise sit on two fixed assumptions — the catalog default tier
+ * and quantity 1 — which users pushed back on. Returns [] when the service has
+ * no catalog pricing (usage-based services, or anything with hasPricingData
+ * false), in which case only a custom override is meaningful.
+ */
+export async function getAvailableTiers(
+  serviceType: string,
+  region?: string
+): Promise<PricingTier[]> {
+  const targetRegion = region || getActiveRegion();
+  if (!hasPricingData(serviceType)) return [];
+  try {
+    const serviceName = getAzureServiceName(serviceType);
+    const pricing = await getServicePricing(serviceType, serviceName, targetRegion);
+    return pricing?.tiers ?? [];
+  } catch (error) {
+    console.error(`Error loading tiers for ${serviceType}:`, error);
+    return [];
+  }
 }
 
 /**

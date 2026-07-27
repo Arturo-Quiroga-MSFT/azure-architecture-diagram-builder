@@ -64,6 +64,9 @@ import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentG
 import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
+import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
+import NodePricingEditor from './components/NodePricingEditor';
+import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import { exportAndDownloadDrawio } from './services/drawioExporter';
 import { buildVsdxBlob } from './services/visioVsdxExporter';
@@ -187,6 +190,8 @@ function App() {
   const [pricingMode, setPricingMode] = useState<PricingMode>('payg');
   // Whether cost estimates are shown at all (persisted, independent of stylePreset).
   const [pricingPrefs, setPricingPrefs] = usePricingDisplayPrefs();
+  // Node whose per-node cost editor is open (opened from its cost badge).
+  const pricingEditorNodeId = useNodePricingEditor();
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -4346,6 +4351,29 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           model: generatedWithModel?.name,
         }}
       />
+      {(() => {
+        if (!pricingEditorNodeId) return null;
+        const node = nodes.find(n => n.id === pricingEditorNodeId);
+        const nodePricing = node?.data?.pricing as NodePricingConfig | undefined;
+        if (!node || !nodePricing) return null;
+        return (
+          <NodePricingEditor
+            serviceType={node.data.label}
+            pricing={nodePricing}
+            onClose={closeNodePricingEditor}
+            onApply={(updated) => {
+              // Total cost recalculates from `nodes` via the existing effect.
+              setNodes(nds =>
+                nds.map(n =>
+                  n.id === pricingEditorNodeId
+                    ? { ...n, data: { ...n.data, pricing: updated } }
+                    : n,
+                ),
+              );
+            }}
+          />
+        );
+      })()}
     </div>
   );
 }
