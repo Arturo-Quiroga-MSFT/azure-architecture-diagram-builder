@@ -112,10 +112,27 @@ app.post("/api/bridge/export", (req, res) => {
 // Serve the built SPA in production. Compiled server lives at
 // dist-server/server/, so the SPA build (dist/) is two levels up.
 const distDir = join(__dirname, "..", "..", "dist");
-app.use(express.static(distDir));
+
+/**
+ * Cache policy: Vite emits content-hashed asset filenames, so assets are safe to
+ * cache forever. index.html must NEVER be cached, otherwise a browser can keep
+ * serving an old document that references a stale bundle and the UI appears not
+ * to update after a rebuild.
+ */
+function setCacheHeaders(res: express.Response, filePath: string) {
+  if (filePath.endsWith("index.html")) {
+    res.setHeader("Cache-Control", "no-store, must-revalidate");
+  } else if (filePath.includes("/assets/")) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  }
+}
+
+app.use(express.static(distDir, { setHeaders: setCacheHeaders }));
+
 // SPA fallback: any non-API GET returns index.html (Express 5 has no bare "*").
 app.use((req, res, next) => {
   if (req.method !== "GET" || req.path.startsWith("/api")) return next();
+  res.setHeader("Cache-Control", "no-store, must-revalidate");
   res.sendFile(join(distDir, "index.html"));
 });
 
