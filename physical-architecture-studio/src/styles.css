@@ -258,6 +258,83 @@ table.trace th, table.trace td {
 }
 table.trace th { color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
 
+/* --- Management group hierarchy ------------------------------------------*/
+.subtabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.subtabs button {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.subtabs button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #05203f;
+  font-weight: 600;
+}
+
+.mg-tree { padding: 12px 14px; }
+
+/* Each nesting level indents and draws a connector line. */
+.mg-children {
+  margin-left: 14px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+}
+
+.mg-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  position: relative;
+  margin: 5px 0;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel-2);
+  font-size: 12px;
+}
+/* Little elbow connecting a node to its parent's line. */
+.mg-children > .mg-node::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--border);
+}
+
+.mg-name { font-weight: 600; }
+.mg-tenant { border-color: #3d4a63; color: var(--muted); }
+.mg-root { border-color: var(--accent-2); }
+.mg-platform { border-color: var(--accent-2); background: rgba(124, 92, 255, 0.1); }
+.mg-platform-leaf { border-color: rgba(124, 92, 255, 0.5); }
+.mg-lz { border-color: var(--accent); background: rgba(74, 163, 255, 0.1); }
+.mg-lz-leaf { border-color: rgba(74, 163, 255, 0.5); }
+.mg-sandbox { border-color: rgba(242, 181, 68, 0.5); }
+.mg-decom { border-color: rgba(255, 92, 108, 0.4); color: var(--muted); }
+.mg-leaf { font-family: var(--mono); font-size: 11px; }
+
+/* Landing zone assigned to a management group. */
+.mg-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(62, 207, 142, 0.14);
+  color: var(--ok);
+}
+
 /* --- Validation rail ------------------------------------------------------*/
 .rail {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;

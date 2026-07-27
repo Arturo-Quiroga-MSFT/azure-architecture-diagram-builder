@@ -37,6 +37,8 @@ export function App() {
   const [selected, setSelected] = useState<string | null>(null);
   /** Width of the right-hand inspector/IaC pane, in px (drag to resize). */
   const [rightWidth, setRightWidth] = useState(340);
+  /** Management groups tab: visual hierarchy or generated Bicep. */
+  const [mgmtView, setMgmtView] = useState<"tree" | "bicep">("tree");
   const draggingRef = useRef(false);
   const [baseManifest, setBaseManifest] = useState<PhysicalManifest>(regulatedAiAssistant);
   const [sourceLabel, setSourceLabel] = useState("Built-in golden scenario");
@@ -337,7 +339,27 @@ export function App() {
           {tab === "terraform" && <pre className="code">{terraform}</pre>}
           {tab === "mgmt" && (
             mgmtGroups ? (
-              <pre className="code">{mgmtGroups}</pre>
+              <>
+                <div className="subtabs">
+                  <button
+                    className={mgmtView === "tree" ? "active" : ""}
+                    onClick={() => setMgmtView("tree")}
+                  >
+                    Hierarchy
+                  </button>
+                  <button
+                    className={mgmtView === "bicep" ? "active" : ""}
+                    onClick={() => setMgmtView("bicep")}
+                  >
+                    Bicep
+                  </button>
+                </div>
+                {mgmtView === "tree" ? (
+                  <ManagementGroupTree manifest={manifest} />
+                ) : (
+                  <pre className="code">{mgmtGroups}</pre>
+                )}
+              </>
             ) : (
               <p className="hint">
                 This manifest declares no management group hierarchy, so nothing
@@ -634,6 +656,72 @@ function Row({ k, v }: { k: string; v: string }) {
     <div className="kv">
       <span className="k">{k}</span>
       <span className="v">{v}</span>
+    </div>
+  );
+}
+
+/**
+ * Visual ALZ management group hierarchy.
+ *
+ * Mirrors the CAF reference architecture: Tenant root -> intermediate root ->
+ * Platform (management/identity/connectivity/security), Landing zones
+ * (Corp/Online), Sandbox, Decommissioned. Landing zones declared in the manifest
+ * are shown under the management group they inherit policy from, which is what
+ * makes the governance link concrete rather than decorative.
+ */
+function ManagementGroupTree({ manifest }: { manifest: PhysicalManifest }) {
+  const mg = manifest.managementGroups;
+  if (!mg) return <p className="hint">No management group hierarchy declared.</p>;
+
+  // Which landing zones sit under each management group.
+  const assigned = new Map<string, string[]>();
+  for (const lz of manifest.landingZones) {
+    if (!lz.managementGroup) continue;
+    const list = assigned.get(lz.managementGroup) ?? [];
+    list.push(lz.name);
+    assigned.set(lz.managementGroup, list);
+  }
+
+  const node = (label: string, cls: string, key: string, mgKey?: string) => {
+    const zones = mgKey ? assigned.get(mgKey) : undefined;
+    return (
+      <div className={`mg-node ${cls}`} key={key}>
+        <span className="mg-name">{label}</span>
+        {zones?.map((z) => (
+          <span className="mg-badge" key={z} title="Landing zone in this scope">
+            {z}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="mg-tree">
+      {node("Tenant root group", "mg-tenant", "tenant")}
+      <div className="mg-children">
+        {node(mg.intermediateRoot, "mg-root", "root")}
+        <div className="mg-children">
+          {node("Platform", "mg-platform", "platform")}
+          <div className="mg-children">
+            {mg.platform.map((p) => node(p, "mg-leaf mg-platform-leaf", p, p))}
+          </div>
+
+          {node("Landing zones", "mg-lz", "lz")}
+          <div className="mg-children">
+            {mg.landingZones.map((a) => node(a, "mg-leaf mg-lz-leaf", a, a))}
+          </div>
+
+          {mg.sandbox && node("Sandbox", "mg-leaf mg-sandbox", "sandbox", "sandbox")}
+          {mg.decommissioned &&
+            node("Decommissioned", "mg-leaf mg-decom", "decom", "decommissioned")}
+        </div>
+      </div>
+      <p className="hint" style={{ paddingLeft: 0 }}>
+        Azure Policy is inherited down this hierarchy. Application landing zones
+        sit under Corp or Online to pick up the matching policy set; platform
+        subscriptions sit under Platform.
+      </p>
     </div>
   );
 }
