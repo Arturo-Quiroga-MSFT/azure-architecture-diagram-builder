@@ -2486,6 +2486,7 @@ function App() {
 
     // Track architecture generation telemetry
     const aiMetrics = (architecture as any)?.metrics || {};
+    const aiIntegrity = (architecture as any)?.integrity || {};
     trackArchitectureGeneration({
       model: aiMetrics.model,
       reasoningEffort: aiMetrics.reasoningEffort,
@@ -2497,6 +2498,9 @@ function App() {
       elapsedTimeMs: aiMetrics.elapsedTimeMs,
       totalTokens: aiMetrics.totalTokens,
       isModification: nodes.length > 0,
+      orphanCount: aiIntegrity.orphanCount,
+      repairedEdges: aiIntegrity.repairedEdges,
+      droppedEdges: aiIntegrity.droppedEdges,
     });
 
     const handoffContext = {

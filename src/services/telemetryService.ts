@@ -123,11 +123,18 @@ export function trackArchitectureGeneration(params: {
   elapsedTimeMs?: number;
   totalTokens?: number;
   isModification?: boolean;
+  /** Services left with no connection — they render as floating boxes. */
+  orphanCount?: number;
+  /** Edges whose endpoints were resolved from a name back to a service id. */
+  repairedEdges?: number;
+  /** Edges discarded because an endpoint could not be resolved. */
+  droppedEdges?: number;
 }): void {
   trackEvent('Architecture_Generated', {
     model: params.model || 'unknown',
     reasoningEffort: params.reasoningEffort || 'default',
     isModification: String(params.isModification ?? false),
+    hasOrphans: String((params.orphanCount ?? 0) > 0),
   }, {
     promptLength: params.promptLength ?? 0,
     serviceCount: params.serviceCount ?? 0,
@@ -136,6 +143,9 @@ export function trackArchitectureGeneration(params: {
     workflowStepCount: params.workflowStepCount ?? 0,
     elapsedTimeMs: params.elapsedTimeMs ?? 0,
     totalTokens: params.totalTokens ?? 0,
+    orphanCount: params.orphanCount ?? 0,
+    repairedEdges: params.repairedEdges ?? 0,
+    droppedEdges: params.droppedEdges ?? 0,
   });
 }
 
