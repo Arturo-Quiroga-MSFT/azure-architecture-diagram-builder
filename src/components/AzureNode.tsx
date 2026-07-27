@@ -8,6 +8,7 @@ import { loadIcon } from '../utils/iconLoader';
 import { NodePricingConfig } from '../types/pricing';
 import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
 import { isCapacityConsumed } from '../data/serviceIconMapping';
+import { usePricingDisplayPrefs } from '../stores/pricingDisplayStore';
 import './AzureNode.css';
 
 // Map categories to colors
@@ -57,7 +58,11 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   // Extract style preset
   const stylePreset = (data as any).stylePreset || 'detailed';
   const showLabels = true; // Always show labels
-  const showPricing = stylePreset === 'detailed';
+  // Cost badges are suppressed by presentation styling OR by the standalone
+  // cost-visibility preference, so a user can drop the figures without
+  // restyling the whole diagram.
+  const [pricingPrefs] = usePricingDisplayPrefs();
+  const showPricing = stylePreset === 'detailed' && pricingPrefs.showCostBadges;
 
   useEffect(() => {
     if (data.iconPath) {

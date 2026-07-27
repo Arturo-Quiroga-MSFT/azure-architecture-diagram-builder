@@ -20,7 +20,7 @@ import { captureDiagramAsPng, captureDiagramAsSvg } from './utils/captureCanvas'
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -63,6 +63,7 @@ import { bandLabel } from './services/wafMaturity';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType } from './stores/modelSettingsStore';
+import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
 import { exportAndDownloadDrawio } from './services/drawioExporter';
 import { buildVsdxBlob } from './services/visioVsdxExporter';
@@ -184,6 +185,8 @@ function App() {
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
   const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
   const [pricingMode, setPricingMode] = useState<PricingMode>('payg');
+  // Whether cost estimates are shown at all (persisted, independent of stylePreset).
+  const [pricingPrefs, setPricingPrefs] = usePricingDisplayPrefs();
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -2962,6 +2965,23 @@ function App() {
               <div className="toolbar-group">
                 <RegionSelector onRegionChange={handleRegionChange} />
                 {totalMonthlyCost > 0 && (
+                  <>
+                    <button
+                      className={`cost-visibility-toggle${pricingPrefs.showCostBadges ? '' : ' is-off'}`}
+                      onClick={() => setPricingPrefs({ showCostBadges: !pricingPrefs.showCostBadges })}
+                      aria-pressed={pricingPrefs.showCostBadges}
+                      title={
+                        pricingPrefs.showCostBadges
+                          ? 'Hide cost estimates. They are indicative catalog values (quantity 1, default tier) — hide them if they do not reflect your commercial terms.'
+                          : 'Show cost estimates'
+                      }
+                    >
+                      {pricingPrefs.showCostBadges ? <Eye size={14} /> : <EyeOff size={14} />}
+                      {pricingPrefs.showCostBadges ? 'Cost' : 'Cost hidden'}
+                    </button>
+                  </>
+                )}
+                {totalMonthlyCost > 0 && pricingPrefs.showCostBadges && (
                   <>
                     <div className="cost-indicator" title={`Total estimated monthly cost for all services (${pricingMode === 'reserved1yr' ? '1-year savings plan' : 'pay-as-you-go'})`}>
                       💰 {formatMonthlyCost(totalMonthlyCost)}

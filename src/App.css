@@ -324,6 +324,34 @@ body.dark-mode .toolbar-dropdown-separator {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Show / hide cost estimates. Stays visible when costs are hidden so the
+   control can be reversed. */
+.cost-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cost-visibility-toggle:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.cost-visibility-toggle.is-off {
+  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .pricing-mode-btn {
   background: rgba(255, 255, 255, 0.12);
   color: white;
