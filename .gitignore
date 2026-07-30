@@ -70,3 +70,12 @@ usage-reports/
 
 # Local rollback snapshots of Azure resource config (may embed resource IDs)
 .backups/
+
+# Local-only working content — this repo is public, so keep these untracked.
+# Note: physical-architecture-studio/ is already tracked on
+# feature/physical-architecture-studio-mvp. Git does not un-track files that
+# are already committed, so that branch keeps working; but once this .gitignore
+# reaches that branch, NEW files under it will be ignored and need `git add -f`.
+AIDC+AADB-FY27/
+narrations/
+physical-architecture-studio/
