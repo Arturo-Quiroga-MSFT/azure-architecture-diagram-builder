@@ -49,7 +49,7 @@ echo "" >> "$REPORT"
 echo "_Generated $(date)_ · App Insights: \`$APP\` · RG: \`$RG\`" >> "$REPORT"
 
 # Diagram-builder events only (filter out Foundry agent traces that share this App Insights)
-DB_EVENTS='customEvents | where name in ("Architecture_Generated","Architecture_Validated","DeploymentGuide_Generated","Diagram_Exported","Template_Imported","ARM_Template_Imported","Image_Imported","Models_Compared","Recommendations_Applied","Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage")'
+DB_EVENTS='customEvents | where name in ("Architecture_Generated","Architecture_Validated","DeploymentGuide_Generated","Diagram_Exported","Template_Imported","ARM_Template_Imported","Image_Imported","Models_Compared","Recommendations_Applied","Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage","Guided_Journey")'
 
 run_kql "Headline KPIs (diagram builder events only)" "
 $DB_EVENTS

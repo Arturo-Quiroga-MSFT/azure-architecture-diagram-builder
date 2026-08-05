@@ -14,15 +14,16 @@ FeedbackModal (src/components/FeedbackModal.tsx)
    │      (rating, category, hasComment, commentLength — NO comment text)
    │
    └─► POST /api/feedback ──► token server ──► Cosmos DB (feedback container)
-          (full record incl. verbatim comment text + context)
+          (full record incl. verbatim comment text, optional consented contact, and context)
 ```
 
 Two stores, on purpose:
 
 - **Application Insights** — sentiment/engagement metrics for dashboards and alerting.
   Comment **text is intentionally omitted** to keep PII out of telemetry.
-- **Cosmos DB** — durable record including the verbatim comment. This is the
-  source of truth for reading what users actually wrote.
+- **Cosmos DB** — durable record including the verbatim comment and optional
+  consented follow-up address. This is the source of truth for reading what
+  users actually wrote and whether they invited contact.
 
 ## Where the data lives
 
@@ -64,6 +65,41 @@ curl -s -H "Authorization: Bearer $TOKEN" "$APP/api/feedback/list?limit=20" | py
 
 Implemented in [../server/token-server.js](../server/token-server.js) (`GET /api/feedback/list`),
 using the same `getFeedbackContainer()` and env vars as the write path.
+
+### Optional follow-up contact
+
+The full feedback form includes an unchecked **You may contact me about this
+feedback** option. The email field is not rendered until the user explicitly
+opts in, and feedback submission never requires contact consent.
+
+When consent is enabled, the server validates and stores this object with the
+Cosmos feedback record:
+
+```json
+{
+  "contact": {
+    "consent": true,
+    "email": "name@example.com",
+    "consentAt": "2026-08-05T20:00:00.000Z",
+    "expiresAt": "2027-02-01T20:00:00.000Z",
+    "followUpStatus": "new"
+  }
+}
+```
+
+Privacy and operations:
+
+- The email address is sent only to `POST /api/feedback` and stored only in
+  Cosmos. `User_Feedback` and `Feedback_Persist_Failed` telemetry never include it.
+- `GET /api/feedback/list` is the only application endpoint that returns the
+  contact object, and it requires `FEEDBACK_ADMIN_TOKEN`.
+- `expiresAt` marks the intended 180-day contact-retention boundary. It is
+  metadata, not an automatic Cosmos TTL; an operator or cleanup job must redact
+  or delete expired contact details according to the approved privacy policy.
+- `followUpStatus` starts as `new`; operators can track review/contact/closure
+  outside telemetry without changing the user's feedback text.
+- The product analytics app deliberately projects only rating, category,
+  comment, date, and model from Cosmos, so contact details are not exposed there.
 
 ### Legacy CLI (only works when Cosmos is publicly reachable)
 
@@ -142,6 +178,10 @@ az deployment group create \
 The durable comment **text** is written only to Cosmos (`/api/feedback`); the
 standard `User_Feedback` telemetry event intentionally carries only rating,
 category, and comment **length** — never the text.
+
+Optional follow-up email is even more restricted: it is never copied into the
+telemetry fallback. If Cosmos persistence fails, the UI tells the user that the
+address could not be saved rather than sending it to Application Insights.
 
 This created a silent data-loss risk: if Cosmos is unreachable (most commonly
 when a **nightly network policy disables the account's public access**), the

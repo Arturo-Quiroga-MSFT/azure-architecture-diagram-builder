@@ -18,7 +18,7 @@ interface GuidedHelpPanelProps {
 
 type SectionId = 'quick-start' | 'paths' | 'create' | 'assess' | 'deliver' | 'prompts' | 'faq';
 
-const CHECKLIST_STORAGE_KEY = 'help.onboarding.v2';
+const CHECKLIST_STORAGE_KEY = 'help.onboarding.v3';
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: 'quick-start', label: 'Start Here', icon: <Rocket size={16} /> },
@@ -31,25 +31,24 @@ const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
 ];
 
 const FIRST_TOUR = [
-  { id: 'create', title: 'Create or import a diagram', detail: 'Use Chat, Generate with AI, an image, an IaC template, or Import from Azure.' },
-  { id: 'refine', title: 'Make one targeted change', detail: 'Ask Chat for a change or edit nodes, groups, and connections directly.' },
-  { id: 'validate', title: 'Run Well-Architected validation', detail: 'Review the five pillars and identify the most important gaps.' },
-  { id: 'cost', title: 'Inspect cost and region', detail: 'Choose a region, compare PAYG and 1-year savings, and inspect service estimates.' },
-  { id: 'export', title: 'Export a useful artifact', detail: 'Try PowerPoint, Visio, Draw.io, PNG, HTML, workflow Markdown, or JSON.' },
+  { id: 'create', title: '1. Create', detail: 'Choose Guided Chat, Generate Diagram, or Import Existing.' },
+  { id: 'refine', title: '2. Refine', detail: 'Continue in Guided Chat or edit nodes, groups, and connections directly.' },
+  { id: 'validate', title: '3. Validate & Improve', detail: 'Review findings, apply selected changes, and revalidate when the design changes.' },
+  { id: 'deliver', title: '4. Share or Build', detail: 'Export a review artifact or create deployment guidance when the design is ready.' },
 ];
 
 const PATHS = [
   {
     icon: <MessageSquare size={20} />,
     title: 'Start from an idea',
-    label: 'Fastest path',
-    steps: ['Open Chat', 'Describe the outcome and constraints', 'Refine in plain English'],
+    label: 'Recommended for first-time users',
+    steps: ['Open Guided Chat', 'Describe the outcome and constraints', 'Create and refine in one conversation'],
   },
   {
     icon: <ImageIcon size={20} />,
-    title: 'Start from a sketch',
-    label: 'Whiteboard or screenshot',
-    steps: ['Open Generate with AI', 'Upload the image', 'Review the reconstructed services and flows'],
+    title: 'Start from a brief or sketch',
+    label: 'Detailed requirements or image',
+    steps: ['Open Generate Diagram', 'Choose Topology, Blueprint, or both', 'Review, then continue in Guided Chat or on canvas'],
   },
   {
     icon: <FileCode2 size={20} />,
@@ -61,13 +60,13 @@ const PATHS = [
     icon: <Presentation size={20} />,
     title: 'Prepare a review or workshop',
     label: 'Customer-ready flow',
-    steps: ['Generate and correct the concept', 'Validate and inspect cost', 'Export a customer deck or editable artifact'],
+    steps: ['Create and correct the concept', 'Validate and improve iteratively', 'Share a review artifact or build deployment guidance'],
   },
 ];
 
 const CREATE_FEATURES = [
-  { icon: <MessageSquare size={18} />, title: 'Architecture Chat', body: 'Build from empty or refine the current canvas. Existing manual positions are retained during AI modifications, and each change is snapshotted.' },
-  { icon: <Sparkles size={18} />, title: 'Generate with AI', body: 'Choose Topology for an editable canvas, Blueprint for a whiteboard-style PNG, or Both for the two views together.' },
+  { icon: <MessageSquare size={18} />, title: 'Guided Chat', body: 'Best for conversational creation and ongoing refinement. Build from empty or change the current canvas in one thread; existing manual positions are retained during modifications.' },
+  { icon: <Sparkles size={18} />, title: 'Generate Diagram', body: 'Best when you have detailed requirements, an existing sketch, or need explicit output controls. Choose Topology, Blueprint, or Both, then hand off to Guided Chat or canvas review.' },
   { icon: <UploadCloud size={18} />, title: 'Import', body: 'Reconstruct a diagram image, parse Bicep/Terraform/ARM, or sign in to reverse-engineer a live Azure resource group.' },
   { icon: <GitCompare size={18} />, title: 'Compare Models', body: 'Run one prompt across several models, inspect latency/tokens/topology differences, and apply the result you prefer.' },
   { icon: <MousePointer2 size={18} />, title: 'Edit on canvas', body: 'Drag services, resize groups, edit labels, reconnect edges, align selections, and choose a layout preset or edge style.' },
@@ -75,15 +74,15 @@ const CREATE_FEATURES = [
 ];
 
 const ASSESS_FEATURES = [
-  { icon: <ShieldCheck size={18} />, title: 'Well-Architected validation', body: 'Review Cost Optimization, Operational Excellence, Performance Efficiency, Reliability, and Security. Apply selected recommendations to create a new iteration.' },
+  { icon: <ShieldCheck size={18} />, title: 'Well-Architected validation', body: 'Review Cost Optimization, Operational Excellence, Performance Efficiency, Reliability, and Security. Apply selected recommendations, review the resulting iteration, and revalidate after material changes.' },
   { icon: <GitCompare size={18} />, title: 'Compare Validation', body: 'Ask multiple models to review the same architecture, compare findings, and use consensus to separate recurring gaps from model-specific opinions.' },
   { icon: <CircleDollarSign size={18} />, title: 'Cost and region', body: 'Inspect per-service monthly estimates across eight regions and switch between PAYG and 1-year savings. Usage-based values remain indicative.' },
-  { icon: <ClipboardCheck size={18} />, title: 'Validation handoff', body: 'After generation, use Validate now to check readiness before sharing. A concept diagram is still a hypothesis—not an approved production design.' },
+  { icon: <ClipboardCheck size={18} />, title: 'Validation timing', body: 'Review and refine the generated concept first, then use the Validate & Improve journey stage before sharing or building. Revalidate after material changes.' },
 ];
 
 const DELIVER_FEATURES = [
   { icon: <Download size={18} />, title: 'Editable formats', body: 'Use Visio (VSDX), Draw.io, JSON, or interactive HTML when another person needs to continue editing.' },
-  { icon: <Presentation size={18} />, title: 'Presentation formats', body: 'Export PNG, SVG, a PowerPoint slide, or a multi-slide customer architecture deck.' },
+  { icon: <Presentation size={18} />, title: 'Presentation formats', body: 'Export PNG, SVG, a PowerPoint slide, or a customer deck. Use Export background to choose Plain (recommended), Dots, or Grid without changing the editing canvas.' },
   { icon: <Map size={18} />, title: 'Workflow outputs', body: 'Export a Markdown narrative or animated workflow, and use Narrate when the Speech presenter is available.' },
   { icon: <FileCode2 size={18} />, title: 'Deployment Guide', body: 'Generate a Microsoft Learn-grounded runbook and Bicep starters. Review all commands, sizing, identities, and safeguards before deployment.' },
   { icon: <CircleDollarSign size={18} />, title: 'Cost package', body: 'Download CSV or the all-formats ZIP with summaries, analysis, JSON, and multi-region comparison.' },
@@ -211,7 +210,7 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
               <section className="guided-help-section">
                 <p className="guided-help-eyebrow">Your first 10 minutes</p>
                 <h2>Build confidence by completing one full loop</h2>
-                <p className="guided-help-lead">Create, correct, validate, inspect cost, and export. Mark each task as you try it—the checklist is saved in this browser.</p>
+                <p className="guided-help-lead">Follow the same four stages shown in the header. They are recommendations, not gates—you can revisit any stage as the architecture evolves.</p>
                 <div className="guided-help-checklist">
                   {FIRST_TOUR.map((item, index) => {
                     const done = completedTour.has(item.id);
@@ -256,7 +255,9 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
                 <p className="guided-help-eyebrow">FAQ and responsible use</p><h2>Know what the tool does—and what still needs review</h2>
                 <div className="guided-help-faq">
                   <Faq q="Which model should I use?" a="Use the selected default for most work. Compare models when the architecture is consequential or outputs vary. Higher reasoning can improve complex designs but usually takes longer." />
-                  <Faq q="How do I correct an AI result?" a="Use Chat for a targeted change, then edit directly on canvas. Existing positions are preserved during refinements. Version History lets you restore an earlier state." />
+                  <Faq q="What is the difference between Guided Chat and Generate Diagram?" a="Guided Chat is best for conversational creation and repeated refinement. Generate Diagram is best for detailed prompts, uploaded sketches, model selection, and choosing Topology or Blueprint output. Both create an editable result and can continue in Guided Chat." />
+                  <Faq q="How do I remove the dots from an export?" a="Open Export and set Export background to Plain (recommended). You can also choose Dots or Grid. This affects visual exports only; the editing canvas remains dotted." />
+                  <Faq q="How do I correct an AI result?" a="Use Guided Chat for a targeted change, then edit directly on canvas. Existing positions are preserved during refinements. Version History lets you restore an earlier state." />
                   <Faq q="Can I import existing infrastructure?" a="Yes. Import Bicep, Terraform, ARM, an architecture image, or a live Azure resource group. Review inferred connections and unsupported resources." />
                   <Faq q="Are the costs authoritative?" a="No. They are indicative catalog-based estimates. Confirm SKU, quantity, usage, discounts, networking, support, and regional availability in the Azure Pricing Calculator." />
                   <Faq q="Does a WAF score approve the design?" a="No. It is a structured review aid based on visible topology and model context. Validate findings with architects, security, operations, and workload owners." />

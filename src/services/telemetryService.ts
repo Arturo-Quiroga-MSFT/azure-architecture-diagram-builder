@@ -278,9 +278,10 @@ export function trackDeploymentGuide(params: {
 /**
  * Track diagram exports.
  */
-export function trackExport(format: string, serviceCount?: number): void {
+export function trackExport(format: string, serviceCount?: number, background?: 'plain' | 'dots' | 'grid'): void {
   trackEvent('Diagram_Exported', {
     format,
+    background: background || 'not-applicable',
   }, {
     serviceCount: serviceCount ?? 0,
   });
@@ -354,6 +355,26 @@ export function trackVersionOperation(operation: 'save' | 'restore' | 'auto-snap
  */
 export function trackHelpOpened(section?: string): void {
   trackEvent('Help_Opened', section ? { section } : {});
+}
+
+/**
+ * Track interaction with the in-product Create → Refine → Validate → Deliver
+ * journey. Keep values categorical so onboarding funnels remain easy to query.
+ */
+export function trackGuidedJourney(params: {
+  action: 'path-selected' | 'step-selected' | 'post-generation-action';
+  step: 'create' | 'refine' | 'validate' | 'deliver';
+  path?: 'guided-chat' | 'brief-image' | 'template-import' | 'azure-import' | 'canvas' | 'export' | 'deployment-guide';
+  source?: 'first-start' | 'journey-strip' | 'toolbar' | 'generator-success';
+  hasDiagram?: boolean;
+}): void {
+  trackEvent('Guided_Journey', {
+    action: params.action,
+    step: params.step,
+    path: params.path || 'unknown',
+    source: params.source || 'unknown',
+    hasDiagram: String(params.hasDiagram ?? false),
+  });
 }
 
 /**

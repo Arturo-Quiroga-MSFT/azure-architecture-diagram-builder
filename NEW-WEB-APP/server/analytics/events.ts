@@ -16,6 +16,7 @@ export const AADB_EVENTS = [
   'Region_Changed',
   'Start_Fresh',
   'Help_Opened',
+  'Guided_Journey',
   'User_Feedback',
   'Feedback_Persist_Failed',
   'AI_Model_Usage',

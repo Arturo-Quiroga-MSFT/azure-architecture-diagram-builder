@@ -360,7 +360,16 @@ app.post('/api/feedback', async (req, res) => {
 
   const category = typeof body.category === 'string' ? body.category.slice(0, 100) : 'General';
   const comment = typeof body.comment === 'string' ? body.comment.slice(0, 1000) : '';
+  const contactConsent = body.contact?.consent === true;
+  const rawContactEmail = typeof body.contact?.email === 'string' ? body.contact.email.trim() : '';
+  const validContactEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawContactEmail);
+  if (contactConsent && (rawContactEmail.length > 254 || !validContactEmail)) {
+    return res.status(400).json({ error: 'a valid email address is required when contact consent is enabled' });
+  }
   const ctx = body.context && typeof body.context === 'object' ? body.context : {};
+  const createdAt = new Date();
+  const contactExpiresAt = new Date(createdAt);
+  contactExpiresAt.setUTCDate(contactExpiresAt.getUTCDate() + 180);
 
   const item = {
     id: crypto.randomUUID(),
@@ -368,6 +377,15 @@ app.post('/api/feedback', async (req, res) => {
     rating,
     category,
     comment,
+    contact: contactConsent ? {
+      consent: true,
+      email: rawContactEmail.toLowerCase(),
+      consentAt: createdAt.toISOString(),
+      expiresAt: contactExpiresAt.toISOString(),
+      followUpStatus: 'new',
+    } : {
+      consent: false,
+    },
     context: {
       diagramName: typeof ctx.diagramName === 'string' ? ctx.diagramName.slice(0, 200) : '',
       serviceCount: Number.isFinite(Number(ctx.serviceCount)) ? Number(ctx.serviceCount) : 0,
@@ -375,7 +393,7 @@ app.post('/api/feedback', async (req, res) => {
       url: typeof ctx.url === 'string' ? ctx.url.slice(0, 500) : '',
       userAgent: typeof ctx.userAgent === 'string' ? ctx.userAgent.slice(0, 500) : '',
     },
-    createdAt: new Date().toISOString(),
+    createdAt: createdAt.toISOString(),
   };
 
   try {
@@ -417,7 +435,7 @@ app.get('/api/feedback/list', async (req, res) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 1000);
   try {
     const { resources } = await container.items
-      .query('SELECT c.id, c.rating, c.category, c.comment, c.context, c.createdAt FROM c ORDER BY c.createdAt DESC')
+      .query('SELECT c.id, c.rating, c.category, c.comment, c.contact, c.context, c.createdAt FROM c ORDER BY c.createdAt DESC')
       .fetchAll();
     res.json({ count: Math.min(resources.length, limit), items: resources.slice(0, limit) });
   } catch (err) {

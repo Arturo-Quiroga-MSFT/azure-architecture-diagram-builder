@@ -50,14 +50,18 @@ echo "$BODY" | jq -r '
   + "Rating breakdown:\n"
   + ([ $items[] | (.rating // .stars // "n/a") | tostring ]
        | group_by(.) | map("  \(.[0])★: \(length)") | sort | join("\n"))
-  + "\n\nComments:\n"
+  + "\n\nComments and follow-up requests:\n"
   + ([ $items[]
-       | select((.comment // .message // .text // "") | gsub("^\\s+|\\s+$";"") | length > 0)
+       | select(
+           ((.comment // .message // .text // "") | gsub("^\\s+|\\s+$";"") | length > 0)
+           or (.contact.consent == true and ((.contact.email // "") | length > 0))
+         )
        | "─────────────────────────────────────\n"
          + "  rating: \(.rating // .stars // "n/a")★"
          + (if .context.model then "  |  model: \(.context.model)" else "" end)
          + (if .context.diagramName then "  |  diagram: \(.context.diagramName)" else "" end)
          + (if (.createdAt // .timestamp // ._ts) then "  |  when: \(.createdAt // .timestamp // ._ts)" else "" end)
-         + "\n  \(.comment // .message // .text)"
-     ] | if length == 0 then "  (no written comments — all entries are quick star ratings)" else join("\n") end)
+         + "\n  \(if ((.comment // .message // .text // "") | gsub("^\\s+|\\s+$";"") | length > 0) then (.comment // .message // .text) else "(no written comment)" end)"
+         + (if .contact.consent and .contact.email then "\n  follow-up: \(.contact.followUpStatus // "new")  |  email: \(.contact.email)  |  expires: \(.contact.expiresAt // "n/a")" else "" end)
+       ] | if length == 0 then "  (no written comments or follow-up requests)" else join("\n") end)
 '

@@ -38,7 +38,7 @@ DB_EVENTS = (
     'customEvents | where name in ("Architecture_Generated","Architecture_Validated",'
     '"DeploymentGuide_Generated","Diagram_Exported","Template_Imported",'
     '"ARM_Template_Imported","Image_Imported","Models_Compared","Recommendations_Applied",'
-    '"Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage","User_Feedback")'
+    '"Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage","Guided_Journey","User_Feedback")'
 )
 
 # Pretty labels for feature event names
@@ -55,6 +55,7 @@ FEATURE_LABELS = {
     "Version_Operation": "Version operation",
     "Recommendations_Applied": "Recommendations applied",
     "User_Feedback": "User feedback",
+    "Guided_Journey": "Guided journey",
     "Template_Imported": "Template imported",
 }
 # Features to plot in the "feature growth over time" multi-line chart

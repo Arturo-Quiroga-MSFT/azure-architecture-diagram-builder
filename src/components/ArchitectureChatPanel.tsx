@@ -286,11 +286,11 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="arch-chat-panel" role="complementary" aria-label="Architecture chat">
+    <div className="arch-chat-panel" role="complementary" aria-label="Guided Chat">
       <div className="arch-chat-header">
         <div className="arch-chat-title">
           <MessageSquare size={18} />
-          <span>Architecture Chat</span>
+          <span>Guided Chat</span>
         </div>
         <button className="arch-chat-close" onClick={onClose} title="Close chat" aria-label="Close chat">
           <X size={18} />

@@ -14,6 +14,7 @@
     "pricing:refresh": "cd scripts && bash fetch-multi-region-pricing.sh",
     "test:arm": "node scripts/test-arm-extractor.mjs",
     "test:layout-preservation": "tsx scripts/test-layout-preservation.ts",
+    "test:validation-freshness": "tsx scripts/test-validation-freshness.ts",
     "test:service-names": "tsx scripts/test-service-name-normalization.ts",
     "mcp:build": "cd mcp-server && npm run build",
     "mcp:start": "node mcp-server/dist/index.js"

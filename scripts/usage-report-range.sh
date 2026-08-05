@@ -33,7 +33,7 @@ SPAN_DAYS=$(( (NOW_EPOCH - START_EPOCH) / 86400 + 2 ))
 OFFSET="${SPAN_DAYS}d"
 
 # Diagram-builder events only (filter out Foundry agent traces that share this App Insights)
-DB_EVENTS='customEvents | where name in ("Architecture_Generated","Architecture_Validated","DeploymentGuide_Generated","Diagram_Exported","Template_Imported","ARM_Template_Imported","Image_Imported","Models_Compared","Recommendations_Applied","Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage","User_Feedback")'
+DB_EVENTS='customEvents | where name in ("Architecture_Generated","Architecture_Validated","DeploymentGuide_Generated","Diagram_Exported","Template_Imported","ARM_Template_Imported","Image_Imported","Models_Compared","Recommendations_Applied","Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage","Guided_Journey","User_Feedback")'
 # KQL fragment for the window (inclusive start, exclusive end)
 WIN="between (datetime(${START}) .. datetime(${END}))"
 
@@ -181,8 +181,9 @@ customEvents
 run_kql "Export formats" "
 customEvents
 | where timestamp $WIN and name == 'Diagram_Exported'
-| extend fmt = tostring(customDimensions.format)
-| summarize Exports = count(), Users = dcount(user_Id) by fmt
+| extend fmt = tostring(customDimensions.format),
+         background = iff(isempty(tostring(customDimensions.background)), 'legacy/unknown', tostring(customDimensions.background))
+| summarize Exports = count(), Users = dcount(user_Id) by fmt, background
 | order by Exports desc
 "
 
@@ -192,6 +193,18 @@ customEvents
 | extend fmt = tostring(customDimensions.format)
 | summarize Imports = count(), Users = dcount(user_Id) by fmt
 | order by Imports desc
+"
+
+run_kql "Guided journey — steps and paths" "
+customEvents
+| where timestamp $WIN and name == 'Guided_Journey'
+| extend Action = tostring(customDimensions.action),
+     Step   = tostring(customDimensions.step),
+     Path   = tostring(customDimensions.path),
+     Source = tostring(customDimensions.source)
+| summarize Events = count(), Users = dcount(user_Id), Sessions = dcount(session_Id)
+  by Step, Action, Path, Source
+| order by Step asc, Events desc
 "
 
 run_kql "Monthly active users + events" "

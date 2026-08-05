@@ -36,6 +36,12 @@ const modeRequiresOpenAI = (m: GenerationMode): boolean =>
 
 interface AIArchitectureGeneratorProps {
   onGenerate: (architecture: any, prompt: string, autoSnapshot: boolean, referenceImageUrl?: string) => void;
+  /** Increment to open the modal from another in-product journey control. */
+  openSignal?: number;
+  onOpen?: () => void;
+  onContinueInChat?: () => void;
+  onReview?: () => void;
+  onValidate?: () => void;
   /**
    * Called when a Reference Architecture has been generated. Reference mode
    * intentionally does NOT push a topology onto the canvas (the transformed
@@ -56,7 +62,17 @@ interface AIArchitectureGeneratorProps {
   };
 }
 
-const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGenerate, onReferenceArchitecture, onBlueprintArchitecture, currentArchitecture }) => {
+const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
+  onGenerate,
+  openSignal,
+  onOpen,
+  onContinueInChat,
+  onReview,
+  onValidate,
+  onReferenceArchitecture,
+  onBlueprintArchitecture,
+  currentArchitecture,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -88,6 +104,20 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     setMode(m);
     localStorage.setItem('aiGenerator.mode', m);
   };
+
+  const openGenerator = () => {
+    setIsOpen(true);
+    setError('');
+    setImageAnalyzed(false);
+    onOpen?.();
+  };
+
+  useEffect(() => {
+    if (openSignal && openSignal > 0) openGenerator();
+    // `openSignal` is intentionally the only trigger; callbacks/state should
+    // not reopen the modal by themselves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openSignal]);
 
   // Pending auto-close timer. Tracked in a ref so we can cancel it when the
   // user starts typing a modification or regenerates (which previously stacked
@@ -475,16 +505,11 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
     <>
       <button
         className="btn btn-ai btn-generate-ai"
-        onClick={() => {
-          setIsOpen(true);
-          // Reset state when opening modal
-          setError('');
-          setImageAnalyzed(false);
-        }}
-        title="Generate architecture with AI"
+        onClick={openGenerator}
+        title="Generate a diagram from detailed requirements or an uploaded image"
       >
         <Sparkles size={18} />
-        Generate with AI
+        Generate Diagram
       </button>
 
       {isOpen && (
@@ -493,7 +518,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
             <div className="modal-header">
               <div className="modal-title">
                 <Sparkles size={20} />
-                <h2>AI Architecture Generator</h2>
+                <h2>Generate Diagram</h2>
               </div>
               <button className="modal-close" onClick={() => setIsOpen(false)}>
                 <X size={20} />
@@ -511,15 +536,15 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
                 ) : mode === 'both' ? (
                   <>Generate <strong>both</strong> a deployable topology (on the canvas) and a whiteboard-style blueprint (PNG) from the same prompt. Useful when you want a working diagram to edit and a polished visual to share.</>
                 ) : (
-                  <>Describe your Azure architecture in plain English, and AI will automatically
-                  generate a diagram with the appropriate services and connections.
+                  <>Use this path when you have a detailed brief, want to upload a diagram, or need
+                  explicit Topology / Blueprint controls. AI will generate the services and connections.
                   You can also <strong>upload an existing diagram</strong> (screenshot, whiteboard photo, or export from other tools)
-                  and AI will analyze it to create your architecture.</>
+                  and AI will analyze it to create your architecture. After generation, continue refining in <strong>Guided Chat</strong> or on the canvas.</>
                 )}
               </p>
 
               <div className="form-group">
-                <label htmlFor="architecture-description">Architecture Description or Modification</label>
+                <label htmlFor="architecture-description">Architecture brief or targeted modification</label>
                 <textarea
                   id="architecture-description"
                   className="form-textarea"
@@ -529,6 +554,10 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
                   value={description}
                   onChange={(e) => {
                     setDescription(e.target.value);
+                    // If the user chooses to edit the brief after a successful
+                    // run, restore the Generate action instead of leaving the
+                    // modal in its success-only state.
+                    if (aiMetrics) setAiMetrics(null);
                     // Typing a modification cancels the pending auto-close so
                     // the modal doesn't disappear mid-edit.
                     cancelAutoClose();
@@ -558,17 +587,31 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({ onGen
               )}
 
               {aiMetrics && (
-                <div className="similar-architectures">
-                  <h3>✓ Architecture generated successfully!</h3>
-                  <div className="ai-metrics">
-                    <span className="metric">
-                      <Clock size={14} />
-                      {(aiMetrics.elapsedTimeMs / 1000).toFixed(1)}s
-                    </span>
-                    <span className="metric">
-                      <Zap size={14} />
-                      {aiMetrics.promptTokens.toLocaleString()} in → {aiMetrics.completionTokens.toLocaleString()} out ({aiMetrics.totalTokens.toLocaleString()} total)
-                    </span>
+                <div className="generator-success-panel">
+                  <div className="similar-architectures">
+                    <h3>✓ Diagram created — review it before validation</h3>
+                    <div className="ai-metrics">
+                      <span className="metric">
+                        <Clock size={14} />
+                        {(aiMetrics.elapsedTimeMs / 1000).toFixed(1)}s
+                      </span>
+                      <span className="metric">
+                        <Zap size={14} />
+                        {aiMetrics.promptTokens.toLocaleString()} in → {aiMetrics.completionTokens.toLocaleString()} out ({aiMetrics.totalTokens.toLocaleString()} total)
+                      </span>
+                    </div>
+                  </div>
+                  <p>Recommended next: correct the diagram in Guided Chat or on the canvas, then validate it.</p>
+                  <div className="generator-success-actions">
+                    <button type="button" className="btn btn-primary" onClick={() => { cancelAutoClose(); setIsOpen(false); onContinueInChat?.(); }}>
+                      Continue in Guided Chat
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={() => { cancelAutoClose(); setIsOpen(false); onReview?.(); }}>
+                      Review on Canvas
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={() => { cancelAutoClose(); setIsOpen(false); onValidate?.(); }}>
+                      Validate Now
+                    </button>
                   </div>
                 </div>
               )}

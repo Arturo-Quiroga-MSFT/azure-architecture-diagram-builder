@@ -23,6 +23,8 @@
 
 import { toPng, toSvg } from 'html-to-image';
 
+export type ExportBackground = 'plain' | 'dots' | 'grid';
+
 // ─── SVG edge pre-inlining ────────────────────────────────────────────────────
 
 /** Presentation attributes we forcibly inline before capture. */
@@ -116,6 +118,12 @@ export interface CaptureOptions {
    * "clean" exports (SVG, PPTX) where UI panels would be noise.
    */
   excludePanels?: boolean;
+  /**
+   * Background pattern for the exported artifact. The live React Flow canvas
+   * remains dotted; this controls only the cloned capture output.
+   * Defaults to `plain` for presentation-ready exports.
+   */
+  exportBackground?: ExportBackground;
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -125,6 +133,26 @@ function makeFilter(excludeClasses: string[]) {
     if (!node.classList) return true;
     return !excludeClasses.some((cls) => node.classList.contains(cls));
   };
+}
+
+function captureStyle(exportBackground: ExportBackground): Partial<CSSStyleDeclaration> {
+  if (exportBackground !== 'grid') return {};
+  return {
+    backgroundImage: [
+      'linear-gradient(rgba(96, 165, 250, 0.24) 1px, transparent 1px)',
+      'linear-gradient(90deg, rgba(96, 165, 250, 0.24) 1px, transparent 1px)',
+    ].join(', '),
+    backgroundSize: '20px 20px',
+    backgroundPosition: '0 0',
+  };
+}
+
+function captureClasses(options: CaptureOptions): string[] {
+  const classes = options.excludePanels ? [...PANEL_CLASSES] : [...UI_CHROME_CLASSES];
+  if ((options.exportBackground ?? 'plain') !== 'dots') {
+    classes.push('react-flow__background');
+  }
+  return classes;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -139,7 +167,8 @@ export async function captureDiagramAsPng(
   element: HTMLElement,
   options: CaptureOptions,
 ): Promise<string> {
-  const excludeClasses = options.excludePanels ? PANEL_CLASSES : UI_CHROME_CLASSES;
+  const exportBackground = options.exportBackground ?? 'plain';
+  const excludeClasses = captureClasses(options);
   const restore = prepareEdgesForCapture(element);
 
   try {
@@ -147,6 +176,7 @@ export async function captureDiagramAsPng(
       backgroundColor: options.backgroundColor,
       pixelRatio: options.pixelRatio ?? 2,
       filter: makeFilter(excludeClasses),
+      style: captureStyle(exportBackground),
       imagePlaceholder:
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     });
@@ -165,7 +195,8 @@ export async function captureDiagramAsSvg(
   element: HTMLElement,
   options: CaptureOptions,
 ): Promise<string> {
-  const excludeClasses = options.excludePanels ? PANEL_CLASSES : UI_CHROME_CLASSES;
+  const exportBackground = options.exportBackground ?? 'plain';
+  const excludeClasses = captureClasses(options);
   const restore = prepareEdgesForCapture(element);
 
   try {
@@ -173,6 +204,7 @@ export async function captureDiagramAsSvg(
       backgroundColor: options.backgroundColor,
       pixelRatio: options.pixelRatio ?? 2,
       filter: makeFilter(excludeClasses),
+      style: captureStyle(exportBackground),
       imagePlaceholder:
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     });

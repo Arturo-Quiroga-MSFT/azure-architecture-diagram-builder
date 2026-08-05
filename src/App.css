@@ -136,6 +136,13 @@
   min-width: 260px;
 }
 
+.toolbar-dropdown-menu--export {
+  left: auto;
+  right: 0;
+  min-width: 400px;
+  max-width: min(440px, calc(100vw - 32px));
+}
+
 .toolbar-dropdown-heading {
   font-size: 0.8rem;
   font-weight: 700;
@@ -206,6 +213,10 @@
 
 .toolbar-dropdown-row .toolbar-dropdown-select {
   width: 150px;
+}
+
+.toolbar-dropdown-menu--export .toolbar-dropdown-select {
+  width: 220px;
 }
 
 .toolbar-dropdown-checkbox {
@@ -1242,19 +1253,12 @@ body.dark-mode .react-flow__handle.valid {
   box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.5);
 }
 
-/* ── Toolbar UX quick-wins (prototype — branch ux/toolbar-quick-wins) ─────────
-   Reduce top-bar visual noise: neutralize the rainbow of gradient/pulsing accent
-   buttons (Chat, Help, Compare Models, Validate, Deployment Guide, Compare
-   Validation) so the single primary action — "Generate with AI" — plus "Export"
-   clearly stand out. Buttons keep their labels, icons and hover affordance; only
-   the loud colors and attention-grabbing pulse animations are removed.
-   To revert the experiment, delete this block. */
+/* Keep supporting toolbar actions neutral so the two creation paths remain
+  distinct without competing animations or oversized typography. */
 .btn-compare-models,
-.btn-ai-chat,
 .btn-help,
 .btn-premium,
 body.dark-mode .btn-compare-models,
-body.dark-mode .btn-ai-chat,
 body.dark-mode .btn-help,
 body.dark-mode .btn-premium {
   background: rgba(255, 255, 255, 0.2);
@@ -1265,7 +1269,6 @@ body.dark-mode .btn-premium {
 }
 
 .btn-compare-models:hover,
-.btn-ai-chat:hover,
 .btn-help:hover,
 .btn-premium:hover,
 body.dark-mode .btn-compare-models:hover,
@@ -1277,21 +1280,37 @@ body.dark-mode .btn-premium:hover {
   animation: none;
 }
 
-/* Clear "on" state for the Chat toggle: a purple AI accent so it's obvious the
-   panel is open (and that clicking again closes it), without turning the
-   resting button into a loud gradient. The dark-mode selector is repeated so
-   it out-specifies the flat `body.dark-mode .btn-ai-chat` reset above. */
+.btn-ai-chat,
+body.dark-mode .btn-ai-chat {
+  background: #0078d4;
+  color: #fff;
+  border: 1px solid #4da3e2;
+  box-shadow: none;
+  animation: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+}
+
+.btn-ai-chat:hover,
+body.dark-mode .btn-ai-chat:hover {
+  background: #106ebe;
+  border-color: #75b7e8;
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
 .btn-ai-chat.active,
 body.dark-mode .btn-ai-chat.active {
-  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
-  border-color: rgba(196, 181, 253, 0.95);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(139, 92, 246, 0.55);
+  background: #005a9e;
+  border-color: #8ac4ed;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(77, 163, 226, 0.45);
   color: #fff;
 }
 .btn-ai-chat.active:hover,
 body.dark-mode .btn-ai-chat.active:hover {
-  background: linear-gradient(135deg, #6D28D9 0%, #4338CA 100%);
-  border-color: rgba(196, 181, 253, 1);
+  background: #004578;
+  border-color: #a6d4f5;
 }
 
 /* drop the first-run Help pulse and the premium shimmer overlay */

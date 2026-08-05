@@ -14,6 +14,14 @@ export interface FeedbackInput {
   category: string;
   comment: string;
   context?: FeedbackContext;
+  contact?: {
+    consent: boolean;
+    email?: string;
+  };
+}
+
+export interface FeedbackSubmitResult {
+  persisted: boolean;
 }
 
 /** sessionStorage key set once feedback has been given, to suppress re-prompting. */
@@ -27,8 +35,9 @@ export const FEEDBACK_DONE_KEY = 'aqdb_feedback_done';
  * Never throws — a storage hiccup must not block the user. The rating is always
  * captured in telemetry first.
  */
-export async function submitFeedback(input: FeedbackInput): Promise<void> {
+export async function submitFeedback(input: FeedbackInput): Promise<FeedbackSubmitResult> {
   const comment = (input.comment || '').trim();
+  const contactEmail = input.contact?.consent ? (input.contact.email || '').trim() : '';
 
   // Always record sentiment in App Insights, independent of durable storage.
   trackFeedback({
@@ -42,6 +51,10 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
     rating: input.rating,
     category: input.category,
     comment,
+    contact: {
+      consent: input.contact?.consent === true,
+      email: contactEmail,
+    },
     context: {
       diagramName: input.context?.diagramName ?? '',
       serviceCount: input.context?.serviceCount ?? 0,
@@ -71,6 +84,7 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
         reason: `http_${res.status}`,
       });
     }
+    return { persisted: res.ok };
   } catch (err) {
     console.error('[feedback] submit failed:', err);
     // Network error reaching the proxy/Cosmos — preserve the comment in telemetry.
@@ -84,6 +98,7 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
         reason: 'network_error',
       });
     }
+    return { persisted: false };
   } finally {
     try {
       sessionStorage.setItem(FEEDBACK_DONE_KEY, '1');

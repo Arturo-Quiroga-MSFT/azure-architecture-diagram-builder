@@ -24,7 +24,7 @@ async function main() {
   const container = client.database(DATABASE_ID).container(CONTAINER_ID);
 
   const { resources } = await container.items
-    .query('SELECT c.id, c.rating, c.category, c.comment, c.context, c.createdAt FROM c ORDER BY c.createdAt DESC')
+    .query('SELECT c.id, c.rating, c.category, c.comment, c.contact, c.context, c.createdAt FROM c ORDER BY c.createdAt DESC')
     .fetchAll();
 
   if (asJson) {
@@ -41,6 +41,9 @@ async function main() {
     console.log(`   "${r.comment && r.comment.trim() ? r.comment : '(no comment)'}"`);
     if (r.context && (r.context.model || r.context.diagramName)) {
       console.log(`   ↳ model=${r.context.model || '-'}  diagram=${r.context.diagramName || '-'}  services=${r.context.serviceCount ?? '-'}`);
+    }
+    if (r.contact?.consent && r.contact.email) {
+      console.log(`   ↳ follow-up=${r.contact.followUpStatus || 'new'}  email=${r.contact.email}  expires=${r.contact.expiresAt || '-'}`);
     }
   }
   console.log('─'.repeat(72));

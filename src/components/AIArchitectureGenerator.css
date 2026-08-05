@@ -1,112 +1,46 @@
 .btn-ai {
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: #7c3aed;
   color: white;
-  border: none;
-  box-shadow:
-    0 0 0 rgba(139, 92, 246, 0),
-    0 0 0 rgba(236, 72, 153, 0);
-  animation: ai-button-glow 1.6s ease-in-out infinite;
+  border: 1px solid #a78bfa;
+  box-shadow: none;
+  animation: none;
 }
 
 .btn-ai:hover {
-  background: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
+  background: #6d28d9;
   transform: translateY(-1px);
 }
 
-/* Generate Architecture button with prominent pulsating effect */
 .btn-generate-ai {
-  font-size: 1.125rem !important;
-  font-weight: 600 !important;
-  padding: 0.875rem 1.5rem !important;
-  animation: ai-generate-pulse 2s ease-in-out infinite;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.5rem 1rem !important;
+  animation: none;
   position: relative;
 }
 
 .btn-generate-ai::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: inherit;
-  padding: 4px;
-  background: linear-gradient(135deg, #8B5CF6, #EC4899);
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  animation: ai-ring-pulse 2s ease-in-out infinite;
-  pointer-events: none;
+  display: none;
 }
 
 .btn-generate-ai svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 .btn-generate-ai:not(:disabled) {
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%) !important;
-  border: none !important;
-  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.39);
+  background: #7c3aed !important;
+  border: 1px solid #a78bfa !important;
+  box-shadow: none;
 }
 
 .btn-generate-ai:not(:disabled):hover {
-  background: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%) !important;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px 0 rgba(139, 92, 246, 0.5);
-}
-
-@keyframes ai-ring-pulse {
-  0%, 100% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.15);
-  }
-}
-
-@keyframes ai-generate-pulse {
-  0%, 100% {
-    box-shadow:
-      0 4px 14px 0 rgba(139, 92, 246, 0.39),
-      0 0 0 0 rgba(139, 92, 246, 0),
-      0 0 30px 0 rgba(236, 72, 153, 0);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow:
-      0 4px 14px 0 rgba(139, 92, 246, 0.39),
-      0 0 0 8px rgba(139, 92, 246, 0.25),
-      0 0 30px 8px rgba(236, 72, 153, 0.35);
-    transform: scale(1.02);
-  }
-}
-
-@keyframes ai-button-glow {
-  0%, 100% {
-    box-shadow:
-      0 0 0 rgba(139, 92, 246, 0),
-      0 0 0 rgba(236, 72, 153, 0);
-  }
-  50% {
-    box-shadow:
-      0 0 12px rgba(139, 92, 246, 0.65),
-      0 0 22px rgba(236, 72, 153, 0.55);
-  }
+  background: #6d28d9 !important;
+  transform: translateY(-1px);
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-ai,
-  .btn-generate-ai {
-    animation: none;
-  }
-  
-  .btn-generate-ai::before {
-    animation: none;
-  }
-  
   .btn-generate-ai:not(:disabled):hover {
     transform: none;
   }
@@ -494,6 +428,48 @@ body.dark-mode .ai-architecture-modal .modal-col-left .image-uploader-header {
   background: #f0f9ff;
   border: 1px solid #0078d4;
   border-radius: 8px;
+}
+
+.generator-success-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px solid #b8d6c5;
+  border-radius: 7px;
+  background: #f1faf5;
+}
+
+.generator-success-panel .similar-architectures {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.generator-success-panel p {
+  margin: 0;
+  color: #425168;
+  font-size: 0.82rem;
+}
+
+.generator-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.generator-success-actions .btn {
+  min-height: 34px;
+}
+
+body.dark-mode .generator-success-panel {
+  background: #1f352c;
+  border-color: #416b58;
+}
+
+body.dark-mode .generator-success-panel p {
+  color: #c5d3cb;
 }
 
 .similar-architectures h3 {
