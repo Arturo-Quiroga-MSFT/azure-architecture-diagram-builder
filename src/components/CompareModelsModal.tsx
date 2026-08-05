@@ -711,7 +711,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
             </div>
             <div className="compare-sample-prompts">
               {[
-                'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
+                'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Azure AI Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
                 'An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication',
                 'A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability'
               ].map((sample) => (

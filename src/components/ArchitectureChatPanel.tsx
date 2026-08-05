@@ -42,7 +42,7 @@ const STARTER_SUGGESTIONS = [
 // see the tool's ceiling.
 const ADVANCED_STARTER_SUGGESTIONS = [
   'Multi-region active-active e-commerce platform: Front Door, AKS in paired regions, geo-replicated Cosmos DB, and Service Bus for order events',
-  'HIPAA-compliant healthcare data platform: private-endpoint ingestion, AKS clinical workloads, Azure API for FHIR, and Purview governance',
+  'HIPAA-compliant healthcare data platform: private-endpoint ingestion, AKS clinical workloads, Azure Health Data Services FHIR service, and Purview governance',
   'Enterprise landing zone: hub-and-spoke with Azure Firewall, Bastion, private DNS zones, and centralized Log Analytics',
   'Real-time fraud detection: Event Hubs to Stream Analytics to Azure ML scoring to Cosmos DB, with Event Grid alerting',
   'RAG knowledge platform: Azure OpenAI + AI Search + Cosmos DB, ingestion via Functions, all behind private endpoints with Entra ID',

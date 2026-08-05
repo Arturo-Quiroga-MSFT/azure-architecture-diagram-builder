@@ -769,7 +769,7 @@ Icon category mapping (MUST use these exact values):
 - "networking": Virtual Network, Application Gateway, Load Balancer, VPN Gateway
 - "compute": Virtual Machines, VM Scale Sets, Batch, Container Instances
 - "containers": Container Registry, Kubernetes Service (AKS)
-- "ai + machine learning": Machine Learning, Cognitive Services, OpenAI
+- "ai + machine learning": Machine Learning, Foundry Tools, Azure AI Document Intelligence, Azure AI Search, OpenAI
 - "analytics": Stream Analytics, Data Factory, Synapse Analytics, Event Hubs
 - "identity": Active Directory, Key Vault, Managed Identity
 - "monitor": Monitor, Application Insights, Log Analytics
@@ -802,7 +802,7 @@ ARM Resource Type to Service Mapping:
 - Microsoft.Insights/components → Application Insights (monitor)
 - Microsoft.ServiceBus/namespaces → Service Bus (integration)
 - Microsoft.EventGrid/topics → Event Grid (integration)
-- Microsoft.CognitiveServices/accounts → Cognitive Services (ai + machine learning)
+- Microsoft.CognitiveServices/accounts → Foundry Tools (ai + machine learning)
 - Microsoft.MachineLearningServices/workspaces → Machine Learning (ai + machine learning)
 
 Instructions:
@@ -856,7 +856,7 @@ Bicep Resource Type to Service Mapping (the API version after @ should be ignore
 - Microsoft.ServiceBus/namespaces → Service Bus (integration)
 - Microsoft.EventGrid/topics → Event Grid (integration)
 - Microsoft.EventHub/namespaces → Event Hubs (analytics)
-- Microsoft.CognitiveServices/accounts → Cognitive Services (ai + machine learning)
+- Microsoft.CognitiveServices/accounts → Foundry Tools (ai + machine learning)
 - Microsoft.MachineLearningServices/workspaces → Machine Learning (ai + machine learning)
 - Microsoft.Search/searchServices → Azure AI Search (ai + machine learning)
 - Microsoft.SignalRService/signalR → SignalR (web)
@@ -916,7 +916,7 @@ Terraform AzureRM Resource Type to Service Mapping:
 - azurerm_servicebus_namespace → Service Bus (integration)
 - azurerm_eventgrid_topic → Event Grid (integration)
 - azurerm_eventhub_namespace → Event Hubs (analytics)
-- azurerm_cognitive_account → Cognitive Services (ai + machine learning)
+- azurerm_cognitive_account → Foundry Tools (ai + machine learning)
 - azurerm_machine_learning_workspace → Machine Learning (ai + machine learning)
 - azurerm_search_service → Azure AI Search (ai + machine learning)
 - azurerm_signalr_service → SignalR (web)

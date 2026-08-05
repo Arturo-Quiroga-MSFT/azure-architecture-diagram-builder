@@ -61,6 +61,8 @@ let currentRegion: AzureRegion = 'eastus2';
 const AI_SERVICE_PRODUCT_MAP: Record<string, { file: string; productName: string; defaultSku?: string }> = {
   'Azure OpenAI': { file: 'foundry_models', productName: 'Azure OpenAI', defaultSku: 'gpt4omini' },
   'OpenAI': { file: 'foundry_models', productName: 'Azure OpenAI', defaultSku: 'gpt4omini' },
+  'Azure AI Document Intelligence': { file: 'foundry_tools', productName: 'Azure Document Intelligence', defaultSku: 'Standard' },
+  'Azure Document Intelligence': { file: 'foundry_tools', productName: 'Azure Document Intelligence', defaultSku: 'Standard' },
   'Document Intelligence': { file: 'foundry_tools', productName: 'Azure Document Intelligence', defaultSku: 'Standard' },
   'Form Recognizer': { file: 'foundry_tools', productName: 'Form Recognizer', defaultSku: 'Standard' },
   'Language': { file: 'foundry_tools', productName: 'Azure Language', defaultSku: 'Standard' },
@@ -294,7 +296,7 @@ export function getAvailableServices(_region: AzureRegion): string[] {
     'Container Instances',
     'Application Gateway',
     'Azure Machine Learning',
-    'Azure Cognitive Search',
+    'Azure AI Search',
   ];
 }
 

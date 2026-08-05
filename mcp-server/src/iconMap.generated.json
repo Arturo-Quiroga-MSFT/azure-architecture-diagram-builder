@@ -29,11 +29,13 @@
       "AI Hub"
     ]
   },
-  "Cognitive Services": {
+  "Foundry Tools": {
     "iconFile": "cognitive-services",
     "category": "ai + machine learning",
     "aliases": [
+      "Azure AI Services",
       "Azure Cognitive Services",
+      "Cognitive Services",
       "Cognitive Service"
     ]
   },
@@ -86,13 +88,14 @@
       "NLP"
     ]
   },
-  "Document Intelligence": {
+  "Azure AI Document Intelligence": {
     "iconFile": "document-intelligence",
     "category": "ai + machine learning",
     "aliases": [
+      "Document Intelligence",
       "Form Recognizer",
+      "Azure Form Recognizer",
       "Azure Document Intelligence",
-      "Azure AI Document Intelligence",
       "Form Processing"
     ]
   },
@@ -169,10 +172,11 @@
       "Batch Compute (auto-scale)"
     ]
   },
-  "Azure Cognitive Search": {
+  "Azure AI Search": {
     "iconFile": "azure-cognitive-search",
     "category": "ai + machine learning",
     "aliases": [
+      "Azure Cognitive Search",
       "Cognitive Search",
       "Azure Search",
       "AI Search"
@@ -663,14 +667,15 @@
       "Private DNS"
     ]
   },
-  "Azure API for FHIR": {
+  "Azure Health Data Services FHIR service": {
     "iconFile": "10212-icon-service-Azure-API-for-FHIR",
     "category": "integration",
     "aliases": [
+      "Azure API for FHIR",
       "FHIR",
-      "Azure Health Data Services",
-      "Health Data Services",
-      "FHIR Service"
+      "FHIR Service",
+      "Azure Health Data Services FHIR",
+      "Azure FHIR service"
     ]
   },
   "Microsoft Purview": {

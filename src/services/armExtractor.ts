@@ -84,7 +84,7 @@ const ARM_TYPE_MAP: Record<string, ServiceMeta> = {
   'microsoft.synapse/workspaces': { name: 'Synapse Analytics', category: 'analytics' },
   'microsoft.devices/iothubs': { name: 'IoT Hub', category: 'iot' },
   // AI + ML
-  'microsoft.cognitiveservices/accounts': { name: 'Cognitive Services', category: 'ai + machine learning' },
+  'microsoft.cognitiveservices/accounts': { name: 'Foundry Tools', category: 'ai + machine learning' },
   'microsoft.machinelearningservices/workspaces': { name: 'Machine Learning', category: 'ai + machine learning' },
   'microsoft.search/searchservices': { name: 'Azure AI Search', category: 'ai + machine learning' },
 };
@@ -215,13 +215,13 @@ function flattenResources(resources: any[], paramMap: ParamMap, parentName = '')
 }
 
 /**
- * Refine a mapped service by the resource `kind` (currently Cognitive Services,
- * whose `kind` distinguishes OpenAI / Document Intelligence / AI Services).
+ * Refine a mapped service by the resource `kind` (currently Foundry Tools,
+ * whose provider also hosts OpenAI and Document Intelligence resources).
  */
 function refineByKind(armType: string, kind: string, meta: ServiceMeta): ServiceMeta {
   if (armType === 'microsoft.cognitiveservices/accounts') {
     if (kind === 'openai') return { name: 'Azure OpenAI', category: 'ai + machine learning' };
-    if (kind === 'formrecognizer') return { name: 'Document Intelligence', category: 'ai + machine learning' };
+    if (kind === 'formrecognizer') return { name: 'Azure AI Document Intelligence', category: 'ai + machine learning' };
   }
   return meta;
 }

@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { SERVICE_ICON_MAP } from '../data/serviceIconMapping';
+
 export interface AzureIcon {
   id: string;
   name: string;
   category: string;
   path: string;
+  searchTerms?: string[];
 }
 
 export const iconCategories = [
@@ -41,6 +44,39 @@ export const iconCategories = [
   'web',
 ];
 
+// The Azure architecture icon pack retains filenames from older product
+// brands. Keep the SVG assets, but never surface retired names in the palette.
+// Prefer the curated replacement assets and suppress the duplicate legacy
+// glyphs that would otherwise appear beside them.
+const iconDisplayNameOverrides: Record<string, string> = {
+  '02658-icon-service-FHIR-Service': 'Azure Health Data Services FHIR service',
+  'azure-cognitive-search': 'Azure AI Search',
+  'cognitive-services': 'Foundry Tools',
+  'document-intelligence': 'Azure AI Document Intelligence',
+};
+
+const supersededIconFiles = new Set([
+  '10212-icon-service-Azure-API-for-FHIR',
+  '10044-icon-service-Cognitive-Search',
+  '10162-icon-service-Cognitive-Services',
+  '00819-icon-service-Form-Recognizers',
+]);
+
+export function getCurrentIconDisplayName(iconFile: string, derivedName: string): string {
+  return iconDisplayNameOverrides[iconFile] || derivedName;
+}
+
+export function isSupersededIconFile(iconFile: string): boolean {
+  return supersededIconFiles.has(iconFile);
+}
+
+export function matchesIconSearch(icon: AzureIcon, term: string): boolean {
+  const normalized = term.trim().toLowerCase();
+  if (!normalized) return true;
+  return [icon.name, ...(icon.searchTerms || [])]
+    .some(value => value.toLowerCase().includes(normalized));
+}
+
 // This function will dynamically load icons from the file system
 export async function loadIconsFromCategory(category: string): Promise<AzureIcon[]> {
   try {
@@ -56,9 +92,11 @@ export async function loadIconsFromCategory(category: string): Promise<AzureIcon
     for (const path in iconModules) {
       if (path.includes(`/${category}/`)) {
         const fileName = path.split('/').pop() || '';
+        const iconFile = fileName.replace('.svg', '');
+        if (isSupersededIconFile(iconFile)) continue;
         // Simplified: convert kebab-case filename to Title Case
         // Special handling for common acronyms: AI, CDN, SQL, IoT, API, etc.
-        const iconName = fileName
+        const derivedIconName = fileName
           .replace('.svg', '')
           .replace(/^\d+-icon-service-/, '')  // Keep for backwards compatibility
           .replace(/-/g, ' ')
@@ -79,12 +117,21 @@ export async function loadIconsFromCategory(category: string): Promise<AzureIcon
             return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
           })
           .join(' ');
+        const iconName = getCurrentIconDisplayName(iconFile, derivedIconName);
+        const mapping = Object.values(SERVICE_ICON_MAP)
+          .find(service => service.iconFile === iconFile);
+        const searchTerms = mapping
+          ? [mapping.displayName, ...mapping.aliases]
+          : iconFile === '02658-icon-service-FHIR-Service'
+            ? ['FHIR', 'FHIR Service', 'Azure API for FHIR', 'Azure Health Data Services FHIR']
+            : [iconName];
         
         icons.push({
-          id: fileName.replace('.svg', ''),
+          id: iconFile,
           name: iconName,
           category,
           path,
+          searchTerms,
         });
       }
     }

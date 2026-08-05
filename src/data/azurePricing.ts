@@ -119,14 +119,21 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // AI & Machine Learning
   'Machine Learning': 'Azure Machine Learning',
   'Azure Machine Learning': 'Azure Machine Learning',
+  'Foundry Tools': 'Cognitive Services',
+  'Azure AI Services': 'Cognitive Services',
+  'Azure Cognitive Services': 'Cognitive Services',
   'Cognitive Services': 'Cognitive Services',
   // AI Services - mapped to display names that regionalPricingService understands
   'OpenAI': 'Azure OpenAI',
   'Azure OpenAI': 'Azure OpenAI',
   'Bot Service': 'Azure Bot Service',
+  // Current display names map to stable retail-pricing identifiers. The
+  // pricing feed still contains legacy product/service names in some meters.
   'Azure AI Document Intelligence': 'Document Intelligence',
   'Document Intelligence': 'Document Intelligence',
-  'Form Recognizer': 'Form Recognizer',
+  'Azure Document Intelligence': 'Document Intelligence',
+  'Form Recognizer': 'Document Intelligence',
+  'Azure Form Recognizer': 'Document Intelligence',
   'Azure AI Language': 'Language',
   'Language': 'Language',
   'Text Analytics': 'Language',
@@ -202,11 +209,11 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Notification Hub': 'Notification Hubs',
   
   // Healthcare
+  'Azure Health Data Services FHIR service': 'Azure API for FHIR',
+  'Azure Health Data Services FHIR': 'Azure API for FHIR',
   'Azure API for FHIR': 'Azure API for FHIR',
   'FHIR': 'Azure API for FHIR',
   'FHIR Service': 'Azure API for FHIR',
-  'Health Data Services': 'Azure API for FHIR',
-  'Azure Health Data Services': 'Azure API for FHIR',
   
   // Data Governance
   'Microsoft Purview': 'Microsoft Purview',
@@ -245,10 +252,15 @@ export const USAGE_BASED_SERVICES = [
   'Azure Service Bus',
   'Cosmos DB',
   'Azure Cosmos DB',
+  'Foundry Tools',
+  'Azure AI Services',
+  'Azure Cognitive Services',
   'Cognitive Services',
   'Azure AI Document Intelligence',
   'Document Intelligence',
+  'Azure Document Intelligence',
   'Form Recognizer',
+  'Azure Form Recognizer',
   'Azure AI Language',
   'Language',
   'Text Analytics',
@@ -265,9 +277,9 @@ export const USAGE_BASED_SERVICES = [
   'OpenAI',
   'Custom Vision',
   'Content Safety',
+  'Azure AI Search',
   'Azure Cognitive Search',
   'Cognitive Search',
-  'Azure AI Search',
   'AI Search',
   // IoT
   'IoT Hub',
@@ -288,6 +300,8 @@ export const USAGE_BASED_SERVICES = [
   'Notification Hubs',
   'Azure Notification Hubs',
   // Healthcare
+  'Azure Health Data Services FHIR service',
+  'Azure Health Data Services FHIR',
   'Azure API for FHIR',
   'FHIR',
   'FHIR Service',
@@ -399,6 +413,7 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Notification Hubs': 'Standard',
   'Azure Notification Hubs': 'Standard',
   // Healthcare
+  'Azure Health Data Services FHIR service': 'Standard',
   'Azure API for FHIR': 'Standard',
   'FHIR': 'Standard',
   // Data Governance
@@ -1117,6 +1132,12 @@ export const FALLBACK_PRICING: Record<string, {
     unit: 'per namespace/month'
   },
   // Healthcare
+  'Azure Health Data Services FHIR service': {
+    basic: 0,
+    standard: 125.00,
+    premium: 500.00,
+    unit: 'per service/month'
+  },
   'Azure API for FHIR': {
     basic: 0, // Free tier limited
     standard: 125.00, // Standard tier
