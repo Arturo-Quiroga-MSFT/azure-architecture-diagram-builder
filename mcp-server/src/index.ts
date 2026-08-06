@@ -1051,7 +1051,7 @@ server.tool(
       groups ?? [],
       dir as any,
     );
-    const layout = renderProfile === 'presentation'
+    const layout = renderProfile === 'presentation' || renderProfile === 'cost'
       ? reflowLayoutForPresentation(computedLayout)
       : computedLayout;
 

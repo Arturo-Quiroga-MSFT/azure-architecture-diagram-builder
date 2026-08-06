@@ -67,9 +67,9 @@ The current server exposes **12 tools, 3 resources, and 3 prompts**.
 | `region` | Azure region (default `eastus2`), or `none` | Region used for best-effort cost badges. `none` disables cost enrichment. |
 | `author` | string | Shown in the metadata panel (top-right). |
 | `generatedBy` | string | Provenance label (e.g. the model that produced the design). |
-| `profile` | `presentation` (default), `technical`, `cost` | Presentation reflows ultra-wide groups and reduces visual noise; technical preserves every label; cost adds pricing. |
+| `profile` | `presentation` (default), `technical`, `cost` | Presentation reflows capability and multi-region layouts and emphasizes graph-derived request paths; technical preserves the natural layout and every label; cost reuses presentation focus while adding pricing. |
 
-The cost enrichment reuses the same `resolveServiceName → pricingServiceName → estimateServiceCost` path as `estimate_costs`. It runs only for `profile: "cost"`, so presentation diagrams do not imply false pricing precision.
+The cost enrichment reuses the same `resolveServiceName → pricingServiceName → estimateServiceCost` path as `estimate_costs`. It runs only for `profile: "cost"`, so presentation diagrams do not imply false pricing precision. Cost totals are labeled as fixed priced baselines and explicitly exclude usage-based or ranged items.
 
 ## Artifacts
 
@@ -101,9 +101,14 @@ renderers** were upgraded (they stay small — tens of KB):
 - **Per-node cost badges.** Instance-priced services show a firm estimate
   (`~$145/mo`); usage-based services show the honest **catalog range**
   (`$11-6849/mo`) as a muted badge. No fabricated point estimates.
-- **Total-cost / usage footer.** Sums firm estimates; when every service is
-  usage-based it reads `Usage-based pricing — N of M services shown as catalog
-  ranges` instead of a misleading `~$0/mo`.
+- **Fixed-baseline cost footer.** Sums firm estimates and states how many
+  usage-based or ranged items are excluded. When every service is usage-based,
+  it reports that no fixed priced baseline is available instead of implying
+  `~$0/mo`.
+- **Purpose-built render profiles.** Presentation and cost use semantic
+  capability or multi-region composition, graph-derived primary request paths,
+  WAF policy associations, and representative labels. Technical preserves the
+  natural layout and every connection label for zoomed inspection.
 - **Light/dark theme** (`theme` param) — dark matches the app's canvas look.
 - **Metadata panel** (author / date / provenance) via `author` / `generatedBy`.
 - **Filled group headers** (colored header bars) instead of thin dashed labels.
@@ -130,6 +135,13 @@ quote at scale, use the Azure Pricing Calculator.
 
 ## Changelog
 
+- **2026-08-06 — Multi-region profile iteration.** Added deterministic
+  regression coverage for a 29-node, 46-connection global/primary/secondary
+  architecture. Presentation and cost now reflow that pattern into aligned
+  regional tiers, derive the primary request path from service roles, render
+  WAF as a policy association, and use representative labels. Cost uses a
+  fixed-priced-baseline footer with explicit variable-cost exclusions. SVG and
+  interactive HTML consume the same edge semantics.
 - **2026-07-06 — Output enhancement pass.** Added themes, per-node cost badges
   (firm + range), total/usage footer, metadata panel, and filled group headers
   to `render_diagram` (SVG + HTML). Added `pricing` + `pathStyle` to

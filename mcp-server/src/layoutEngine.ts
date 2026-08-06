@@ -569,6 +569,167 @@ function presentationGroupRank(label: string): number {
   return 6;
 }
 
+type PresentationNodeRole =
+  | 'edge'
+  | 'policy'
+  | 'identity'
+  | 'network'
+  | 'private-link'
+  | 'dns'
+  | 'ingress'
+  | 'compute'
+  | 'registry'
+  | 'data'
+  | 'secrets'
+  | 'recovery'
+  | 'monitor'
+  | 'telemetry'
+  | 'logs'
+  | 'other';
+
+function presentationNodeRole(node: PositionedNode): PresentationNodeRole {
+  const type = node.type.toLowerCase();
+  const name = node.name.toLowerCase();
+  if (/web application firewall|\bwaf\b/.test(type) || /\bwaf\b/.test(name)) return 'policy';
+  if (/front door|traffic manager|\bcdn\b/.test(type)) return 'edge';
+  if (/entra|identity/.test(type)) return 'identity';
+  if (/private link/.test(type)) return 'private-link';
+  if (/azure dns|private dns/.test(type) || /private dns/.test(name)) return 'dns';
+  if (/virtual network|\bvnet\b/.test(type)) return 'network';
+  if (/api management|application gateway/.test(type)) return 'ingress';
+  if (/container registry/.test(type)) return 'registry';
+  if (/container apps|kubernetes|app service|functions|virtual machines/.test(type)) return 'compute';
+  if (/sql|redis|cosmos|database|storage/.test(type)) return 'data';
+  if (/key vault/.test(type)) return 'secrets';
+  if (/backup|recovery/.test(type) || /recovery/.test(name)) return 'recovery';
+  if (/application insights/.test(type)) return 'telemetry';
+  if (/log analytics/.test(type)) return 'logs';
+  if (/monitor/.test(type)) return 'monitor';
+  return 'other';
+}
+
+function reflowMultiRegionPresentation(layout: LayoutResult): LayoutResult | null {
+  if (layout.groups.length !== 3 || layout.nodes.some(node => !node.groupId)) return null;
+
+  const globalGroup = layout.groups.find(group => /global|edge|perimeter/.test(`${group.id} ${group.label}`.toLowerCase()));
+  const primaryGroup = layout.groups.find(group => /primary|active|production/.test(`${group.id} ${group.label}`.toLowerCase()));
+  const secondaryGroup = layout.groups.find(group => /secondary|\bdr\b|failover|standby/.test(`${group.id} ${group.label}`.toLowerCase()));
+  if (!globalGroup || !primaryGroup || !secondaryGroup) return null;
+
+  const nodes = layout.nodes.map(node => ({ ...node }));
+  const groups = layout.groups.map(group => ({ ...group }));
+  const groupById = new Map(groups.map(group => [group.id, group]));
+  const nodesByGroup = new Map<string, PositionedNode[]>();
+  for (const node of nodes) {
+    const bucket = nodesByGroup.get(node.groupId!);
+    if (bucket) bucket.push(node);
+    else nodesByGroup.set(node.groupId!, [node]);
+  }
+
+  const regionSlots: Record<PresentationNodeRole, { x: number; y: number }> = {
+    edge: { x: 0, y: 0 },
+    policy: { x: 0, y: 0 },
+    identity: { x: 0, y: 0 },
+    network: { x: 0, y: 110 },
+    dns: { x: 0, y: 240 },
+    ingress: { x: 235, y: 0 },
+    'private-link': { x: 235, y: 165 },
+    monitor: { x: 235, y: 350 },
+    compute: { x: 470, y: 0 },
+    registry: { x: 470, y: 110 },
+    recovery: { x: 470, y: 240 },
+    telemetry: { x: 470, y: 350 },
+    data: { x: 705, y: 0 },
+    secrets: { x: 705, y: 220 },
+    logs: { x: 705, y: 350 },
+    other: { x: 0, y: 350 },
+  };
+  const dataOffsets = [0, 110];
+
+  const arrangeRegion = (groupId: string) => {
+    const members = nodesByGroup.get(groupId) ?? [];
+    const occupied = new Set<string>();
+    let dataIndex = 0;
+    let fallbackIndex = 0;
+    for (const node of members) {
+      const role = presentationNodeRole(node);
+      let slot = { ...regionSlots[role] };
+      if (role === 'data') {
+        slot = { x: regionSlots.data.x, y: dataOffsets[Math.min(dataIndex, dataOffsets.length - 1)] + Math.max(0, dataIndex - 1) * 80 };
+        dataIndex++;
+      }
+      let key = `${slot.x}\u0000${slot.y}`;
+      while (occupied.has(key)) {
+        slot = { x: (fallbackIndex % 4) * 235, y: 460 + Math.floor(fallbackIndex / 4) * 110 };
+        fallbackIndex++;
+        key = `${slot.x}\u0000${slot.y}`;
+      }
+      occupied.add(key);
+      node.x = slot.x;
+      node.y = slot.y;
+    }
+    const group = groupById.get(groupId)!;
+    group.width = Math.max(905, ...members.map(node => node.x + node.width));
+    group.height = Math.max(420, ...members.map(node => node.y + node.height));
+  };
+
+  arrangeRegion(primaryGroup.id);
+  arrangeRegion(secondaryGroup.id);
+
+  const globalMembers = nodesByGroup.get(globalGroup.id) ?? [];
+  const globalSlots: Record<PresentationNodeRole, { x: number; y: number }> = {
+    ...regionSlots,
+    policy: { x: 245, y: 0 },
+    edge: { x: 245, y: 110 },
+    identity: { x: 0, y: 110 },
+  };
+  globalMembers.forEach((node, index) => {
+    const slot = globalSlots[presentationNodeRole(node)] ?? { x: index * 235, y: 110 };
+    node.x = slot.x;
+    node.y = slot.y;
+  });
+  const positionedGlobalGroup = groupById.get(globalGroup.id)!;
+  positionedGlobalGroup.width = Math.max(445, ...globalMembers.map(node => node.x + node.width));
+  positionedGlobalGroup.height = Math.max(180, ...globalMembers.map(node => node.y + node.height));
+
+  const primary = groupById.get(primaryGroup.id)!;
+  const secondary = groupById.get(secondaryGroup.id)!;
+  const groupOuterWidth = (group: PositionedGroup) => group.width + 24;
+  const groupOuterHeight = (group: PositionedGroup) => group.height + 48;
+  const columnGap = 72;
+  const rowGap = 88;
+  const regionsOuterWidth = groupOuterWidth(primary) + columnGap + groupOuterWidth(secondary);
+  const regionsOuterX = PADDING;
+  const globalOuterX = regionsOuterX + (regionsOuterWidth - groupOuterWidth(positionedGlobalGroup)) / 2;
+  const globalOuterY = PADDING;
+  const regionsOuterY = globalOuterY + groupOuterHeight(positionedGlobalGroup) + rowGap;
+
+  const placeGroup = (group: PositionedGroup, outerX: number, outerY: number) => {
+    const dx = outerX + 12;
+    const dy = outerY + 36;
+    group.x = dx;
+    group.y = dy;
+    for (const node of nodesByGroup.get(group.id) ?? []) {
+      node.x += dx;
+      node.y += dy;
+    }
+  };
+  placeGroup(positionedGlobalGroup, globalOuterX, globalOuterY);
+  placeGroup(primary, regionsOuterX, regionsOuterY);
+  placeGroup(secondary, regionsOuterX + groupOuterWidth(primary) + columnGap, regionsOuterY);
+
+  const width = regionsOuterX + regionsOuterWidth + PADDING;
+  const height = regionsOuterY + Math.max(groupOuterHeight(primary), groupOuterHeight(secondary)) + PADDING;
+  return {
+    nodes,
+    groups: [positionedGlobalGroup, primary, secondary],
+    edges: reanchorPresentationEdges(nodes, layout.edges.map(edge => ({ ...edge, points: [...edge.points] }))),
+    width,
+    height,
+    direction: 'LR',
+  };
+}
+
 type PortSide = 'L' | 'R' | 'T' | 'B';
 
 function reanchorPresentationEdges(nodes: PositionedNode[], edges: PositionedEdge[]): PositionedEdge[] {
@@ -663,6 +824,8 @@ function reanchorPresentationEdges(nodes: PositionedNode[], edges: PositionedEdg
  * identity/security, and observability groups occupy the second row.
  */
 export function reflowLayoutForPresentation(layout: LayoutResult): LayoutResult {
+  const multiRegion = reflowMultiRegionPresentation(layout);
+  if (multiRegion) return multiRegion;
   if (layout.groups.length < 4 || layout.nodes.some(node => !node.groupId)) return layout;
   if (layout.width / Math.max(layout.height, 1) < 2.4) return layout;
 

@@ -589,7 +589,14 @@ function edgeLabelAnchor(route: Pt[]): Pt {
 
 // Render only the edge path + arrowhead. Labels are rendered separately (and
 // last) so that no later edge line paints over an earlier edge's label chip.
-function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): string {
+interface EdgeVisualStyle {
+  className?: string;
+  opacity?: number;
+  strokeWidth?: number;
+  policyAssociation?: boolean;
+}
+
+function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }, visual: EdgeVisualStyle = {}): string {
   if (edge.points.length < 2) return '';
 
   const style = EDGE_STYLES[edge.type] ?? EDGE_STYLES.sync;
@@ -606,50 +613,115 @@ function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles:
     `${last.x - arrowLen * Math.cos(angle - 0.4)},${last.y - arrowLen * Math.sin(angle - 0.4)}`,
     `${last.x - arrowLen * Math.cos(angle + 0.4)},${last.y - arrowLen * Math.sin(angle + 0.4)}`,
   ].join(' ');
+  const dasharray = visual.policyAssociation ? '2,3' : style.dasharray;
+  const className = visual.className ? ` ${visual.className}` : '';
+  const opacity = visual.opacity == null ? '' : ` opacity="${visual.opacity}"`;
+  const arrow = visual.policyAssociation ? '' : `<polygon points="${arrowPoints}" fill="${style.color}" />`;
 
   return `
-    <g class="edge" data-from="${escapeXml(edge.from)}" data-to="${escapeXml(edge.to)}">
-      <path d="${pathData}" fill="none" stroke="${style.color}" stroke-width="1.5"
-            ${style.dasharray ? `stroke-dasharray="${style.dasharray}"` : ''} />
-      <polygon points="${arrowPoints}" fill="${style.color}" />
+    <g class="edge${className}"${opacity} data-from="${escapeXml(edge.from)}" data-to="${escapeXml(edge.to)}">
+      <path d="${pathData}" fill="none" stroke="${style.color}" stroke-width="${visual.strokeWidth ?? 1.5}"
+            ${dasharray ? `stroke-dasharray="${dasharray}"` : ''} />
+      ${arrow}
     </g>`;
 }
 
-function presentationGroupRank(label: string): number {
-  const value = label.toLowerCase();
-  if (/edge|ingress|front|perimeter|cdn|waf/.test(value)) return 0;
-  if (/app|compute|api|integration|service|processing/.test(value)) return 1;
-  if (/data|database|storage|cache|sql|cosmos/.test(value)) return 2;
-  return 3;
+type ArchitectureRole = 'edge' | 'policy' | 'identity' | 'ingress' | 'compute' | 'data' | 'supporting';
+
+function architectureRole(node: PositionedNode): ArchitectureRole {
+  const type = node.type.toLowerCase();
+  const name = node.name.toLowerCase();
+  if (/web application firewall|\bwaf\b/.test(type) || /\bwaf\b/.test(name)) return 'policy';
+  if (/front door|traffic manager|\bcdn\b/.test(type)) return 'edge';
+  if (/entra|identity/.test(type)) return 'identity';
+  if (/api management|application gateway/.test(type)) return 'ingress';
+  if (/container apps|kubernetes|app service|functions|virtual machines/.test(type)) return 'compute';
+  if (/sql|redis|cosmos|database|storage/.test(type)) return 'data';
+  return 'supporting';
+}
+
+function policyAssociationEdges(layout: LayoutResult): Set<string> {
+  const nodes = new Map(layout.nodes.map(node => [node.name, node]));
+  const associations = new Set<string>();
+  for (const edge of layout.edges) {
+    const fromRole = architectureRole(nodes.get(edge.from)!);
+    const toRole = architectureRole(nodes.get(edge.to)!);
+    if ((fromRole === 'policy' && toRole === 'edge') || (fromRole === 'edge' && toRole === 'policy')) {
+      associations.add(`${edge.from}\u0000${edge.to}`);
+    }
+  }
+  return associations;
 }
 
 function primaryPresentationEdges(layout: LayoutResult): Set<string> {
-  const groupRanks = new Map(layout.groups.map(group => [group.id, presentationGroupRank(group.label)]));
-  const nodeGroups = new Map(layout.nodes.map(node => [node.name, node.groupId]));
+  const nodes = new Map(layout.nodes.map(node => [node.name, node]));
+  const primaryGroups = new Set(
+    layout.groups
+      .filter(group => /primary|active|production/.test(`${group.id} ${group.label}`.toLowerCase()))
+      .map(group => group.id),
+  );
+  const inPrimaryGroup = (node: PositionedNode) => primaryGroups.size === 0 || (node.groupId != null && primaryGroups.has(node.groupId));
   const primary = new Set<string>();
   for (const edge of layout.edges) {
-    const fromRank = groupRanks.get(nodeGroups.get(edge.from) ?? '') ?? 3;
-    const toRank = groupRanks.get(nodeGroups.get(edge.to) ?? '') ?? 3;
-    if (fromRank <= 2 && toRank <= 2) primary.add(`${edge.from}\u0000${edge.to}`);
+    const fromNode = nodes.get(edge.from);
+    const toNode = nodes.get(edge.to);
+    if (!fromNode || !toNode) continue;
+    const fromRole = architectureRole(fromNode);
+    const toRole = architectureRole(toNode);
+    const isRequestTransition =
+      (fromRole === 'edge' && toRole === 'ingress' && inPrimaryGroup(toNode)) ||
+      (fromRole === 'ingress' && toRole === 'compute' && inPrimaryGroup(fromNode) && fromNode.groupId === toNode.groupId) ||
+      (fromRole === 'compute' && toRole === 'data' && inPrimaryGroup(fromNode) && fromNode.groupId === toNode.groupId);
+    if (isRequestTransition) primary.add(`${edge.from}\u0000${edge.to}`);
   }
   return primary;
 }
 
-function presentationLabelEdges(layout: LayoutResult, primary: Set<string>): Set<PositionedEdge> {
+function presentationLabelEdges(layout: LayoutResult, primary: Set<string>, policyAssociations: Set<string>): Set<PositionedEdge> {
   if (layout.edges.length <= 12) return new Set(layout.edges);
-  const selected: PositionedEdge[] = layout.edges.filter(edge => primary.has(`${edge.from}\u0000${edge.to}`));
   const nodeGroups = new Map(layout.nodes.map(node => [node.name, node.groupId ?? node.name]));
-  const representedSupportingFlows = new Set<string>();
-  for (const edge of layout.edges) {
-    if (selected.includes(edge)) continue;
-    const key = `${nodeGroups.get(edge.from)}\u0000${nodeGroups.get(edge.to)}`;
-    if (!representedSupportingFlows.has(key)) {
-      selected.push(edge);
-      representedSupportingFlows.add(key);
-    }
-    if (selected.length >= 12) break;
-  }
-  return new Set(selected.slice(0, 12));
+  const score = (edge: PositionedEdge): number => {
+    const key = `${edge.from}\u0000${edge.to}`;
+    const label = edge.label.toLowerCase();
+    if (primary.has(key)) return 0;
+    if (policyAssociations.has(key)) return 1;
+    if (/fail over api|failover api|forward failover/.test(label)) return 2;
+    if (nodeGroups.get(edge.from) !== nodeGroups.get(edge.to) && /replicat|synchron|geo/.test(label)) return 3;
+    if (/oauth|token|identity|authorize/.test(label)) return 4;
+    if (/telemetry|diagnostic|operational|backup|recovery/.test(label)) return 5;
+    return 10;
+  };
+  const selected = layout.edges
+    .map((edge, index) => ({ edge, index, score: score(edge) }))
+    .sort((left, right) => left.score - right.score || left.index - right.index)
+    .slice(0, 12)
+    .map(item => item.edge);
+  return new Set(selected);
+}
+
+export interface RenderEdgeSemantics {
+  focusProfile: boolean;
+  primary: Set<string>;
+  policyAssociations: Set<string>;
+  labeled: Set<string>;
+}
+
+export function resolveRenderEdgeSemantics(
+  layout: LayoutResult,
+  profile: RenderProfile = 'presentation',
+): RenderEdgeSemantics {
+  const focusProfile = profile === 'presentation' || profile === 'cost';
+  const policyAssociations = policyAssociationEdges(layout);
+  const primary = focusProfile ? primaryPresentationEdges(layout) : new Set<string>();
+  const labeledEdges = focusProfile
+    ? presentationLabelEdges(layout, primary, policyAssociations)
+    : new Set(layout.edges);
+  return {
+    focusProfile,
+    primary,
+    policyAssociations,
+    labeled: new Set([...labeledEdges].map(edge => `${edge.from}\u0000${edge.to}`)),
+  };
 }
 
 // Geometry for an edge's label chip (wrapped lines + box size + trunk anchor),
@@ -704,8 +776,8 @@ function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Th
     // Group header band (see renderGroup: y = group.y - 12 - 24, height 24).
     ...layout.groups.map(g => ({ x: g.x - 12, y: g.y - 36, w: g.width + 24, h: 24 })),
   ];
-  const dxs = [0, -46, 46, -92, 92, -140, 140];
-  const dys = [0, -20, 20, -40, 40, -62, 62, -84, 84];
+  const dxs = [0, -46, 46, -92, 92, -140, 140, -190, 190, -240, 240, -300, 300];
+  const dys = [0, -20, 20, -40, 40, -62, 62, -84, 84, -110, 110, -140, 140, -170, 170];
   const candidates = dys
     .flatMap(dy => dxs.map(dx => ({ dx, dy })))
     .sort((a, b) => (Math.abs(a.dx) + Math.abs(a.dy)) - (Math.abs(b.dx) + Math.abs(b.dy)));
@@ -774,14 +846,25 @@ export interface RenderSvgOptions {
 export function renderSvg(layout: LayoutResult, title?: string, options: RenderSvgOptions = {}): string {
   const theme = resolveTheme(options.theme);
   const metrics = resolveMetrics(options.profile);
-  const edgeDir: 'TB' | 'LR' = layout.direction ?? 'TB';
+  const semantics = resolveRenderEdgeSemantics(layout, metrics.profile);
+  const associationKeys = semantics.policyAssociations;
+  const renderLayout: LayoutResult = associationKeys.size === 0
+    ? layout
+    : {
+        ...layout,
+        edges: layout.edges.map(edge => associationKeys.has(`${edge.from}\u0000${edge.to}`)
+          ? { ...edge, label: 'WAF policy association' }
+          : edge),
+      };
+  const edgeDir: 'TB' | 'LR' = renderLayout.direction ?? 'TB';
+  const focusProfile = semantics.focusProfile;
   // Zone + node rectangles the edge router steers trunks around.
-  const routeObstacles = buildRouteObstacles(layout);
-  const routeCanvas = { w: layout.width, h: layout.height };
-  const primaryEdges = metrics.profile === 'presentation' ? primaryPresentationEdges(layout) : new Set<string>();
-  const labeledEdges = metrics.profile === 'presentation'
-    ? presentationLabelEdges(layout, primaryEdges)
-    : new Set(layout.edges);
+  const routeObstacles = buildRouteObstacles(renderLayout);
+  const routeCanvas = { w: renderLayout.width, h: renderLayout.height };
+  const primaryEdges = semantics.primary;
+  const labeledEdges = new Set(
+    renderLayout.edges.filter(edge => semantics.labeled.has(`${edge.from}\u0000${edge.to}`)),
+  );
 
   // Center the title, but keep it clear of the top-right metadata panel on
   // narrow canvases (approx panel width 210 + margins). Nudge the anchor left
@@ -790,17 +873,17 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   if (options.author) rawMetaLines.push(`Author: ${options.author}`);
   rawMetaLines.push(`Date: ${options.date ?? new Date().toISOString().slice(0, 10)}`);
   if (options.generatedBy) rawMetaLines.push(`Generated by: ${options.generatedBy}`);
-  const panelW = Math.min(320, Math.max(210, layout.width * 0.28));
+  const panelW = Math.min(320, Math.max(210, renderLayout.width * 0.28));
   const metaMaxChars = Math.max(24, Math.floor((panelW - 24) / 5.5));
   const metaLines = rawMetaLines.flatMap(line => wrapLabel(line, metaMaxChars));
   const panelH = 16 + metaLines.length * 16;
-  const panelX = layout.width - panelW - 12;
+  const panelX = renderLayout.width - panelW - 12;
   const panelY = 12;
   const metaReserveW = panelW + 12;
-  let titleX = layout.width / 2;
+  let titleX = renderLayout.width / 2;
   if (title) {
     const halfW = title.length * 5.2; // ~half text width at 16px bold
-    const panelLeft = layout.width - metaReserveW;
+    const panelLeft = renderLayout.width - metaReserveW;
     if (titleX + halfW > panelLeft) titleX = Math.max(halfW + 12, panelLeft - halfW);
   }
 
@@ -811,14 +894,14 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
     : '';
 
   const titleOffset = Math.max(title ? 40 : 0, panelY + panelH + 12);
-  const totalHeight = layout.height + titleOffset;
+  const totalHeight = renderLayout.height + titleOffset;
 
   // ── Footer band (below the diagram): wrapped legend, then cost total ──
   // A dedicated band under the canvas keeps the legend and cost total from
   // overlapping each other, the last group's border, or the watermark.
-  const categories = [...new Set(layout.nodes.map(n => n.category))].sort();
+  const categories = [...new Set(renderLayout.nodes.map(n => n.category))].sort();
   const legendItemW = 168;
-  const legendCols = Math.max(1, Math.floor((layout.width - 40) / legendItemW));
+  const legendCols = Math.max(1, Math.floor((renderLayout.width - 40) / legendItemW));
   const legendRows = Math.max(1, Math.ceil(categories.length / legendCols));
   const legendRowH = 18;
   const footerTop = totalHeight + 22;
@@ -836,18 +919,15 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   const costY = footerTop + legendRows * legendRowH + 6;
 
   // Total estimated monthly cost across nodes that carry a firm estimate.
-  const costedNodes = layout.nodes.filter(n => n.estimatedCost != null && n.estimatedCost > 0);
-  const rangeNodes = layout.nodes.filter(
+  const costedNodes = renderLayout.nodes.filter(n => n.estimatedCost != null && n.estimatedCost > 0);
+  const rangeNodes = renderLayout.nodes.filter(
     n => (n.estimatedCost == null || n.estimatedCost <= 0) && n.costRange,
   );
   const totalCost = costedNodes.reduce((sum, n) => sum + (n.estimatedCost ?? 0), 0);
   const currency = options.currency ?? costedNodes[0]?.costCurrency ?? 'USD';
-  const rangeNote = rangeNodes.length > 0
-    ? `; ${rangeNodes.length} usage-based shown as ranges`
-    : '';
   const footerText = costedNodes.length > 0
-    ? `Est. total ~$${fmtCost(totalCost)}/mo (${escapeXml(currency)}, ${costedNodes.length} of ${layout.nodes.length} priced${rangeNote})`
-    : `Usage-based pricing — ${rangeNodes.length} of ${layout.nodes.length} services shown as catalog ranges`;
+    ? `Fixed priced baseline: ~$${fmtCost(totalCost)}/mo (${escapeXml(currency)}). Excludes ${rangeNodes.length} usage-based or ranged items shown on nodes.`
+    : `No fixed priced baseline. ${rangeNodes.length} usage-based or ranged items shown on nodes.`;
   const totalCostFooter = metrics.showCosts && (costedNodes.length > 0 || rangeNodes.length > 0)
     ? `<text class="cost-summary" x="20" y="${costY}" text-anchor="start"
             font-family="Segoe UI, system-ui, sans-serif" font-size="${metrics.costFooterFont}" font-weight="600"
@@ -869,12 +949,12 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   const totalWithLegend = costY + 22;
 
   // Collision-aware edge labels (kept off nodes + group headers).
-  const edgeLabelsMarkup = placeEdgeLabels(layout, edgeDir, theme, metrics, routeObstacles, routeCanvas, labeledEdges);
+  const edgeLabelsMarkup = placeEdgeLabels(renderLayout, edgeDir, theme, metrics, routeObstacles, routeCanvas, labeledEdges);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" 
-     viewBox="0 0 ${layout.width} ${totalWithLegend}"
-     width="${layout.width}" height="${totalWithLegend}"
+    viewBox="0 0 ${renderLayout.width} ${totalWithLegend}"
+    width="${renderLayout.width}" height="${totalWithLegend}"
   preserveAspectRatio="xMidYMid meet"
   data-render-profile="${metrics.profile}"
      style="background: ${theme.background}; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
@@ -886,29 +966,34 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="${layout.width}" height="${totalWithLegend}" fill="${theme.background}" />
+  <rect x="0" y="0" width="${renderLayout.width}" height="${totalWithLegend}" fill="${theme.background}" />
 
   ${titleBar}
   ${metaPanel}
 
   <g transform="translate(0, ${titleOffset})">
     <!-- Groups (background) -->
-    ${layout.groups.map(group => renderGroup(group, metrics)).join('\n')}
+    ${renderLayout.groups.map(group => renderGroup(group, metrics)).join('\n')}
 
     <!-- Edge paths (drawn first so nothing paints over labels) -->
-    ${layout.edges.map(edge => {
+    ${renderLayout.edges.map(edge => {
       const key = `${edge.from}\u0000${edge.to}`;
-      const rendered = renderEdgePath(edge, edgeDir, routeObstacles, routeCanvas);
-      if (metrics.profile !== 'presentation') return rendered;
       const isPrimary = primaryEdges.has(key);
-      return rendered.replace(
-        '<g class="edge"',
-        `<g class="edge ${isPrimary ? 'edge-primary' : 'edge-supporting'}" opacity="${isPrimary ? '1' : '0.58'}"`,
-      ).replace('stroke-width="1.5"', `stroke-width="${isPrimary ? '2.4' : '1.2'}"`);
+      const isPolicy = associationKeys.has(key);
+      return renderEdgePath(edge, edgeDir, routeObstacles, routeCanvas, {
+        className: isPolicy
+          ? 'edge-policy-association'
+          : focusProfile
+            ? isPrimary ? 'edge-primary' : 'edge-supporting'
+            : undefined,
+        opacity: focusProfile ? isPrimary ? 1 : isPolicy ? 0.8 : 0.58 : undefined,
+        strokeWidth: focusProfile ? isPrimary ? 2.4 : 1.2 : 1.5,
+        policyAssociation: isPolicy,
+      });
     }).join('\n')}
 
     <!-- Nodes (foreground) -->
-    ${layout.nodes.map(n => renderNode(n, theme, metrics)).join('\n')}
+    ${renderLayout.nodes.map(n => renderNode(n, theme, metrics)).join('\n')}
 
     <!-- Edge labels (top-most for legibility; collision-avoided) -->
     ${edgeLabelsMarkup}
@@ -921,7 +1006,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   ${totalCostFooter}
 
   <!-- Watermark -->
-  <text x="${layout.width - 10}" y="${totalWithLegend - 8}" text-anchor="end"
+  <text x="${renderLayout.width - 10}" y="${totalWithLegend - 8}" text-anchor="end"
         font-family="Segoe UI, system-ui, sans-serif" font-size="9" fill="${theme.watermark}">
     Generated by Azure Architecture Diagram Builder
   </text>

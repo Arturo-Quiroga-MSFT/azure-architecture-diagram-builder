@@ -223,9 +223,9 @@ badges come from the same pricing resolution as `estimate_costs`.
 
 **Output:** the SVG or HTML markup (text).
 
-- `presentation` (default): semantic two-row reflow for ultra-wide grouped diagrams, stronger primary paths, quieter supporting edges, fewer labels, larger text, and no pricing.
+- `presentation` (default): semantic reflow for ultra-wide capability groups and global/primary/secondary regional architectures, graph-derived request paths, WAF policy associations, quieter supporting edges, representative labels, larger text, and no pricing.
 - `technical`: natural layout with every connection label and no pricing.
-- `cost`: technical detail plus per-node cost badges/ranges and total-cost footer. `region` applies only to this profile; set it to `none` to suppress pricing enrichment.
+- `cost`: presentation composition and edge hierarchy plus per-node cost badges/ranges and a fixed-priced-baseline footer. Variable and ranged items are explicitly excluded from that baseline. `region` applies only to this profile; set it to `none` to suppress pricing enrichment.
 
 ---
 

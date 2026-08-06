@@ -4,7 +4,13 @@ import { join } from 'node:path';
 
 import { computeLayout, reflowLayoutForPresentation } from '../dist/layoutEngine.js';
 import { renderHtml } from '../dist/htmlRenderer.js';
-import { renderSvg } from '../dist/svgRenderer.js';
+import { renderSvg, resolveRenderEdgeSemantics } from '../dist/svgRenderer.js';
+import {
+  connections as regionalConnections,
+  groups as regionalGroups,
+  services as regionalServices,
+  sharedOptions as regionalOptions,
+} from './fixtures/secure-multiregion-webapp.mjs';
 
 const services = [
   ['Front Door', 'Azure Front Door', 'edge'],
@@ -95,6 +101,30 @@ function viewBoxRatio(svg) {
   return Number(match[1]) / Number(match[2]);
 }
 
+function svgBoxes(svg, kind) {
+  const pattern = kind === 'node'
+    ? /<g class="node" data-service="([^"]+)"[\s\S]*?<!-- Card -->\s*<rect x="([0-9.]+)" y="([0-9.]+)" width="([0-9.]+)" height="([0-9.]+)"/g
+    : /<g class="edge-label">\s*<rect x="([0-9.]+)" y="([0-9.]+)" width="([0-9.]+)" height="([0-9.]+)"/g;
+  return [...svg.matchAll(pattern)].map(match => kind === 'node'
+    ? { name: match[1], x: Number(match[2]), y: Number(match[3]), width: Number(match[4]), height: Number(match[5]) }
+    : { x: Number(match[1]), y: Number(match[2]), width: Number(match[3]), height: Number(match[4]) });
+}
+
+function assertNoSvgLabelNodeOverlaps(svg, profile) {
+  const nodeBoxes = svgBoxes(svg, 'node');
+  const labelBoxes = svgBoxes(svg, 'label');
+  for (const label of labelBoxes) {
+    for (const node of nodeBoxes) {
+      assert(!overlaps(label, node), `${profile} edge labels must not overlap ${node.name}.`);
+    }
+  }
+  for (let left = 0; left < labelBoxes.length; left++) {
+    for (let right = left + 1; right < labelBoxes.length; right++) {
+      assert(!overlaps(labelBoxes[left], labelBoxes[right]), `${profile} edge labels must not overlap each other.`);
+    }
+  }
+}
+
 assert.match(presentation, /data-render-profile="presentation"/);
 assert.doesNotMatch(presentation, /class="node-cost/);
 assert.doesNotMatch(presentation, /class="cost-summary"/);
@@ -157,12 +187,124 @@ assert.match(presentationHtml, /const showCosts = false;/);
 assert.match(costHtml, /data-render-profile="cost"/);
 assert.match(costHtml, /const showCosts = true;/);
 
+const regionalLayout = computeLayout(regionalServices, regionalConnections, regionalGroups, 'LR');
+const fixedCosts = new Map([
+  ['Primary API Management - East US 2', 147],
+  ['Primary SQL Database - East US 2', 145],
+  ['Primary Redis Cache - East US 2', 40.15],
+  ['Secondary API Management - Central US', 147],
+  ['Secondary SQL Database - Central US', 145],
+  ['Secondary Redis Cache - Central US', 40.15],
+]);
+regionalLayout.nodes.forEach(node => {
+  if (fixedCosts.has(node.name)) node.estimatedCost = fixedCosts.get(node.name);
+  else node.costRange = '$0-1000/mo';
+});
+const regionalPresentationLayout = reflowLayoutForPresentation(regionalLayout);
+const regionalPresentation = renderSvg(regionalPresentationLayout, 'Secure Zone-Redundant Azure Web Application', {
+  ...regionalOptions,
+  profile: 'presentation',
+});
+const regionalTechnical = renderSvg(regionalLayout, 'Secure Zone-Redundant Azure Web Application', {
+  ...regionalOptions,
+  profile: 'technical',
+});
+const regionalCost = renderSvg(regionalPresentationLayout, 'Secure Zone-Redundant Azure Web Application', {
+  ...regionalOptions,
+  profile: 'cost',
+});
+const regionalPresentationHtml = renderHtml(regionalPresentationLayout, 'Secure Zone-Redundant Azure Web Application', {
+  ...regionalOptions,
+  profile: 'presentation',
+});
+const regionalCostHtml = renderHtml(regionalPresentationLayout, 'Secure Zone-Redundant Azure Web Application', {
+  ...regionalOptions,
+  profile: 'cost',
+});
+const presentationSemantics = resolveRenderEdgeSemantics(regionalPresentationLayout, 'presentation');
+const technicalSemantics = resolveRenderEdgeSemantics(regionalLayout, 'technical');
+const costSemantics = resolveRenderEdgeSemantics(regionalPresentationLayout, 'cost');
+
+assert.equal(regionalLayout.nodes.length, 29);
+assert.equal(regionalLayout.edges.length, 46);
+assert.equal(regionalLayout.groups.length, 3);
+assert(
+  viewBoxRatio(regionalPresentation) <= 2.2,
+  'Three-group multi-region presentation output should fit a document-friendly aspect ratio.',
+);
+assert(viewBoxRatio(regionalCost) <= 2.2, 'Cost mode should reuse the document-friendly regional composition.');
+for (let left = 0; left < regionalPresentationLayout.nodes.length; left++) {
+  for (let right = left + 1; right < regionalPresentationLayout.nodes.length; right++) {
+    assert(
+      !overlaps(regionalPresentationLayout.nodes[left], regionalPresentationLayout.nodes[right]),
+      'Multi-region presentation nodes must not overlap.',
+    );
+  }
+}
+const regionalGroupBoxes = regionalPresentationLayout.groups.map(group => ({
+  x: group.x - 12,
+  y: group.y - 36,
+  width: group.width + 24,
+  height: group.height + 48,
+}));
+for (let left = 0; left < regionalGroupBoxes.length; left++) {
+  for (let right = left + 1; right < regionalGroupBoxes.length; right++) {
+    assert(!overlaps(regionalGroupBoxes[left], regionalGroupBoxes[right]), 'Multi-region presentation groups must not overlap.');
+  }
+}
+for (const [from, to] of [
+  ['Global Front Door Premium', 'Primary API Management - East US 2'],
+  ['Primary API Management - East US 2', 'Primary Container Apps Environment - East US 2'],
+  ['Primary Container Apps Environment - East US 2', 'Primary SQL Database - East US 2'],
+  ['Primary Container Apps Environment - East US 2', 'Primary Redis Cache - East US 2'],
+]) {
+  assert.match(
+    regionalPresentation,
+    new RegExp(`class="edge edge-primary"[^>]*data-from="${from}" data-to="${to}"`),
+    `${from} -> ${to} should be part of the primary request path.`,
+  );
+}
+assert.doesNotMatch(
+  regionalPresentation,
+  /class="edge edge-primary"[^>]*data-from="Edge WAF Policy" data-to="Global Front Door Premium"/,
+  'The WAF association should not be rendered as the primary traffic path.',
+);
+assert.match(regionalPresentation, /class="edge edge-policy-association"/);
+assert.match(regionalPresentation, /WAF policy association/);
+assert.equal((regionalPresentation.match(/class="edge edge-primary"/g) ?? []).length, 4);
+assert.equal((regionalTechnical.match(/<g class="edge-label">/g) ?? []).length, 46);
+assert.equal(presentationSemantics.primary.size, 4);
+assert.equal(presentationSemantics.labeled.size, 12);
+assert.equal(technicalSemantics.labeled.size, 46);
+assert.equal(costSemantics.primary.size, 4);
+assert.equal(costSemantics.labeled.size, 12);
+assert(
+  (regionalCost.match(/<g class="edge-label">/g) ?? []).length <
+    (regionalTechnical.match(/<g class="edge-label">/g) ?? []).length,
+  'Cost mode should suppress supporting edge labels so pricing remains the visual priority.',
+);
+assert((regionalCost.match(/<g class="edge-label">/g) ?? []).length <= 12);
+assert.equal((regionalCost.match(/class="node-cost/g) ?? []).length, 29);
+assert.match(regionalCost, /Fixed priced baseline:/);
+assert.match(regionalCost, /Excludes 23 usage-based or ranged items shown on nodes\./);
+assert.match(regionalPresentationHtml, /const edgeSemantics = \{"focusProfile":true/);
+assert.match(regionalPresentationHtml, /WAF policy association/);
+assert.match(regionalCostHtml, /Fixed priced baseline: ~\$664\/mo/);
+assert.match(regionalCostHtml, /const showCosts = true;/);
+assertNoSvgLabelNodeOverlaps(regionalPresentation, 'Presentation');
+assertNoSvgLabelNodeOverlaps(regionalCost, 'Cost');
+
 if (process.env.RENDER_PROFILE_OUTPUT_DIR) {
   mkdirSync(process.env.RENDER_PROFILE_OUTPUT_DIR, { recursive: true });
   writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'presentation.svg'), presentation);
   writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'technical.svg'), technical);
   writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'cost.svg'), cost);
   writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'presentation.html'), presentationHtml);
+  writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'regional-presentation.svg'), regionalPresentation);
+  writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'regional-technical.svg'), regionalTechnical);
+  writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'regional-cost.svg'), regionalCost);
+  writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'regional-presentation.html'), regionalPresentationHtml);
+  writeFileSync(join(process.env.RENDER_PROFILE_OUTPUT_DIR, 'regional-cost.html'), regionalCostHtml);
 }
 
 console.log('Render profile tests passed.');
