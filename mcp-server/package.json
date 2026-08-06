@@ -12,6 +12,7 @@
     "sync:pricing": "node scripts/sync-pricing-data.mjs",
     "prebuild": "npm run sync:icons && npm run sync:pricing",
     "build": "tsc && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json && cp src/pricing.generated.json dist/pricing.generated.json",
+    "test:render-profiles": "npm run build --silent && node scripts/test-render-profiles.mjs",
     "start": "node dist/index.js",
     "start:http": "node dist/index.js --http",
     "dev": "tsc --watch"

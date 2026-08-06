@@ -10,7 +10,7 @@ Azure architectures conversationally.
 
 - **Server:** the AADB MCP server (`mcp-server/`) deployed to Azure Container
   Apps, Streamable-HTTP transport.
-- **Endpoint:** `https://azure-diagram-builder-mcp.victorioussmoke-95d145bd.eastus2.azurecontainerapps.io/mcp`
+- **Endpoint:** `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/mcp`
 - **Auth:** Bearer token (`MCP_AUTH_TOKEN` on the container app). Scout stores it
   encrypted and sends `Authorization: Bearer <token>`.
 - **Catalog entry:** registered in the `scout-m` repo at
@@ -67,8 +67,9 @@ The current server exposes **12 tools, 3 resources, and 3 prompts**.
 | `region` | Azure region (default `eastus2`), or `none` | Region used for best-effort cost badges. `none` disables cost enrichment. |
 | `author` | string | Shown in the metadata panel (top-right). |
 | `generatedBy` | string | Provenance label (e.g. the model that produced the design). |
+| `profile` | `presentation` (default), `technical`, `cost` | Presentation reflows ultra-wide groups and reduces visual noise; technical preserves every label; cost adds pricing. |
 
-The cost enrichment reuses the same `resolveServiceName → pricingServiceName → estimateServiceCost` path as `estimate_costs`, so **no extra input is required** — Scout gets badges automatically.
+The cost enrichment reuses the same `resolveServiceName → pricingServiceName → estimateServiceCost` path as `estimate_costs`. It runs only for `profile: "cost"`, so presentation diagrams do not imply false pricing precision.
 
 ## Artifacts
 
@@ -159,7 +160,7 @@ In Scout's **Add MCP Server** dialog, use:
 | --- | --- |
 | **Server name** | `Azure Architecture Diagram Builder` (or `AADB`) |
 | **Tab** | **Remote / Local URL** |
-| **URL** | `https://azure-diagram-builder-mcp.victorioussmoke-95d145bd.eastus2.azurecontainerapps.io/mcp` |
+| **URL** | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/mcp` |
 | **Bearer token** | Obtain the current value from the app owner through an approved secret channel. |
 | **Tool-call timeout** | Leave blank (default ~60), or `120` if renders time out |
 
@@ -167,11 +168,76 @@ Scout should discover 12 tools, 3 resources, and 3 prompts. If discovery returns
 zero capabilities, verify the `/mcp` suffix, the bearer-token value, and that no
 leading or trailing whitespace was included.
 
+## macOS sign-in troubleshooting
+
+Scout uses the Microsoft Enterprise SSO broker on managed Macs. Its selected
+MSAL account is stored under `~/.scout/m-auth`, outside the Electron profile at
+`~/Library/Application Support/Microsoft Scout`. Resetting only the Electron
+profile therefore does not clear a broker account that Scout keeps restoring.
+
+### Symptom
+
+- Scout repeatedly prefills the wrong organizational account.
+- Choosing **Sign in with another account** still sends authentication through
+  the previously selected tenant.
+- The sign-in window may report an incorrect password even when the selected
+  account belongs to a different tenant.
+
+### Scout-scoped reset
+
+Quit Scout, back up only its native auth directory, and create Scout's supported
+signed-out sentinel:
+
+```sh
+osascript -e 'tell application "Microsoft Scout" to quit' 2>/dev/null || true
+
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+backup="$HOME/Library/Application Support/Microsoft Scout Backups/${stamp}-native-auth"
+mkdir -p "$backup"
+
+if [ -d "$HOME/.scout/m-auth" ]; then
+  mv "$HOME/.scout/m-auth" "$backup/m-auth"
+fi
+
+mkdir -m 700 "$HOME/.scout/m-auth"
+touch "$HOME/.scout/m-auth/signed-out"
+chmod 600 "$HOME/.scout/m-auth/signed-out"
+
+open -a "/Applications/Microsoft Scout.app"
+```
+
+On the next sign-in, Scout skips automatic account restoration and asks the
+native broker to select an account. After a successful sign-in, Scout removes
+`signed-out` and writes a new encrypted `msal-last-account.enc` selection.
+
+Verify without reading credentials:
+
+```sh
+find "$HOME/.scout/m-auth" -maxdepth 1 -type f -print
+```
+
+Expected after success: `msal-last-account.enc` exists and `signed-out` does
+not.
+
+### Safety boundary
+
+- Do **not** delete Company Portal, macOS Platform SSO registration, or shared
+  `com.microsoft.oneauth.*` Keychain records. They are used by other Microsoft
+  applications and device management.
+- Do **not** print or copy token-cache contents. File names and existence are
+  sufficient for diagnosis.
+- If a password appears in a screenshot or transcript, rotate it immediately,
+  remove the stale saved-browser credential, and use passwordless/MFA sign-in
+  where available.
+- Keep the backup until the intended account signs in successfully, then remove
+  it according to local security and retention policy.
+
 ### Credential handling
 
 - Never paste bearer tokens into tracked files, issue descriptions, screenshots,
   transcripts, or shell history.
-- Keep local deployment values in `scripts/.env.mcp-instance`, which is ignored
-  by Git.
+- Keep the decoupled server token in the repo-root `.env.mcp`, which is ignored
+  by Git and should be mode `0600`. The legacy combined-image deployment uses
+  `.env.mcp-instance` instead.
 - Rotate a token immediately if it is disclosed, then update Scout through the
   same approved secret channel.

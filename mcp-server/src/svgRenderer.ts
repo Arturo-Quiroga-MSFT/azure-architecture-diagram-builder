@@ -236,6 +236,46 @@ const EDGE_STYLES: Record<string, { color: string; dasharray: string }> = {
 // ── Theming ────────────────────────────────────────────────────────────
 
 export type ThemeName = 'light' | 'dark';
+export type RenderProfile = 'presentation' | 'technical' | 'cost';
+
+interface RenderMetrics {
+  profile: RenderProfile;
+  showCosts: boolean;
+  nodeNameFont: number;
+  nodeTypeFont: number;
+  edgeLabelFont: number;
+  edgeLabelLineHeight: number;
+  groupLabelFont: number;
+  legendFont: number;
+  costFooterFont: number;
+}
+
+function resolveMetrics(profile: RenderProfile = 'presentation'): RenderMetrics {
+  if (profile === 'presentation') {
+    return {
+      profile,
+      showCosts: false,
+      nodeNameFont: 14,
+      nodeTypeFont: 11,
+      edgeLabelFont: 11,
+      edgeLabelLineHeight: 13,
+      groupLabelFont: 13,
+      legendFont: 11,
+      costFooterFont: 12,
+    };
+  }
+  return {
+    profile,
+    showCosts: profile === 'cost',
+    nodeNameFont: 13,
+    nodeTypeFont: 11,
+    edgeLabelFont: 10,
+    edgeLabelLineHeight: 12,
+    groupLabelFont: 12,
+    legendFont: 10,
+    costFooterFont: 11,
+  };
+}
 
 interface Theme {
   background: string;
@@ -305,7 +345,7 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;');
 }
 
-function renderNode(node: PositionedNode, theme: Theme): string {
+function renderNode(node: PositionedNode, theme: Theme, metrics: RenderMetrics): string {
   const iconHref = resolveIconHref(node.type) ?? resolveIconHref(node.name);
   const typeAbbr = abbreviateType(node.type);
   const rx = 8;
@@ -322,22 +362,22 @@ function renderNode(node: PositionedNode, theme: Theme): string {
   const nameLines = wrapName(node.name, 20);
   const nameSvg = nameLines.length === 1
     ? `<text x="${textX}" y="${node.y + 30}" font-family="Segoe UI, system-ui, sans-serif"
-            font-size="13" font-weight="600" fill="${theme.nameText}">${escapeXml(nameLines[0])}</text>`
+        font-size="${metrics.nodeNameFont}" font-weight="600" fill="${theme.nameText}">${escapeXml(nameLines[0])}</text>`
     : `<text x="${textX}" y="${node.y + 24}" font-family="Segoe UI, system-ui, sans-serif"
-            font-size="13" font-weight="600" fill="${theme.nameText}">${escapeXml(nameLines[0])}</text>
+        font-size="${metrics.nodeNameFont}" font-weight="600" fill="${theme.nameText}">${escapeXml(nameLines[0])}</text>
        <text x="${textX}" y="${node.y + 40}" font-family="Segoe UI, system-ui, sans-serif"
-            font-size="13" font-weight="600" fill="${theme.nameText}">${escapeXml(nameLines[1])}</text>`;
+        font-size="${metrics.nodeNameFont}" font-weight="600" fill="${theme.nameText}">${escapeXml(nameLines[1])}</text>`;
   const badgeY = nameLines.length === 1 ? node.y + 50 : node.y + 56;
 
   // Optional per-node cost badge (bottom-right). A firm numeric estimate is
   // shown in the accent cost color; when only a curated catalog range exists
   // (usage-based services), the range is shown in a muted color instead.
-  const costBadge = node.estimatedCost != null && node.estimatedCost > 0
-    ? `<text x="${node.x + node.width - 12}" y="${node.y + node.height - 12}" text-anchor="end"
+  const costBadge = !metrics.showCosts ? '' : node.estimatedCost != null && node.estimatedCost > 0
+    ? `<text class="node-cost" x="${node.x + node.width - 12}" y="${node.y + node.height - 12}" text-anchor="end"
             font-family="Segoe UI, system-ui, sans-serif" font-size="11" font-weight="600"
             fill="${theme.costText}">~$${fmtCost(node.estimatedCost)}/mo</text>`
     : node.costRange
-      ? `<text x="${node.x + node.width - 12}" y="${node.y + node.height - 12}" text-anchor="end"
+      ? `<text class="node-cost node-cost-range" x="${node.x + node.width - 12}" y="${node.y + node.height - 12}" text-anchor="end"
             font-family="Segoe UI, system-ui, sans-serif" font-size="10" font-style="italic"
             fill="${theme.costRangeText}">${escapeXml(node.costRange)}</text>`
       : '';
@@ -359,7 +399,7 @@ function renderNode(node: PositionedNode, theme: Theme): string {
       ${nameSvg}
       <!-- Type badge -->
       <text x="${textX}" y="${badgeY}" font-family="Segoe UI, system-ui, sans-serif"
-            font-size="11" fill="${node.color}">
+        font-size="${metrics.nodeTypeFont}" fill="${node.color}">
         ${escapeXml(typeAbbr)}
       </text>
       ${costBadge}
@@ -426,6 +466,9 @@ function routeClear(pts: Pt[], obstacles: RouteObstacle[], ignore: (o: RouteObst
 function orthogonalRoute(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): Pt[] {
   const s = edge.points[0];
   const t = edge.points[edge.points.length - 1];
+  const deltaX = Math.abs(t.x - s.x);
+  const deltaY = Math.abs(t.y - s.y);
+  const routeDirection: 'TB' | 'LR' = deltaY > deltaX * 1.1 ? 'TB' : deltaX > deltaY * 1.1 ? 'LR' : direction;
 
   // Ignore the edge's own endpoint cards and their parent zone boxes — an edge
   // legitimately exits/enters those.
@@ -438,7 +481,7 @@ function orthogonalRoute(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles
     (o.kind === 'group' && ((fromG != null && o.id === fromG) || (toG != null && o.id === toG)));
 
   const midpointRoute = (): Pt[] => {
-    const raw: Pt[] = direction === 'LR'
+    const raw: Pt[] = routeDirection === 'LR'
       ? [s, { x: (s.x + t.x) / 2, y: s.y }, { x: (s.x + t.x) / 2, y: t.y }, t]
       : [s, { x: s.x, y: (s.y + t.y) / 2 }, { x: t.x, y: (s.y + t.y) / 2 }, t];
     const c = collapsePoints(raw);
@@ -451,9 +494,9 @@ function orthogonalRoute(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles
   const active = obstacles.filter(o => !ignore(o));
 
   // Strategy A — 3-segment trunk: shift the mid-channel trunk into a clear gutter.
-  const mid = direction === 'LR' ? (s.x + t.x) / 2 : (s.y + t.y) / 2;
-  const lo = direction === 'LR' ? Math.min(s.x, t.x) : Math.min(s.y, t.y);
-  const hi = direction === 'LR' ? Math.max(s.x, t.x) : Math.max(s.y, t.y);
+  const mid = routeDirection === 'LR' ? (s.x + t.x) / 2 : (s.y + t.y) / 2;
+  const lo = routeDirection === 'LR' ? Math.min(s.x, t.x) : Math.min(s.y, t.y);
+  const hi = routeDirection === 'LR' ? Math.max(s.x, t.x) : Math.max(s.y, t.y);
   const span = Math.max(hi - lo, 0);
   const reach = span / 2 + 160; // allow routing a bit past the endpoints into a gutter
   const step = 16;
@@ -462,7 +505,7 @@ function orthogonalRoute(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles
 
   for (const off of trunkOffsets) {
     const trunk = mid + off;
-    const raw: Pt[] = direction === 'LR'
+    const raw: Pt[] = routeDirection === 'LR'
       ? [s, { x: trunk, y: s.y }, { x: trunk, y: t.y }, t]
       : [s, { x: s.x, y: trunk }, { x: t.x, y: trunk }, t];
     const pts = collapsePoints(raw);
@@ -477,7 +520,7 @@ function orthogonalRoute(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles
   if (active.length > 0) {
     const e = 24;
     const LANE_MARGIN = 80;
-    if (direction === 'TB') {
+    if (routeDirection === 'TB') {
       const clampLo = LANE_MARGIN, clampHi = canvas.w - LANE_MARGIN;
       const secMin = Math.min(...active.map(o => o.x)) - 40;
       const secMax = Math.max(...active.map(o => o.x + o.w)) + 40;
@@ -572,6 +615,43 @@ function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles:
     </g>`;
 }
 
+function presentationGroupRank(label: string): number {
+  const value = label.toLowerCase();
+  if (/edge|ingress|front|perimeter|cdn|waf/.test(value)) return 0;
+  if (/app|compute|api|integration|service|processing/.test(value)) return 1;
+  if (/data|database|storage|cache|sql|cosmos/.test(value)) return 2;
+  return 3;
+}
+
+function primaryPresentationEdges(layout: LayoutResult): Set<string> {
+  const groupRanks = new Map(layout.groups.map(group => [group.id, presentationGroupRank(group.label)]));
+  const nodeGroups = new Map(layout.nodes.map(node => [node.name, node.groupId]));
+  const primary = new Set<string>();
+  for (const edge of layout.edges) {
+    const fromRank = groupRanks.get(nodeGroups.get(edge.from) ?? '') ?? 3;
+    const toRank = groupRanks.get(nodeGroups.get(edge.to) ?? '') ?? 3;
+    if (fromRank <= 2 && toRank <= 2) primary.add(`${edge.from}\u0000${edge.to}`);
+  }
+  return primary;
+}
+
+function presentationLabelEdges(layout: LayoutResult, primary: Set<string>): Set<PositionedEdge> {
+  if (layout.edges.length <= 12) return new Set(layout.edges);
+  const selected: PositionedEdge[] = layout.edges.filter(edge => primary.has(`${edge.from}\u0000${edge.to}`));
+  const nodeGroups = new Map(layout.nodes.map(node => [node.name, node.groupId ?? node.name]));
+  const representedSupportingFlows = new Set<string>();
+  for (const edge of layout.edges) {
+    if (selected.includes(edge)) continue;
+    const key = `${nodeGroups.get(edge.from)}\u0000${nodeGroups.get(edge.to)}`;
+    if (!representedSupportingFlows.has(key)) {
+      selected.push(edge);
+      representedSupportingFlows.add(key);
+    }
+    if (selected.length >= 12) break;
+  }
+  return new Set(selected.slice(0, 12));
+}
+
 // Geometry for an edge's label chip (wrapped lines + box size + trunk anchor),
 // computed independently of final placement so the layout pass can
 // collision-test candidate positions before committing.
@@ -583,26 +663,26 @@ interface EdgeLabelBox {
   anchor: Pt;
 }
 
-function edgeLabelBox(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): EdgeLabelBox | null {
+function edgeLabelBox(edge: PositionedEdge, direction: 'TB' | 'LR', metrics: RenderMetrics, obstacles: RouteObstacle[] = [], canvas: { w: number; h: number } = { w: Infinity, h: Infinity }): EdgeLabelBox | null {
   if (edge.points.length < 2 || !edge.label) return null;
   const route = orthogonalRoute(edge, direction, obstacles, canvas);
   const lines = wrapLabel(edge.label);
   if (lines.length === 0) return null;
   const maxLen = Math.max(...lines.map(l => l.length));
-  const boxW = maxLen * 6.2 + 14;      // padX * 2 = 14
-  const boxH = lines.length * 12 + 8;  // lineH * n + padY * 2
+  const boxW = maxLen * metrics.edgeLabelFont * 0.62 + 14;
+  const boxH = lines.length * metrics.edgeLabelLineHeight + 8;
   return { edge, lines, boxW, boxH, anchor: edgeLabelAnchor(route) };
 }
 
 // Render an edge label as an opaque, up-to-two-line chip centered at (cx, cy).
 // Drawn after all paths and nodes so the text is never overpainted.
-function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: Theme = LIGHT_THEME): string {
+function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: Theme, metrics: RenderMetrics): string {
   const style = EDGE_STYLES[box.edge.type] ?? EDGE_STYLES.sync;
   const boxX = cx - box.boxW / 2;
   const boxY = cy - box.boxH / 2;
-  const firstBaseline = boxY + 4 + 9;  // padY + baseline
+  const firstBaseline = boxY + 4 + metrics.edgeLabelFont;
   const tspans = box.lines
-    .map((l, i) => `<tspan x="${cx}" y="${firstBaseline + i * 12}">${escapeXml(l)}</tspan>`)
+    .map((l, i) => `<tspan x="${cx}" y="${firstBaseline + i * metrics.edgeLabelLineHeight}">${escapeXml(l)}</tspan>`)
     .join('');
 
   return `
@@ -610,7 +690,7 @@ function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: T
       <rect x="${boxX}" y="${boxY}" width="${box.boxW}" height="${box.boxH}" rx="4"
             fill="${theme.edgeLabelFill}" stroke="${style.color}" stroke-width="0.75" />
       <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
-            font-size="10" fill="${style.color}">${tspans}</text>
+        font-size="${metrics.edgeLabelFont}" fill="${style.color}">${tspans}</text>
     </g>`;
 }
 
@@ -618,7 +698,7 @@ function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: T
 // Assign edge-label positions with collision avoidance: chips are nudged
 // along/around their trunk anchor so they don't overlap node cards, group
 // header bands, or previously-placed labels. Returns joined SVG markup.
-function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Theme, routeObstacles: RouteObstacle[], canvas: { w: number; h: number }): string {
+function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Theme, metrics: RenderMetrics, routeObstacles: RouteObstacle[], canvas: { w: number; h: number }, includedEdges = new Set(layout.edges)): string {
   const obstacles: LRect[] = [
     ...layout.nodes.map(n => ({ x: n.x, y: n.y, w: n.width, h: n.height })),
     // Group header band (see renderGroup: y = group.y - 12 - 24, height 24).
@@ -633,7 +713,8 @@ function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Th
   const placed: LRect[] = [];
   return layout.edges
     .map(edge => {
-      const box = edgeLabelBox(edge, direction, routeObstacles, canvas);
+      if (!includedEdges.has(edge)) return '';
+      const box = edgeLabelBox(edge, direction, metrics, routeObstacles, canvas);
       if (!box) return '';
       let chosen = candidates[0];
       for (const off of candidates) {
@@ -646,12 +727,12 @@ function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Th
       }
       const cx = box.anchor.x + chosen.dx, cy = box.anchor.y + chosen.dy;
       placed.push({ x: cx - box.boxW / 2, y: cy - box.boxH / 2, w: box.boxW, h: box.boxH });
-      return renderEdgeLabelChip(box, cx, cy, theme);
+      return renderEdgeLabelChip(box, cx, cy, theme, metrics);
     })
     .join('\n');
 }
 
-function renderGroup(group: PositionedGroup): string {
+function renderGroup(group: PositionedGroup, metrics: RenderMetrics): string {
   const pad = 12;
   const headerH = 24;
   const x = group.x - pad;
@@ -668,7 +749,7 @@ function renderGroup(group: PositionedGroup): string {
       <path d="M ${x} ${y + 12} q 0 -12 12 -12 h ${w - 24} q 12 0 12 12 v ${headerH - 12} h ${-w} z"
             fill="${group.color}" opacity="0.92" />
       <text x="${x + 12}" y="${y + 16}" text-anchor="start"
-            font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="${metrics.groupLabelFont}" font-weight="600"
             fill="#FFFFFF">${escapeXml(group.label)}</text>
     </g>`;
 }
@@ -686,19 +767,36 @@ export interface RenderSvgOptions {
   date?: string;
   /** Currency code for the total-cost footer. Default: 'USD'. */
   currency?: string;
+  /** Output emphasis. Default: presentation. */
+  profile?: RenderProfile;
 }
 
 export function renderSvg(layout: LayoutResult, title?: string, options: RenderSvgOptions = {}): string {
   const theme = resolveTheme(options.theme);
+  const metrics = resolveMetrics(options.profile);
   const edgeDir: 'TB' | 'LR' = layout.direction ?? 'TB';
   // Zone + node rectangles the edge router steers trunks around.
   const routeObstacles = buildRouteObstacles(layout);
   const routeCanvas = { w: layout.width, h: layout.height };
+  const primaryEdges = metrics.profile === 'presentation' ? primaryPresentationEdges(layout) : new Set<string>();
+  const labeledEdges = metrics.profile === 'presentation'
+    ? presentationLabelEdges(layout, primaryEdges)
+    : new Set(layout.edges);
 
   // Center the title, but keep it clear of the top-right metadata panel on
   // narrow canvases (approx panel width 210 + margins). Nudge the anchor left
   // just enough that the title's right edge stops before the panel.
-  const metaReserveW = 222;
+  const rawMetaLines: string[] = [];
+  if (options.author) rawMetaLines.push(`Author: ${options.author}`);
+  rawMetaLines.push(`Date: ${options.date ?? new Date().toISOString().slice(0, 10)}`);
+  if (options.generatedBy) rawMetaLines.push(`Generated by: ${options.generatedBy}`);
+  const panelW = Math.min(320, Math.max(210, layout.width * 0.28));
+  const metaMaxChars = Math.max(24, Math.floor((panelW - 24) / 5.5));
+  const metaLines = rawMetaLines.flatMap(line => wrapLabel(line, metaMaxChars));
+  const panelH = 16 + metaLines.length * 16;
+  const panelX = layout.width - panelW - 12;
+  const panelY = 12;
+  const metaReserveW = panelW + 12;
   let titleX = layout.width / 2;
   if (title) {
     const halfW = title.length * 5.2; // ~half text width at 16px bold
@@ -712,7 +810,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
             fill="${theme.nameText}">${escapeXml(title)}</text>`
     : '';
 
-  const titleOffset = title ? 40 : 0;
+  const titleOffset = Math.max(title ? 40 : 0, panelY + panelH + 12);
   const totalHeight = layout.height + titleOffset;
 
   // ── Footer band (below the diagram): wrapped legend, then cost total ──
@@ -732,7 +830,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
       const x = 20 + col * legendItemW;
       const y = footerTop + row * legendRowH;
       return `<text x="${x}" y="${y}" font-family="Segoe UI, system-ui, sans-serif"
-                    font-size="10" fill="${theme.legendText}">${icon} ${escapeXml(cat)}</text>`;
+                    font-size="${metrics.legendFont}" fill="${theme.legendText}">${icon} ${escapeXml(cat)}</text>`;
     })
     .join('\n');
   const costY = footerTop + legendRows * legendRowH + 6;
@@ -750,27 +848,18 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   const footerText = costedNodes.length > 0
     ? `Est. total ~$${fmtCost(totalCost)}/mo (${escapeXml(currency)}, ${costedNodes.length} of ${layout.nodes.length} priced${rangeNote})`
     : `Usage-based pricing — ${rangeNodes.length} of ${layout.nodes.length} services shown as catalog ranges`;
-  const totalCostFooter = costedNodes.length > 0 || rangeNodes.length > 0
-    ? `<text x="20" y="${costY}" text-anchor="start"
-            font-family="Segoe UI, system-ui, sans-serif" font-size="11" font-weight="600"
+  const totalCostFooter = metrics.showCosts && (costedNodes.length > 0 || rangeNodes.length > 0)
+    ? `<text class="cost-summary" x="20" y="${costY}" text-anchor="start"
+            font-family="Segoe UI, system-ui, sans-serif" font-size="${metrics.costFooterFont}" font-weight="600"
             fill="${theme.costText}">${footerText}</text>`
     : '';
 
-  // Optional metadata panel (top-right): author / date / provenance.
-  const metaLines: string[] = [];
-  if (options.author) metaLines.push(`Author: ${options.author}`);
-  metaLines.push(`Date: ${options.date ?? new Date().toISOString().slice(0, 10)}`);
-  if (options.generatedBy) metaLines.push(`Generated by: ${options.generatedBy}`);
-  const panelW = 210;
-  const panelH = 16 + metaLines.length * 16;
-  const panelX = layout.width - panelW - 12;
-  const panelY = 12;
   const metaPanel = `
     <g class="metadata">
       <rect x="${panelX}" y="${panelY}" width="${panelW}" height="${panelH}" rx="8"
             fill="${theme.metaPanelFill}" stroke="${theme.metaPanelStroke}" stroke-width="1" />
       ${metaLines
-        .map((line, i) => `<text x="${panelX + 12}" y="${panelY + 20 + i * 16}"
+        .map((line, i) => `<text class="metadata-line" x="${panelX + 12}" y="${panelY + 20 + i * 16}"
               font-family="Segoe UI, system-ui, sans-serif" font-size="10"
               fill="${theme.metaText}">${escapeXml(line)}</text>`)
         .join('\n')}
@@ -780,12 +869,14 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
   const totalWithLegend = costY + 22;
 
   // Collision-aware edge labels (kept off nodes + group headers).
-  const edgeLabelsMarkup = placeEdgeLabels(layout, edgeDir, theme, routeObstacles, routeCanvas);
+  const edgeLabelsMarkup = placeEdgeLabels(layout, edgeDir, theme, metrics, routeObstacles, routeCanvas, labeledEdges);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" 
      viewBox="0 0 ${layout.width} ${totalWithLegend}"
      width="${layout.width}" height="${totalWithLegend}"
+  preserveAspectRatio="xMidYMid meet"
+  data-render-profile="${metrics.profile}"
      style="background: ${theme.background}; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
 
   <defs>
@@ -802,13 +893,22 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
 
   <g transform="translate(0, ${titleOffset})">
     <!-- Groups (background) -->
-    ${layout.groups.map(renderGroup).join('\n')}
+    ${layout.groups.map(group => renderGroup(group, metrics)).join('\n')}
 
     <!-- Edge paths (drawn first so nothing paints over labels) -->
-    ${layout.edges.map(e => renderEdgePath(e, edgeDir, routeObstacles, routeCanvas)).join('\n')}
+    ${layout.edges.map(edge => {
+      const key = `${edge.from}\u0000${edge.to}`;
+      const rendered = renderEdgePath(edge, edgeDir, routeObstacles, routeCanvas);
+      if (metrics.profile !== 'presentation') return rendered;
+      const isPrimary = primaryEdges.has(key);
+      return rendered.replace(
+        '<g class="edge"',
+        `<g class="edge ${isPrimary ? 'edge-primary' : 'edge-supporting'}" opacity="${isPrimary ? '1' : '0.58'}"`,
+      ).replace('stroke-width="1.5"', `stroke-width="${isPrimary ? '2.4' : '1.2'}"`);
+    }).join('\n')}
 
     <!-- Nodes (foreground) -->
-    ${layout.nodes.map(n => renderNode(n, theme)).join('\n')}
+    ${layout.nodes.map(n => renderNode(n, theme, metrics)).join('\n')}
 
     <!-- Edge labels (top-most for legibility; collision-avoided) -->
     ${edgeLabelsMarkup}

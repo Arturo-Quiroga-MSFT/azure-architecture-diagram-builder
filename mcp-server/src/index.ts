@@ -48,7 +48,7 @@ import {
   groupFindingsByPillar,
 } from './wafDetector.js';
 
-import { computeLayout } from './layoutEngine.js';
+import { computeLayout, reflowLayoutForPresentation } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
 import { estimateServiceCost, getPricingMeta, type PricingTerm, type CostTier } from './pricing.js';
@@ -990,10 +990,14 @@ server.tool(
       .string()
       .optional()
       .describe('Visual theme for SVG output. Allowed values: light (default), dark.'),
+    profile: z
+      .enum(['presentation', 'technical', 'cost'])
+      .optional()
+      .describe('Render emphasis. presentation (default) prioritizes readable sharing and hides pricing; technical keeps full topology detail; cost adds per-node price badges and the total-cost footer.'),
     region: z
       .string()
       .optional()
-      .describe('Azure region used for best-effort per-node cost badges (e.g. eastus2). Default: eastus2. Set to "none" to disable cost badges.'),
+      .describe('Azure region used by the cost profile (e.g. eastus2). Default: eastus2. Ignored by presentation/technical profiles.'),
     author: z
       .string()
       .optional()
@@ -1036,21 +1040,25 @@ server.tool(
       .optional()
       .describe('Logical service groups (rendered as dashed containers)'),
   },
-  async ({ title, format, direction, services, connections, groups, theme, region, author, generatedBy }) => {
+  async ({ title, format, direction, services, connections, groups, theme, profile, region, author, generatedBy }) => {
     const fmt = format ?? 'svg';
     const dir = direction ?? 'TB';
+    const renderProfile = profile ?? 'presentation';
 
-    const layout = computeLayout(
+    const computedLayout = computeLayout(
       services.map(s => ({ name: s.name, type: s.type, description: s.description, groupId: s.groupId })),
       (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
       dir as any,
     );
+    const layout = renderProfile === 'presentation'
+      ? reflowLayoutForPresentation(computedLayout)
+      : computedLayout;
 
     // Best-effort per-node cost enrichment (SVG cost badges + total footer).
     // Uses the same service→pricing resolution as the estimate_costs tool.
     // Skipped when region === 'none'.
-    if (region !== 'none') {
+    if (renderProfile === 'cost' && region !== 'none') {
       const targetRegion = region ?? 'eastus2';
       for (const node of layout.nodes) {
         const resolved = resolveServiceName(node.type);
@@ -1072,11 +1080,13 @@ server.tool(
     const output = fmt === 'html'
       ? renderHtml(layout, title, {
           theme: theme === 'dark' ? 'dark' : 'light',
+          profile: renderProfile,
           author,
           generatedBy,
         })
       : renderSvg(layout, title, {
           theme: theme === 'dark' ? 'dark' : 'light',
+          profile: renderProfile,
           author,
           generatedBy,
         });

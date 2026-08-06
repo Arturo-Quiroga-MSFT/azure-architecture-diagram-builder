@@ -558,6 +558,179 @@ export function computeLayout(
   return computeFlatLayout(services, connections, groups, direction);
 }
 
+function presentationGroupRank(label: string): number {
+  const value = label.toLowerCase();
+  if (/edge|ingress|front|perimeter|cdn|waf/.test(value)) return 0;
+  if (/app|compute|api|integration|service|processing/.test(value)) return 1;
+  if (/data|database|storage|cache|sql|cosmos/.test(value)) return 2;
+  if (/network|private|connectivity|dns/.test(value)) return 3;
+  if (/identity|security|entra|governance|key vault/.test(value)) return 4;
+  if (/monitor|observ|operations|backup|management/.test(value)) return 5;
+  return 6;
+}
+
+type PortSide = 'L' | 'R' | 'T' | 'B';
+
+function reanchorPresentationEdges(nodes: PositionedNode[], edges: PositionedEdge[]): PositionedEdge[] {
+  const rects = new Map(nodes.map(node => [node.name, {
+    x: node.x,
+    y: node.y,
+    width: node.width,
+    height: node.height,
+  }]));
+  const sides = edges.map(edge => {
+    const source = rects.get(edge.from);
+    const target = rects.get(edge.to);
+    if (!source || !target) return { source: 'R' as PortSide, target: 'L' as PortSide };
+    const sx = source.x + source.width / 2;
+    const sy = source.y + source.height / 2;
+    const tx = target.x + target.width / 2;
+    const ty = target.y + target.height / 2;
+    if (Math.abs(tx - sx) >= Math.abs(ty - sy)) {
+      return tx >= sx
+        ? { source: 'R' as PortSide, target: 'L' as PortSide }
+        : { source: 'L' as PortSide, target: 'R' as PortSide };
+    }
+    return ty >= sy
+      ? { source: 'B' as PortSide, target: 'T' as PortSide }
+      : { source: 'T' as PortSide, target: 'B' as PortSide };
+  });
+
+  interface EndRef { edgeIndex: number; endpoint: 'source' | 'target'; sortKey: number }
+  const buckets = new Map<string, EndRef[]>();
+  const add = (node: string, side: PortSide, ref: EndRef) => {
+    const key = `${node}\u0000${side}`;
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push(ref);
+    else buckets.set(key, [ref]);
+  };
+  const perpendicularCenter = (side: PortSide, rect: Rect) =>
+    side === 'L' || side === 'R' ? rect.y + rect.height / 2 : rect.x + rect.width / 2;
+
+  edges.forEach((edge, edgeIndex) => {
+    const source = rects.get(edge.from);
+    const target = rects.get(edge.to);
+    if (!source || !target) return;
+    add(edge.from, sides[edgeIndex].source, {
+      edgeIndex,
+      endpoint: 'source',
+      sortKey: perpendicularCenter(sides[edgeIndex].source, target),
+    });
+    add(edge.to, sides[edgeIndex].target, {
+      edgeIndex,
+      endpoint: 'target',
+      sortKey: perpendicularCenter(sides[edgeIndex].target, source),
+    });
+  });
+
+  const anchors: Array<{ source?: { x: number; y: number }; target?: { x: number; y: number } }> =
+    edges.map(() => ({}));
+  const portMargin = 14;
+  for (const [key, bucket] of buckets) {
+    const separator = key.indexOf('\u0000');
+    const nodeName = key.slice(0, separator);
+    const side = key.slice(separator + 1) as PortSide;
+    const rect = rects.get(nodeName)!;
+    bucket.sort((left, right) => left.sortKey - right.sortKey);
+    const vertical = side === 'L' || side === 'R';
+    const start = vertical ? rect.y + portMargin : rect.x + portMargin;
+    const span = (vertical ? rect.height : rect.width) - portMargin * 2;
+    const fixed = side === 'R'
+      ? rect.x + rect.width
+      : side === 'L'
+        ? rect.x
+        : side === 'B'
+          ? rect.y + rect.height
+          : rect.y;
+    bucket.forEach((ref, index) => {
+      const variable = start + span * (index + 1) / (bucket.length + 1);
+      const point = vertical ? { x: fixed, y: variable } : { x: variable, y: fixed };
+      anchors[ref.edgeIndex][ref.endpoint] = point;
+    });
+  }
+
+  return edges.map((edge, index) => ({
+    ...edge,
+    points: anchors[index].source && anchors[index].target
+      ? [anchors[index].source!, anchors[index].target!]
+      : edge.points,
+  }));
+}
+
+/**
+ * Reflow a fully grouped, ultra-wide layout into semantic presentation rows.
+ * The primary request path occupies the first row; supporting network,
+ * identity/security, and observability groups occupy the second row.
+ */
+export function reflowLayoutForPresentation(layout: LayoutResult): LayoutResult {
+  if (layout.groups.length < 4 || layout.nodes.some(node => !node.groupId)) return layout;
+  if (layout.width / Math.max(layout.height, 1) < 2.4) return layout;
+
+  const nodes = layout.nodes.map(node => ({ ...node }));
+  const groups = layout.groups
+    .map(group => ({ ...group }))
+    .sort((left, right) => {
+      const rank = presentationGroupRank(left.label) - presentationGroupRank(right.label);
+      return rank || left.x - right.x || left.y - right.y;
+    });
+  const columns = Math.min(3, Math.ceil(groups.length / 2));
+  const rows = Math.ceil(groups.length / columns);
+  const columnGap = 72;
+  const rowGap = 88;
+  const outerWidth = (group: PositionedGroup) => group.width + 24;
+  const outerHeight = (group: PositionedGroup) => group.height + 48;
+  const columnWidths = Array.from({ length: columns }, (_, column) =>
+    Math.max(...groups.filter((_, index) => index % columns === column).map(outerWidth)));
+  const rowHeights = Array.from({ length: rows }, (_, row) =>
+    Math.max(...groups.slice(row * columns, (row + 1) * columns).map(outerHeight)));
+  const columnStarts: number[] = [];
+  const rowStarts: number[] = [];
+  let cursor = PADDING;
+  for (const width of columnWidths) {
+    columnStarts.push(cursor);
+    cursor += width + columnGap;
+  }
+  cursor = PADDING;
+  for (const height of rowHeights) {
+    rowStarts.push(cursor);
+    cursor += height + rowGap;
+  }
+
+  const nodeByGroup = new Map<string, PositionedNode[]>();
+  for (const node of nodes) {
+    const bucket = nodeByGroup.get(node.groupId!);
+    if (bucket) bucket.push(node);
+    else nodeByGroup.set(node.groupId!, [node]);
+  }
+  groups.forEach((group, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const outerX = columnStarts[column] + (columnWidths[column] - outerWidth(group)) / 2;
+    const outerY = rowStarts[row] + (rowHeights[row] - outerHeight(group)) / 2;
+    const nextX = outerX + 12;
+    const nextY = outerY + 36;
+    const dx = nextX - group.x;
+    const dy = nextY - group.y;
+    group.x = nextX;
+    group.y = nextY;
+    for (const node of nodeByGroup.get(group.id) ?? []) {
+      node.x += dx;
+      node.y += dy;
+    }
+  });
+
+  const width = Math.max(...groups.map(group => group.x + group.width + 12)) + PADDING;
+  const height = Math.max(...groups.map(group => group.y + group.height + 12)) + PADDING;
+  return {
+    nodes,
+    groups,
+    edges: reanchorPresentationEdges(nodes, layout.edges.map(edge => ({ ...edge, points: [...edge.points] }))),
+    width,
+    height,
+    direction: layout.direction,
+  };
+}
+
 // ── Category resolver ──────────────────────────────────────────────────
 
 const TYPE_TO_CATEGORY: Record<string, string> = {
