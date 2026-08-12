@@ -1,0 +1,107 @@
+{
+  "application": "aadb",
+  "environment": "main-project",
+  "project": {
+    "name": "Main-Project",
+    "endpoint": "https://r2d2-foundry-001.services.ai.azure.com/api/projects/Main-Project",
+    "resourceId": "/subscriptions/7a28b21e-0d3e-4435-a686-d92889d4ee96/resourceGroups/AQ-FOUNDRY-RG/providers/Microsoft.CognitiveServices/accounts/r2d2-foundry-001/projects/Main-Project"
+  },
+  "dataset": {
+    "name": "aadb-eval-seed",
+    "version": "v1",
+    "sha256": "96e9605a7c50e4be2aa7aa4da447a11406e494365e17294d1ebe29ad1316a496",
+    "localFile": ".foundry/datasets/aadb-eval-seed-v1.jsonl",
+    "remoteMode": "foundry-dataset",
+    "remoteRegistration": {
+      "id": "azureai://accounts/r2d2-foundry-001/projects/Main-Project/data/aadb-eval-seed/versions/1",
+      "name": "aadb-eval-seed",
+      "version": "1",
+      "dataUri": "https://staqmainhub339573983327.blob.core.windows.net/r2d2-found-3590c706-0754-53ca-aec9-9dfbf069bcbd/aadb-eval-seed-v1.jsonl",
+      "verifiedSha256": "96e9605a7c50e4be2aa7aa4da447a11406e494365e17294d1ebe29ad1316a496"
+    },
+    "remoteRegistrationNote": "Foundry dataset version 1 is registered and its backing blob matches the local v1 SHA-256. The first semantic evaluation run used inline JSONL."
+  },
+  "pendingDatasets": [
+    {
+      "name": "aadb-eval-seed",
+      "version": "v2",
+      "mode": "topology",
+      "stage": "seed",
+      "sha256": "0528c33f3abd6d81b3369a1bddc1a26643cb5d82d46c323fba06ba85150c35b3",
+      "localFile": ".foundry/datasets/aadb-eval-seed-v2.jsonl",
+      "manifestFile": ".foundry/datasets/manifest.v2.json",
+      "captureFile": ".foundry/captures/aadb-v2-attempts.jsonl",
+      "captureAttempts": 48,
+      "captureSuccesses": 48,
+      "deterministicResult": ".foundry/results/aadb-baseline-v2.json",
+      "modelScorecard": ".foundry/results/aadb-model-scorecard-v2.json",
+      "modelScorecardSummary": ".foundry/results/aadb-model-scorecard-v2.md",
+      "deterministicPassed": 27,
+      "deterministicTotal": 48,
+      "reviewFile": ".foundry/reviews/aadb-v2-review-sample.jsonl",
+      "reviewStatusFile": ".foundry/reviews/aadb-v2-review-status.json",
+      "status": "pending-human-review",
+      "approvedForFoundryRegistration": false,
+      "remoteRegistration": null
+    }
+  ],
+  "evaluators": [
+    {
+      "name": "relevance",
+      "type": "builtin"
+    },
+    {
+      "name": "coherence",
+      "type": "builtin"
+    },
+    {
+      "name": "aadb_architecture_quality",
+      "type": "custom",
+      "version": "1",
+      "id": "azureai://accounts/r2d2-foundry-001/projects/Main-Project/evaluators/aadb_architecture_quality/versions/1",
+      "localFile": ".foundry/evaluators/aadb-architecture-quality-v1.md",
+      "passThreshold": 4
+    }
+  ],
+  "judgeDeployment": "gpt-5.4-mini",
+  "runs": [
+    {
+      "evaluationName": "aadb-application-quality-v1",
+      "runName": "aadb-captured-models-baseline-v1",
+      "evaluationId": "eval_32eda4aa4285491fadd28cb700857c29",
+      "evaluationRunId": "evalrun_de4529ef901d478a98e801deacede30f",
+      "status": "Completed",
+      "datasetVersion": "v1",
+      "deterministicResult": ".foundry/results/aadb-baseline-v1.json",
+      "semanticResult": ".foundry/results/aadb-foundry-baseline-v1.json",
+      "reportUrl": "https://ai.azure.com/nextgen/r/eiiyHg0-RDWmhtkoidTulg,AQ-FOUNDRY-RG,,r2d2-foundry-001,Main-Project/build/evaluations/eval_32eda4aa4285491fadd28cb700857c29/run/evalrun_de4529ef901d478a98e801deacede30f",
+      "resultCount": {
+        "total": 14,
+        "passed": 1,
+        "failed": 13,
+        "errored": 0,
+        "skipped": 0
+      },
+      "criteria": {
+        "relevance": {
+          "passed": 14,
+          "failed": 0
+        },
+        "coherence": {
+          "passed": 14,
+          "failed": 0
+        },
+        "aadb_architecture_quality": {
+          "passed": 1,
+          "failed": 13
+        }
+      },
+      "usage": {
+        "totalInvocations": 42,
+        "totalTokens": 59516,
+        "promptTokens": 54223,
+        "completionTokens": 5293
+      }
+    }
+  ]
+}

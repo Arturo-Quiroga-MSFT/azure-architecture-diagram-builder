@@ -1,0 +1,26 @@
+{
+  "name": "aadb-eval-seed",
+  "stage": "seed",
+  "version": "v1",
+  "description": "Synthetic architecture-generation smoke cases normalized from approved AADB model-comparison outputs.",
+  "datasetFile": ".foundry/datasets/aadb-eval-seed-v1.jsonl",
+  "rowCount": 14,
+  "scenarioCount": 2,
+  "configFile": "evaluations/aadb/cases.v1.json",
+  "configSha256": "9629ba712674421f4b2d4efdc82793fda990cc0fc5d9e6793985fa740587f775",
+  "datasetSha256": "96e9605a7c50e4be2aa7aa4da447a11406e494365e17294d1ebe29ad1316a496",
+  "sources": [
+    {
+      "scenarioId": "multi-region-commerce",
+      "sourceFile": "model-comparisons/ai-critique-comparisons-try1-may28-2026/MultiRegionCommerceSystem-Model-Comparison.json",
+      "sha256": "65ef5d9592d782320808b39136e5ba0bea33dbd2285ee4ac11b3dd65e3ae8e96",
+      "candidates": 9
+    },
+    {
+      "scenarioId": "intelligent-document-processing",
+      "sourceFile": "model-comparisons/ai-critique-comparisons-try1-may28-2026/IntelligentDocumentProcessingPipeline-Model-Comparison.json",
+      "sha256": "970c8f3d77c523c96a45d59a773c5e0b34c5ed678c66f2ed5a9457ee42fdfc8b",
+      "candidates": 5
+    }
+  ]
+}

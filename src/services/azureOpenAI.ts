@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
-import { getServiceIconMapping, SERVICE_ICON_MAP } from '../data/serviceIconMapping';
 import { trackAIModelUsage } from './telemetryService';
 import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
+import { buildArchitectureGenerationSystemPrompt } from './architectureGenerationContract';
+import { postProcessArchitecture } from './architecturePostProcessing';
 
 // Non-secret flag indicating the AI backend is wired up. The actual Azure OpenAI
 // endpoint and credentials live server-side in the token server; the browser
@@ -71,9 +72,10 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
     isReasoning: modelConfig.isReasoning,
     reasoningEffort: settings.reasoningEffort,
     jsonOutput,
+    supportsStructuredOutputs: modelConfig.supportsStructuredOutputs,
   });
   
-  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
 
   try {
     const { ok, status, data, errorText } = await callAzureOpenAIProxy({
@@ -204,51 +206,11 @@ Return ONLY JSON: {"suggestions":["..."]}`;
 }
 
 export async function generateArchitectureWithAI(description: string, modelOverride?: ModelOverride, manifest?: import('./componentManifestAI').ComponentManifest) {
-  // Build a compact list of known service display names for the prompt
-  const knownServices = Object.entries(SERVICE_ICON_MAP)
-    .map(([, m]) => `${m.displayName} (${m.category})`)
-    .join(', ');
-
   const manifestBlock = manifest
     ? '\n\n' + (await import('./componentManifestAI')).renderManifestForPrompt(manifest)
     : '';
 
-  const systemPrompt = `You are an expert Azure cloud architect. Analyze architecture requirements and return a JSON specification for an Azure architecture diagram with logical groupings.${manifestBlock}
-
-**IMPORTANT: DO NOT include position, x, y, width, or height in your response. The layout engine will calculate optimal positions automatically.**
-
-Return ONLY a valid JSON object (no markdown, no explanations) with this structure:
-{
-  "groups": [{ "id": "unique-group-id", "label": "Group Name" }],
-  "services": [{ "id": "unique-id", "name": "Service Display Name", "type": "Azure service type", "category": "icon category", "description": "Brief role", "groupId": "group-id or null" }],
-  "connections": [{ "from": "service-id", "to": "service-id", "label": "Detailed action description", "type": "sync|async|optional" }],
-  "workflow": [{ "step": 1, "description": "What happens in this step", "services": ["service-id-1", "service-id-2"] }]
-}
-
-KNOWN SERVICES (use these exact names for "name" and "type" fields):
-${knownServices}
-
-Icon categories (use for "category" field):
-"app services", "databases", "storage", "networking", "compute", "containers", "ai + machine learning", "analytics", "identity", "monitor", "iot", "integration", "devops", "security", "web", "management + governance", "fabric"
-
-Rules:
-1. Create 2-5 logical groups. Max 6 services per group.
-2. Use EXACT service names from the KNOWN SERVICES list above for both "name" and "type". If a required service is NOT in the list, use its official Azure service name and set category to the closest match.
-3. For identity/auth, use "Microsoft Entra ID" (never "Azure Active Directory" or "AAD").
-4. Connection labels MUST be specific and action-oriented (e.g., "Submit batch job per tenant"), NOT generic ("Request", "Data").
-5. MICROSOFT FABRIC: When the solution uses Microsoft Fabric, put Fabric items (Lakehouse, Warehouse, Eventhouse, Eventstream, KQL Database, Fabric Notebook, Fabric Data Pipeline, Dataflow Gen2, Semantic Model, Power BI Report, Mirrored Database, Real-Time Dashboard) in a group named "Microsoft Fabric" and set their category to "fabric". Include "Microsoft Fabric Capacity" (the billed F SKU) and "OneLake" (storage) in that group — individual Fabric items consume the shared capacity, so the capacity carries the cost.
-5. Do NOT specify sourcePosition or targetPosition.
-6. Connection types: "sync" (solid, HTTP/SQL), "async" (dashed, queues/events), "optional" (dotted, fallback).
-7. Provide 5-10 workflow steps following the data flow chronologically. Each step's "services" array MUST list ALL service IDs involved in that step (typically 2-3 services per step, not just one).
-
-LAYOUT READABILITY — CRITICAL:
-8. **Directional group flow.** Arrange groups in a clear left-to-right pipeline: Ingress/Edge → Application/Compute → Data/Storage. Place Identity/Security as a separate group at the bottom-left. Place Monitoring/Observability as a separate group at the bottom-right.
-9. **Hub-and-spoke for monitoring.** Do NOT draw individual edges from every service to Log Analytics or Azure Monitor. Instead, connect ONLY the primary compute service to Azure Monitor, then a SINGLE edge from Azure Monitor to Log Analytics. Maximum 2-3 edges involving monitoring services total.
-10. **Limit total connections to 12-18.** Only include connections that represent the PRIMARY data or control flow. Omit obvious implicit relationships (e.g., every service using Key Vault — show only 1 representative Key Vault edge). Omit diagnostic/telemetry edges except the hub-and-spoke pattern in rule 9.
-11. **Minimize cross-group edges.** Place tightly-coupled services in the SAME group. If two services exchange data frequently, they belong together. Cross-group connections cause visual clutter — aim for no more than 1-2 outgoing edges per group to other groups.
-12. **Total service count: 8-12 max** unless the user's description explicitly names more services. Include every service the user mentions. Only add EXTRA security/identity services (Key Vault, Entra ID, DDoS, WAF) beyond what the user asked for when the architecture critically depends on them.
-13. **Dashboard & visualization services.** When the user mentions dashboards, reporting, visualization, or analytics UIs, include a dedicated visualization service such as Azure Managed Grafana, Power BI Embedded, Azure Dashboard, or Azure Workbooks — do NOT substitute a generic compute/web service for the dashboard role.
-14. **No floating services — every service MUST be connected.** Each entry in "services" has to appear as the "from" or "to" of at least ONE connection. A service with no connection renders as a box sitting by itself with no stated purpose. "from" and "to" MUST use the service's exact "id" value — never its display name. If a service genuinely has no data or control flow to any other service, leave it out entirely rather than emitting it unconnected.`;
+  const systemPrompt = buildArchitectureGenerationSystemPrompt(manifestBlock);
 
   try {
     const messages = [
@@ -273,144 +235,9 @@ LAYOUT READABILITY — CRITICAL:
       throw new Error(`Invalid JSON response from Azure OpenAI: ${parseError.message}`);
     }
     
-    // Post-process: normalize service names and categories against SERVICE_ICON_MAP
-    if (architecture.services && Array.isArray(architecture.services)) {
-      architecture.services = architecture.services.map((service: any) => {
-        // Try to match against known service mappings
-        let mapping = getServiceIconMapping(service.name) || getServiceIconMapping(service.type);
-        if (mapping) {
-          console.log(`  🔧 Normalized "${service.name}" → "${mapping.displayName}" (${mapping.category})`);
-          return {
-            ...service,
-            name: mapping.displayName,
-            type: mapping.displayName,
-            category: mapping.category,
-          };
-        }
-        return service;
-      });
-    }
-
     // Add AI metrics to the response
     architecture.metrics = metrics;
-
-    if (!architecture.services || !Array.isArray(architecture.services)) {
-      throw new Error('Invalid response format: missing services array');
-    }
-    
-    if (!architecture.connections || !Array.isArray(architecture.connections)) {
-      architecture.connections = [];
-    }
-
-    if (!architecture.groups || !Array.isArray(architecture.groups)) {
-      architecture.groups = [];
-    }
-
-    // Normalize groups: some models return plain strings instead of objects
-    // e.g. ["dmz-primary", "app-tier"] → [{id: "dmz-primary", label: "DMZ Primary"}, ...]
-    architecture.groups = architecture.groups.map((g: any) => {
-      if (typeof g === 'string') {
-        return {
-          id: g,
-          label: g.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-        };
-      }
-      // Strip groupId from group objects to prevent circular parent refs
-      const { groupId, ...cleanGroup } = g;
-      return cleanGroup;
-    });
-
-    // Build valid group ID set and resolve conflicts
-    const groupIds = new Set(architecture.groups.map((g: any) => g.id));
-    const serviceIds = new Set(architecture.services.map((s: any) => s.id));
-
-    // Prevent ID collisions between groups and services (causes ReactFlow circular refs)
-    for (const gid of groupIds) {
-      if (serviceIds.has(gid)) {
-        console.warn(`⚠️ Group ID "${gid}" collides with a service ID — prefixing group`);
-        const group = architecture.groups.find((g: any) => g.id === gid);
-        const newId = `group-${gid}`;
-        group.id = newId;
-        // Update service references
-        architecture.services.forEach((s: any) => {
-          if (s.groupId === gid) s.groupId = newId;
-        });
-      }
-    }
-
-    // Clear invalid groupId references on services to prevent "parent not found" crashes
-    const validGroupIds = new Set(architecture.groups.map((g: any) => g.id));
-    architecture.services.forEach((s: any) => {
-      if (s.groupId && !validGroupIds.has(s.groupId)) {
-        console.warn(`⚠️ Service "${s.id}" references unknown group "${s.groupId}" — clearing`);
-        s.groupId = null;
-      }
-    });
-
-    // ── Connection integrity ────────────────────────────────────────────────
-    // An edge whose endpoint doesn't match a service id is dropped by the
-    // renderer, which strands the service on the canvas as an unconnected
-    // "floating box" — reported by users as boxes "hanging off by themselves
-    // with no link to design". Models routinely emit the service *name* (or a
-    // slugged variant) instead of its id, so try to resolve an endpoint before
-    // discarding the edge.
-    const slug = (v: unknown) =>
-      String(v ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-
-    const serviceIdSet = new Set<string>(architecture.services.map((s: any) => String(s.id)));
-    const aliasToId = new Map<string, string>();
-    for (const s of architecture.services) {
-      for (const alias of [s.id, s.name, s.type]) {
-        const key = slug(alias);
-        if (key && !aliasToId.has(key)) aliasToId.set(key, String(s.id));
-      }
-    }
-    const resolveEndpoint = (ref: unknown): string | null => {
-      const raw = String(ref ?? '');
-      if (serviceIdSet.has(raw)) return raw;
-      return aliasToId.get(slug(raw)) ?? null;
-    };
-
-    let repairedEdges = 0;
-    let droppedEdges = 0;
-    architecture.connections = architecture.connections.filter((c: any) => {
-      const from = resolveEndpoint(c.from);
-      const to = resolveEndpoint(c.to);
-      if (!from || !to || from === to) {
-        console.warn(`⚠️ Dropping connection "${c.from}" → "${c.to}" (unresolvable or self-referencing endpoint)`);
-        droppedEdges++;
-        return false;
-      }
-      if (from !== c.from || to !== c.to) {
-        console.warn(`🔧 Repaired connection endpoint "${c.from}" → "${from}", "${c.to}" → "${to}"`);
-        repairedEdges++;
-        c.from = from;
-        c.to = to;
-      }
-      return true;
-    });
-
-    // Surface any service that still has no edge at all.
-    const connectedIds = new Set<string>();
-    architecture.connections.forEach((c: any) => {
-      connectedIds.add(String(c.from));
-      connectedIds.add(String(c.to));
-    });
-    const orphans = architecture.services.filter((s: any) => !connectedIds.has(String(s.id)));
-    if (orphans.length > 0) {
-      console.warn(
-        `⚠️ ${orphans.length} service(s) have no connections: ${orphans.map((s: any) => s.name || s.id).join(', ')}`,
-      );
-    }
-
-    architecture.integrity = {
-      repairedEdges,
-      droppedEdges,
-      orphanCount: orphans.length,
-      orphanServices: orphans.map((s: any) => String(s.name || s.id)),
-    };
-
-    return architecture;
+    return postProcessArchitecture(architecture);
   } catch (error: any) {
     console.error('Azure OpenAI Error:', error);
     
@@ -533,6 +360,7 @@ export function isAzureOpenAIConfigured(): boolean {
   const hasGpt51 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51;
   const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
   const hasGpt54Mini = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI;
+  const hasMaiThinking1 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1;
   const hasDeepSeek = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK;
   const hasDeepSeekV4Pro = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO;
   const hasGrok = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST;
@@ -540,7 +368,7 @@ export function isAzureOpenAIConfigured(): boolean {
   const hasMistralL3 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3;
   const hasKimi = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25;
   
-  return hasEndpoint && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasDeepSeek || hasDeepSeekV4Pro || hasGrok || hasGrok43 || hasMistralL3 || hasKimi);
+  return hasEndpoint && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasMaiThinking1 || hasDeepSeek || hasDeepSeekV4Pro || hasGrok || hasGrok43 || hasMistralL3 || hasKimi);
 }
 
 /**

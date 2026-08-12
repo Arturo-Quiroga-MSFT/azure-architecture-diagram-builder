@@ -1,0 +1,12 @@
+{
+  "datasetName": "aadb-eval-seed",
+  "datasetVersion": "v2",
+  "datasetSha256": "0528c33f3abd6d81b3369a1bddc1a26643cb5d82d46c323fba06ba85150c35b3",
+  "reviewFile": ".foundry/reviews/aadb-v2-review-sample.jsonl",
+  "sampleSize": 16,
+  "status": "pending-human-review",
+  "reviewedBy": null,
+  "reviewedAt": null,
+  "approvedForFoundryRegistration": false,
+  "notes": null
+}
