@@ -1,9 +1,14 @@
 /* Model Settings Popover – toolbar dropdown styles */
 
-.toolbar-dropdown-menu--model-settings {
-  width: 480px;
+.toolbar-dropdown-menu.toolbar-dropdown-menu--model-settings {
+  width: min(600px, calc(100vw - 24px));
   right: 0;
   left: auto;
+  box-sizing: border-box;
+}
+
+.app-header:has(.toolbar-dropdown-menu--model-settings) {
+  z-index: 901;
 }
 
 /* Trigger button – must stand out on the blue header in both modes */
@@ -56,7 +61,7 @@
 /* Model selection buttons */
 .msp-model-buttons {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   padding: 0.25rem 0.4rem 0.4rem;
 }
@@ -64,6 +69,7 @@
 .msp-model-btn {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 5px;
   padding: 8px 10px;
   border: 1px solid rgba(17, 24, 39, 0.15);
@@ -76,6 +82,29 @@
   transition: all 0.15s ease;
   justify-content: center;
   white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .toolbar-dropdown-menu.toolbar-dropdown-menu--model-settings {
+    position: fixed;
+    top: 72px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
+  }
+
+  .msp-model-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .msp-model-btn {
+    min-height: 42px;
+    padding-inline: 8px;
+    white-space: normal;
+    line-height: 1.15;
+  }
 }
 
 .msp-model-btn:hover {
