@@ -1,0 +1,399 @@
+{
+  "name": "aadb-eval-seed",
+  "version": "v2",
+  "stage": "seed",
+  "mode": "topology",
+  "description": "Synthetic current-app topology generation cases captured through the AADB v2 prompt and post-processing contract.",
+  "capture": {
+    "attemptsPerModel": 2,
+    "modelRoles": [
+      {
+        "role": "current-default",
+        "preferences": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.4"]
+      },
+      {
+        "role": "recommended-generation",
+        "preferences": ["gpt-5.2", "gpt-5.4", "gpt-5.4-mini"]
+      },
+      {
+        "role": "provider-diversity",
+        "preferences": ["kimi-k2-7-code", "deepseek-v4-pro", "kimi-k2-5", "mistral-large-3", "grok-4.3", "deepseek-v3.2-speciale"]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "three-tier-web-concise",
+      "title": "Concise three-tier web application",
+      "promptStyle": "concise",
+      "difficulty": "smoke",
+      "source": "blind-synthetic",
+      "prompt": "Design a secure, production-ready three-tier web application on Azure with a browser frontend, an API, a relational database, and image storage. Include identity and operational monitoring.",
+      "expectedBehavior": "Produce a connected three-tier topology with an internet-facing entry point, application compute, relational data, object storage, Microsoft Entra ID, secrets protection, and a sparse monitoring path. The architecture may use any suitable managed Azure web and database services.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["azure front door", "application gateway", "web application firewall"],
+          ["app service", "container apps", "azure functions", "azure kubernetes service"],
+          ["azure sql database", "azure database for postgresql", "sql database", "postgresql"],
+          ["storage account", "blob storage"],
+          ["microsoft entra id"],
+          ["key vault"],
+          ["azure monitor", "application insights"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["azure front door", "application gateway", "web application firewall"],
+            "to": ["app service", "container apps", "azure functions", "azure kubernetes service"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "azure kubernetes service"],
+            "to": ["azure sql database", "azure database for postgresql", "sql database", "postgresql"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "azure kubernetes service"],
+            "to": ["storage account", "blob storage"]
+          }
+        ],
+        "minimumGroups": 3,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 5,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 7,
+        "maximumServices": 12,
+        "minimumConnections": 6,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "event-driven-orders-detailed",
+      "title": "Event-driven order processing",
+      "promptStyle": "detailed",
+      "difficulty": "regression",
+      "source": "blind-synthetic",
+      "prompt": "Design an event-driven order platform that handles 50,000 orders per hour. External clients enter through API Management. Use asynchronous orchestration, idempotent workers, durable order state, inventory updates, session caching, dead-letter handling, Microsoft Entra ID, Key Vault, and end-to-end monitoring. Prefer managed services and isolate synchronous request handling from background fulfillment.",
+      "expectedBehavior": "Separate synchronous order acceptance from asynchronous processing. Show API ingress, a durable messaging broker, managed compute workers, transactional order state, cache, identity, secrets, and observability. Messaging connections must be marked asynchronous and the workflow must cover acceptance, enqueueing, processing, persistence, and failure handling.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["api management"],
+          ["service bus"],
+          ["azure functions", "container apps", "azure kubernetes service"],
+          ["azure cosmos db", "azure sql database", "sql database"],
+          ["azure cache for redis", "azure managed redis", "redis cache"],
+          ["microsoft entra id"],
+          ["key vault"],
+          ["azure monitor", "application insights"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["api management"],
+            "to": ["azure functions", "container apps", "azure kubernetes service", "service bus"]
+          },
+          {
+            "from": ["azure functions", "container apps", "azure kubernetes service", "api management"],
+            "to": ["service bus"]
+          },
+          {
+            "from": ["service bus"],
+            "to": ["azure functions", "container apps", "azure kubernetes service"]
+          },
+          {
+            "from": ["azure functions", "container apps", "azure kubernetes service"],
+            "to": ["azure cosmos db", "azure sql database", "sql database"]
+          }
+        ],
+        "requiredConnectionTypes": ["async"],
+        "minimumGroups": 3,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 5,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 8,
+        "maximumServices": 14,
+        "minimumConnections": 8,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "private-paas-zero-trust",
+      "title": "Private PaaS and zero trust",
+      "promptStyle": "detailed",
+      "difficulty": "coverage",
+      "source": "current-ui-derived",
+      "prompt": "Design a zero-trust customer portal using Azure Front Door Premium with WAF, API Management, Container Apps, Azure Database for PostgreSQL, and Blob Storage. PaaS data services must use Private Link, application secrets must use Key Vault, outbound traffic must be controlled, administrators must not expose SSH or public database endpoints, and authentication must use Microsoft Entra ID. Include Defender for Cloud and centralized monitoring.",
+      "expectedBehavior": "Create a layered edge, application, private data, security, and operations topology. PaaS data services should be represented behind Private Link or private endpoints, identity should protect the application rather than act as the user's first destination, and no public administrative path should be introduced.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["azure front door"],
+          ["web application firewall"],
+          ["api management"],
+          ["container apps"],
+          ["azure database for postgresql", "postgresql"],
+          ["storage account", "blob storage"],
+          ["private link", "private endpoint"],
+          ["key vault"],
+          ["microsoft entra id"],
+          ["microsoft defender for cloud", "defender for cloud"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["azure front door", "web application firewall"],
+            "to": ["api management"]
+          },
+          {
+            "from": ["api management"],
+            "to": ["container apps"]
+          },
+          {
+            "from": ["container apps", "private link", "private endpoint"],
+            "to": ["azure database for postgresql", "postgresql", "storage account", "blob storage", "private link", "private endpoint"]
+          }
+        ],
+        "forbiddenConnections": [
+          {
+            "from": ["microsoft entra id"],
+            "to": ["azure front door", "web application firewall"]
+          }
+        ],
+        "minimumGroups": 4,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 5,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 10,
+        "maximumServices": 16,
+        "minimumConnections": 9,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "enterprise-rag-agent",
+      "title": "Enterprise RAG agent",
+      "promptStyle": "ambiguous",
+      "difficulty": "coverage",
+      "source": "blind-synthetic",
+      "prompt": "Create an internal AI assistant for employees that answers questions from approved company documents with citations, respects each user's permissions, supports feedback, and can be operated safely by a small platform team. Use Microsoft Foundry and managed Azure services. Make reasonable assumptions explicit in the workflow.",
+      "expectedBehavior": "Produce a defensible retrieval-augmented generation design with authenticated application ingress, Microsoft Foundry or Azure OpenAI, indexed approved content, durable source storage, identity-aware retrieval, secrets, feedback or conversation state, content safeguards, and monitoring. The workflow should distinguish ingestion/indexing from the online query path and mention assumptions through its descriptions.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["microsoft foundry", "azure openai"],
+          ["azure ai search", "azure cognitive search", "cognitive search"],
+          ["storage account", "blob storage"],
+          ["app service", "container apps", "azure functions"],
+          ["microsoft entra id"],
+          ["key vault"],
+          ["azure cosmos db", "cosmos db", "azure sql database"],
+          ["azure monitor", "application insights"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["app service", "container apps", "azure functions"],
+            "to": ["microsoft foundry", "azure openai"]
+          },
+          {
+            "from": ["microsoft foundry", "azure openai", "app service", "container apps", "azure functions"],
+            "to": ["azure ai search", "azure cognitive search", "cognitive search"]
+          },
+          {
+            "from": ["storage account", "blob storage"],
+            "to": ["azure ai search", "azure cognitive search", "cognitive search", "azure functions"]
+          }
+        ],
+        "minimumGroups": 3,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 6,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 8,
+        "maximumServices": 14,
+        "minimumConnections": 8,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "intelligent-document-processing-v2",
+      "title": "Intelligent document processing bridge",
+      "promptStyle": "detailed",
+      "difficulty": "regression",
+      "source": "v1-bridge-rewritten",
+      "prompt": "Design a managed intelligent document processing platform. Users upload PDFs and images through a protected API. Store originals, extract text and fields with Azure AI Document Intelligence, classify and summarize content with Azure OpenAI, index searchable content in Azure AI Search, persist document status and metadata, quarantine failed or suspicious files, and include Microsoft Entra ID, Key Vault, asynchronous orchestration, and monitoring.",
+      "expectedBehavior": "Show a chronological upload, durable storage, asynchronous processing, extraction, AI enrichment, indexing, metadata persistence, quarantine, and operations flow. Required services must be connected through their primary data path and background processing must be distinguished from synchronous upload handling.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["api management", "app service", "container apps"],
+          ["storage account", "blob storage"],
+          ["azure ai document intelligence", "document intelligence"],
+          ["azure openai"],
+          ["azure ai search", "azure cognitive search", "cognitive search"],
+          ["azure cosmos db", "cosmos db", "azure sql database"],
+          ["service bus", "event grid"],
+          ["microsoft entra id"],
+          ["key vault"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["api management", "app service", "container apps"],
+            "to": ["storage account", "blob storage", "service bus", "event grid", "azure functions"]
+          },
+          {
+            "from": ["azure functions", "container apps", "service bus", "event grid", "storage account", "blob storage"],
+            "to": ["azure ai document intelligence", "document intelligence"]
+          },
+          {
+            "from": ["azure ai document intelligence", "document intelligence", "azure functions", "container apps"],
+            "to": ["azure openai"]
+          },
+          {
+            "from": ["azure openai", "azure functions", "container apps"],
+            "to": ["azure ai search", "azure cognitive search", "cognitive search"]
+          }
+        ],
+        "requiredConnectionTypes": ["async"],
+        "minimumGroups": 3,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 6,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 9,
+        "maximumServices": 15,
+        "minimumConnections": 9,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "iot-real-time-analytics",
+      "title": "Real-time IoT analytics",
+      "promptStyle": "detailed",
+      "difficulty": "coverage",
+      "source": "current-ui-derived",
+      "prompt": "Design an industrial IoT monitoring platform for 5,000 devices sending telemetry every five seconds. Require secure device provisioning, a hot path for sub-second anomaly dashboards, a cool path retaining raw data for seven years, predictive maintenance scoring, operator alerts, replay after downstream outages, private connectivity where supported, and centralized health monitoring. Use managed Azure services.",
+      "expectedBehavior": "Separate hot and cool telemetry paths from secure device ingestion through streaming processing, operational visualization, durable raw storage, predictive scoring, and alerting. The topology should include a dedicated dashboard service and asynchronous event flow.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["iot hub"],
+          ["device provisioning service"],
+          ["event hubs", "stream analytics"],
+          ["azure data lake storage", "storage account", "blob storage"],
+          ["azure machine learning", "machine learning"],
+          ["azure managed grafana", "power bi embedded", "real-time dashboard", "azure dashboard", "azure workbooks"],
+          ["azure monitor", "application insights"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["device provisioning service", "iot hub"],
+            "to": ["iot hub", "event hubs", "stream analytics"]
+          },
+          {
+            "from": ["iot hub", "event hubs"],
+            "to": ["stream analytics", "azure data lake storage", "storage account", "blob storage"]
+          },
+          {
+            "from": ["stream analytics", "azure functions"],
+            "to": ["azure managed grafana", "power bi embedded", "real-time dashboard", "azure dashboard", "azure workbooks", "azure machine learning", "machine learning"]
+          }
+        ],
+        "requiredConnectionTypes": ["async"],
+        "requiresVisualization": true,
+        "minimumGroups": 4,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 6,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 8,
+        "maximumServices": 15,
+        "minimumConnections": 8,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "fabric-medallion-current",
+      "title": "Microsoft Fabric medallion analytics",
+      "promptStyle": "concise",
+      "difficulty": "regression",
+      "source": "current-ui-derived",
+      "prompt": "Design a Microsoft Fabric medallion lakehouse that ingests batch and streaming sources into OneLake, processes Bronze, Silver, and Gold layers, serves a Direct Lake semantic model and Power BI reporting, includes data governance and operational monitoring, and runs on an explicit Fabric capacity.",
+      "expectedBehavior": "Represent Fabric ingestion, OneLake, medallion processing, curated serving, semantic modeling, reporting, governance, and the billed Fabric capacity. Fabric items must be grouped under Microsoft Fabric and the workflow must distinguish batch and streaming paths when both are present.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["microsoft fabric capacity", "fabric capacity"],
+          ["onelake"],
+          ["lakehouse"],
+          ["fabric data pipeline", "data factory pipeline", "eventstream"],
+          ["semantic model"],
+          ["power bi report", "power bi embedded"],
+          ["microsoft purview", "purview"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["fabric data pipeline", "data factory pipeline", "eventstream", "onelake"],
+            "to": ["onelake", "lakehouse"]
+          },
+          {
+            "from": ["lakehouse", "warehouse"],
+            "to": ["semantic model"]
+          },
+          {
+            "from": ["semantic model"],
+            "to": ["power bi report", "power bi embedded"]
+          }
+        ],
+        "requiresVisualization": true,
+        "requiresFabricCore": true,
+        "minimumGroups": 2,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 5,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 7,
+        "maximumServices": 16,
+        "minimumConnections": 6,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    },
+    {
+      "id": "multi-region-regulated-tension",
+      "title": "Multi-region regulated commerce bridge",
+      "promptStyle": "conflicting-constraints",
+      "difficulty": "coverage",
+      "source": "v1-bridge-rewritten",
+      "prompt": "Design a PCI-regulated commerce platform active in two Azure regions with a 15-minute RPO and one-hour RTO. It must survive a regional failure, keep checkout latency low, process orders asynchronously, maintain a globally available product catalog, protect payment traffic, centralize secrets and audit telemetry, and minimize standing infrastructure cost. The business asks for strict regional data residency while also requesting globally writable customer and order data; resolve that tension safely in the architecture and workflow.",
+      "expectedBehavior": "Produce a multi-region design with global protected ingress, regional application stacks, asynchronous order processing, caching, resilient data services, secrets, and observability. The workflow should explicitly resolve the conflict between global writes and strict residency, for example by keeping regulated records region-bound while globally distributing nonregulated catalog data.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["azure front door"],
+          ["web application firewall"],
+          ["app service", "container apps", "azure kubernetes service"],
+          ["service bus", "event grid"],
+          ["azure cosmos db", "cosmos db"],
+          ["azure cache for redis", "azure managed redis", "redis cache"],
+          ["key vault"],
+          ["azure monitor", "log analytics", "application insights"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["azure front door", "web application firewall"],
+            "to": ["app service", "container apps", "azure kubernetes service"]
+          },
+          {
+            "from": ["app service", "container apps", "azure kubernetes service"],
+            "to": ["service bus", "event grid"]
+          },
+          {
+            "from": ["app service", "container apps", "azure kubernetes service"],
+            "to": ["azure cosmos db", "cosmos db", "azure cache for redis", "azure managed redis", "redis cache"]
+          }
+        ],
+        "requiredConnectionTypes": ["async"],
+        "minimumGroups": 4,
+        "maximumGroups": 5,
+        "minimumWorkflowSteps": 6,
+        "maximumWorkflowSteps": 10,
+        "minimumServices": 9,
+        "maximumServices": 16,
+        "minimumConnections": 9,
+        "maximumConnections": 18,
+        "maximumMonitoringConnections": 3
+      }
+    }
+  ]
+}

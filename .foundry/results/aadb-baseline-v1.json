@@ -1,0 +1,139 @@
+{
+  "summary": {
+    "generatedAt": "2026-08-11T15:03:55.599Z",
+    "evaluator": {
+      "name": "aadb-deterministic",
+      "version": "v1"
+    },
+    "dataset": {
+      "name": "aadb-eval-seed",
+      "version": "v1",
+      "rows": 14,
+      "scenarios": 2,
+      "sha256": "96e9605a7c50e4be2aa7aa4da447a11406e494365e17294d1ebe29ad1316a496"
+    },
+    "overall": {
+      "candidates": 14,
+      "passed": 2,
+      "passRate": 0.143,
+      "averageScore": 93.9,
+      "averageServiceRecall": 1,
+      "averageConnectionRecall": 0.911
+    },
+    "byModel": [
+      {
+        "key": "gpt-5.2-codex",
+        "candidates": 1,
+        "passRate": 1,
+        "averageScore": 100,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 1,
+        "averageLatencyMs": 9979,
+        "averageTokens": 2451
+      },
+      {
+        "key": "deepseek-v3.2-speciale",
+        "candidates": 1,
+        "passRate": 0,
+        "averageScore": 95,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 1,
+        "averageLatencyMs": 12482,
+        "averageTokens": 2996
+      },
+      {
+        "key": "gpt-5.1",
+        "candidates": 2,
+        "passRate": 0,
+        "averageScore": 95,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 1,
+        "averageLatencyMs": 17456.5,
+        "averageTokens": 4006.5
+      },
+      {
+        "key": "gpt-5.3-codex",
+        "candidates": 1,
+        "passRate": 0,
+        "averageScore": 95,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 1,
+        "averageLatencyMs": 23535,
+        "averageTokens": 3781
+      },
+      {
+        "key": "grok-4.3",
+        "candidates": 2,
+        "passRate": 0.5,
+        "averageScore": 95,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.875,
+        "averageLatencyMs": 50409,
+        "averageTokens": 5815
+      },
+      {
+        "key": "gpt-5.2",
+        "candidates": 2,
+        "passRate": 0,
+        "averageScore": 92.5,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.875,
+        "averageLatencyMs": 22222,
+        "averageTokens": 3713.5
+      },
+      {
+        "key": "gpt-5.4",
+        "candidates": 2,
+        "passRate": 0,
+        "averageScore": 92.5,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.875,
+        "averageLatencyMs": 29094,
+        "averageTokens": 3680.5
+      },
+      {
+        "key": "gpt-5.4-mini",
+        "candidates": 2,
+        "passRate": 0,
+        "averageScore": 92.5,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.875,
+        "averageLatencyMs": 15270,
+        "averageTokens": 3936.5
+      },
+      {
+        "key": "grok-4.1-fast",
+        "candidates": 1,
+        "passRate": 0,
+        "averageScore": 90,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.75,
+        "averageLatencyMs": 7869,
+        "averageTokens": 2618
+      }
+    ],
+    "byScenario": [
+      {
+        "key": "multi-region-commerce",
+        "candidates": 9,
+        "passRate": 0.111,
+        "averageScore": 95,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.972,
+        "averageLatencyMs": 20322.2,
+        "averageTokens": 3651.8
+      },
+      {
+        "key": "intelligent-document-processing",
+        "candidates": 5,
+        "passRate": 0.2,
+        "averageScore": 92,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.8,
+        "averageLatencyMs": 27973.6,
+        "averageTokens": 4256.8
+      }
+    ]
+  },
+  "rowsFile": ".foundry/results/aadb-baseline-v1.rows.jsonl"
+}

@@ -8,7 +8,11 @@
  * (DeepSeek, Grok) use the Chat Completions API via Azure AI model inference.
  */
 
-export type ApiFormat = 'responses' | 'chat-completions';
+export type ApiFormat = 'responses' | 'chat-completions' | 'chat-completions-v1';
+
+export function isChatCompletionsFormat(apiFormat: ApiFormat): boolean {
+  return apiFormat === 'chat-completions' || apiFormat === 'chat-completions-v1';
+}
 
 /**
  * Build the correct API URL for the given format.
@@ -16,6 +20,9 @@ export type ApiFormat = 'responses' | 'chat-completions';
  * - Chat Completions:    {endpoint}openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview
  */
 export function buildApiUrl(endpoint: string, deployment: string, apiFormat: ApiFormat): string {
+  if (apiFormat === 'chat-completions-v1') {
+    return `${endpoint}openai/v1/chat/completions`;
+  }
   if (apiFormat === 'chat-completions') {
     return `${endpoint}openai/deployments/${deployment}/chat/completions?api-version=2024-05-01-preview`;
   }
@@ -34,14 +41,18 @@ export function buildRequestBody(params: {
   isReasoning: boolean;
   reasoningEffort: string;
   jsonOutput?: boolean;
+  supportsStructuredOutputs?: boolean;
 }): any {
-  const { deployment, messages, maxTokens, apiFormat, isReasoning, reasoningEffort, jsonOutput = true } = params;
+  const { deployment, messages, maxTokens, apiFormat, isReasoning, reasoningEffort, jsonOutput = true, supportsStructuredOutputs = true } = params;
 
-  if (apiFormat === 'chat-completions') {
+  if (isChatCompletionsFormat(apiFormat)) {
     return {
+      ...(apiFormat === 'chat-completions-v1' ? { model: deployment } : {}),
       messages,
-      max_tokens: maxTokens,
-      ...(jsonOutput ? { response_format: { type: 'json_object' } } : {}),
+      ...(apiFormat === 'chat-completions-v1'
+        ? { max_completion_tokens: maxTokens }
+        : { max_tokens: maxTokens }),
+      ...(jsonOutput && supportsStructuredOutputs ? { response_format: { type: 'json_object' } } : {}),
       temperature: 0.7,
     };
   }
@@ -51,7 +62,7 @@ export function buildRequestBody(params: {
     model: deployment,
     input: messages,
     max_output_tokens: maxTokens,
-    ...(jsonOutput ? { text: { format: { type: 'json_object' } } } : {}),
+    ...(jsonOutput && supportsStructuredOutputs ? { text: { format: { type: 'json_object' } } } : {}),
     store: false,
   };
 
@@ -69,7 +80,7 @@ export function parseApiResponse(
   data: any,
   apiFormat: ApiFormat,
 ): { content: string; promptTokens: number; completionTokens: number; totalTokens: number } {
-  if (apiFormat === 'chat-completions') {
+  if (isChatCompletionsFormat(apiFormat)) {
     const usage = data.usage || {};
     return {
       content: data.choices?.[0]?.message?.content || '',

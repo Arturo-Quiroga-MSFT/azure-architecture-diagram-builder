@@ -1,0 +1,1210 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedFrom": {
+    "datasetName": "aadb-eval-seed",
+    "datasetVersion": "v2",
+    "datasetSha256": "0528c33f3abd6d81b3369a1bddc1a26643cb5d82d46c323fba06ba85150c35b3",
+    "feature": "topology-generation",
+    "appCommit": "71ef7e82e354aefb738bb92082216ae4e9326875",
+    "topologyContractSha256": "6a72f6ec1b86524b826f4cb32978109784678acc8a780e9f5bb9add089f890bf"
+  },
+  "evidenceStatus": {
+    "deterministic": "available",
+    "humanReview": "pending-human-review",
+    "semanticEvaluation": "not-run",
+    "cost": {
+      "status": "not-computed",
+      "reason": "No versioned per-model input/output token pricing source is present in this evaluation package."
+    },
+    "recommendationsProvisional": true
+  },
+  "models": [
+    {
+      "model": "gpt-5.6-luna",
+      "displayName": "GPT-5.6 Luna",
+      "role": "current-default",
+      "deployment": "gpt-5.6-luna",
+      "apiFormat": "responses",
+      "reasoningEffort": "medium",
+      "attempts": 16,
+      "generationSuccesses": 16,
+      "generationFailures": 0,
+      "generationSuccessRate": 1,
+      "rows": 16,
+      "strictPassed": 12,
+      "strictPassRate": 0.75,
+      "averageDeterministicScore": 98,
+      "averageRequiredServiceRecall": 0.967,
+      "averageRequiredFlowRecall": 0.922,
+      "latencyMs": {
+        "average": 30840.3,
+        "p50": 27600,
+        "p95": 47690
+      },
+      "tokens": {
+        "averagePrompt": 1809.1,
+        "averageCompletion": 3167.4,
+        "averageTotal": 4976.5,
+        "total": 79624
+      },
+      "postProcessing": {
+        "repairedEdges": 2,
+        "droppedEdges": 0,
+        "orphanServices": 0,
+        "invalidWorkflowReferences": 2
+      },
+      "humanReview": {
+        "status": "pending-human-review",
+        "sampleSize": 0,
+        "averageOverall": null,
+        "averageArchitectureSuitability": null,
+        "averageRequirementAdherence": null,
+        "averageSecurity": null,
+        "averageExplanationQuality": null
+      }
+    },
+    {
+      "model": "kimi-k2-7-code",
+      "displayName": "Kimi K2.7 Code",
+      "role": "provider-diversity",
+      "deployment": "Kimi-K2.7-Code",
+      "apiFormat": "chat-completions",
+      "reasoningEffort": "none",
+      "attempts": 16,
+      "generationSuccesses": 16,
+      "generationFailures": 0,
+      "generationSuccessRate": 1,
+      "rows": 16,
+      "strictPassed": 8,
+      "strictPassRate": 0.5,
+      "averageDeterministicScore": 97.6,
+      "averageRequiredServiceRecall": 0.945,
+      "averageRequiredFlowRecall": 0.917,
+      "latencyMs": {
+        "average": 104307.8,
+        "p50": 98136,
+        "p95": 201343
+      },
+      "tokens": {
+        "averagePrompt": 1801.1,
+        "averageCompletion": 7645.6,
+        "averageTotal": 9446.8,
+        "total": 151148
+      },
+      "postProcessing": {
+        "repairedEdges": 0,
+        "droppedEdges": 0,
+        "orphanServices": 0,
+        "invalidWorkflowReferences": 0
+      },
+      "humanReview": {
+        "status": "pending-human-review",
+        "sampleSize": 0,
+        "averageOverall": null,
+        "averageArchitectureSuitability": null,
+        "averageRequirementAdherence": null,
+        "averageSecurity": null,
+        "averageExplanationQuality": null
+      }
+    },
+    {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "role": "recommended-generation",
+      "deployment": "gpt-5.2",
+      "apiFormat": "responses",
+      "reasoningEffort": "medium",
+      "attempts": 16,
+      "generationSuccesses": 16,
+      "generationFailures": 0,
+      "generationSuccessRate": 1,
+      "rows": 16,
+      "strictPassed": 7,
+      "strictPassRate": 0.438,
+      "averageDeterministicScore": 94.8,
+      "averageRequiredServiceRecall": 0.945,
+      "averageRequiredFlowRecall": 0.729,
+      "latencyMs": {
+        "average": 63015.4,
+        "p50": 55382,
+        "p95": 122409
+      },
+      "tokens": {
+        "averagePrompt": 1809.1,
+        "averageCompletion": 4260.5,
+        "averageTotal": 6069.6,
+        "total": 97114
+      },
+      "postProcessing": {
+        "repairedEdges": 0,
+        "droppedEdges": 0,
+        "orphanServices": 0,
+        "invalidWorkflowReferences": 0
+      },
+      "humanReview": {
+        "status": "pending-human-review",
+        "sampleSize": 0,
+        "averageOverall": null,
+        "averageArchitectureSuitability": null,
+        "averageRequirementAdherence": null,
+        "averageSecurity": null,
+        "averageExplanationQuality": null
+      }
+    }
+  ],
+  "leaders": {
+    "deterministicQuality": "gpt-5.6-luna",
+    "humanQualitySampled": null,
+    "speedP50": "gpt-5.6-luna",
+    "tokenEfficiency": "gpt-5.6-luna",
+    "paretoFrontier": [
+      "gpt-5.6-luna"
+    ]
+  },
+  "byScenario": [
+    {
+      "scenario": "enterprise-rag-agent",
+      "promptStyle": "ambiguous",
+      "source": "blind-synthetic",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 24994,
+            "p50": 23043,
+            "p95": 26945
+          },
+          "tokens": {
+            "averagePrompt": 1795,
+            "averageCompletion": 2842,
+            "averageTotal": 4637,
+            "total": 9274
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 95,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 0.667,
+          "latencyMs": {
+            "average": 53880.5,
+            "p50": 52379,
+            "p95": 55382
+          },
+          "tokens": {
+            "averagePrompt": 1795,
+            "averageCompletion": 4023,
+            "averageTotal": 5818,
+            "total": 11636
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 91.3,
+          "averageRequiredServiceRecall": 0.938,
+          "averageRequiredFlowRecall": 0.5,
+          "latencyMs": {
+            "average": 88686.5,
+            "p50": 67279,
+            "p95": 110094
+          },
+          "tokens": {
+            "averagePrompt": 1787,
+            "averageCompletion": 6214.5,
+            "averageTotal": 8001.5,
+            "total": 16003
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "event-driven-orders-detailed",
+      "promptStyle": "detailed",
+      "source": "blind-synthetic",
+      "leader": "gpt-5.2",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 44538,
+            "p50": 44158,
+            "p95": 44918
+          },
+          "tokens": {
+            "averagePrompt": 1815,
+            "averageCompletion": 3472.5,
+            "averageTotal": 5287.5,
+            "total": 10575
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 115067,
+            "p50": 84635,
+            "p95": 145499
+          },
+          "tokens": {
+            "averagePrompt": 1806,
+            "averageCompletion": 13073.5,
+            "averageTotal": 14879.5,
+            "total": 29759
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 98.2,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 0.875,
+          "latencyMs": {
+            "average": 30653,
+            "p50": 22975,
+            "p95": 38331
+          },
+          "tokens": {
+            "averagePrompt": 1815,
+            "averageCompletion": 2969.5,
+            "averageTotal": 4784.5,
+            "total": 9569
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "fabric-medallion-current",
+      "promptStyle": "concise",
+      "source": "current-ui-derived",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 32225,
+            "p50": 26628,
+            "p95": 37822
+          },
+          "tokens": {
+            "averagePrompt": 1797,
+            "averageCompletion": 3105,
+            "averageTotal": 4902,
+            "total": 9804
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 94098,
+            "p50": 35128,
+            "p95": 153068
+          },
+          "tokens": {
+            "averagePrompt": 1788,
+            "averageCompletion": 6763,
+            "averageTotal": 8551,
+            "total": 17102
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 1,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 98.5,
+          "averageRequiredServiceRecall": 0.928,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 64772,
+            "p50": 47984,
+            "p95": 81560
+          },
+          "tokens": {
+            "averagePrompt": 1797,
+            "averageCompletion": 4869.5,
+            "averageTotal": 6666.5,
+            "total": 13333
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "intelligent-document-processing-v2",
+      "promptStyle": "detailed",
+      "source": "v1-bridge-rewritten",
+      "leader": "gpt-5.2",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 58258,
+            "p50": 36378,
+            "p95": 80138
+          },
+          "tokens": {
+            "averagePrompt": 1819,
+            "averageCompletion": 2891,
+            "averageTotal": 4710,
+            "total": 9420
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 1,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 98.9,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 46759.5,
+            "p50": 45829,
+            "p95": 47690
+          },
+          "tokens": {
+            "averagePrompt": 1819,
+            "averageCompletion": 3355.5,
+            "averageTotal": 5174.5,
+            "total": 10349
+          },
+          "postProcessing": {
+            "repairedEdges": 2,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 2
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 97.8,
+          "averageRequiredServiceRecall": 0.889,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 74875,
+            "p50": 48778,
+            "p95": 100972
+          },
+          "tokens": {
+            "averagePrompt": 1813,
+            "averageCompletion": 4237,
+            "averageTotal": 6050,
+            "total": 12100
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "iot-real-time-analytics",
+      "promptStyle": "detailed",
+      "source": "current-ui-derived",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 1,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 97.2,
+          "averageRequiredServiceRecall": 0.857,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 29794.5,
+            "p50": 29546,
+            "p95": 30043
+          },
+          "tokens": {
+            "averagePrompt": 1812,
+            "averageCompletion": 3513,
+            "averageTotal": 5325,
+            "total": 10650
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 94.6,
+          "averageRequiredServiceRecall": 0.857,
+          "averageRequiredFlowRecall": 0.834,
+          "latencyMs": {
+            "average": 184498,
+            "p50": 167653,
+            "p95": 201343
+          },
+          "tokens": {
+            "averagePrompt": 1804,
+            "averageCompletion": 11385,
+            "averageTotal": 13189,
+            "total": 26378
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 93.5,
+          "averageRequiredServiceRecall": 0.928,
+          "averageRequiredFlowRecall": 0.667,
+          "latencyMs": {
+            "average": 109710,
+            "p50": 97011,
+            "p95": 122409
+          },
+          "tokens": {
+            "averagePrompt": 1812,
+            "averageCompletion": 6848,
+            "averageTotal": 8660,
+            "total": 17320
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "multi-region-regulated-tension",
+      "promptStyle": "conflicting-constraints",
+      "source": "v1-bridge-rewritten",
+      "leader": "kimi-k2-7-code",
+      "provisional": true,
+      "models": [
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 97.5,
+          "averageRequiredServiceRecall": 0.875,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 112658.5,
+            "p50": 68578,
+            "p95": 156739
+          },
+          "tokens": {
+            "averagePrompt": 1827,
+            "averageCompletion": 6886.5,
+            "averageTotal": 8713.5,
+            "total": 17427
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 90,
+          "averageRequiredServiceRecall": 0.875,
+          "averageRequiredFlowRecall": 0.5,
+          "latencyMs": {
+            "average": 35087.5,
+            "p50": 30707,
+            "p95": 39468
+          },
+          "tokens": {
+            "averagePrompt": 1835,
+            "averageCompletion": 3946.5,
+            "averageTotal": 5781.5,
+            "total": 11563
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 80,
+          "averageRequiredServiceRecall": 0.75,
+          "averageRequiredFlowRecall": 0,
+          "latencyMs": {
+            "average": 73453.5,
+            "p50": 63923,
+            "p95": 82984
+          },
+          "tokens": {
+            "averagePrompt": 1835,
+            "averageCompletion": 4754,
+            "averageTotal": 6589,
+            "total": 13178
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "private-paas-zero-trust",
+      "promptStyle": "detailed",
+      "source": "current-ui-derived",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 24526,
+            "p50": 21452,
+            "p95": 27600
+          },
+          "tokens": {
+            "averagePrompt": 1824,
+            "averageCompletion": 3020.5,
+            "averageTotal": 4844.5,
+            "total": 9689
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 137032.5,
+            "p50": 98136,
+            "p95": 175929
+          },
+          "tokens": {
+            "averagePrompt": 1816,
+            "averageCompletion": 9167.5,
+            "averageTotal": 10983.5,
+            "total": 21967
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 1,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 96.5,
+          "averageRequiredServiceRecall": 0.95,
+          "averageRequiredFlowRecall": 0.834,
+          "latencyMs": {
+            "average": 58350.5,
+            "p50": 55560,
+            "p95": 61141
+          },
+          "tokens": {
+            "averagePrompt": 1824,
+            "averageCompletion": 3986.5,
+            "averageTotal": 5810.5,
+            "total": 11621
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "three-tier-web-concise",
+      "promptStyle": "concise",
+      "source": "blind-synthetic",
+      "leader": "kimi-k2-7-code",
+      "provisional": true,
+      "models": [
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 27546.5,
+            "p50": 17585,
+            "p95": 37508
+          },
+          "tokens": {
+            "averagePrompt": 1768,
+            "averageCompletion": 3438,
+            "averageTotal": 5206,
+            "total": 10412
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 22683,
+            "p50": 21436,
+            "p95": 23930
+          },
+          "tokens": {
+            "averagePrompt": 1776,
+            "averageCompletion": 2587,
+            "averageTotal": 4363,
+            "total": 8726
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 1,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 95,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 0.666,
+          "latencyMs": {
+            "average": 41160.5,
+            "p50": 39565,
+            "p95": 42756
+          },
+          "tokens": {
+            "averagePrompt": 1776,
+            "averageCompletion": 3239.5,
+            "averageTotal": 5015.5,
+            "total": 10031
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    }
+  ],
+  "byPromptStyle": [
+    {
+      "promptStyle": "ambiguous",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 2,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 24994,
+            "p50": 23043,
+            "p95": 26945
+          },
+          "tokens": {
+            "averagePrompt": 1795,
+            "averageCompletion": 2842,
+            "averageTotal": 4637,
+            "total": 9274
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 95,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 0.667,
+          "latencyMs": {
+            "average": 53880.5,
+            "p50": 52379,
+            "p95": 55382
+          },
+          "tokens": {
+            "averagePrompt": 1795,
+            "averageCompletion": 4023,
+            "averageTotal": 5818,
+            "total": 11636
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 91.3,
+          "averageRequiredServiceRecall": 0.938,
+          "averageRequiredFlowRecall": 0.5,
+          "latencyMs": {
+            "average": 88686.5,
+            "p50": 67279,
+            "p95": 110094
+          },
+          "tokens": {
+            "averagePrompt": 1787,
+            "averageCompletion": 6214.5,
+            "averageTotal": 8001.5,
+            "total": 16003
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "promptStyle": "concise",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 4,
+          "strictPassed": 4,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 27454,
+            "p50": 23930,
+            "p95": 37822
+          },
+          "tokens": {
+            "averagePrompt": 1786.5,
+            "averageCompletion": 2846,
+            "averageTotal": 4632.5,
+            "total": 18530
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 4,
+          "strictPassed": 4,
+          "strictPassRate": 1,
+          "averageDeterministicScore": 100,
+          "averageRequiredServiceRecall": 1,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 60822.3,
+            "p50": 35128,
+            "p95": 153068
+          },
+          "tokens": {
+            "averagePrompt": 1778,
+            "averageCompletion": 5100.5,
+            "averageTotal": 6878.5,
+            "total": 27514
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 4,
+          "strictPassed": 2,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 96.8,
+          "averageRequiredServiceRecall": 0.964,
+          "averageRequiredFlowRecall": 0.833,
+          "latencyMs": {
+            "average": 52966.3,
+            "p50": 42756,
+            "p95": 81560
+          },
+          "tokens": {
+            "averagePrompt": 1786.5,
+            "averageCompletion": 4054.5,
+            "averageTotal": 5841,
+            "total": 23364
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "promptStyle": "conflicting-constraints",
+      "leader": "kimi-k2-7-code",
+      "provisional": true,
+      "models": [
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 97.5,
+          "averageRequiredServiceRecall": 0.875,
+          "averageRequiredFlowRecall": 1,
+          "latencyMs": {
+            "average": 112658.5,
+            "p50": 68578,
+            "p95": 156739
+          },
+          "tokens": {
+            "averagePrompt": 1827,
+            "averageCompletion": 6886.5,
+            "averageTotal": 8713.5,
+            "total": 17427
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 90,
+          "averageRequiredServiceRecall": 0.875,
+          "averageRequiredFlowRecall": 0.5,
+          "latencyMs": {
+            "average": 35087.5,
+            "p50": 30707,
+            "p95": 39468
+          },
+          "tokens": {
+            "averagePrompt": 1835,
+            "averageCompletion": 3946.5,
+            "averageTotal": 5781.5,
+            "total": 11563
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 2,
+          "strictPassed": 0,
+          "strictPassRate": 0,
+          "averageDeterministicScore": 80,
+          "averageRequiredServiceRecall": 0.75,
+          "averageRequiredFlowRecall": 0,
+          "latencyMs": {
+            "average": 73453.5,
+            "p50": 63923,
+            "p95": 82984
+          },
+          "tokens": {
+            "averagePrompt": 1835,
+            "averageCompletion": 4754,
+            "averageTotal": 6589,
+            "total": 13178
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    },
+    {
+      "promptStyle": "detailed",
+      "leader": "gpt-5.6-luna",
+      "provisional": true,
+      "models": [
+        {
+          "model": "gpt-5.6-luna",
+          "rows": 8,
+          "strictPassed": 6,
+          "strictPassRate": 0.75,
+          "averageDeterministicScore": 98.5,
+          "averageRequiredServiceRecall": 0.964,
+          "averageRequiredFlowRecall": 0.969,
+          "latencyMs": {
+            "average": 32933.3,
+            "p50": 29546,
+            "p95": 47690
+          },
+          "tokens": {
+            "averagePrompt": 1817.5,
+            "averageCompletion": 3214.6,
+            "averageTotal": 5032.1,
+            "total": 40257
+          },
+          "postProcessing": {
+            "repairedEdges": 2,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 2
+          }
+        },
+        {
+          "model": "gpt-5.2",
+          "rows": 8,
+          "strictPassed": 5,
+          "strictPassRate": 0.625,
+          "averageDeterministicScore": 97.5,
+          "averageRequiredServiceRecall": 0.97,
+          "averageRequiredFlowRecall": 0.875,
+          "latencyMs": {
+            "average": 67714.1,
+            "p50": 55560,
+            "p95": 122409
+          },
+          "tokens": {
+            "averagePrompt": 1817.5,
+            "averageCompletion": 4299.5,
+            "averageTotal": 6117,
+            "total": 48936
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        },
+        {
+          "model": "kimi-k2-7-code",
+          "rows": 8,
+          "strictPassed": 4,
+          "strictPassRate": 0.5,
+          "averageDeterministicScore": 98.1,
+          "averageRequiredServiceRecall": 0.937,
+          "averageRequiredFlowRecall": 0.958,
+          "latencyMs": {
+            "average": 127868.1,
+            "p50": 100972,
+            "p95": 201343
+          },
+          "tokens": {
+            "averagePrompt": 1809.8,
+            "averageCompletion": 9465.8,
+            "averageTotal": 11275.5,
+            "total": 90204
+          },
+          "postProcessing": {
+            "repairedEdges": 0,
+            "droppedEdges": 0,
+            "orphanServices": 0,
+            "invalidWorkflowReferences": 0
+          }
+        }
+      ]
+    }
+  ],
+  "interpretation": [
+    "Model identity is retained in canonical evidence and removed only from blinded human-review rows.",
+    "Leaders are provisional until human review and semantic evaluator v2 are complete.",
+    "No single composite score is used; quality, latency, tokens, reliability, and human ratings remain separate.",
+    "Generation success rates describe only this pinned capture matrix."
+  ]
+}

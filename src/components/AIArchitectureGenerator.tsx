@@ -23,14 +23,14 @@ const AUTO_CLOSE_MS = 45000;
 
 // Blueprint diagrams require general-purpose OpenAI models.
 // - Non-OpenAI partner deployments (DeepSeek, Grok, Mistral, Kimi, etc. —
-//   identified by apiFormat: 'chat-completions') run under stricter Azure AI
+//   identified by a Chat Completions apiFormat) run under stricter Azure AI
 //   Content Safety configurations that block the blueprint system prompt as
 //   adversarial.
 // - Codex-tuned variants (e.g. gpt-5.2-codex, gpt-5.3-codex) are optimized for
 //   coding tasks and tend to refuse non-code architecture-diagram prompts with
 //   "I'm sorry, ..." responses.
 const isBlueprintCapableModel = (m: ModelType): boolean =>
-  MODEL_CONFIG[m].apiFormat !== 'chat-completions' && !m.includes('codex');
+  !MODEL_CONFIG[m].apiFormat?.startsWith('chat-completions') && !m.includes('codex');
 const modeRequiresOpenAI = (m: GenerationMode): boolean =>
   m === 'blueprint' || m === 'both';
 

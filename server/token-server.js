@@ -40,6 +40,9 @@ const DEPLOYMENT_NAME_RE = /^[A-Za-z0-9._-]{1,64}$/;
 
 function buildOpenAIUrl(deployment, apiFormat) {
   const base = OPENAI_ENDPOINT.endsWith('/') ? OPENAI_ENDPOINT : `${OPENAI_ENDPOINT}/`;
+  if (apiFormat === 'chat-completions-v1') {
+    return `${base}openai/v1/chat/completions`;
+  }
   if (apiFormat === 'chat-completions') {
     return `${base}openai/deployments/${encodeURIComponent(deployment)}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
@@ -98,8 +101,8 @@ app.post('/api/openai', async (req, res) => {
   }
 
   const { apiFormat, deployment, body } = req.body || {};
-  if (apiFormat !== 'responses' && apiFormat !== 'chat-completions') {
-    return res.status(400).json({ error: "apiFormat must be 'responses' or 'chat-completions'" });
+  if (apiFormat !== 'responses' && apiFormat !== 'chat-completions' && apiFormat !== 'chat-completions-v1') {
+    return res.status(400).json({ error: "apiFormat must be 'responses', 'chat-completions', or 'chat-completions-v1'" });
   }
   if (typeof deployment !== 'string' || !DEPLOYMENT_NAME_RE.test(deployment)) {
     return res.status(400).json({ error: 'invalid deployment name' });

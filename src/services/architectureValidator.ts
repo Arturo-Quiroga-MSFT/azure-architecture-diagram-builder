@@ -64,7 +64,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
   // Determine API format
   const apiFormat = modelConfig.apiFormat || 'responses';
 
-  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
   
   // Start timing
   const startTime = performance.now();
@@ -78,9 +78,10 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
     apiFormat,
     isReasoning: modelConfig.isReasoning,
     reasoningEffort: settings.reasoningEffort,
+    supportsStructuredOutputs: modelConfig.supportsStructuredOutputs,
   });
   
-  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat === 'chat-completions' ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
 
   const { ok, status, data, errorText } = await callAzureOpenAIProxy({
     apiFormat,
