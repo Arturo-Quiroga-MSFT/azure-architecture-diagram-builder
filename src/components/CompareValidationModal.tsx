@@ -36,10 +36,11 @@ function abbreviateModelForFile(model: ModelType): string {
     'gpt-5.1': 'gpt51', 'gpt-5.2': 'gpt52',
     'gpt-5.4': 'gpt54', 'gpt-5.4-mini': 'gpt54mini', 'gpt-5.6-sol': 'gpt56sol',
     'gpt-5.6-terra': 'gpt56terra', 'gpt-5.6-luna': 'gpt56luna',
+    'mai-thinking-1': 'maithinking1',
     'deepseek-v3.2-speciale': 'deepseek', 'grok-4.1-fast': 'grok41fast',
     'kimi-k2-5': 'kimik25', 'kimi-k2-7-code': 'kimik27code',
   };
-  return map[model] || 'unknown';
+  return map[model] || String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
 }
 
 /** Build a model suffix like "gpt52-medium" or "deepseek" */

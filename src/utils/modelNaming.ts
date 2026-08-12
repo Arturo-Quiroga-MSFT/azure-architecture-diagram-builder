@@ -44,6 +44,8 @@ function abbreviateModel(model: ModelType): string {
       return 'gpt56terra';
     case 'gpt-5.6-luna':
       return 'gpt56luna';
+    case 'mai-thinking-1':
+      return 'maithinking1';
     case 'deepseek-v3.2-speciale':
       return 'deepseek';
     case 'deepseek-v4-pro':
@@ -60,7 +62,7 @@ function abbreviateModel(model: ModelType): string {
       return 'kimik27code';
 
     default:
-      return 'unknown';
+      return String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
   }
 }
 

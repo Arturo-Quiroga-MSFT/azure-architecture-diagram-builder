@@ -63,7 +63,7 @@ import { validateArchitecture, ArchitectureValidation } from './services/archite
 import { bandLabel } from './services/wafMaturity';
 import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
-import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType } from './stores/modelSettingsStore';
+import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
 import NodePricingEditor from './components/NodePricingEditor';
@@ -2451,13 +2451,23 @@ function App() {
 
     // Set the model badge from metrics
     if (architecture.metrics) {
-      const modelKey = Object.keys(MODEL_CONFIG).find(
-        k => DEPLOYMENT_NAMES[k as ModelType] === architecture.metrics!.model
+      const modelKey = (Object.keys(MODEL_CONFIG) as ModelType[]).find(
+        model => DEPLOYMENT_NAMES[model] === architecture.metrics!.model
+          || model === architecture.metrics!.model
+          || MODEL_CONFIG[model].displayName === architecture.metrics!.model
       );
       const displayName = modelKey
-        ? MODEL_CONFIG[modelKey as keyof typeof MODEL_CONFIG].displayName
+        ? MODEL_CONFIG[modelKey].displayName
         : architecture.metrics.model || 'AI';
       setGeneratedWithModel({ name: displayName, timeMs: architecture.metrics.elapsedTimeMs });
+
+      if (modelKey) {
+        const metricReasoning = architecture.metrics.reasoningEffort;
+        const sourceReasoning: ReasoningEffort = ['none', 'low', 'medium', 'high'].includes(metricReasoning || '')
+          ? metricReasoning as ReasoningEffort
+          : 'none';
+        setSourceModel(modelKey, sourceReasoning);
+      }
     }
 
     // Initialize pricing for all service nodes asynchronously (uses active region)
