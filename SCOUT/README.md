@@ -249,7 +249,9 @@ not.
 - Never paste bearer tokens into tracked files, issue descriptions, screenshots,
   transcripts, or shell history.
 - Keep the decoupled server token in the repo-root `.env.mcp`, which is ignored
-  by Git and should be mode `0600`. The legacy combined-image deployment uses
+  by Git and should be mode `0600`. The primary VNet web deployment reuses this
+  token for its co-located `/mcp` endpoint, so hardening that endpoint does not
+  require a second Scout token. The legacy combined-image deployment uses
   `.env.mcp-instance` instead.
 - Rotate a token immediately if it is disclosed, then update Scout through the
   same approved secret channel.
