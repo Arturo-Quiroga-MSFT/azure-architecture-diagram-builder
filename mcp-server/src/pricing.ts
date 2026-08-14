@@ -46,6 +46,10 @@ interface PricingData {
 
 const DEFAULT_REGION = 'eastus2';
 
+export function normalizeAzureRegion(region: string): string {
+  return region.trim().toLowerCase().replace(/[\s_-]+/g, '');
+}
+
 let cachedData: PricingData | null = null;
 
 function loadData(): PricingData {
@@ -65,6 +69,10 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export interface ServiceCostEstimate {
   hasPricingData: boolean;
+  requestedRegion: string;
+  effectiveRegion: string;
+  regionProxyUsed: boolean;
+  regionProxyReason?: string;
   currency?: string;
   pricesAsOf?: string | null;
   term?: PricingTerm;
@@ -87,6 +95,7 @@ export interface ServiceCostEstimate {
 export interface EstimateParams {
   pricingServiceName: string;
   region?: string;
+  fallbackRegion?: string;
   term?: PricingTerm;
   tier?: CostTier;
   quantity?: number;
@@ -99,17 +108,33 @@ export interface EstimateParams {
  */
 export function estimateServiceCost(params: EstimateParams): ServiceCostEstimate {
   const { pricingServiceName } = params;
-  const region = params.region || DEFAULT_REGION;
+  const requestedRegion = normalizeAzureRegion(params.region || DEFAULT_REGION);
   const term: PricingTerm = params.term || 'payg';
   const tier: CostTier = params.tier || 'standard';
   const quantity = params.quantity && params.quantity > 0 ? params.quantity : 1;
 
   const data = loadData();
-  const regionMap = data.regions[region] ?? data.regions[DEFAULT_REGION];
+  const fallbackRegion = normalizeAzureRegion(params.fallbackRegion || DEFAULT_REGION);
+  const effectiveRegion = data.regions[requestedRegion]
+    ? requestedRegion
+    : data.regions[fallbackRegion]
+      ? fallbackRegion
+      : DEFAULT_REGION;
+  const regionProxyUsed = effectiveRegion !== requestedRegion;
+  const regionProxyReason = regionProxyUsed
+    ? `No bundled pricing snapshot is available for ${requestedRegion}; ${effectiveRegion} is used as the explicit proxy.`
+    : undefined;
+  const regionMap = data.regions[effectiveRegion];
   const entry = regionMap?.[stemFor(pricingServiceName)];
 
   if (!entry) {
-    return { hasPricingData: false };
+    return {
+      hasPricingData: false,
+      requestedRegion,
+      effectiveRegion,
+      regionProxyUsed,
+      regionProxyReason,
+    };
   }
 
   // Never extrapolate one SKU's discount over unrelated SKUs. In one-year
@@ -133,6 +158,10 @@ export function estimateServiceCost(params: EstimateParams): ServiceCostEstimate
 
   return {
     hasPricingData: true,
+    requestedRegion,
+    effectiveRegion,
+    regionProxyUsed,
+    regionProxyReason,
     currency: entry.currency,
     pricesAsOf: entry.pricesAsOf,
     term,
@@ -144,9 +173,9 @@ export function estimateServiceCost(params: EstimateParams): ServiceCostEstimate
     sampleSku: entry.sampleSku,
     expectedBasis: entry.expectedBasis,
     reservedApplied: selectedHasReserved,
-    note: oneYearRequested
+    note: `${regionProxyReason ? `${regionProxyReason} ` : ''}${oneYearRequested
       ? `${reservedTierCount}/3 tier values have real SKU-specific 1-year Savings Plan meters; unavailable tiers remain PAYG. Selected tier ${selectedHasReserved ? 'uses a real one-year rate' : 'remains PAYG'}.`
-      : 'Expected uses a configured representative SKU; low/high span the cheapest/most-expensive eligible PAYG SKUs in the region.',
+      : 'Expected uses a configured representative SKU; low/high span the cheapest/most-expensive eligible PAYG SKUs in the effective region.'}`,
   };
 }
 

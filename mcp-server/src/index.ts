@@ -50,7 +50,7 @@ import {
 import { computeLayout, reflowLayoutForPresentation } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
-import { estimateServiceCost, getPricingMeta, type PricingTerm, type CostTier } from './pricing.js';
+import { estimateServiceCost, getPricingMeta, normalizeAzureRegion, type PricingTerm, type CostTier } from './pricing.js';
 import { generateBicep } from './bicepGenerator.js';
 import { generateTerraform } from './terraformGenerator.js';
 import { generateDeploymentGuide } from './deploymentGuide.js';
@@ -111,6 +111,21 @@ function slugify(name: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 40);
+}
+
+function regionalPlacementNote(
+  services: Array<{ region?: string }>,
+  deploymentLocation: string,
+): string {
+  const explicitRegions = [...new Set(
+    services
+      .map(service => service.region ? normalizeAzureRegion(service.region) : null)
+      .filter((region): region is string => Boolean(region)),
+  )].sort();
+  if (explicitRegions.length === 0) return '';
+  const normalizedDeploymentLocation = normalizeAzureRegion(deploymentLocation);
+  if (explicitRegions.length === 1 && explicitRegions[0] === normalizedDeploymentLocation) return '';
+  return ` Per-service region metadata (${explicitRegions.join(', ')}) is not yet emitted as multi-region IaC; this output deploys regional resources to the request-level location ${normalizedDeploymentLocation}.`;
 }
 
 // ── Server factory ─────────────────────────────────────────────────────
@@ -190,6 +205,7 @@ server.registerTool(
           z.object({
             name: z.string().describe('Service instance name (e.g. "Web App Backend")'),
             type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+            region: z.string().optional().describe('Azure region for this service (for example eastus2 or centralus).'),
           }),
         )
         .describe('List of Azure services in the architecture'),
@@ -282,13 +298,14 @@ server.registerTool(
   {
     title: 'Estimate Azure Costs',
     description:
-      'Estimate monthly Azure costs for a list of services using snapshot-derived Azure Retail Prices (distilled per region). Returns numeric per-service monthly costs (low/expected/high), a total, and by-category totals. One-year mode uses exact SKU-specific Savings Plan meters where present and leaves unavailable tiers at PAYG. Services without distilled pricing data fall back to a catalog cost range and are flagged.',
+      'Estimate a monthly fixed-price baseline for Azure services using snapshot-derived Retail Prices. Each service can override the request-level region. Returns numeric low/expected/high costs, quantity-aware baseline coverage, categorized exclusions, and explicit requested/effective region provenance when a region proxy is required. One-year mode uses exact SKU-specific Savings Plan meters where present and leaves unavailable tiers at PAYG. This is not a total architecture cost when usage-based or catalog-range services are excluded.',
     inputSchema: {
       services: z
         .array(
           z.object({
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type'),
+            region: z.string().optional().describe('Azure region for this service. Overrides the request-level region.'),
             tier: z
               .string()
               .optional()
@@ -300,7 +317,7 @@ server.registerTool(
       region: z
         .string()
         .optional()
-        .describe('Azure region (default: eastus2). Available: eastus2, swedencentral, westeurope, canadacentral, brazilsouth, australiaeast, southeastasia, mexicocentral'),
+        .describe('Fallback Azure region for services without services[].region (default: eastus2). Bundled snapshots: eastus2, swedencentral, westeurope, canadacentral, brazilsouth, australiaeast, southeastasia, mexicocentral. Other regions use an explicitly reported proxy.'),
       term: z
         .string()
         .optional()
@@ -312,6 +329,19 @@ server.registerTool(
       currency: z.string(),
       pricesAsOf: z.string().nullable(),
       serviceCount: z.number(),
+      totalResourceCount: z.number(),
+      numericallyPricedResourceCount: z.number(),
+      excludedResourceCount: z.number(),
+      catalogRangeResourceCount: z.number(),
+      usageBasedResourceCount: z.number(),
+      noPricingDataResourceCount: z.number(),
+      numericCoveragePercent: z.number(),
+      isPartialBaseline: z.boolean(),
+      baselineLabel: z.string(),
+      regionProxyUsed: z.boolean(),
+      proxiedResourceCount: z.number(),
+      requestedRegions: z.array(z.string()),
+      effectiveRegions: z.array(z.string()),
       hasPricingData: z.boolean(),
       totalMonthlyCost: z.object({ low: z.number(), expected: z.number(), high: z.number() }),
       byCategory: z.record(
@@ -323,6 +353,10 @@ server.registerTool(
           name: z.string(),
           type: z.string(),
           category: z.string(),
+          requestedRegion: z.string(),
+          effectiveRegion: z.string(),
+          regionProxyUsed: z.boolean(),
+          regionProxyReason: z.string().optional(),
           tier: z.string().optional(),
           quantity: z.number().optional(),
           hasPricingData: z.boolean(),
@@ -341,6 +375,18 @@ server.registerTool(
           note: z.string().optional(),
         }),
       ),
+      excludedServices: z.array(
+        z.object({
+          name: z.string(),
+          type: z.string(),
+          quantity: z.number(),
+          requestedRegion: z.string(),
+          effectiveRegion: z.string(),
+          regionProxyUsed: z.boolean(),
+          reason: z.enum(['usage-based', 'catalog-range', 'no-pricing-data']),
+          catalogCostRange: z.string(),
+        }),
+      ),
       servicesMissingData: z.array(z.string()),
       pricingSource: z.object({
         generatedAt: z.string(),
@@ -352,7 +398,7 @@ server.registerTool(
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ services, region, term }) => {
-    const targetRegion = region ?? 'eastus2';
+    const targetRegion = normalizeAzureRegion(region ?? 'eastus2');
     const targetTerm: PricingTerm = term === 'reserved1yr' ? 'reserved1yr' : 'payg';
 
     const estimates: Array<Record<string, unknown>> = [];
@@ -367,12 +413,31 @@ server.registerTool(
     let currency = 'USD';
     let pricesAsOf: string | null = null;
     const servicesMissingData: string[] = [];
+    const excludedServices: Array<{
+      name: string;
+      type: string;
+      quantity: number;
+      requestedRegion: string;
+      effectiveRegion: string;
+      regionProxyUsed: boolean;
+      reason: 'usage-based' | 'catalog-range' | 'no-pricing-data';
+      catalogCostRange: string;
+    }> = [];
+    const requestedRegions = new Set<string>();
+    const effectiveRegions = new Set<string>();
+    let totalResourceCount = 0;
+    let numericallyPricedResourceCount = 0;
+    let usageBasedResourceCount = 0;
+    let catalogRangeResourceCount = 0;
+    let noPricingDataResourceCount = 0;
+    let proxiedResourceCount = 0;
 
     for (const svc of services) {
       const resolved = resolveServiceName(svc.type);
       const info = resolved ? SERVICE_CATALOG[resolved] : null;
       const tier = (svc.tier as CostTier) ?? 'standard';
       const qty = svc.quantity && svc.quantity > 0 ? svc.quantity : 1;
+      totalResourceCount += qty;
 
       const cat = info?.category ?? 'other';
       if (!categoryTotals.has(cat)) {
@@ -387,13 +452,18 @@ server.registerTool(
       const pricingName = info?.pricingServiceName ?? resolved ?? svc.type;
       const est = estimateServiceCost({
         pricingServiceName: pricingName,
-        region: targetRegion,
+        region: svc.region ?? targetRegion,
+        fallbackRegion: targetRegion,
         term: targetTerm,
         tier,
         quantity: qty,
       });
+      requestedRegions.add(est.requestedRegion);
 
       if (est.hasPricingData && est.monthlyCost) {
+        effectiveRegions.add(est.effectiveRegion);
+        if (est.regionProxyUsed) proxiedResourceCount += qty;
+        numericallyPricedResourceCount += qty;
         anyPricingData = true;
         currency = est.currency ?? currency;
         if (est.pricesAsOf && (!pricesAsOf || est.pricesAsOf > pricesAsOf)) {
@@ -408,6 +478,10 @@ server.registerTool(
           name: svc.name,
           type: resolved ?? svc.type,
           category: cat,
+          requestedRegion: est.requestedRegion,
+          effectiveRegion: est.effectiveRegion,
+          regionProxyUsed: est.regionProxyUsed,
+          regionProxyReason: est.regionProxyReason,
           tier,
           quantity: qty,
           hasPricingData: true,
@@ -423,14 +497,36 @@ server.registerTool(
         });
       } else {
         servicesMissingData.push(svc.name);
+        const reason = info?.isUsageBased
+          ? 'usage-based' as const
+          : info?.costRange
+            ? 'catalog-range' as const
+            : 'no-pricing-data' as const;
+        if (reason === 'usage-based') usageBasedResourceCount += qty;
+        else if (reason === 'catalog-range') catalogRangeResourceCount += qty;
+        else noPricingDataResourceCount += qty;
+        const catalogCostRange = info?.costRange ?? 'No pricing data available';
+        excludedServices.push({
+          name: svc.name,
+          type: resolved ?? svc.type,
+          quantity: qty,
+          requestedRegion: est.requestedRegion,
+          effectiveRegion: est.requestedRegion,
+          regionProxyUsed: false,
+          reason,
+          catalogCostRange,
+        });
         estimates.push({
           name: svc.name,
           type: resolved ?? svc.type,
           category: cat,
+          requestedRegion: est.requestedRegion,
+          effectiveRegion: est.requestedRegion,
+          regionProxyUsed: false,
           tier,
           quantity: qty,
           hasPricingData: false,
-          catalogCostRange: info?.costRange ?? 'No pricing data available',
+          catalogCostRange,
           note: info?.isUsageBased
             ? 'Usage-based service — no trusted fixed monthly value is distilled; using the catalog range.'
             : 'No distilled pricing for this service/region; using catalog range.',
@@ -443,6 +539,14 @@ server.registerTool(
       expected: Math.round(totals.expected * 100) / 100,
       high: Math.round(totals.high * 100) / 100,
     };
+    const excludedResourceCount = totalResourceCount - numericallyPricedResourceCount;
+    const numericCoveragePercent = totalResourceCount > 0
+      ? Math.round((numericallyPricedResourceCount / totalResourceCount) * 10000) / 100
+      : 0;
+    const isPartialBaseline = excludedResourceCount > 0;
+    const baselineLabel = isPartialBaseline
+      ? `Partial fixed-price baseline covering ${numericallyPricedResourceCount}/${totalResourceCount} resources`
+      : `Fixed-price baseline covering all ${totalResourceCount} resources`;
 
     const structured = {
       region: targetRegion,
@@ -450,6 +554,19 @@ server.registerTool(
       currency,
       pricesAsOf,
       serviceCount: services.length,
+      totalResourceCount,
+      numericallyPricedResourceCount,
+      excludedResourceCount,
+      catalogRangeResourceCount,
+      usageBasedResourceCount,
+      noPricingDataResourceCount,
+      numericCoveragePercent,
+      isPartialBaseline,
+      baselineLabel,
+      regionProxyUsed: proxiedResourceCount > 0,
+      proxiedResourceCount,
+      requestedRegions: [...requestedRegions].sort(),
+      effectiveRegions: [...effectiveRegions].sort(),
       hasPricingData: anyPricingData,
       totalMonthlyCost: roundedTotals,
       byCategory: Object.fromEntries(
@@ -463,16 +580,17 @@ server.registerTool(
         ]),
       ),
       estimates,
+      excludedServices,
       servicesMissingData,
       pricingSource: getPricingMeta(),
       note:
         'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). Instance-priced services use a configured representative SKU with low/high spanning eligible PAYG SKUs; Microsoft Fabric uses F2/F8/F64 capacity bands. In reserved1yr mode, each tier uses its own exact one-year Savings Plan meter when available and otherwise remains PAYG. Usage-based and composite-billed services without a trusted fixed monthly value report curated catalog ranges. generatedAt identifies sidecar generation; pricesAsOf identifies the newest contributing meter date. For authoritative quotes use the Azure Pricing Calculator.',
     };
 
-    const missingNote = servicesMissingData.length
-      ? ` ${servicesMissingData.length} service(s) use catalog ranges: ${servicesMissingData.join(', ')}.`
+    const proxyNote = proxiedResourceCount
+      ? ` ${proxiedResourceCount} resource(s) use an explicit regional proxy; inspect requestedRegion/effectiveRegion.`
       : '';
-    const summary = `Estimated total ~$${roundedTotals.expected.toLocaleString()}/mo expected ($${roundedTotals.low.toLocaleString()}–$${roundedTotals.high.toLocaleString()} range) in ${targetRegion} (${targetTerm}, ${currency}).${missingNote}`;
+    const summary = `${baselineLabel}: ~$${roundedTotals.expected.toLocaleString()}/mo expected ($${roundedTotals.low.toLocaleString()}–$${roundedTotals.high.toLocaleString()} numeric range, ${targetTerm}, ${currency}). ${excludedResourceCount} resource(s) are excluded from this baseline.${proxyNote}`;
 
     return {
       content: [{ type: 'text' as const, text: summary }],
@@ -501,6 +619,7 @@ server.registerTool(
           z.object({
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type'),
+            region: z.string().optional().describe('Azure region for this service.'),
             description: z.string().optional().describe('Service description'),
             groupId: z.string().optional().describe('Group ID this service belongs to'),
           }),
@@ -550,6 +669,7 @@ server.registerTool(
             id: `svc-${i + 1}`,
             name: s.name,
             type: resolved ?? s.type,
+            region: s.region ? normalizeAzureRegion(s.region) : undefined,
             category: info?.category ?? 'other',
             description: s.description ?? `${info?.displayName ?? s.type} instance`,
             groupId: s.groupId ?? null,
@@ -601,6 +721,7 @@ server.registerTool(
           z.object({
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
+            region: z.string().optional().describe('Architecture region metadata. Current Bicep generation uses the request-level location for deployment.'),
             description: z.string().optional().describe('Service description'),
             groupId: z.string().optional().describe('Group ID this service belongs to'),
           }),
@@ -620,11 +741,12 @@ server.registerTool(
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections }) => {
+    const deploymentLocation = location ?? 'eastus2';
     const result = generateBicep({
       services,
       connections,
       projectName,
-      location,
+      location: deploymentLocation,
       iacTool,
     });
 
@@ -639,7 +761,7 @@ server.registerTool(
               servicesGeneric: result.servicesGeneric,
               findingsResolved: result.findingsResolved,
               findingsResolvedCount: result.findingsResolved.length,
-              note: result.note,
+              note: result.note + regionalPlacementNote(services, deploymentLocation),
               bicep: result.bicep,
             },
             null,
@@ -666,6 +788,7 @@ server.registerTool(
           z.object({
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
+            region: z.string().optional().describe('Architecture region metadata. Current Terraform generation uses the request-level location for deployment.'),
             description: z.string().optional().describe('Service description'),
             groupId: z.string().optional().describe('Group ID this service belongs to'),
           }),
@@ -685,7 +808,8 @@ server.registerTool(
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, services, connections }) => {
-    const result = generateTerraform({ services, connections, projectName, location });
+    const deploymentLocation = location ?? 'eastus2';
+    const result = generateTerraform({ services, connections, projectName, location: deploymentLocation });
 
     return {
       content: [
@@ -698,7 +822,7 @@ server.registerTool(
               servicesGeneric: result.servicesGeneric,
               findingsResolved: result.findingsResolved,
               findingsResolvedCount: result.findingsResolved.length,
-              note: result.note,
+              note: result.note + regionalPlacementNote(services, deploymentLocation),
               terraform: result.terraform,
             },
             null,
@@ -729,6 +853,7 @@ server.registerTool(
           z.object({
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type'),
+            region: z.string().optional().describe('Architecture region metadata for this service.'),
             groupId: z.string().optional().describe('Group ID this service belongs to'),
           }),
         )
@@ -747,7 +872,12 @@ server.registerTool(
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections }) => {
-    const result = generateDeploymentGuide({ services, connections, projectName, location, iacTool });
+    const deploymentLocation = location ?? 'eastus2';
+    const result = generateDeploymentGuide({ services, connections, projectName, location: deploymentLocation, iacTool });
+    const placementNote = regionalPlacementNote(services, deploymentLocation);
+    const markdown = placementNote
+      ? `${result.markdown}\n\n> **Regional placement limitation:**${placementNote}`
+      : result.markdown;
 
     return {
       content: [
@@ -758,7 +888,7 @@ server.registerTool(
               iacTool: result.iacTool,
               steps: result.steps,
               checklistItems: result.checklistItems,
-              markdown: result.markdown,
+              markdown,
             },
             null,
             2,
@@ -783,6 +913,7 @@ server.registerTool(
           z.object({
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+            region: z.string().optional().describe('Azure region for this service.'),
             description: z.string().optional().describe('Service description'),
             groupId: z.string().optional().describe('Group ID this service belongs to'),
           }),
@@ -1040,6 +1171,7 @@ server.registerTool(
         z.object({
           name: z.string().describe('Service instance name'),
           type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+          region: z.string().optional().describe('Azure region for this service. Overrides the render-level region for cost enrichment.'),
           description: z.string().optional().describe('Service description (shown in tooltips for HTML format)'),
           groupId: z.string().optional().describe('Group ID this service belongs to'),
         }),
@@ -1077,7 +1209,7 @@ server.registerTool(
     const renderProfile = profile ?? 'presentation';
 
     const computedLayout = computeLayout(
-      services.map(s => ({ name: s.name, type: s.type, description: s.description, groupId: s.groupId })),
+      services.map(s => ({ name: s.name, type: s.type, region: s.region ? normalizeAzureRegion(s.region) : undefined, description: s.description, groupId: s.groupId })),
       (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
       dir as any,
@@ -1095,7 +1227,7 @@ server.registerTool(
         const resolved = resolveServiceName(node.type);
         const info = resolved ? SERVICE_CATALOG[resolved] : null;
         const pricingName = info?.pricingServiceName ?? resolved ?? node.type;
-        const est = estimateServiceCost({ pricingServiceName: pricingName, region: targetRegion });
+        const est = estimateServiceCost({ pricingServiceName: pricingName, region: node.region ?? targetRegion, fallbackRegion: targetRegion });
         if (est.hasPricingData && est.totalMonthlyCost != null && est.totalMonthlyCost > 0) {
           node.estimatedCost = est.totalMonthlyCost;
           node.costCurrency = est.currency ?? 'USD';
@@ -1149,6 +1281,7 @@ server.registerTool(
       services: z.array(z.object({
         name: z.string().describe('Service instance name (becomes the node label)'),
         type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+        region: z.string().optional().describe('Azure region for this service. Overrides the export-level region for embedded pricing.'),
         description: z.string().optional().describe('Optional description'),
         groupId: z.string().optional().describe('Optional group ID this service belongs to'),
       })).describe('List of Azure services in the architecture'),
@@ -1196,7 +1329,7 @@ server.registerTool(
     const grps = groups ?? [];
 
     const layout = computeLayout(
-      services.map(s => ({ name: s.name, type: s.type, description: s.description, groupId: s.groupId })),
+      services.map(s => ({ name: s.name, type: s.type, region: s.region ? normalizeAzureRegion(s.region) : undefined, description: s.description, groupId: s.groupId })),
       conns,
       grps,
       dir,
@@ -1255,7 +1388,7 @@ server.registerTool(
     // ── Service nodes (React Flow) ───────────────────────────────────────
     // Track absolute positions per service id for per-edge handle picking.
     const absoluteByNodeId = new Map<string, { x: number; y: number; width: number; height: number }>();
-    const pricingRegion = region && region !== 'none' ? region : (region === 'none' ? null : 'eastus2');
+    const pricingRegion = region && region !== 'none' ? normalizeAzureRegion(region) : (region === 'none' ? null : 'eastus2');
     const serviceNodes = layout.nodes.map(n => {
       const id = nodeIdByName.get(n.name)!;
       const { iconPath } = resolveIconPath(n.type);
@@ -1279,13 +1412,16 @@ server.registerTool(
         const resolved = resolveServiceName(n.type);
         const info = resolved ? SERVICE_CATALOG[resolved] : null;
         const pricingName = info?.pricingServiceName ?? resolved ?? n.type;
-        const est = estimateServiceCost({ pricingServiceName: pricingName, region: pricingRegion });
+        const requestedRegion = n.region ?? pricingRegion;
+        const est = estimateServiceCost({ pricingServiceName: pricingName, region: requestedRegion, fallbackRegion: pricingRegion });
         pricing = {
           estimatedCost: est.hasPricingData ? est.totalMonthlyCost ?? null : null,
           tier: est.selectedTier ? est.selectedTier.charAt(0).toUpperCase() + est.selectedTier.slice(1) : 'Standard',
           skuName: est.sampleSku ?? 'Standard',
           quantity: 1,
-          region: pricingRegion,
+          region: est.requestedRegion,
+          effectiveRegion: est.effectiveRegion,
+          regionProxyUsed: est.regionProxyUsed,
           unit: est.hasPricingData ? 'per instance/month' : 'usage-based',
           lastUpdated: new Date().toISOString(),
           isCustom: false,
@@ -1301,6 +1437,7 @@ server.registerTool(
         data: {
           label: n.name,
           iconPath,
+          ...(n.region ? { region: n.region } : {}),
           stylePreset: 'presentation',
           ...(pricing ? { pricing } : {}),
           ...(n.description ? { description: n.description } : {}),

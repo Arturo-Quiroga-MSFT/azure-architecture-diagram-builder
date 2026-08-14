@@ -34,6 +34,15 @@ web app or calling agent. Reconsider an Azure Resource Graph mapper only after
 the multi-subscription/resource-group workflow and auth/provenance boundary are
 defined.
 
+### Stepwise follow-up sequence (agreed 2026-08-14)
+
+1. Region-aware canonical architecture and honest pricing coverage — implemented on feature branch; validation passed
+2. Correct multi-region validation and hardening semantics
+3. Synchronize the MCP service catalog with the app catalog
+4. Improve manifest/import fidelity and structured outputs
+5. Add deterministic regional cost comparison
+6. Add deterministic ARM-template import
+
 ---
 
 ## ✅ Update (2026-07-08)

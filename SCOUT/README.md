@@ -34,7 +34,7 @@ verified; stateless session recovery is covered by `npm run test:contracts`.
 | --- | --- |
 | `list_services` | Browse the Azure service catalog (categories, aliases, pricing, cost ranges). |
 | `validate_architecture` | Score a design against Well-Architected Framework rules (deterministic, no LLM). |
-| `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot, with regional and by-category totals. PAYG is the default. In `reserved1yr` mode each tier uses its own exact one-year Savings Plan meter when available; unavailable tiers remain PAYG. Instance-priced services use configured representative SKUs, Microsoft Fabric uses F-SKU capacity bands, and services without a trusted fixed monthly value report curated catalog ranges. |
+| `estimate_costs` | **Numeric** monthly fixed-price baseline (low/expected/high) from a distilled Azure Retail Prices snapshot. Each service may specify its own region; unsupported regions disclose the effective proxy region. Responses report numeric coverage, categorized exclusions, and partial-baseline status. PAYG is the default. In `reserved1yr` mode each tier uses its own exact one-year Savings Plan meter when available; unavailable tiers remain PAYG. |
 | `generate_manifest` | Emit an `az prototype` interchange manifest. |
 | `generate_bicep` | Emit deployable Bicep with Well-Architected secure defaults and a map of which finding each setting resolves. Design-time only. |
 | `generate_terraform` | Emit Terraform for the architecture with secure defaults. Design-time only. |

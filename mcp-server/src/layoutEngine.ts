@@ -17,6 +17,7 @@ import { resolveServiceName, SERVICE_CATALOG } from './serviceCatalog.js';
 export interface DiagramService {
   name: string;
   type: string;
+  region?: string;
   description?: string;
   groupId?: string;
 }
@@ -36,6 +37,7 @@ export interface DiagramGroup {
 export interface PositionedNode {
   name: string;
   type: string;
+  region?: string;
   description: string;
   category: string;
   groupId: string | null;
@@ -252,6 +254,7 @@ function computeFlatLayout(
     return {
       name: svc.name,
       type: svc.type,
+      region: svc.region,
       description: svc.description ?? '',
       category,
       groupId: svc.groupId ?? null,
@@ -453,7 +456,7 @@ function computeGroupedLayout(
     const category = serviceCategories.get(svc.name) ?? 'other';
     const colors = getCategoryColor(category);
     return {
-      name: svc.name, type: svc.type, description: svc.description ?? '',
+      name: svc.name, type: svc.type, region: svc.region, description: svc.description ?? '',
       category, groupId: svc.groupId ?? null,
       x: p.x, y: p.y, width: NODE_WIDTH, height: NODE_HEIGHT,
       color: colors.border, textColor: colors.text,
