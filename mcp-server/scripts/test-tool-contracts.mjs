@@ -1,0 +1,283 @@
+#!/usr/bin/env node
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
+
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+
+const EXPECTED_TOOLS = [
+  'estimate_costs',
+  'export_reactflow_scene',
+  'generate_bicep',
+  'generate_deployment_guide',
+  'generate_manifest',
+  'generate_terraform',
+  'get_waf_rules',
+  'harden_architecture',
+  'import_architecture',
+  'list_services',
+  'render_diagram',
+  'validate_architecture',
+];
+
+const EXPECTED_RESOURCES = [
+  'azure://catalog/services',
+  'azure://pricing/meta',
+  'azure://waf/rules',
+];
+
+const EXPECTED_PROMPTS = [
+  'design-event-driven-platform',
+  'design-secure-web-app',
+  'harden-and-cost',
+];
+
+const TOKEN = 'local-contract-test-token';
+
+async function getAvailablePort() {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.unref();
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      assert(address && typeof address !== 'string');
+      server.close(() => resolve(address.port));
+    });
+  });
+}
+
+async function waitForHealth(url, child, stderr) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    if (child.exitCode !== null) {
+      throw new Error(`MCP server exited before becoming healthy (${child.exitCode}).\n${stderr()}`);
+    }
+    try {
+      const response = await fetch(url);
+      if (response.status === 200) return;
+    } catch {
+      // Server is still starting.
+    }
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  throw new Error(`MCP server did not become healthy.\n${stderr()}`);
+}
+
+function textPayload(result) {
+  const item = result.content?.find(content => content.type === 'text');
+  assert(item && item.type === 'text', 'Expected a text tool result');
+  return JSON.parse(item.text);
+}
+
+async function main() {
+  const port = await getAvailablePort();
+  const baseUrl = `http://127.0.0.1:${port}`;
+  const child = spawn(process.execPath, ['dist/index.js', '--http'], {
+    cwd: new URL('..', import.meta.url),
+    env: {
+      ...process.env,
+      MCP_HTTP_HOST: '127.0.0.1',
+      MCP_HTTP_PORT: String(port),
+      MCP_AUTH_TOKEN: TOKEN,
+    },
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  let serverStderr = '';
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', chunk => { serverStderr += chunk; });
+
+  let client;
+  try {
+    await waitForHealth(`${baseUrl}/healthz`, child, () => serverStderr);
+
+    const unauthorized = await fetch(`${baseUrl}/mcp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'initialize',
+        params: {
+          protocolVersion: '2025-06-18',
+          capabilities: {},
+          clientInfo: { name: 'unauthorized-contract-test', version: '1.0.0' },
+        },
+      }),
+    });
+    assert.equal(unauthorized.status, 401);
+
+    client = new Client({ name: 'mcp-contract-test', version: '1.0.0' });
+    const transport = new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`), {
+      requestInit: { headers: { Authorization: `Bearer ${TOKEN}` } },
+    });
+    await client.connect(transport);
+
+    const { tools } = await client.listTools();
+    assert.deepEqual(tools.map(tool => tool.name).sort(), EXPECTED_TOOLS);
+    for (const tool of tools) {
+      assert(tool.title?.trim(), `${tool.name} must expose a title`);
+      assert.deepEqual(tool.annotations, {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      }, `${tool.name} must expose the standard deterministic annotations`);
+    }
+
+    const { resources } = await client.listResources();
+    assert.deepEqual(resources.map(resource => resource.uri).sort(), EXPECTED_RESOURCES);
+
+    const { prompts } = await client.listPrompts();
+    assert.deepEqual(prompts.map(prompt => prompt.name).sort(), EXPECTED_PROMPTS);
+
+    const listedServices = textPayload(await client.callTool({
+      name: 'list_services',
+      arguments: { category: 'compute' },
+    }));
+    assert(listedServices.totalServices > 0);
+
+    const initialArchitecture = {
+      services: [
+        { name: 'Web', type: 'App Service' },
+        { name: 'Data', type: 'SQL Database' },
+      ],
+      connections: [{ from: 'Web', to: 'Data', label: 'Query application data' }],
+      groups: [],
+    };
+
+    const validation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: initialArchitecture,
+    });
+    assert.equal(typeof validation.structuredContent?.score, 'number');
+
+    const manifest = textPayload(await client.callTool({
+      name: 'generate_manifest',
+      arguments: {
+        projectName: 'contract-test',
+        location: 'eastus2',
+        iacTool: 'bicep',
+        ...initialArchitecture,
+      },
+    }));
+    assert.equal(manifest.project.name, 'contract-test');
+
+    const bicep = textPayload(await client.callTool({
+      name: 'generate_bicep',
+      arguments: {
+        projectName: 'contract-test',
+        location: 'eastus2',
+        ...initialArchitecture,
+      },
+    }));
+    assert.equal(bicep.iacTool, 'bicep');
+    assert(bicep.bicep.includes('resource'));
+
+    const terraform = textPayload(await client.callTool({
+      name: 'generate_terraform',
+      arguments: {
+        projectName: 'contract-test',
+        location: 'eastus2',
+        ...initialArchitecture,
+      },
+    }));
+    assert.equal(terraform.iacTool, 'terraform');
+    assert(terraform.terraform.includes('terraform {'));
+
+    const wafRules = await client.callTool({
+      name: 'get_waf_rules',
+      arguments: {},
+    });
+    assert(Number(wafRules.structuredContent?.totalRules) > 0);
+
+    const estimate = await client.callTool({
+      name: 'estimate_costs',
+      arguments: {
+        region: 'eastus2',
+        term: 'payg',
+        services: [{ name: 'API', type: 'App Service', tier: 'standard' }],
+      },
+    });
+    assert.equal(estimate.structuredContent?.region, 'eastus2');
+    assert.equal(estimate.structuredContent?.term, 'payg');
+    assert.equal(estimate.structuredContent?.serviceCount, 1);
+
+    const firstHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: initialArchitecture,
+    }));
+    assert(firstHarden.changes.length > 0, 'First hardening pass must change the unsafe fixture');
+
+    const secondHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: firstHarden.services,
+        connections: firstHarden.connections,
+        groups: firstHarden.groups,
+      },
+    }));
+    assert.deepEqual(secondHarden.changes, []);
+    assert.deepEqual(secondHarden.services, firstHarden.services);
+    assert.deepEqual(secondHarden.connections, firstHarden.connections);
+    assert.deepEqual(secondHarden.groups, firstHarden.groups);
+
+    const imported = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(manifest), format: 'manifest' },
+    }));
+    assert.equal(imported.format, 'manifest');
+    assert.equal(imported.services.length, initialArchitecture.services.length);
+
+    const rendered = await client.callTool({
+      name: 'render_diagram',
+      arguments: {
+        title: 'Contract Test Architecture',
+        format: 'svg',
+        ...initialArchitecture,
+      },
+    });
+    const renderedItem = rendered.content?.find(content => content.type === 'text');
+    assert(renderedItem && renderedItem.type === 'text');
+    assert(renderedItem.text.includes('<svg'));
+    assert(renderedItem.text.includes('Contract Test Architecture'));
+
+    const scene = textPayload(await client.callTool({
+      name: 'export_reactflow_scene',
+      arguments: {
+        architectureName: 'Contract Test Architecture',
+        region: 'none',
+        ...initialArchitecture,
+      },
+    }));
+    assert.equal(scene.metadata.architectureName, 'Contract Test Architecture');
+    assert.equal(scene.nodes.filter(node => node.type === 'azureNode').length, initialArchitecture.services.length);
+
+    for (const iacTool of ['bicep', 'terraform']) {
+      const guide = textPayload(await client.callTool({
+        name: 'generate_deployment_guide',
+        arguments: {
+          projectName: 'contract-test',
+          location: 'eastus2',
+          iacTool,
+          services: initialArchitecture.services,
+          connections: initialArchitecture.connections,
+        },
+      }));
+      assert.equal(guide.iacTool, iacTool);
+      assert(guide.markdown.includes('contract-test'));
+    }
+
+    console.log('MCP contract test passed: all 12 handlers, 3 resources, 3 prompts, auth, metadata, pricing, hardening idempotency, and deployment guides.');
+  } finally {
+    if (client) await client.close().catch(() => {});
+    if (child.exitCode === null) child.kill('SIGTERM');
+  }
+}
+
+main().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -4,8 +4,12 @@ This is the running reference for every tool the MCP server exposes
 ([`src/index.ts`](src/index.ts)). Endpoint: `POST /mcp` (streamable-HTTP) with
 `Authorization: Bearer <token from .env.mcp>`. Health: `GET /healthz`.
 
-All tools are deterministic (no LLM) unless noted. Design-time only — nothing
-deploys Azure resources.
+All tool design logic is deterministic (no LLM), read-only, and closed-world.
+Artifact metadata such as creation timestamps can differ between otherwise
+equivalent calls.
+Each exposes a human-readable MCP title plus
+`readOnlyHint: true`, `idempotentHint: true`, and `openWorldHint: false`.
+They are design-time only — nothing deploys Azure resources.
 
 ## Tool inventory
 
@@ -16,13 +20,13 @@ deploys Azure resources.
 | 3 | `estimate_costs` | Numeric monthly costs (low/expected/high) from distilled Azure Retail Prices | Cost |
 | 4 | `generate_manifest` | `az prototype` interchange manifest (JSON) | Export |
 | 5 | `generate_bicep` | Deployable Bicep with WAF secure defaults pre-set; maps each setting to the finding it resolves | IaC |
-| 6 | `harden_architecture` | **NEW** — deterministically clear pattern-level WAF anti-patterns (topology remediation) | Remediate |
+| 6 | `harden_architecture` | Deterministically clear pattern-level WAF anti-patterns (topology remediation) | Remediate |
 | 7 | `get_waf_rules` | Query the WAF rule knowledge base by pillar / service | Discovery |
 | 8 | `render_diagram` | Azure-branded SVG or interactive HTML diagram | Visualize |
 | 9 | `export_reactflow_scene` | React Flow scene JSON importable into the web app | Export |
-| 10 | `import_architecture` | **NEW** — inverse of the export tools; parse a manifest / React Flow scene back to canonical shape | Import |
-| 11 | `generate_terraform` | **NEW** — deployable Terraform (azurerm) with the same WAF secure defaults as the Bicep tool | IaC |
-| 12 | `generate_deployment_guide` | **NEW** — step-by-step Markdown deploy runbook (Bicep or Terraform) with a post-deploy hardening checklist | Deploy |
+| 10 | `import_architecture` | Inverse of the export tools; parse a manifest / React Flow scene back to canonical shape | Import |
+| 11 | `generate_terraform` | Deployable Terraform (azurerm) with the same WAF secure defaults as the Bicep tool | IaC |
+| 12 | `generate_deployment_guide` | Step-by-step Markdown deploy runbook (Bicep or Terraform) with a post-deploy hardening checklist | Deploy |
 
 ---
 
@@ -81,7 +85,16 @@ API, region- and term-aware.
 - `region`: `eastus2` (default), `swedencentral`, `westeurope`, `canadacentral`, `brazilsouth`, `australiaeast`, `southeastasia`, `mexicocentral`
 - `term`: `payg` (default) or `reserved1yr`
 
+`reserved1yr` means exact, SKU-specific one-year Savings Plan pricing. Each
+low/expected/high tier uses its own meter when one exists; a tier without one
+stays PAYG. The tool never extrapolates one SKU's discount to another.
+
 **Output (`structuredContent`):** `{ region, term, currency, pricesAsOf, totalMonthlyCost {low,expected,high}, byCategory{}, estimates[] }`. Services without distilled pricing fall back to a curated `catalogCostRange` and are flagged.
+
+`pricingSource.generatedAt` is when the compact MCP sidecar was generated.
+`pricesAsOf` is the newest contributing Azure Retail Prices meter effective
+date among the returned estimates. The dates measure different things and may
+differ.
 
 ---
 
@@ -190,7 +203,8 @@ shrinking, then re-validates.
 hardened topology) → `generate_bicep` (resolve config-level findings) →
 `export_reactflow_scene` (hand to the web app).
 
-Idempotent: hardening an already-hardened architecture is a no-op.
+Idempotent: hardening an already-hardened architecture is a no-op. This is
+exercised through the public Streamable HTTP contract by `npm run test:contracts`.
 
 ---
 
@@ -386,6 +400,15 @@ browse reference data without a tool round-trip (they're cacheable):
 | `azure://pricing/meta` | Pricing metadata | Regions and priced service entries available to `estimate_costs` |
 
 All return `application/json`.
+
+## Contract verification
+
+Run `npm run test:contracts` from `mcp-server/`. The test builds the standalone
+server, starts its Streamable HTTP transport with a temporary bearer token, and
+verifies unauthenticated rejection, the exact 12-tool / 3-resource / 3-prompt
+inventory, every tool title and safety annotation, a smoke call to every tool
+handler, structured PAYG pricing, forced-format import, hardening idempotency,
+and both Bicep and Terraform deployment-guide paths.
 
 ## Prompts
 

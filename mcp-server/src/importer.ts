@@ -41,6 +41,13 @@ export interface ImportResult {
   warnings: string[];
 }
 
+export type ImportFormat = 'auto' | 'manifest' | 'reactflow';
+
+export interface ImportOptions {
+  iconFileToType?: Record<string, string>;
+  format?: ImportFormat;
+}
+
 type AnyObj = Record<string, unknown>;
 
 function asObject(input: unknown): AnyObj {
@@ -88,13 +95,14 @@ function isGroupNode(node: AnyObj): boolean {
  */
 export function importArchitecture(
   input: unknown,
-  opts: { iconFileToType?: Record<string, string> } = {},
+  opts: ImportOptions = {},
 ): ImportResult {
   const obj = asObject(input);
   const warnings: string[] = [];
+  const format = opts.format ?? 'auto';
 
   // ── Manifest format ───────────────────────────────────────────────────
-  if (obj.architecture && typeof obj.architecture === 'object') {
+  if (format !== 'reactflow' && obj.architecture && typeof obj.architecture === 'object') {
     const arch = obj.architecture as AnyObj;
     const project = (obj.project ?? {}) as AnyObj;
     const rawServices = Array.isArray(arch.services) ? (arch.services as AnyObj[]) : [];
@@ -128,6 +136,10 @@ export function importArchitecture(
       groups,
       warnings,
     };
+  }
+
+  if (format === 'manifest') {
+    throw new Error('Input does not match the requested manifest format (expected an "architecture" object).');
   }
 
   // ── React Flow scene format ───────────────────────────────────────────
@@ -187,6 +199,10 @@ export function importArchitecture(
       groups,
       warnings,
     };
+  }
+
+  if (format === 'reactflow') {
+    throw new Error('Input does not match the requested reactflow format (expected a "nodes" array).');
   }
 
   throw new Error(

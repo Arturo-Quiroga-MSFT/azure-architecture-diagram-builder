@@ -15,9 +15,9 @@
  * regionalPricingService.parsePricingTiers() unit-of-measure handling
  * (/Month as-is, /Day ×30, per-1K ×100, else hourly ×730) so numbers line up.
  *
- * AI (foundry_*) and Microsoft Fabric files need special per-product / F-SKU
- * handling and are intentionally skipped in this first cut — those services
- * fall back to the catalog costRange in estimate_costs. (Tracked for P0-1b.)
+ * Foundry model/tool files remain catalog ranges because their token and
+ * transaction meters do not define a trustworthy fixed monthly workload.
+ * Microsoft Fabric is handled separately as fixed F-SKU capacity bands.
  *
  * Run: node mcp-server/scripts/sync-pricing-data.mjs
  */

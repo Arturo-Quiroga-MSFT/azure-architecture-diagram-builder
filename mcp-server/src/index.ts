@@ -15,8 +15,8 @@
  *   5. Query WAF rules by pillar or service type
  *   6. Render professional architecture diagrams (SVG/HTML) replacing Mermaid
  *
- * Transport: stdio (JSON-RPC over stdin/stdout) — the standard for
- * local MCP integrations.
+ * Transports: stdio for local integrations, or Streamable HTTP for the
+ * standalone Azure Container App and other remote clients.
  *
  * Usage:
  *   node dist/index.js          # start server (stdio)
@@ -56,7 +56,7 @@ import { generateBicep } from './bicepGenerator.js';
 import { generateTerraform } from './terraformGenerator.js';
 import { generateDeploymentGuide } from './deploymentGuide.js';
 import { hardenArchitecture } from './hardener.js';
-import { importArchitecture } from './importer.js';
+import { importArchitecture, type ImportFormat } from './importer.js';
 
 // Web app icon mapping (generated from src/data/serviceIconMapping.ts via
 // scripts/sync-icon-map.mjs). Used by export_reactflow_scene to emit icon
@@ -128,16 +128,20 @@ const server = new McpServer({
 
 // ── Tool 1: list_services ──────────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'list_services',
-  'List Azure services available in the Diagram Builder. Returns service names, categories, aliases, pricing availability, and cost ranges. Optionally filter by category.',
   {
-    category: z
-      .string()
-      .optional()
-      .describe(
-        'Filter by service category. Valid values: ' + getCategories().join(', '),
-      ),
+    title: 'List Azure Services',
+    description: 'List Azure services available in the Diagram Builder. Returns service names, categories, aliases, pricing availability, and cost ranges. Optionally filter by category.',
+    inputSchema: {
+      category: z
+        .string()
+        .optional()
+        .describe(
+          'Filter by service category. Valid values: ' + getCategories().join(', '),
+        ),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ category }) => {
     const catalog = category
@@ -178,6 +182,7 @@ server.tool(
 server.registerTool(
   'validate_architecture',
   {
+    title: 'Validate Azure Architecture',
     description:
       'Validate an Azure architecture against the Well-Architected Framework (WAF). Runs deterministic rule-based analysis — detects anti-patterns, missing best practices, and security gaps. Returns a 0-100 score, findings grouped by WAF pillar, and actionable recommendations. No LLM required.',
     inputSchema: {
@@ -276,6 +281,7 @@ server.registerTool(
 server.registerTool(
   'estimate_costs',
   {
+    title: 'Estimate Azure Costs',
     description:
       'Estimate monthly Azure costs for a list of services using snapshot-derived Azure Retail Prices (distilled per region). Returns numeric per-service monthly costs (low/expected/high), a total, and by-category totals. One-year mode uses exact SKU-specific Savings Plan meters where present and leaves unavailable tiers at PAYG. Services without distilled pricing data fall back to a catalog cost range and are flagged.',
     inputSchema: {
@@ -427,7 +433,7 @@ server.registerTool(
           hasPricingData: false,
           catalogCostRange: info?.costRange ?? 'No pricing data available',
           note: info?.isUsageBased
-            ? 'Usage-based service — see catalog range; numeric distillation pending (P0-1b: AI/Fabric/per-GB).'
+            ? 'Usage-based service — no trusted fixed monthly value is distilled; using the catalog range.'
             : 'No distilled pricing for this service/region; using catalog range.',
         });
       }
@@ -461,7 +467,7 @@ server.registerTool(
       servicesMissingData,
       pricingSource: getPricingMeta(),
       note:
-        'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). Coverage: instance-priced services use a representative typical-deployment SKU (e.g. App Service P1v3, Redis C1, SQL S3, VM D2s v4, AKS Standard) with low/high spanning the SKU range; Microsoft Fabric uses F-SKU capacity (F2/F8/F64 reservation monthly). Usage-based services — AI (Foundry, per-token), per-GB storage, and composite-billed networking (App Gateway, Firewall, VPN, Load Balancer, managed-DB Flexible Server) — report curated catalog ranges instead, because a fixed monthly would mislead. For authoritative quotes use the Azure Pricing Calculator.',
+        'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). Instance-priced services use a configured representative SKU with low/high spanning eligible PAYG SKUs; Microsoft Fabric uses F2/F8/F64 capacity bands. In reserved1yr mode, each tier uses its own exact one-year Savings Plan meter when available and otherwise remains PAYG. Usage-based and composite-billed services without a trusted fixed monthly value report curated catalog ranges. generatedAt identifies sidecar generation; pricesAsOf identifies the newest contributing meter date. For authoritative quotes use the Azure Pricing Calculator.',
     };
 
     const missingNote = servicesMissingData.length
@@ -478,50 +484,54 @@ server.registerTool(
 
 // ── Tool 4: generate_manifest ──────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'generate_manifest',
-  'Generate an az prototype interchange manifest (JSON) from a list of services and connections. The manifest can be imported into the Azure Architecture Diagram Builder or consumed by `az prototype build` for IaC generation.',
   {
-    projectName: z.string().describe('Project name for the architecture'),
-    location: z.string().optional().describe('Azure region (default: eastus2)'),
-    iacTool: z
-      .string()
-      .describe('Output IaC format. Allowed values: bicep, terraform')
-      .optional()
-      .describe('Infrastructure as Code tool (default: bicep)'),
-    services: z
-      .array(
-        z.object({
-          name: z.string().describe('Service instance name'),
-          type: z.string().describe('Azure service type'),
-          description: z.string().optional().describe('Service description'),
-          groupId: z.string().optional().describe('Group ID this service belongs to'),
-        }),
-      )
-      .describe('List of Azure services'),
-    connections: z
-      .array(
-        z.object({
-          from: z.string().describe('Source service name'),
-          to: z.string().describe('Target service name'),
-          label: z.string().optional().describe(CONN_LABEL_DESC),
-          type: z
-            .string()
-            .optional()
-            .describe('Connection type. Allowed values: sync, async, optional'),
-        }),
-      )
-      .optional()
-      .describe('Connections between services'),
-    groups: z
-      .array(
-        z.object({
-          id: z.string().describe('Group identifier'),
-          label: z.string().describe('Display label'),
-        }),
-      )
-      .optional()
-      .describe('Logical service groups'),
+    title: 'Generate Architecture Manifest',
+    description: 'Generate an az prototype interchange manifest (JSON) from a list of services and connections. The manifest can be imported into the Azure Architecture Diagram Builder or consumed by `az prototype build` for IaC generation.',
+    inputSchema: {
+      projectName: z.string().describe('Project name for the architecture'),
+      location: z.string().optional().describe('Azure region (default: eastus2)'),
+      iacTool: z
+        .string()
+        .describe('Output IaC format. Allowed values: bicep, terraform')
+        .optional()
+        .describe('Infrastructure as Code tool (default: bicep)'),
+      services: z
+        .array(
+          z.object({
+            name: z.string().describe('Service instance name'),
+            type: z.string().describe('Azure service type'),
+            description: z.string().optional().describe('Service description'),
+            groupId: z.string().optional().describe('Group ID this service belongs to'),
+          }),
+        )
+        .describe('List of Azure services'),
+      connections: z
+        .array(
+          z.object({
+            from: z.string().describe('Source service name'),
+            to: z.string().describe('Target service name'),
+            label: z.string().optional().describe(CONN_LABEL_DESC),
+            type: z
+              .string()
+              .optional()
+              .describe('Connection type. Allowed values: sync, async, optional'),
+          }),
+        )
+        .optional()
+        .describe('Connections between services'),
+      groups: z
+        .array(
+          z.object({
+            id: z.string().describe('Group identifier'),
+            label: z.string().describe('Display label'),
+          }),
+        )
+        .optional()
+        .describe('Logical service groups'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections, groups }) => {
     const manifest = {
@@ -575,36 +585,40 @@ server.tool(
 
 // ── Tool 4b: generate_bicep ────────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'generate_bicep',
-  'Generate deployable Bicep (IaC) from a list of services and connections, with Well-Architected secure defaults PRE-SET: App Service HTTPS-only + TLS 1.2 + managed identity + health check + autoscale + staging slot, Key Vault soft-delete + purge protection + RBAC, Storage HTTPS-only/no-public-access, Cosmos DB automatic failover + continuous backup, Redis TLS 1.2, plus managed-identity Key Vault role assignments. Resolves the config-level WAF findings that cannot be expressed in a diagram. Returns the Bicep text and a structured map of which WAF finding each setting resolves. Design-time only — never deploys.',
   {
-    projectName: z.string().optional().describe('Project name (used for namePrefix). Default: workload'),
-    location: z.string().optional().describe('Azure region (default: eastus2)'),
-    iacTool: z
-      .string()
-      .optional()
-      .describe('IaC format. Allowed values: bicep (default). For Terraform, use the dedicated generate_terraform tool.'),
-    services: z
-      .array(
-        z.object({
-          name: z.string().describe('Service instance name'),
-          type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
-          description: z.string().optional().describe('Service description'),
-          groupId: z.string().optional().describe('Group ID this service belongs to'),
-        }),
-      )
-      .describe('List of Azure services to generate Bicep for'),
-    connections: z
-      .array(
-        z.object({
-          from: z.string().describe('Source service name'),
-          to: z.string().describe('Target service name'),
-          label: z.string().optional().describe('Connection label'),
-        }),
-      )
-      .optional()
-      .describe('Connections between services'),
+    title: 'Generate Bicep',
+    description: 'Generate deployable Bicep (IaC) from a list of services and connections, with Well-Architected secure defaults PRE-SET: App Service HTTPS-only + TLS 1.2 + managed identity + health check + autoscale + staging slot, Key Vault soft-delete + purge protection + RBAC, Storage HTTPS-only/no-public-access, Cosmos DB automatic failover + continuous backup, Redis TLS 1.2, plus managed-identity Key Vault role assignments. Resolves the config-level WAF findings that cannot be expressed in a diagram. Returns the Bicep text and a structured map of which WAF finding each setting resolves. Design-time only — never deploys.',
+    inputSchema: {
+      projectName: z.string().optional().describe('Project name (used for namePrefix). Default: workload'),
+      location: z.string().optional().describe('Azure region (default: eastus2)'),
+      iacTool: z
+        .string()
+        .optional()
+        .describe('IaC format. Allowed values: bicep (default). For Terraform, use the dedicated generate_terraform tool.'),
+      services: z
+        .array(
+          z.object({
+            name: z.string().describe('Service instance name'),
+            type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
+            description: z.string().optional().describe('Service description'),
+            groupId: z.string().optional().describe('Group ID this service belongs to'),
+          }),
+        )
+        .describe('List of Azure services to generate Bicep for'),
+      connections: z
+        .array(
+          z.object({
+            from: z.string().describe('Source service name'),
+            to: z.string().describe('Target service name'),
+            label: z.string().optional().describe('Connection label'),
+          }),
+        )
+        .optional()
+        .describe('Connections between services'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections }) => {
     const result = generateBicep({
@@ -640,32 +654,36 @@ server.tool(
 
 // ── Tool 4c: generate_terraform ────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'generate_terraform',
-  'Generate deployable Terraform (azurerm provider) from a list of services and connections, with Well-Architected secure defaults PRE-SET: App Service (Linux web app) HTTPS-only + TLS 1.2 + managed identity + health check + autoscale + staging slot, Key Vault soft-delete + purge protection + RBAC, Storage HTTPS-only/no-public-access, Cosmos DB automatic failover + continuous backup, Redis TLS 1.2, AI Search keyless, Container Apps HTTPS-only ingress, plus Key Vault Secrets User role assignments for managed identities. Emits a resource group + azurerm provider block. Resolves the config-level WAF findings that cannot be expressed in a diagram. Returns the HCL and a structured map of which WAF finding each attribute resolves. Design-time only — never runs terraform apply.',
   {
-    projectName: z.string().optional().describe('Project name (used for name_prefix variable). Default: workload'),
-    location: z.string().optional().describe('Azure region (default: eastus2)'),
-    services: z
-      .array(
-        z.object({
-          name: z.string().describe('Service instance name'),
-          type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
-          description: z.string().optional().describe('Service description'),
-          groupId: z.string().optional().describe('Group ID this service belongs to'),
-        }),
-      )
-      .describe('List of Azure services to generate Terraform for'),
-    connections: z
-      .array(
-        z.object({
-          from: z.string().describe('Source service name'),
-          to: z.string().describe('Target service name'),
-          label: z.string().optional().describe('Connection label'),
-        }),
-      )
-      .optional()
-      .describe('Connections between services'),
+    title: 'Generate Terraform',
+    description: 'Generate deployable Terraform (azurerm provider) from a list of services and connections, with Well-Architected secure defaults PRE-SET: App Service (Linux web app) HTTPS-only + TLS 1.2 + managed identity + health check + autoscale + staging slot, Key Vault soft-delete + purge protection + RBAC, Storage HTTPS-only/no-public-access, Cosmos DB automatic failover + continuous backup, Redis TLS 1.2, AI Search keyless, Container Apps HTTPS-only ingress, plus Key Vault Secrets User role assignments for managed identities. Emits a resource group + azurerm provider block. Resolves the config-level WAF findings that cannot be expressed in a diagram. Returns the HCL and a structured map of which WAF finding each attribute resolves. Design-time only — never runs terraform apply.',
+    inputSchema: {
+      projectName: z.string().optional().describe('Project name (used for name_prefix variable). Default: workload'),
+      location: z.string().optional().describe('Azure region (default: eastus2)'),
+      services: z
+        .array(
+          z.object({
+            name: z.string().describe('Service instance name'),
+            type: z.string().describe('Azure service type (e.g. "App Service", "Key Vault")'),
+            description: z.string().optional().describe('Service description'),
+            groupId: z.string().optional().describe('Group ID this service belongs to'),
+          }),
+        )
+        .describe('List of Azure services to generate Terraform for'),
+      connections: z
+        .array(
+          z.object({
+            from: z.string().describe('Source service name'),
+            to: z.string().describe('Target service name'),
+            label: z.string().optional().describe('Connection label'),
+          }),
+        )
+        .optional()
+        .describe('Connections between services'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, services, connections }) => {
     const result = generateTerraform({ services, connections, projectName, location });
@@ -695,35 +713,39 @@ server.tool(
 
 // ── Tool 4d: generate_deployment_guide ────────────────────────────────
 
-server.tool(
+server.registerTool(
   'generate_deployment_guide',
-  'Generate a step-by-step Markdown deployment runbook for an architecture: prerequisites, az login, resource group, IaC deploy commands (Bicep via `az deployment group create`, or Terraform via `init/plan/apply`), a post-deploy config-hardening checklist derived from the WAF service-level findings, per-service smoke tests, and teardown. Pairs with generate_bicep / generate_terraform. Deterministic, design-time only — it never deploys.',
   {
-    projectName: z.string().optional().describe('Project name (used for resource group + name prefix). Default: workload'),
-    location: z.string().optional().describe('Azure region (default: eastus2)'),
-    iacTool: z
-      .string()
-      .optional()
-      .describe('Which IaC the guide targets. Allowed values: bicep (default), terraform.'),
-    services: z
-      .array(
-        z.object({
-          name: z.string().describe('Service instance name'),
-          type: z.string().describe('Azure service type'),
-          groupId: z.string().optional().describe('Group ID this service belongs to'),
-        }),
-      )
-      .describe('List of Azure services in the architecture'),
-    connections: z
-      .array(
-        z.object({
-          from: z.string().describe('Source service name'),
-          to: z.string().describe('Target service name'),
-          label: z.string().optional().describe('Connection label'),
-        }),
-      )
-      .optional()
-      .describe('Connections between services'),
+    title: 'Generate Deployment Guide',
+    description: 'Generate a step-by-step Markdown deployment runbook for an architecture: prerequisites, az login, resource group, IaC deploy commands (Bicep via `az deployment group create`, or Terraform via `init/plan/apply`), a post-deploy config-hardening checklist derived from the WAF service-level findings, per-service smoke tests, and teardown. Pairs with generate_bicep / generate_terraform. Deterministic, design-time only — it never deploys.',
+    inputSchema: {
+      projectName: z.string().optional().describe('Project name (used for resource group + name prefix). Default: workload'),
+      location: z.string().optional().describe('Azure region (default: eastus2)'),
+      iacTool: z
+        .string()
+        .optional()
+        .describe('Which IaC the guide targets. Allowed values: bicep (default), terraform.'),
+      services: z
+        .array(
+          z.object({
+            name: z.string().describe('Service instance name'),
+            type: z.string().describe('Azure service type'),
+            groupId: z.string().optional().describe('Group ID this service belongs to'),
+          }),
+        )
+        .describe('List of Azure services in the architecture'),
+      connections: z
+        .array(
+          z.object({
+            from: z.string().describe('Source service name'),
+            to: z.string().describe('Target service name'),
+            label: z.string().optional().describe('Connection label'),
+          }),
+        )
+        .optional()
+        .describe('Connections between services'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections }) => {
     const result = generateDeploymentGuide({ services, connections, projectName, location, iacTool });
@@ -753,6 +775,7 @@ server.tool(
 server.registerTool(
   'harden_architecture',
   {
+    title: 'Harden Azure Architecture',
     description:
       'Deterministically HARDEN an architecture by clearing pattern-level WAF anti-patterns (single-region, no-identity, no-waf, no-api-gateway, direct-db-access, single-database, no-cache, no-key-vault, no-backup, no-monitoring). Adds the remediating services (Entra ID, Front Door + WAF, API Management, geo-replica, Redis, Key Vault, Backup, Monitor) and rewires connections, then re-validates. Returns the hardened services/connections/groups (ready to pass to render_diagram, generate_bicep, or export_reactflow_scene), a change log, and before/after WAF scores. Collapses the manual add-service → re-validate loop into one call. No LLM. Only fixes topology; config-level findings are resolved by generate_bicep.',
     inputSchema: {
@@ -830,6 +853,7 @@ server.registerTool(
 server.registerTool(
   'import_architecture',
   {
+    title: 'Import Architecture',
     description:
       'Import an existing architecture back into the canonical { services, connections, groups } shape — the inverse of generate_manifest and export_reactflow_scene. Accepts an az prototype interchange manifest (clean round-trip) OR a React Flow scene JSON (from this server or the web app; service types are recovered from data.azureServiceType, or reversed from the icon path). Returns the normalized architecture ready to feed straight into validate_architecture, harden_architecture, estimate_costs, render_diagram, or generate_bicep. Tolerant: collects warnings instead of failing on partially-recognized input.',
     inputSchema: {
@@ -837,16 +861,19 @@ server.registerTool(
         .string()
         .describe('The architecture document as a JSON string — either an az prototype manifest or a React Flow scene.'),
       format: z
-        .string()
+        .enum(['auto', 'manifest', 'reactflow'])
         .optional()
         .describe('Format hint. Allowed values: auto (default), manifest, reactflow. Auto-detected from the document shape when omitted.'),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
-  async ({ content }) => {
+  async ({ content, format }) => {
     let result;
     try {
-      result = importArchitecture(content, { iconFileToType: ICON_FILE_TO_TYPE });
+      result = importArchitecture(content, {
+        iconFileToType: ICON_FILE_TO_TYPE,
+        format: (format ?? 'auto') satisfies ImportFormat,
+      });
     } catch (e) {
       return {
         isError: true,
@@ -888,6 +915,7 @@ server.registerTool(
 server.registerTool(
   'get_waf_rules',
   {
+    title: 'Get Well-Architected Rules',
     description:
       'Get Azure Well-Architected Framework rules from the Diagram Builder knowledge base. Returns architecture-wide pattern rules and per-service best practices. Optionally filter by WAF pillar.',
     inputSchema: {
@@ -968,45 +996,47 @@ server.registerTool(
 
 // ── Tool 6: render_diagram ──────────────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'render_diagram',
-  'Render a professional Azure architecture diagram as SVG (for embedding in markdown/SpecKit docs) or as self-contained interactive HTML (with pan, zoom, hover tooltips). Replaces Mermaid text diagrams with Azure-branded visuals using official category colors, dagre layout, and directional edges. IMPORTANT: give every connection a descriptive, action-oriented label (a 3-6 word phrase describing what flows and why, e.g. "Submit FHIR bundle for ingestion"), not a terse one-word label like "data" or "sync" — readable edge labels are what make the diagram understandable.',
   {
-    title: z
+    title: 'Render Azure Architecture Diagram',
+    description: 'Render a professional Azure architecture diagram as SVG (for embedding in markdown/SpecKit docs) or as self-contained interactive HTML (with pan, zoom, hover tooltips). Replaces Mermaid text diagrams with Azure-branded visuals using official category colors, dagre layout, and directional edges. IMPORTANT: give every connection a descriptive, action-oriented label (a 3-6 word phrase describing what flows and why, e.g. "Submit FHIR bundle for ingestion"), not a terse one-word label like "data" or "sync" — readable edge labels are what make the diagram understandable.',
+    inputSchema: {
+      title: z
       .string()
       .optional()
       .describe('Diagram title (displayed at the top)'),
-    format: z
+      format: z
       .string()
       .describe('Output format. Allowed values: svg, html')
       .optional()
       .describe('Output format: svg (static, for markdown embedding) or html (interactive viewer). Default: svg'),
-    direction: z
+      direction: z
       .string()
       .describe('Diagram direction. Allowed values: TB (top-to-bottom), LR (left-to-right)')
       .optional()
       .describe('Layout direction: TB (top-to-bottom) or LR (left-to-right). Default: TB'),
-    theme: z
+      theme: z
       .string()
       .optional()
       .describe('Visual theme for SVG output. Allowed values: light (default), dark.'),
-    profile: z
+      profile: z
       .enum(['presentation', 'technical', 'cost'])
       .optional()
       .describe('Render emphasis. presentation (default) prioritizes readable sharing and hides pricing; technical keeps full topology detail; cost adds per-node price badges and the total-cost footer.'),
-    region: z
+      region: z
       .string()
       .optional()
       .describe('Azure region used by the cost profile (e.g. eastus2). Default: eastus2. Ignored by presentation/technical profiles.'),
-    author: z
+      author: z
       .string()
       .optional()
       .describe('Author shown in the SVG metadata panel (top-right).'),
-    generatedBy: z
+      generatedBy: z
       .string()
       .optional()
       .describe('Provenance label for the SVG metadata panel, e.g. the model that produced the design.'),
-    services: z
+      services: z
       .array(
         z.object({
           name: z.string().describe('Service instance name'),
@@ -1016,7 +1046,7 @@ server.tool(
         }),
       )
       .describe('List of Azure services in the architecture'),
-    connections: z
+      connections: z
       .array(
         z.object({
           from: z.string().describe('Source service name'),
@@ -1030,15 +1060,17 @@ server.tool(
       )
       .optional()
       .describe('Connections between services. Label each one descriptively so a reader understands the data flow.'),
-    groups: z
+      groups: z
       .array(
         z.object({
           id: z.string().describe('Group identifier (referenced by services\' groupId)'),
           label: z.string().describe('Display label for the group'),
         }),
       )
-      .optional()
-      .describe('Logical service groups (rendered as dashed containers)'),
+        .optional()
+        .describe('Logical service groups (rendered as dashed containers)'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ title, format, direction, services, connections, groups, theme, profile, region, author, generatedBy }) => {
     const fmt = format ?? 'svg';
@@ -1104,36 +1136,40 @@ server.tool(
 
 // ── Tool 7: export_reactflow_scene ─────────────────────────────────────
 
-server.tool(
+server.registerTool(
   'export_reactflow_scene',
-  'Export an Azure architecture as a React Flow scene JSON compatible with the Azure Architecture Diagram Builder web app. Reuses the dagre layout engine for positions and the web app icon catalog for icon paths. The result can be imported directly into the web app (Open / Import Architecture).',
   {
-    architectureName: z.string().optional().describe('Display name shown in the architecture metadata block. Default: "MCP Generated Architecture"'),
-    architecturePrompt: z.string().optional().describe('Original natural-language prompt the diagram was generated from (preserved in the JSON for provenance)'),
-    author: z.string().optional().describe('Author shown in the metadata. Default: "Azure Architect"'),
-    direction: z.string().optional().describe('Layout direction: TB (top-to-bottom), LR (left-to-right), or auto. Default: auto (picks LR for 4+ groups or dense graphs, TB otherwise).'),
-    region: z.string().optional().describe('Azure region for best-effort per-node pricing embedded in each node (e.g. eastus2). Default: eastus2. Set to "none" to omit pricing.'),
-    services: z.array(z.object({
-      name: z.string().describe('Service instance name (becomes the node label)'),
-      type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
-      description: z.string().optional().describe('Optional description'),
-      groupId: z.string().optional().describe('Optional group ID this service belongs to'),
-    })).describe('List of Azure services in the architecture'),
-    connections: z.array(z.object({
-      from: z.string().describe('Source service name'),
-      to: z.string().describe('Target service name'),
-      label: z.string().optional().describe('Edge label'),
-      type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional'),
-    })).optional().describe('Connections between services'),
-    groups: z.array(z.object({
-      id: z.string().describe('Group identifier (referenced by services\' groupId)'),
-      label: z.string().describe('Display label for the group'),
-    })).optional().describe('Logical service groups (rendered as group containers)'),
-    workflow: z.array(z.object({
-      step: z.number().describe('1-based step number'),
-      description: z.string().describe('Human-readable description of this step'),
-      services: z.array(z.string()).describe('Service names involved in this step'),
-    })).optional().describe('Optional ordered workflow narrative shown in the web app'),
+    title: 'Export React Flow Scene',
+    description: 'Export an Azure architecture as a React Flow scene JSON compatible with the Azure Architecture Diagram Builder web app. Reuses the dagre layout engine for positions and the web app icon catalog for icon paths. The result can be imported directly into the web app (Open / Import Architecture).',
+    inputSchema: {
+      architectureName: z.string().optional().describe('Display name shown in the architecture metadata block. Default: "MCP Generated Architecture"'),
+      architecturePrompt: z.string().optional().describe('Original natural-language prompt the diagram was generated from (preserved in the JSON)'),
+      author: z.string().optional().describe('Author shown in the metadata. Default: "Azure Architect"'),
+      direction: z.string().optional().describe('Layout direction: TB (top-to-bottom), LR (left-to-right), or auto. Default: auto (picks LR for 4+ groups or dense graphs, TB otherwise).'),
+      region: z.string().optional().describe('Azure region for best-effort per-node pricing embedded in each node (e.g. eastus2). Default: eastus2. Set to "none" to omit pricing.'),
+      services: z.array(z.object({
+        name: z.string().describe('Service instance name (becomes the node label)'),
+        type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
+        description: z.string().optional().describe('Optional description'),
+        groupId: z.string().optional().describe('Optional group ID this service belongs to'),
+      })).describe('List of Azure services in the architecture'),
+      connections: z.array(z.object({
+        from: z.string().describe('Source service name'),
+        to: z.string().describe('Target service name'),
+        label: z.string().optional().describe('Edge label'),
+        type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional'),
+      })).optional().describe('Connections between services'),
+      groups: z.array(z.object({
+        id: z.string().describe('Group identifier (referenced by services\' groupId)'),
+        label: z.string().describe('Display label for the group'),
+      })).optional().describe('Logical service groups (rendered as group containers)'),
+      workflow: z.array(z.object({
+        step: z.number().describe('1-based step number'),
+        description: z.string().describe('Human-readable description of this step'),
+        services: z.array(z.string()).describe('Service names involved in this step'),
+      })).optional().describe('Optional ordered workflow narrative shown in the web app'),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ architectureName, architecturePrompt, author, direction, services, connections, groups, workflow, region }) => {
     // ── Auto direction heuristic ────────────────────────────────────────
