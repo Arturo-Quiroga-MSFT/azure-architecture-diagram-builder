@@ -32,6 +32,8 @@ https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/
 ```
 - Auth: `Authorization: Bearer <token>` — token stored in `.env.mcp` (gitignored).
 - Health: `.../healthz` (root, not `/mcp/healthz` — there is no nginx in this image).
+- Session mode: stateless Streamable HTTP. Missing or stale client session IDs
+  do not prevent calls after a revision replacement or replica change.
 - Resource group: `azure-diagrams-rg` · ACR: `acrazurediagrams1767583743`.
 
 ---
@@ -79,7 +81,7 @@ Outputs `MCP_ENDPOINT` / `SERVICE_MCP_URL`.
 BASE="https://<mcp-fqdn>"
 curl -s -o /dev/null -w "%{http_code}\n" "$BASE/healthz"          # 200
 curl -s -o /dev/null -w "%{http_code}\n" -X POST "$BASE/mcp" ...  # 401 (no token)
-# authenticated initialize returns serverInfo + mcp-session-id header
+# authenticated initialize and direct tool requests succeed without session state
 ```
 
 ---

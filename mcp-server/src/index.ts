@@ -24,7 +24,7 @@
  */
 
 import { createServer as createHttpServer, IncomingMessage, ServerResponse } from 'node:http';
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve as resolvePath } from 'node:path';
@@ -32,7 +32,6 @@ import { dirname, resolve as resolvePath } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import {
@@ -1632,9 +1631,6 @@ async function startHttp(): Promise<void> {
     console.error('[mcp-http] WARNING: no MCP_AUTH_TOKEN set — endpoint is OPEN (no auth)');
   }
 
-  // Stateful sessions: one transport per MCP session id.
-  const transports = new Map<string, StreamableHTTPServerTransport>();
-
   const httpServer = createHttpServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
@@ -1642,7 +1638,7 @@ async function startHttp(): Promise<void> {
       // Health probe — handy for ACA / container probes. Always open (no auth)
       // so liveness/readiness checks don't need to carry the Bearer token.
       if (req.method === 'GET' && url.pathname === '/healthz') {
-        writeJson(res, 200, { status: 'ok', transport: 'streamable-http', sessions: transports.size });
+        writeJson(res, 200, { status: 'ok', transport: 'streamable-http', sessionMode: 'stateless' });
         return;
       }
 
@@ -1669,7 +1665,7 @@ async function startHttp(): Promise<void> {
         res.writeHead(204, {
           'Allow': 'GET, POST, DELETE, OPTIONS',
           'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Authorization, Content-Type, mcp-session-id, Accept',
+          'Access-Control-Allow-Headers': 'Authorization, Content-Type, Mcp-Session-Id, MCP-Protocol-Version, Last-Event-ID, Accept',
         });
         res.end();
         return;
@@ -1691,43 +1687,26 @@ async function startHttp(): Promise<void> {
         }
       }
 
-      const sessionId = req.headers['mcp-session-id'];
-      const sid = Array.isArray(sessionId) ? sessionId[0] : sessionId;
-
-      let transport: StreamableHTTPServerTransport | undefined = sid ? transports.get(sid) : undefined;
-      let body: unknown | undefined;
-
-      if (req.method === 'POST') {
-        body = await readJsonBody(req);
-      }
-
-      if (!transport) {
-        // Only POST with an initialize request can create a new session.
-        if (req.method !== 'POST' || !isInitializeRequest(body)) {
-          writeJson(res, 400, {
-            jsonrpc: '2.0',
-            error: { code: -32000, message: 'No valid session. Send an initialize request first.' },
-            id: null,
-          });
-          return;
-        }
-
-        transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => randomUUID(),
-          onsessioninitialized: (newSid: string) => {
-            transports.set(newSid, transport!);
-          },
+      if (req.method !== 'POST') {
+        writeJson(res, 405, {
+          jsonrpc: '2.0',
+          error: { code: -32000, message: 'Method not allowed.' },
+          id: null,
         });
-        transport.onclose = () => {
-          if (transport && transport.sessionId) {
-            transports.delete(transport.sessionId);
-          }
-        };
-        const server = createServer();
-        await server.connect(transport);
+        return;
       }
 
+      const body = await readJsonBody(req);
+      const server = createServer();
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+      });
+      await server.connect(transport);
       await transport.handleRequest(req, res, body);
+      res.on('close', () => {
+        void transport.close();
+        void server.close();
+      });
     } catch (err) {
       console.error('[mcp-http] request error:', err);
       if (!res.headersSent) {
