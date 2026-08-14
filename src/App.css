@@ -326,15 +326,6 @@ body.dark-mode .toolbar-dropdown-separator {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* PAYG / Reserved pricing-term toggle */
-.pricing-mode-toggle {
-  display: inline-flex;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 /* Show / hide cost estimates. Stays visible when costs are hidden so the
    control can be reversed. */
 .cost-visibility-toggle {
@@ -361,31 +352,6 @@ body.dark-mode .toolbar-dropdown-separator {
 .cost-visibility-toggle.is-off {
   opacity: 0.75;
   background: rgba(255, 255, 255, 0.06);
-}
-
-.pricing-mode-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  border: none;
-  padding: 0.5rem 0.7rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease;
-}
-
-.pricing-mode-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-
-.pricing-mode-btn.active {
-  background: rgba(255, 255, 255, 0.85);
-  color: #0f172a;
-}
-
-.pricing-mode-btn + .pricing-mode-btn {
-  border-left: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Pricing data-freshness badge (guardrail against stale estimates) */

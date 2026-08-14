@@ -3,11 +3,16 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
+ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
+ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
+ENV NPM_CONFIG_REPLACE_REGISTRY_HOST=always
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
@@ -83,7 +88,7 @@ RUN if [ -f .env.build ]; then \
       export $(grep -v '^#' .env.build | grep -v '^\s*$' | xargs); \
     fi && \
     if [ -f .env.appinsights ]; then \
-      export $(cat .env.appinsights) && echo "App Insights: $VITE_APPINSIGHTS_CONNECTION_STRING" | cut -c1-60; \
+      export $(cat .env.appinsights); \
     fi && npm run build
 
 # Build MCP server (TypeScript -> dist/) so it can ship in the runtime image.
@@ -99,14 +104,18 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
+ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
+ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
+ENV NPM_CONFIG_REPLACE_REGISTRY_HOST=always
+
 # Install Node.js for the speech token server and the MCP HTTP server
 # (both use DefaultAzureCredential / managed identity where applicable).
 RUN apk add --no-cache nodejs npm
 
 # Set up the speech token server
 WORKDIR /srv/token-server
-COPY server/package.json ./
-RUN npm install --omit=dev
+COPY server/package*.json ./
+RUN npm ci --omit=dev
 COPY server/token-server.js ./
 
 # Set up the MCP HTTP server (streamable HTTP transport on port 3030).

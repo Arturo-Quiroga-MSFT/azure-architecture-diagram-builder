@@ -102,6 +102,8 @@ export interface NodePricingConfig {
   unit: string;               // Unit of measurement
   lastUpdated: string;        // ISO timestamp
   isCustom: boolean;          // Whether user manually set price
+  /** Origin of the PAYG figure shown for this node. */
+  paygSource?: 'retail-api' | 'static-fallback' | 'custom';
   customPrice?: number;       // Custom monthly price if set
   isUsageBased?: boolean;     // Whether pricing is usage-based (consumption)
   /**
@@ -140,6 +142,8 @@ export interface CostBreakdown {
     cost: number;
     quantity: number;
     tier: string;
+    /** Exact source used for this line in the selected pricing mode. */
+    pricingSource?: 'retail-payg' | 'static-payg' | 'custom' | 'real-savings-plan' | 'estimated-discount' | 'payg-unchanged-usage' | 'payg-unchanged-no-offer' | 'custom-unchanged';
   }[];
   byGroup: {
     groupId: string;
@@ -157,7 +161,7 @@ export interface CostBreakdown {
   lastCalculated: string;
   /** Date the underlying pricing data was last refreshed (YYYY-MM-DD). */
   pricesAsOf?: string;
-  /** Billing term the costs reflect (e.g. "Pay-as-you-go", "Savings Plan (1-year)"). */
+  /** Billing mode the costs reflect, including mixed-provenance one-year estimates. */
   pricingTerm?: string;
 }
 

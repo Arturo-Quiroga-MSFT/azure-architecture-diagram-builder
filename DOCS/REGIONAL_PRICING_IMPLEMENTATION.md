@@ -1,161 +1,107 @@
-# Regional Pricing Implementation - Complete ✅
+# Regional Pricing Implementation
 
-**Last Updated**: July 2026
+**Last validated:** August 13, 2026
 
-## Overview
-Successfully implemented Option B: Lazy-Load Regional Pricing with User Selection
+## Scope
 
-## What Was Implemented
+AADB bundles an Azure Retail Prices API snapshot for these eight regions:
 
-### 1. Regional Data Structure ✅
-- **Location**: `src/data/pricing/regions/`
-- **Regions**: eastus2, swedencentral, westeurope, brazilsouth, canadacentral, australiaeast, mexicocentral, southeastasia
-- **Services per region**: 50–72 Azure services (incl. Microsoft Fabric capacity & OneLake meters)
-- **Total pricing files**: 466 across 8 regions
+- East US 2
+- Australia East
+- Canada Central
+- Brazil South
+- Mexico Central
+- West Europe
+- Sweden Central
+- Southeast Asia
 
-### 2. Regional Pricing Service ✅
-- **File**: `src/services/regionalPricingService.ts` (352 lines)
-- **Features**:
-  - Dynamic region switching
-  - Lazy-loading of pricing data (only loads what's needed)
-  - Caching system for performance
-  - 8 regions with full metadata (flag, location, display name)
-  - Preload common services for faster initial load
+The UI loads the selected region's bundled files and recalculates node estimates when the region changes. These are snapshot-derived estimates, not live quotes. `PRICING_DATA_AS_OF` is the snapshot fetch date; individual meters can have earlier effective dates.
 
-### 3. Updated Services ✅
-- **azurePricingService.ts**: Now uses regional pricing
-- **localPricingService.ts**: Backward-compatible wrapper
-- **costEstimationService.ts**: Works with regional data
+## Snapshot Integrity
 
-### 4. Region Selector UI ✅
-- **Component**: `RegionSelector.tsx`
-- **Location**: Top toolbar (after Region Selector)
-- **Features**:
-  - Flag emojis for visual identification (🇺🇸 🇸🇪 🇳🇱 🇧🇷 🇨🇦 🇦🇺 🇲🇽 🇸🇬)
-  - Dropdown with region details
-  - Smooth animations
-  - Auto-recalculates all node pricing on region change
+The August 13 snapshot was fetched from Azure Retail Prices API preview `2023-01-01-preview` with pagination enabled and staged before atomic replacement.
 
-### 5. App Integration ✅
-- **App.tsx**: 
-  - Imports RegionSelector component
-  - Preloads pricing on mount
-  - Handles region changes
-  - Recalculates all existing nodes when region switches
+| Check | Measured result |
+|---|---:|
+| Regions | 8 |
+| Files per region | 80 |
+| Total files | 640 |
+| API pages fetched | 672 |
+| Items returned across unique queries | 97,756 |
+| Files with unresolved continuation links | 0 |
 
-## How It Works
+The manifest is stored at `src/data/pricing/snapshot-manifest.json`. Empty files are retained so every region has the same query inventory; an empty result is not presented as a price.
 
-1. **Initial Load**:
-   - App starts with default region: **East US 2**
-   - Preloads 5 common services (App Service, VMs, Storage, SQL, Cosmos DB)
-   - Ready to show pricing immediately
+## Price Selection
 
-2. **Adding Nodes**:
-   - User drags icon to canvas
-   - Pricing loaded dynamically from current region's data
-   - Cost badge appears within 1-2 seconds
+For each service node, AADB:
 
-3. **Switching Regions**:
-   - User clicks Region Selector dropdown
-   - Selects new region (e.g., Sweden Central)
-   - System:
-     - Preloads new region's common services
-     - Recalculates ALL existing node prices
-     - Updates cost badges with new regional pricing
-     - Shows console log of progress
+1. Maps display-name aliases to an Azure pricing service.
+2. Loads Consumption meters for the selected region.
+3. Excludes Spot and Low Priority meters from defaults.
+4. Selects the configured default SKU using normalized exact matching.
+5. Uses a documented static fallback when that SKU is unavailable.
+6. Shows no estimate when neither a matching meter nor a documented fallback exists.
 
-## File Changes
+The node badge, architecture total, cost breakdown, and exports use the same mode-aware calculator and quantity scaling.
 
-### New Files Created:
-1. `src/services/regionalPricingService.ts` (352 lines)
-2. `src/components/RegionSelector.tsx` (64 lines)
-3. `src/data/pricing/regions/eastus2/` (50 JSON files)
-4. `src/data/pricing/regions/swedencentral/` (50 JSON files)
-5. `src/data/pricing/regions/westeurope/` (50 JSON files)
-6. `src/data/pricing/regions/brazilsouth/` (50 JSON files)
-7. `src/data/pricing/regions/canadacentral/` (50 JSON files)
-8. `src/data/pricing/regions/australiaeast/` (72 JSON files)
-9. `src/data/pricing/regions/mexicocentral/` (72 JSON files)
-10. `src/data/pricing/regions/southeastasia/` (72 JSON files)
+## PAYG Provenance
 
-### Modified Files:
-1. `src/services/localPricingService.ts` - Simplified, delegates to regional service
-2. `src/services/azurePricingService.ts` - Uses regional pricing API
-3. `src/App.tsx` - Added RegionSelector, region change handler
+The UI identifies each PAYG estimate as one of:
 
-### Removed:
-- Old `Azure_pricing_info_09-JAN-2026/prices.json` can now be deleted (not done yet)
+- `retail-payg`: selected Azure Retail Prices API meter.
+- `static-payg`: documented fallback estimate, potentially region-adjusted.
+- `custom`: user-provided monthly price.
 
-## Testing
+The August 13 semantic audit evaluated 1,472 service-label/region combinations:
 
-**To Test**:
-1. Open http://localhost:3000
-2. Check console: "Preloading Azure pricing data for eastus2"
-3. Drag an icon (e.g., App Services) to canvas
-4. Verify cost badge appears (e.g., "$237/mo")
-5. Click Region Selector dropdown
-6. Select "Sweden Central" 
-7. Watch console: Pricing updates for all nodes
-8. Verify cost badges update to Swedish pricing
+| PAYG source | Combinations |
+|---|---:|
+| Retail API meter | 732 |
+| Static fallback | 716 |
+| No supported estimate | 24 |
 
-## Benefits Achieved
+The 24 unsupported combinations are Batch and Bot Service in all eight regions, Content Safety in four regions, Custom Vision in three regions, and Face in Mexico Central. AADB does not fabricate a zero-dollar price for these cases.
 
-✅ **Smaller bundle size**: ~2.5MB per region vs ~15MB single file  
-✅ **Faster initial load**: Only loads one region at startup  
-✅ **Real-time region switching**: Compare costs across 8 regions instantly  
-✅ **Easy to update**: Drop new JSON files when pricing changes  
-✅ **Easy to extend**: Add more regions by adding folders  
-✅ **Better UX**: Visual region selection with flags and locations  
-✅ **Fresh data**: January 2026 pricing directly from Azure API  
+## One-Year Mode
 
-## Next Steps (Optional)
+The `1yr estimate` mode is intentionally labeled as mixed provenance. It is not a claim that every service has a reserved or Savings Plan offer.
 
-1. **Delete old pricing file**:
-   ```bash
-   rm -rf Azure_pricing_info_09-JAN-2026/
-   ```
+Selection order:
 
-2. **Add more regions**: Download more regional data and add folders
+1. Use the selected SKU's embedded real 1-year Savings Plan rate when present.
+2. Otherwise apply the documented representative percentage only to configured reservation-eligible services.
+3. Leave usage-based services, services without an offer, and custom prices unchanged.
 
-3. **Cost comparison view**: Show side-by-side pricing for all 3 regions
+| One-year source | Combinations |
+|---|---:|
+| Real SKU-specific Savings Plan meter | 32 |
+| Representative percentage estimate | 168 |
+| Usage-based estimate unchanged at PAYG | 616 |
+| No offer; unchanged at PAYG | 656 |
 
-4. **Save region preference**: Remember user's last selected region
+The 32 real-meter combinations are duplicate display labels for two underlying defaults available across all eight regions: Virtual Machines/VM Scale Sets using D2s v3, and MySQL using Standard_B2ms2. Tooltips and exports expose provenance per node.
 
-5. **Automated updates**: Schedule script to refresh pricing monthly
+## MCP Pricing
 
-## Console Output Example
+The MCP server uses a distilled sidecar generated from the same snapshot. It stores one-year values per selected low/expected/high SKU and never applies one SKU's discount ratio to another SKU. In one-year mode, a tier uses its real SKU-specific meter when available; unavailable tiers remain PAYG and `reservedApplied` reports the selected tier's actual behavior.
 
-```
-🌍 Switching pricing region to: swedencentral
-⏳ Preloading 5 common services for swedencentral...
-📦 Loaded Azure App Service pricing for swedencentral: 106 items
-📦 Loaded Virtual Machines pricing for swedencentral: 1000 items
-📦 Loaded Storage pricing for swedencentral: 1000 items
-📦 Loaded SQL Database pricing for swedencentral: 259 items
-📦 Loaded Azure Cosmos DB pricing for swedencentral: 96 items
-✅ Preloaded 5 services (2461 items) for swedencentral
-🌍 Region changed to: swedencentral, preloading pricing...
-✅ Updated pricing for 3 nodes in swedencentral
+## Refresh and Validation
+
+```bash
+npm run pricing:refresh
+npm run pricing:audit
+npm run pricing:audit-semantics -- --json=/tmp/aadb-pricing-semantics.json
+npm run test:pricing-mode
+npm run build
+npm run mcp:build
 ```
 
-## Architecture
+`pricing:refresh` writes to a staging directory, validates all regional inventories and continuation links, then replaces the checked-in snapshot and updates `PRICING_DATA_AS_OF`. A failed refresh leaves the previous snapshot intact.
 
-```
-src/
-├── data/
-│   └── pricing/
-│       └── regions/
-│           ├── eastus2/         (47 JSON files)
-│           ├── swedencentral/   (47 JSON files)
-│           ├── westeurope/      (47 JSON files)
-│           ├── brazilsouth/     (47 JSON files)
-│           └── canadacentral/   (47 JSON files)
-├── services/
-│   ├── regionalPricingService.ts  ← Manages regions (352 lines)
-│   ├── azurePricingService.ts     ← Uses regional pricing
-│   └── localPricingService.ts     ← Wrapper (73 lines)
-└── components/
-    └── RegionSelector.tsx         ← UI component (64 lines)
-```
+## Limitations
 
-## Status: ✅ COMPLETE & READY TO TEST!
+- Estimates exclude negotiated agreements, taxes, support, free grants, and architecture-specific utilization unless represented by a custom price.
+- Static and percentage fallbacks are estimates, not Azure quotes.
+- A snapshot being complete does not mean every Azure service publishes every meter in every region.
+- Savings Plan availability is SKU-specific. The mixed one-year total must not be described as universally reserved pricing.

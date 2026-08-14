@@ -10,6 +10,8 @@ import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
 import { isCapacityConsumed } from '../data/serviceIconMapping';
 import { usePricingDisplayPrefs } from '../stores/pricingDisplayStore';
 import { openNodePricingEditor } from '../stores/nodePricingEditorStore';
+import { usePricingMode } from '../stores/pricingModeStore';
+import { calculateNodeMonthlyCost, getPricingEstimateSourceLabel } from '../services/costEstimationService';
 import './AzureNode.css';
 
 // Map categories to colors
@@ -49,7 +51,9 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   // Extract pricing data
   const pricing = data.pricing as NodePricingConfig | undefined;
   const hasPricing = !!pricing && pricing.estimatedCost > 0;
-  const totalCost = pricing ? pricing.estimatedCost * pricing.quantity : 0;
+  const [pricingMode] = usePricingMode();
+  const estimate = pricing ? calculateNodeMonthlyCost(data.label || '', pricing, pricingMode) : null;
+  const totalCost = estimate?.cost || 0;
 
   // Fabric workload items consume Capacity Units from the shared Fabric
   // Capacity rather than billing separately — show an "incl. capacity" badge.
@@ -182,8 +186,8 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
             onClick={(e) => { e.stopPropagation(); openNodePricingEditor(id); }}
             title={
               pricing.isUsageBased
-                ? `Usage-based pricing estimate\n~${formatMonthlyCost(totalCost)}/month\nBased on typical usage patterns\nActual cost varies with consumption\n\nTier: ${pricing.tier}\nRegion: ${pricing.region}\n\nClick to change tier, quantity or set your own price`
-                : `Estimated monthly cost\nTier: ${pricing.tier}\nQuantity: ${pricing.quantity}\nRegion: ${pricing.region}\n${pricing.isCustom ? 'Custom pricing' : 'Auto-calculated'}\n\nClick to change tier, quantity or set your own price`
+                ? `Usage-based pricing estimate\n~${formatMonthlyCost(totalCost)}/month\n${estimate ? getPricingEstimateSourceLabel(estimate.source) : ''}\nActual cost varies with consumption\n\nTier: ${pricing.tier}\nRegion: ${pricing.region}\n\nClick to change tier, quantity or set your own price`
+                : `Estimated monthly cost (${pricingMode === 'reserved1yr' ? '1-year estimate' : 'PAYG'})\n${estimate ? getPricingEstimateSourceLabel(estimate.source) : ''}\nTier: ${pricing.tier}\nQuantity: ${pricing.quantity}\nRegion: ${pricing.region}\n\nClick to change tier, quantity or set your own price`
             }
             style={{ 
               background: pricing.isUsageBased

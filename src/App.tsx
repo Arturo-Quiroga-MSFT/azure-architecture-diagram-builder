@@ -52,7 +52,8 @@ import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
 import { layoutArchitecture as elkLayoutArchitecture } from './utils/elkLayoutEngine';
-import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing, type PricingMode } from './services/costEstimationService';
+import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing } from './services/costEstimationService';
+import { usePricingMode } from './stores/pricingModeStore';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS, RegionInfo } from './services/regionalPricingService';
 import JSZip from 'jszip';
@@ -186,7 +187,7 @@ function App() {
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
   const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
-  const [pricingMode, setPricingMode] = useState<PricingMode>('payg');
+  const [pricingMode] = usePricingMode();
   // Whether cost estimates are shown at all (persisted, independent of stylePreset).
   const [pricingPrefs, setPricingPrefs] = usePricingDisplayPrefs();
   // Node whose per-node cost editor is open (opened from its cost badge).
@@ -3015,24 +3016,8 @@ function App() {
                 )}
                 {totalMonthlyCost > 0 && pricingPrefs.showCostBadges && (
                   <>
-                    <div className="cost-indicator" title={`Total estimated monthly cost for all services (${pricingMode === 'reserved1yr' ? '1-year savings plan' : 'pay-as-you-go'})`}>
+                    <div className="cost-indicator" title="Total estimated monthly cost for all services (pay-as-you-go estimate)">
                       💰 {formatMonthlyCost(totalMonthlyCost)}
-                    </div>
-                    <div className="pricing-mode-toggle" role="group" aria-label="Pricing term">
-                      <button
-                        className={`pricing-mode-btn${pricingMode === 'payg' ? ' active' : ''}`}
-                        onClick={() => setPricingMode('payg')}
-                        title="Pay-as-you-go list pricing"
-                      >
-                        PAYG
-                      </button>
-                      <button
-                        className={`pricing-mode-btn${pricingMode === 'reserved1yr' ? ' active' : ''}`}
-                        onClick={() => setPricingMode('reserved1yr')}
-                        title="1-year Savings Plan pricing. Uses each meter's real 1-year savings-plan rate where available, otherwise a representative discount on reservation-eligible services. Usage-based services stay at PAYG."
-                      >
-                        Savings 1yr
-                      </button>
                     </div>
                     {(() => {
                       const f = getPricingFreshness(PRICING_DATA_AS_OF);

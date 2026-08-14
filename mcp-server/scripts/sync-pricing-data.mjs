@@ -73,14 +73,6 @@ function monthlyFromItem(item) {
   return rate * HOURS_PER_MONTH;
 }
 
-/** Median of a numeric array (sorted copy). */
-function median(nums) {
-  if (nums.length === 0) return 0;
-  const s = [...nums].sort((a, b) => a - b);
-  const mid = Math.floor(s.length / 2);
-  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
-}
-
 const round2 = (n) => Math.round(n * 100) / 100;
 
 /** Most-frequent value (mode) of a numeric array, else fallback. */
@@ -133,8 +125,9 @@ function distillFabric(filePath) {
     low: monthly(2), // F2
     expected: monthly(8), // F8
     high: monthly(64), // F64
+    reservedLow: null,
     reservedExpected: null,
-    reservedRatio: null,
+    reservedHigh: null,
     currency,
     sampleSku: 'F8 (8 CU)',
     expectedBasis: 'fabric-capacity:F8',
@@ -164,30 +157,28 @@ function distillFile(filePath, stem) {
 
   // Dedupe to the cheapest monthly per SKU (matches web app tier parsing).
   const perSku = new Map();
-  const savingsRatios = [];
   let newestDate = '';
 
   for (const item of consumption) {
     const sku = item.skuName || item.armSkuName;
     if (!sku) continue;
     const monthly = monthlyFromItem(item);
-    if (!perSku.has(sku) || monthly < perSku.get(sku)) perSku.set(sku, monthly);
+    const plans = Array.isArray(item.savingsPlan) ? item.savingsPlan : [];
+    const oneYear = plans.find((p) => /1\s*year/i.test(p.term || ''));
+    const oneYearRate = oneYear ? (oneYear.unitPrice || oneYear.retailPrice || 0) : 0;
+    const candidate = {
+      monthly,
+      reservedMonthly: oneYearRate > 0 ? monthlyFromItem({ ...item, retailPrice: oneYearRate, unitPrice: oneYearRate }) : null,
+    };
+    if (!perSku.has(sku) || monthly < perSku.get(sku).monthly) perSku.set(sku, candidate);
 
     if (item.effectiveStartDate && item.effectiveStartDate > newestDate) {
       newestDate = item.effectiveStartDate;
     }
 
-    // 1-Year savings-plan ratio (reserved-term discount) when present.
-    const plans = Array.isArray(item.savingsPlan) ? item.savingsPlan : [];
-    const oneYear = plans.find((p) => /1\s*year/i.test(p.term || ''));
-    const retail = item.retailPrice || item.unitPrice || 0;
-    if (oneYear && retail > 0) {
-      const rp = oneYear.unitPrice || oneYear.retailPrice || 0;
-      if (rp > 0) savingsRatios.push(rp / retail);
-    }
   }
 
-  const monthlies = [...perSku.values()].filter((n) => Number.isFinite(n));
+  const monthlies = [...perSku.values()].map((entry) => entry.monthly).filter((n) => Number.isFinite(n));
   if (monthlies.length === 0) return null;
 
   const sorted = [...monthlies].sort((a, b) => a - b);
@@ -208,11 +199,12 @@ function distillFile(filePath, stem) {
   if (patterns) {
     for (const pat of patterns) {
       let match = null;
-      for (const [sku, m] of perSku.entries()) {
+      for (const [sku, entry] of perSku.entries()) {
+        const m = entry.monthly;
         // Skip geo-replica / failover SKUs — not a representative primary cost.
         if (/secondary|failover|passive/i.test(sku)) continue;
         if (m > 0 && sku.toLowerCase().includes(pat)) {
-          if (!match || m < match.m) match = { sku, m };
+          if (!match || m < match.m) match = { sku, m, reservedMonthly: entry.reservedMonthly };
         }
       }
       if (match) {
@@ -226,14 +218,20 @@ function distillFile(filePath, stem) {
 
   if (expected == null) return null;
 
-  const reservedRatio = savingsRatios.length ? median(savingsRatios) : null;
+  const lowEntry = [...perSku.values()].find((entry) => entry.monthly === low);
+  const highEntry = [...perSku.values()].find((entry) => entry.monthly === high);
+  const expectedEntry = perSku.get(sampleSku);
+  const reservedLow = lowEntry?.reservedMonthly ?? null;
+  const reservedExpected = expectedEntry?.reservedMonthly ?? null;
+  const reservedHigh = highEntry?.reservedMonthly ?? null;
 
   return {
     low: round2(low),
     expected: round2(expected),
     high: round2(high),
-    reservedExpected: reservedRatio != null ? round2(expected * reservedRatio) : null,
-    reservedRatio: reservedRatio != null ? round2(reservedRatio) : null,
+    reservedLow: reservedLow != null ? round2(reservedLow) : null,
+    reservedExpected: reservedExpected != null ? round2(reservedExpected) : null,
+    reservedHigh: reservedHigh != null ? round2(reservedHigh) : null,
     currency,
     sampleSku,
     expectedBasis,

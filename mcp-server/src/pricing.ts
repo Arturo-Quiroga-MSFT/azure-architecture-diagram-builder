@@ -26,8 +26,9 @@ interface ServicePricingEntry {
   low: number;
   expected: number;
   high: number;
+  reservedLow: number | null;
   reservedExpected: number | null;
-  reservedRatio: number | null;
+  reservedHigh: number | null;
   currency: string;
   sampleSku: string;
   expectedBasis?: string;
@@ -111,19 +112,24 @@ export function estimateServiceCost(params: EstimateParams): ServiceCostEstimate
     return { hasPricingData: false };
   }
 
-  // Apply the reserved (1-year) discount ratio to the full low/expected/high
-  // band when the caller asks for reserved and a ratio is available.
-  const useReserved = term === 'reserved1yr' && entry.reservedRatio != null;
-  const ratio = useReserved ? (entry.reservedRatio as number) : 1;
-
+  // Never extrapolate one SKU's discount over unrelated SKUs. In one-year
+  // mode each tier uses its own real Savings Plan meter when present; tiers
+  // without one remain PAYG and are explicitly described as mixed coverage.
+  const oneYearRequested = term === 'reserved1yr';
   const band = {
-    low: round2(entry.low * ratio),
-    expected: round2(entry.expected * ratio),
-    high: round2(entry.high * ratio),
+    low: round2(oneYearRequested && entry.reservedLow != null ? entry.reservedLow : entry.low),
+    expected: round2(oneYearRequested && entry.reservedExpected != null ? entry.reservedExpected : entry.expected),
+    high: round2(oneYearRequested && entry.reservedHigh != null ? entry.reservedHigh : entry.high),
   };
 
   const selected =
     tier === 'basic' ? band.low : tier === 'premium' ? band.high : band.expected;
+  const selectedHasReserved = oneYearRequested && (
+    tier === 'basic' ? entry.reservedLow != null
+      : tier === 'premium' ? entry.reservedHigh != null
+        : entry.reservedExpected != null
+  );
+  const reservedTierCount = [entry.reservedLow, entry.reservedExpected, entry.reservedHigh].filter((value) => value != null).length;
 
   return {
     hasPricingData: true,
@@ -137,9 +143,10 @@ export function estimateServiceCost(params: EstimateParams): ServiceCostEstimate
     quantity,
     sampleSku: entry.sampleSku,
     expectedBasis: entry.expectedBasis,
-    reservedApplied: useReserved,
-    note:
-      'expected = representative (median) SKU; low/high span the cheapest/most-expensive SKUs for this service in the region.',
+    reservedApplied: selectedHasReserved,
+    note: oneYearRequested
+      ? `${reservedTierCount}/3 tier values have real SKU-specific 1-year Savings Plan meters; unavailable tiers remain PAYG. Selected tier ${selectedHasReserved ? 'uses a real one-year rate' : 'remains PAYG'}.`
+      : 'Expected uses a configured representative SKU; low/high span the cheapest/most-expensive eligible PAYG SKUs in the region.',
   };
 }
 

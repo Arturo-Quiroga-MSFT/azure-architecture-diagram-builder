@@ -73,7 +73,7 @@ const AI_SERVICE_PRODUCT_MAP: Record<string, { file: string; productName: string
   'Computer Vision': { file: 'foundry_tools', productName: 'Azure Vision', defaultSku: 'Standard' },
   'Face': { file: 'foundry_tools', productName: 'Azure Vision - Face', defaultSku: 'Standard' },
   'Translator': { file: 'foundry_tools', productName: 'Azure Translator', defaultSku: 'Standard' },
-  'Custom Vision': { file: 'foundry_tools', productName: 'Azure Custom Vision', defaultSku: 'Standard' },
+  'Custom Vision': { file: 'foundry_tools', productName: 'Azure Custom Vision', defaultSku: 'S0' },
   'Content Safety': { file: 'foundry_tools', productName: 'Content Safety', defaultSku: 'Standard' },
 };
 
@@ -340,6 +340,7 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
   items.forEach(item => {
     const skuName = item.skuName || item.armSkuName;
     if (!skuName) return;
+    if (/spot|low priority/i.test(`${skuName} ${item.meterName || ''}`)) return;
     
     // Handle different billing units for AI services
     const unitOfMeasure = (item as any).unitOfMeasure || '1 Hour';
@@ -413,7 +414,13 @@ export async function getRegionalServicePricing(
   }
   
   // Filter and parse the items
-  const filteredItems = filterPricingItems(data.Items, serviceName);
+  // AI files were already narrowed by productName in loadServiceData. Their
+  // Retail API serviceName remains "Foundry Models" / "Foundry Tools", so a
+  // second comparison with display names such as "Azure OpenAI" would discard
+  // every valid meter.
+  const filteredItems = isAIService(serviceName)
+    ? data.Items.filter(item => item.type === 'Consumption')
+    : filterPricingItems(data.Items, serviceName);
   
   if (filteredItems.length === 0) {
     console.warn(`⚠️ No consumption pricing items for ${serviceName} in ${targetRegion}`);

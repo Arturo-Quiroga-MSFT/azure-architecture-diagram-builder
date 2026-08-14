@@ -34,7 +34,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // Compute
   'Virtual Machine': 'Virtual Machines',
   'Virtual Machines': 'Virtual Machines',
-  'VM Scale Sets': 'Virtual Machine Scale Sets',
+  'VM Scale Sets': 'Virtual Machines',
   'Batch': 'Azure Batch',
   
   // Containers
@@ -156,7 +156,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Azure Search': 'Azure Cognitive Search',
   
   // Identity & Security
-  'Active Directory': 'Azure Active Directory',
+  'Active Directory': 'Microsoft Entra ID',
   'Microsoft Entra ID': 'Microsoft Entra ID',
   'Entra ID': 'Microsoft Entra ID',
   'Azure AD': 'Microsoft Entra ID',
@@ -290,7 +290,11 @@ export const USAGE_BASED_SERVICES = [
   'Azure Digital Twins',
   // Containers
   'Container Apps',
+  'Container App',
   'Azure Container Apps',
+  'Container Instance',
+  'Container Instances',
+  'Azure Container Instances',
   // Integration
   'Event Grid',
   'Azure Event Grid',
@@ -331,6 +335,7 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Azure Blob Storage': 'Hot LRS',
   'PostgreSQL': 'GP_Gen5_2',
   'Azure Database for PostgreSQL': 'GP_Gen5_2',
+  'MySQL': 'Standard_B2ms2',
   'Log Analytics': 'PerGB2018',
   'Log Analytics Workspace': 'PerGB2018',
   'Virtual Machines': 'D2s_v3',
@@ -383,7 +388,7 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Computer Vision': 'Standard',
   'Face': 'Standard',
   'Translator': 'Standard',
-  'Custom Vision': 'Standard',
+  'Custom Vision': 'S0',
   'Content Safety': 'Standard',
   'Azure Cognitive Search': 'Basic',
   'Cognitive Search': 'Basic',
@@ -1178,23 +1183,36 @@ export function getAzureServiceName(serviceType: string): string {
   return SERVICE_NAME_MAPPING[serviceType] || serviceType;
 }
 
+function getPricingConfigKey(serviceType: string, config: Record<string, unknown>): string {
+  if (serviceType in config) return serviceType;
+  const serviceName = getAzureServiceName(serviceType);
+  if (serviceName in config) return serviceName;
+  return Object.keys(SERVICE_NAME_MAPPING).find(alias =>
+    SERVICE_NAME_MAPPING[alias] === serviceName && alias in config
+  ) || serviceType;
+}
+
 /**
  * Get default tier for a service
  */
 export function getDefaultTier(serviceType: string): string {
-  return DEFAULT_TIERS[serviceType] || 'Standard';
+  return DEFAULT_TIERS[getPricingConfigKey(serviceType, DEFAULT_TIERS)] || 'Standard';
 }
 
 /**
  * Get fallback pricing for a service
  */
 export function getFallbackPricing(serviceType: string, tier: 'basic' | 'standard' | 'premium' = 'standard'): number {
-  const pricing = FALLBACK_PRICING[serviceType];
+  const pricing = FALLBACK_PRICING[getPricingConfigKey(serviceType, FALLBACK_PRICING)];
   if (!pricing) {
     console.warn(`No fallback pricing found for ${serviceType}`);
     return 0;
   }
   return pricing[tier];
+}
+
+export function hasFallbackPricing(serviceType: string): boolean {
+  return getPricingConfigKey(serviceType, FALLBACK_PRICING) in FALLBACK_PRICING;
 }
 
 /**
@@ -1208,7 +1226,7 @@ export const FALLBACK_DEFAULT_LEVEL: Record<string, 'basic' | 'standard' | 'prem
 };
 
 export function getFallbackDefaultLevel(serviceType: string): 'basic' | 'standard' | 'premium' {
-  return FALLBACK_DEFAULT_LEVEL[serviceType] || 'standard';
+  return FALLBACK_DEFAULT_LEVEL[getPricingConfigKey(serviceType, FALLBACK_DEFAULT_LEVEL)] || 'standard';
 }
 
 /** Friendly SKU/tier label for the initial fallback estimate. */
@@ -1217,7 +1235,7 @@ export const FALLBACK_DEFAULT_SKU: Record<string, string> = {
 };
 
 export function getFallbackDefaultSku(serviceType: string): string {
-  return FALLBACK_DEFAULT_SKU[serviceType] || 'Standard';
+  return FALLBACK_DEFAULT_SKU[getPricingConfigKey(serviceType, FALLBACK_DEFAULT_SKU)] || 'Standard';
 }
 
 /**
@@ -1293,7 +1311,7 @@ export const RESERVED_1YR_DISCOUNT: Record<string, number> = {
 
 /** 1-year reserved discount fraction for a service (0 if not reservation-eligible). */
 export function getReserved1yrDiscount(serviceType: string): number {
-  return RESERVED_1YR_DISCOUNT[serviceType] || 0;
+  return RESERVED_1YR_DISCOUNT[getPricingConfigKey(serviceType, RESERVED_1YR_DISCOUNT)] || 0;
 }
 
 /**
@@ -1301,7 +1319,7 @@ export function getReserved1yrDiscount(serviceType: string): number {
  * The `npm run pricing:refresh` script bumps this automatically after a
  * successful fetch so cost exports can show an accurate "Prices as of" stamp.
  */
-export const PRICING_DATA_AS_OF = '2026-07-14';
+export const PRICING_DATA_AS_OF = '2026-08-13';
 
 /**
  * Check if service has pricing data available

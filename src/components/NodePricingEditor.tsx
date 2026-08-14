@@ -189,7 +189,7 @@ export default function NodePricingEditor({
           )}
 
           <div className="npe-preview">
-            <span className="npe-preview-label">Estimated monthly cost</span>
+            <span className="npe-preview-label">Estimated PAYG monthly cost</span>
             <span className="npe-preview-value">{formatMonthlyCost(previewTotal)}</span>
             {quantity > 1 && (
               <span className="npe-preview-detail">

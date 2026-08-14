@@ -277,7 +277,7 @@ server.registerTool(
   'estimate_costs',
   {
     description:
-      'Estimate monthly Azure costs for a list of services using live-derived Azure Retail Prices (distilled per region). Returns NUMERIC per-service monthly costs (low/expected/high) plus a real total and by-category totals, honoring region and pricing term (pay-as-you-go or 1-year reserved). Services without distilled pricing data fall back to a catalog cost range and are flagged.',
+      'Estimate monthly Azure costs for a list of services using snapshot-derived Azure Retail Prices (distilled per region). Returns numeric per-service monthly costs (low/expected/high), a total, and by-category totals. One-year mode uses exact SKU-specific Savings Plan meters where present and leaves unavailable tiers at PAYG. Services without distilled pricing data fall back to a catalog cost range and are flagged.',
     inputSchema: {
       services: z
         .array(
@@ -299,7 +299,7 @@ server.registerTool(
       term: z
         .string()
         .optional()
-        .describe('Pricing term. Allowed values: payg (pay-as-you-go, default) or reserved1yr (1-year reserved / savings plan).'),
+        .describe('Pricing term. Allowed values: payg (pay-as-you-go, default) or reserved1yr (exact SKU-specific 1-year Savings Plan rates where available; other values remain PAYG).'),
     },
     outputSchema: {
       region: z.string(),

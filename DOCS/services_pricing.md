@@ -1,122 +1,62 @@
-# Azure Services with Regional Pricing Data
+# Azure Services Pricing Coverage
 
-**Last Updated:** July 2026
+**Snapshot fetched:** August 13, 2026
 
-This document lists all Azure services that have local pricing data loaded from regional JSON files across all 5 supported regions.
+This page is a short coverage index. See `REGIONAL_PRICING_IMPLEMENTATION.md` for selection rules, provenance, limitations, and validation commands.
 
-## Coverage Summary
+## Regions
 
-| Region | Files | Pricing Items |
-|--------|-------|---------------|
-| East US 2 🇺🇸 (HERO) | 39 | ~6,100+ |
-| Canada Central 🇨🇦 (HUB) | 39 | ~5,100+ |
-| Brazil South 🇧🇷 (HUB) | 39 | ~5,300+ |
-| West Europe 🇳🇱 (HUB) | 39 | ~5,900+ |
-| Sweden Central 🇸🇪 (HUB) | 39 | ~5,500+ |
+The same 80-query inventory is bundled for East US 2, Australia East, Canada Central, Brazil South, Mexico Central, West Europe, Sweden Central, and Southeast Asia.
 
-## Services with Direct Pricing Data (39 services)
+Each regional folder contains 80 JSON files. Files can be empty when the Retail Prices API publishes no matching regional records. Empty files are retained as explicit evidence of the query result and are never treated as a zero-dollar price.
 
-### Compute (9 services)
-- **Azure App Service** - Web apps, APIs, mobile backends
-- **Virtual Machines** - Windows and Linux VMs (1000+ SKUs)
-- **Azure Kubernetes Service (AKS)** - Managed Kubernetes
-- **Container Instances** - Serverless containers
-- **Container Registry** - Docker container registry
-- **Functions** - Serverless compute (Azure Functions)
-- **Logic Apps** - Workflow automation
-- **Azure Firewall** - Network firewall
-- **VPN Gateway** - VPN connectivity
+## Data Sources
 
-### Databases (5 services)
-- **Azure Cosmos DB** - Global NoSQL database
-- **SQL Database** - Managed SQL Server
-- **Azure Database for PostgreSQL** - Managed PostgreSQL
-- **Azure Database for MySQL** - Managed MySQL
-- **Redis Cache** - In-memory cache
+- Azure Retail Prices API Consumption meters.
+- Product-filtered Foundry model and AI tool records.
+- Documented static fallback estimates in `src/data/azurePricing.ts`.
+- Optional user-provided custom prices.
 
-### Storage (1 service)
-- **Storage** - Blob, File, Queue, Table storage (1000+ items)
+The app does not query Azure pricing at user runtime. It lazy-loads files from the bundled snapshot.
 
-### Networking (6 services)
-- **Application Gateway** - Layer 7 load balancer
-- **Azure Front Door Service** - Global HTTP load balancer (341 items)
-- **ExpressRoute** - Private Azure connectivity
-- **Virtual Network** - VNet peering and services
-- **Network Watcher** - Network monitoring
-- **Content Delivery Network** - CDN (631 items)
+## Measured Semantic Coverage
 
-### Analytics & Data (4 services)
-- **Azure Data Factory** - ETL/ELT pipelines
-- **Azure Synapse Analytics** - Data warehousing
-- **Stream Analytics** - Real-time analytics
-- **Azure Machine Learning** - ML platform
+Across 184 recognized service labels and eight regions:
 
-### AI & Cognitive Services (via Foundry - 14+ services)
-- **Foundry Models** - Azure OpenAI, GPT-4, GPT-4o, etc. (750-1000 items/region)
-- **Foundry Tools** - Document Intelligence, Vision, Speech, Language, Translator (320-560 items/region)
+| Outcome | Combinations |
+|---|---:|
+| Retail API PAYG meter | 732 |
+| Static PAYG fallback | 716 |
+| No supported PAYG estimate | 24 |
+| Real one-year Savings Plan meter for the default SKU | 32 |
+| Representative one-year percentage estimate | 168 |
+| One-year mode unchanged from PAYG | 1,272 |
 
-### Integration & Messaging (4 services)
-- **Service Bus** - Message queuing
-- **Event Hubs** - Event streaming
-- **Event Grid** - Event routing
-- **Notification Hubs** - Push notifications
+The 184 labels include aliases, so these counts measure UI label/region behavior rather than 184 distinct Azure products.
 
-### Monitoring & Management (5 services)
-- **Application Insights** - APM
-- **Azure Monitor** - Metrics and alerts (200+ items)
-- **Log Analytics** - Log management
-- **Key Vault** - Secrets management
-- **API Management** - API gateway
+## Unsupported Regional Combinations
 
-### Security & Backup (2 services)
-- **Microsoft Defender for Cloud** - Security posture
-- **Backup** - Azure Backup
+- Batch: all eight regions.
+- Bot Service: all eight regions.
+- Content Safety: Canada Central, Brazil South, Mexico Central, Southeast Asia.
+- Custom Vision: Canada Central, Brazil South, Mexico Central.
+- Face: Mexico Central.
 
-### Developer Tools (1 service)
-- **Azure DevOps** - CI/CD and repos
+These combinations show no estimate unless the user supplies a custom price.
 
-## AI Services Mapping
+## Proven Default Corrections
 
-AI services are priced through Foundry data files with intelligent mapping:
+- Virtual Machine aliases and VM Scale Sets use the Virtual Machines D2s v3 default in all eight regions.
+- MySQL uses Standard_B2ms2, present exactly once in each regional snapshot.
+- Custom Vision uses S0 where the regional product records exist.
+- Active Directory resolves to the Microsoft Entra ID pricing configuration.
+- Spot and Low Priority meters are excluded from default selection.
 
-| Display Name | Source File | Product Filter |
-|-------------|-------------|----------------|
-| Azure OpenAI / OpenAI | foundry_models | Azure OpenAI |
-| Document Intelligence | foundry_tools | Azure Document Intelligence |
-| Form Recognizer | foundry_tools | Form Recognizer |
-| Language / Text Analytics | foundry_tools | Azure Language |
-| Speech / Speech Services | foundry_tools | Azure Speech |
-| Vision / Computer Vision | foundry_tools | Azure Vision |
-| Face | foundry_tools | Azure Vision - Face |
-| Translator | foundry_tools | Azure Translator |
-| Custom Vision | foundry_tools | Azure Custom Vision |
-| Content Safety | foundry_tools | Content Safety |
-
-## Fallback Pricing
-
-Services **not** in the regional data files use fallback estimates from `src/data/azurePricing.ts`:
-- Static Web Apps (usage-based)
-- Azure IoT Hub / IoT Central
-- Azure SignalR Service
-- Azure Sentinel
-- Site Recovery
-- Azure Automation
-- Load Balancer (consumption-based)
-- Traffic Manager (usage-based)
-
-## Data Source
-
-Pricing data is fetched from the [Azure Retail Prices API](https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices):
+## Audit
 
 ```bash
-cd scripts && ./fetch-multi-region-pricing.sh
+npm run pricing:audit
+npm run pricing:audit-semantics -- --json=/tmp/aadb-pricing-semantics.json
 ```
 
-Script downloads services across 8 regions, filters empty data, and stores in `src/data/pricing/regions/`.
-
-## Regional Pricing
-
-Real regional pricing differences are automatically reflected when switching regions in the UI:
-1. Loads from regional JSON files (`src/data/pricing/regions/{region}/`)
-2. AI services filter from Foundry files by productName
-3. Falls back to static estimates with regional multipliers if no data found
+The structural audit verifies files, inventories, JSON shape, and pagination completion. The semantic audit verifies the actual default-selection and provenance outcomes used by the UI.

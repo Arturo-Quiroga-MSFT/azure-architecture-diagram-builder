@@ -1,0 +1,6473 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-08-13T22:04:35.527Z",
+  "completedAt": "2026-08-13T22:07:24.262Z",
+  "snapshotDate": "2026-08-13",
+  "source": "Azure Retail Prices API",
+  "apiVersion": "2023-01-01-preview",
+  "currency": "USD",
+  "regions": [
+    "eastus2",
+    "australiaeast",
+    "canadacentral",
+    "brazilsouth",
+    "mexicocentral",
+    "westeurope",
+    "swedencentral",
+    "southeastasia"
+  ],
+  "filesPerRegion": 80,
+  "uniqueServiceQueries": 80,
+  "downloadTasks": 605,
+  "totalPages": 672,
+  "totalItemsAcrossQueries": 97756,
+  "emptyDownloads": [
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "CDN",
+      "scope": "global"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Static Web Apps",
+      "scope": "global"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "brazilsouth"
+    }
+  ],
+  "downloads": [
+    {
+      "serviceName": "API Management",
+      "scope": "australiaeast",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "brazilsouth",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "canadacentral",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "eastus2",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 31
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "mexicocentral",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "southeastasia",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "swedencentral",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "westeurope",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "australiaeast",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "brazilsouth",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 23
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "canadacentral",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "eastus2",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "mexicocentral",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "southeastasia",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "swedencentral",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 23
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "westeurope",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "australiaeast",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "brazilsouth",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "canadacentral",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "eastus2",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "mexicocentral",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "southeastasia",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "swedencentral",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "westeurope",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "eastus2",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "westeurope",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "eastus2",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "westeurope",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "eastus2",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "westeurope",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "eastus2",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "westeurope",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "eastus2",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "westeurope",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 1
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "eastus2",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 1
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 26
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "westeurope",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 130
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 108
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 129
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "eastus2",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 134
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 133
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 130
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 128
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "westeurope",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 134
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "eastus2",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "westeurope",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "eastus2",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "westeurope",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "eastus2",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "westeurope",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "eastus2",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "westeurope",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 26
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "eastus2",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 20
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 22
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "westeurope",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "eastus2",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "westeurope",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 106
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "eastus2",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 88
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 99
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "westeurope",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "eastus2",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "westeurope",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "eastus2",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "westeurope",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 77
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "eastus2",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 47
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 80
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "westeurope",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 140
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 145
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 144
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "eastus2",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 145
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 87
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 144
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 137
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "westeurope",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 150
+    },
+    {
+      "serviceName": "Azure DevOps",
+      "scope": "global",
+      "stems": [
+        "azure_devops"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "eastus2",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "westeurope",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "eastus2",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "westeurope",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "eastus2",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "westeurope",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Front Door Service",
+      "scope": "global",
+      "stems": [
+        "azure_front_door_service"
+      ],
+      "pages": 1,
+      "items": 389
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "eastus2",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "westeurope",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "eastus2",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "westeurope",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "eastus2",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "westeurope",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "eastus2",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "westeurope",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "eastus2",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "westeurope",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "eastus2",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 37
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 20
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "westeurope",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "eastus2",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 156
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 40
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "westeurope",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "eastus2",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "westeurope",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "eastus2",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "westeurope",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "eastus2",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "westeurope",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "eastus2",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "westeurope",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 98
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 122
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "eastus2",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 123
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 121
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 117
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "westeurope",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "australiaeast",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "brazilsouth",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "canadacentral",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "eastus2",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "mexicocentral",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "southeastasia",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "swedencentral",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "westeurope",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "australiaeast",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "brazilsouth",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "canadacentral",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "eastus2",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "mexicocentral",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "southeastasia",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "swedencentral",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 32
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "westeurope",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "CDN",
+      "scope": "global",
+      "stems": [
+        "cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "australiaeast",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "brazilsouth",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "canadacentral",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "eastus2",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "mexicocentral",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "southeastasia",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "swedencentral",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "westeurope",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "australiaeast",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "brazilsouth",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "canadacentral",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "eastus2",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "mexicocentral",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "southeastasia",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "swedencentral",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "westeurope",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "australiaeast",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "brazilsouth",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "canadacentral",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "eastus2",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "mexicocentral",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "southeastasia",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "swedencentral",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "westeurope",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "australiaeast",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "brazilsouth",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "canadacentral",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "eastus2",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "mexicocentral",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "southeastasia",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "swedencentral",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "westeurope",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Content Delivery Network",
+      "scope": "global",
+      "stems": [
+        "content_delivery_network"
+      ],
+      "pages": 1,
+      "items": 631
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "australiaeast",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "brazilsouth",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "canadacentral",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "eastus2",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "mexicocentral",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "southeastasia",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "swedencentral",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "westeurope",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "australiaeast",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "brazilsouth",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "canadacentral",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "eastus2",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "mexicocentral",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 2
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "southeastasia",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "swedencentral",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "westeurope",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "australiaeast",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "brazilsouth",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "canadacentral",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "eastus2",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "mexicocentral",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "southeastasia",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "swedencentral",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "westeurope",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "australiaeast",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "brazilsouth",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "canadacentral",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "eastus2",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "mexicocentral",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "southeastasia",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "swedencentral",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "westeurope",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "australiaeast",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "brazilsouth",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "canadacentral",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "eastus2",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "mexicocentral",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "southeastasia",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "swedencentral",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "westeurope",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "australiaeast",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 678
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "brazilsouth",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 608
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "canadacentral",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 157
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "eastus2",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 2,
+      "items": 1520
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "mexicocentral",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "southeastasia",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 269
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "swedencentral",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 2,
+      "items": 1525
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "westeurope",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 2,
+      "items": 1240
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "australiaeast",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 555
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "brazilsouth",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 496
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "canadacentral",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 515
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "eastus2",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 560
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "mexicocentral",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 26
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "southeastasia",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 538
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "swedencentral",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 346
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "westeurope",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 568
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "australiaeast",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "brazilsouth",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "canadacentral",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "eastus2",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "mexicocentral",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "southeastasia",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "swedencentral",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "westeurope",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "australiaeast",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "brazilsouth",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "canadacentral",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "eastus2",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "mexicocentral",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "southeastasia",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "swedencentral",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 2
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "westeurope",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "australiaeast",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "brazilsouth",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "canadacentral",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "eastus2",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "mexicocentral",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "southeastasia",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "swedencentral",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "westeurope",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "australiaeast",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "brazilsouth",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "canadacentral",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "eastus2",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "mexicocentral",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "southeastasia",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "swedencentral",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "westeurope",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "australiaeast",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "brazilsouth",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "canadacentral",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "eastus2",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "mexicocentral",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "southeastasia",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "swedencentral",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "westeurope",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "australiaeast",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "brazilsouth",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "canadacentral",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "eastus2",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "mexicocentral",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "southeastasia",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "swedencentral",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "westeurope",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "australiaeast",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "brazilsouth",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "canadacentral",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "eastus2",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "mexicocentral",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "southeastasia",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "swedencentral",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 24
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "westeurope",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "australiaeast",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "brazilsouth",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "canadacentral",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "eastus2",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "mexicocentral",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "southeastasia",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "swedencentral",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 37
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "westeurope",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "australiaeast",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "brazilsouth",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "canadacentral",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "eastus2",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "mexicocentral",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 270
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "southeastasia",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 276
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "swedencentral",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "westeurope",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "australiaeast",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "brazilsouth",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "canadacentral",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "eastus2",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "mexicocentral",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "southeastasia",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "swedencentral",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "westeurope",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "australiaeast",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "brazilsouth",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "canadacentral",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "eastus2",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "mexicocentral",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "southeastasia",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "swedencentral",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "westeurope",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "australiaeast",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "brazilsouth",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "canadacentral",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "eastus2",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "mexicocentral",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "southeastasia",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "swedencentral",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "westeurope",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "australiaeast",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "brazilsouth",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "canadacentral",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "eastus2",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "mexicocentral",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 83
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "southeastasia",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "swedencentral",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "westeurope",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "australiaeast",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "brazilsouth",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "canadacentral",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "eastus2",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "mexicocentral",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "southeastasia",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "swedencentral",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "westeurope",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "australiaeast",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "brazilsouth",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "canadacentral",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "eastus2",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "mexicocentral",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "southeastasia",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "swedencentral",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "westeurope",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "australiaeast",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "brazilsouth",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "canadacentral",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "eastus2",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "mexicocentral",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "southeastasia",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "swedencentral",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "westeurope",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "australiaeast",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "brazilsouth",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "canadacentral",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "eastus2",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "mexicocentral",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "southeastasia",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "swedencentral",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "westeurope",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "australiaeast",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 323
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "brazilsouth",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 278
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "canadacentral",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 326
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "eastus2",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 323
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "mexicocentral",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 306
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "southeastasia",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 326
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "swedencentral",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 243
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "westeurope",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 328
+    },
+    {
+      "serviceName": "Static Web Apps",
+      "scope": "global",
+      "stems": [
+        "static_web_apps"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "australiaeast",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1464
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "brazilsouth",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1453
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "canadacentral",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1457
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "eastus2",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1506
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "mexicocentral",
+      "stems": [
+        "storage"
+      ],
+      "pages": 1,
+      "items": 687
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "southeastasia",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1505
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "swedencentral",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1471
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "westeurope",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1508
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "australiaeast",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "brazilsouth",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "canadacentral",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "eastus2",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "mexicocentral",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "southeastasia",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "swedencentral",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "westeurope",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "australiaeast",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "brazilsouth",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "canadacentral",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "eastus2",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "mexicocentral",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "southeastasia",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "swedencentral",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "westeurope",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "australiaeast",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "brazilsouth",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "canadacentral",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "eastus2",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "mexicocentral",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "southeastasia",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "swedencentral",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "westeurope",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "australiaeast",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "brazilsouth",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "canadacentral",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "eastus2",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "mexicocentral",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "southeastasia",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "swedencentral",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "westeurope",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "australiaeast",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 8,
+      "items": 7699
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "brazilsouth",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 7,
+      "items": 6972
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "canadacentral",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 8,
+      "items": 7507
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "eastus2",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 10,
+      "items": 9140
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "mexicocentral",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 6,
+      "items": 5520
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "southeastasia",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 8,
+      "items": 7642
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "swedencentral",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 8,
+      "items": 7331
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "westeurope",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 10,
+      "items": 9022
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "australiaeast",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "brazilsouth",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "canadacentral",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "eastus2",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "mexicocentral",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "southeastasia",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "swedencentral",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "westeurope",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "australiaeast",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "brazilsouth",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "canadacentral",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "eastus2",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "mexicocentral",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "southeastasia",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "swedencentral",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "westeurope",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    }
+  ]
+}
