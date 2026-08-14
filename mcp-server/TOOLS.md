@@ -407,8 +407,9 @@ Run `npm run test:contracts` from `mcp-server/`. The test builds the standalone
 server, starts its Streamable HTTP transport with a temporary bearer token, and
 verifies unauthenticated rejection, the exact 12-tool / 3-resource / 3-prompt
 inventory, every tool title and safety annotation, a smoke call to every tool
-handler, structured PAYG pricing, forced-format import, hardening idempotency,
-and both Bicep and Terraform deployment-guide paths.
+handler, direct requests with missing and stale session IDs, structured PAYG
+pricing, forced-format import, hardening idempotency, and both Bicep and
+Terraform deployment-guide paths.
 
 ## Prompts
 

@@ -73,6 +73,30 @@ function textPayload(result) {
   return JSON.parse(item.text);
 }
 
+async function rawMcpRequest(baseUrl, method, params, sessionId) {
+  const headers = {
+    Accept: 'application/json, text/event-stream',
+    Authorization: `Bearer ${TOKEN}`,
+    'Content-Type': 'application/json',
+    'MCP-Protocol-Version': '2025-06-18',
+  };
+  if (sessionId) headers['Mcp-Session-Id'] = sessionId;
+
+  const response = await fetch(`${baseUrl}/mcp`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  const text = await response.text();
+  assert.equal(response.status, 200, text);
+  if (response.headers.get('content-type')?.includes('application/json')) {
+    return JSON.parse(text);
+  }
+  const dataLine = text.split('\n').find(line => line.startsWith('data: '));
+  assert(dataLine, `Expected an SSE data line, received: ${text}`);
+  return JSON.parse(dataLine.slice('data: '.length));
+}
+
 async function main() {
   const port = await getAvailablePort();
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -109,6 +133,42 @@ async function main() {
       }),
     });
     assert.equal(unauthorized.status, 401);
+
+    const getProbe = await fetch(`${baseUrl}/mcp`);
+    assert.equal(getProbe.status, 200);
+    assert((await getProbe.text()).includes('Streamable-HTTP endpoint'));
+
+    const headProbe = await fetch(`${baseUrl}/mcp`, { method: 'HEAD' });
+    assert.equal(headProbe.status, 200);
+    assert.equal(await headProbe.text(), '');
+
+    const preflight = await fetch(`${baseUrl}/mcp`, { method: 'OPTIONS' });
+    assert.equal(preflight.status, 204);
+    const allowedHeaders = preflight.headers.get('access-control-allow-headers')?.toLowerCase() ?? '';
+    for (const header of ['authorization', 'mcp-session-id', 'mcp-protocol-version', 'last-event-id']) {
+      assert(allowedHeaders.includes(header), `Preflight must allow ${header}`);
+    }
+
+    const deleteResponse = await fetch(`${baseUrl}/mcp`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    });
+    assert.equal(deleteResponse.status, 405);
+
+    const health = await fetch(`${baseUrl}/healthz`).then(response => response.json());
+    assert.equal(health.sessionMode, 'stateless');
+
+    const directList = await rawMcpRequest(baseUrl, 'tools/list', {}, undefined);
+    assert.deepEqual(directList.result.tools.map(tool => tool.name).sort(), EXPECTED_TOOLS);
+
+    const staleSessionCall = await rawMcpRequest(
+      baseUrl,
+      'tools/call',
+      { name: 'list_services', arguments: { category: 'compute' } },
+      'session-from-replaced-container-revision',
+    );
+    assert.equal(staleSessionCall.result.isError, undefined);
+    assert(textPayload(staleSessionCall.result).totalServices > 0);
 
     client = new Client({ name: 'mcp-contract-test', version: '1.0.0' });
     const transport = new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`), {
@@ -270,7 +330,7 @@ async function main() {
       assert(guide.markdown.includes('contract-test'));
     }
 
-    console.log('MCP contract test passed: all 12 handlers, 3 resources, 3 prompts, auth, metadata, pricing, hardening idempotency, and deployment guides.');
+    console.log('MCP contract test passed: stateless missing/stale-session recovery, all 12 handlers, 3 resources, 3 prompts, auth, metadata, pricing, hardening idempotency, and deployment guides.');
   } finally {
     if (client) await client.close().catch(() => {});
     if (child.exitCode === null) child.kill('SIGTERM');

@@ -13,6 +13,8 @@ Azure architectures conversationally.
 - **Endpoint:** `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/mcp`
 - **Auth:** Bearer token (`MCP_AUTH_TOKEN` on the container app). Scout stores it
   encrypted and sends `Authorization: Bearer <token>`.
+- **Session mode:** stateless Streamable HTTP. Tool calls remain valid after an
+  ACA revision replacement even if Scout sends no session ID or a stale one.
 - **Catalog entry:** registered in the `scout-m` repo at
   `common/extensions-catalog/items/mcp-servers.ts`
   (id `mcp-azure-architecture-diagram-builder`, `microsoftOnly`).
@@ -23,9 +25,8 @@ Azure architectures conversationally.
 ## Capabilities
 
 The production endpoint has been verified to expose **12 tools, 3 resources,
-and 3 prompts**. The title/annotation contract described below is validated in
-the current source branch by `npm run test:contracts`; it is not a production
-claim until that branch is reviewed and deployed to the standalone MCP app.
+and 3 prompts**. The title/annotation contract described below is deployed and
+verified; stateless session recovery is covered by `npm run test:contracts`.
 
 ### Tools
 

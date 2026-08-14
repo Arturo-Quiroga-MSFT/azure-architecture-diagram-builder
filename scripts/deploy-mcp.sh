@@ -83,8 +83,8 @@ ACR_USER="$(az acr credential show -n "$ACR_NAME" --query username -o tsv)"
 ACR_PASS="$(az acr credential show -n "$ACR_NAME" --query 'passwords[0].value' -o tsv)"
 
 # ── 4. Create / update the MCP Container App (target-port 3030) ─────────
-# min=1: the MCP HTTP transport keeps session state in memory, so keep one
-# always-on replica; scale out to max on agent load.
+# min=1 avoids cold-start latency. The MCP HTTP transport is stateless, so
+# revisions and replicas do not need shared or sticky session state.
 if az containerapp show -n "$MCP_APP" -g "$RESOURCE_GROUP" -o none 2>/dev/null; then
   echo "♻️  [4/4] Updating existing Container App ${MCP_APP}..."
   az containerapp secret set -n "$MCP_APP" -g "$RESOURCE_GROUP" \

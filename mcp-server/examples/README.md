@@ -40,23 +40,11 @@ cd mcp-server
 npm run build
 MCP_HTTP_HOST=127.0.0.1 MCP_HTTP_PORT=3030 node dist/index.js --http
 
-# Terminal 2 — initialize a session and list tools
-INIT=$(curl -sS -i -X POST http://127.0.0.1:3030/mcp \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}')
-SID=$(echo "$INIT" | grep -i '^mcp-session-id:' | awk '{print $2}' | tr -d '\r')
-
+# Terminal 2 — list tools directly (the HTTP transport is stateless)
 curl -sS -X POST http://127.0.0.1:3030/mcp \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
-  -H "mcp-session-id: $SID" \
-  -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
-
-curl -sS -X POST http://127.0.0.1:3030/mcp \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -H "mcp-session-id: $SID" \
+  -H 'MCP-Protocol-Version: 2025-06-18' \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
 ```
 
@@ -66,7 +54,9 @@ curl -sS -X POST http://127.0.0.1:3030/mcp \
 - Recommended hosting: deploy the MCP server as a separate Azure Container Apps
   revision (or alongside the existing app) and front it with API Management or
   the built-in ACA ingress for HTTPS termination.
-- The streamable-HTTP transport is stateful: ensure the ingress preserves the
-  `mcp-session-id` request/response header and supports SSE (`text/event-stream`).
+- The Streamable HTTP endpoint is stateless. Each authenticated POST is handled
+  independently, so revision replacement, replica changes, and stale client
+  `mcp-session-id` headers do not strand tool calls. Ingress must support SSE
+  (`text/event-stream`).
 - Consider adding bearer-token auth (Entra ID) at the ingress before exposing
   publicly.
