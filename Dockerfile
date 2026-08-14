@@ -91,16 +91,6 @@ RUN if [ -f .env.build ]; then \
       export $(cat .env.appinsights); \
     fi && npm run build
 
-# Build MCP server (TypeScript -> dist/) so it can ship in the runtime image.
-# The MCP server has its own package.json and is independent of the Vite app.
-WORKDIR /app/mcp-server
-COPY mcp-server/package*.json ./
-RUN npm ci
-COPY mcp-server/tsconfig.json ./
-COPY mcp-server/src ./src
-COPY mcp-server/scripts ./scripts
-RUN npm run build
-
 # Production stage
 FROM nginx:alpine
 
@@ -108,8 +98,7 @@ ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
 ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
 ENV NPM_CONFIG_REPLACE_REGISTRY_HOST=always
 
-# Install Node.js for the speech token server and the MCP HTTP server
-# (both use DefaultAzureCredential / managed identity where applicable).
+# Install Node.js for the speech/OpenAI token server.
 RUN apk add --no-cache nodejs npm
 
 # Set up the speech token server
@@ -118,18 +107,12 @@ COPY server/package*.json ./
 RUN npm ci --omit=dev
 COPY server/token-server.js ./
 
-# Set up the MCP HTTP server (streamable HTTP transport on port 3030).
-WORKDIR /srv/mcp-server
-COPY mcp-server/package*.json ./
-RUN npm ci --omit=dev
-COPY --from=build /app/mcp-server/dist ./dist
-
 # Copy static build output
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY --from=build /app/Azure_Public_Service_Icons /usr/share/nginx/html/Azure_Public_Service_Icons
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Startup: token server + MCP HTTP server in background, nginx in foreground.
+# Startup: token server in background, nginx in foreground.
 COPY start.sh /start.sh
 # Strip any CR (CRLF) that a Windows checkout may have introduced, then mark
 # executable — a CRLF shebang makes the container report "/start.sh: not found".

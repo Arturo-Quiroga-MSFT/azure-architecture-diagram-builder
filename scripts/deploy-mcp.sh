@@ -3,10 +3,9 @@
 # Deploy the DECOUPLED MCP server as its own Azure Container App (own FQDN).
 # ========================================================================
 #
-# Unlike deploy-mcp-instance.sh (which ships the combined web+MCP image), this
-# builds the standalone MCP image (mcp-server/Dockerfile) and runs it as a
-# separate Container App next to the production web app — its own ingress,
-# scaling, and release cadence. The web app is left untouched.
+# This is the only supported MCP deployment path. It builds the standalone MCP
+# image (mcp-server/Dockerfile) and updates only the dedicated MCP Container App.
+# The web app is left untouched.
 #
 # Reuses your existing production infra from .env:
 #   RESOURCE_GROUP  - resource group containing the web Container App + ACR
@@ -42,7 +41,9 @@ done
 MCP_APP="${MCP_ACA_APP_NAME:-azure-diagram-mcp}"
 MCP_IMAGE_NAME="azure-diagram-mcp"
 ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
-IMAGE="${ACR_LOGIN_SERVER}/${MCP_IMAGE_NAME}:latest"
+TAG="mcp-$(date -u +%Y%m%d-%H%M%S)"
+IMAGE="${ACR_LOGIN_SERVER}/${MCP_IMAGE_NAME}:${TAG}"
+NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
 
 cd "$SOURCE_DIR"
 
@@ -63,11 +64,12 @@ fi
 # No VITE build args: the MCP server is deterministic and needs no model config.
 # Context is the repo root so the build's sync scripts can read src/data +
 # Azure_Public_Service_Icons (single source of truth for icons/pricing).
-echo "🔨 [1/4] Building ${MCP_IMAGE_NAME}:latest in ACR ${ACR_NAME}..."
+echo "🔨 [1/4] Building ${MCP_IMAGE_NAME}:${TAG} in ACR ${ACR_NAME}..."
 az acr build \
   --registry "$ACR_NAME" \
-  --image "${MCP_IMAGE_NAME}:latest" \
+  --image "${MCP_IMAGE_NAME}:${TAG}" \
   --file mcp-server/Dockerfile \
+  --build-arg "NPM_REGISTRY=${NPM_REGISTRY}" \
   "$SOURCE_DIR"
 
 # ── 2. Locate the web app's Container Apps environment ──────────────────
@@ -115,6 +117,7 @@ FQDN="$(az containerapp show -n "$MCP_APP" -g "$RESOURCE_GROUP" \
   --query properties.configuration.ingress.fqdn -o tsv)"
 echo ""
 echo "✅ MCP server deployed (decoupled)."
+echo "   Image        : ${IMAGE}"
 echo "   MCP endpoint : https://${FQDN}/mcp      (Authorization: Bearer <token in ${TOKEN_FILE}>)"
 echo "   Health       : https://${FQDN}/healthz"
 echo ""

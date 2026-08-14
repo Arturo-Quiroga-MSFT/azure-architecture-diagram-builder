@@ -18,7 +18,7 @@ Container App with its own FQDN**, separate from the web app.
    │  ingress :80                          │   │  node dist/index.js --http   │
    │  /            → SPA                    │   │  ingress :3030               │
    │  /api/*       → token/OpenAI proxy     │   │  /mcp     → MCP (Bearer auth) │
-   │  /mcp         → (legacy, phase-out)    │   │  /healthz → health           │
+  │  /mcp         → not served             │   │  /healthz → health           │
    └──────────────────────────────────────┘   └──────────────────────────────┘
 ```
 
@@ -142,12 +142,12 @@ SVG (TB/LR) + HTML for before/after checks. Convert SVG→PNG with
 
 ---
 
-## 5. Phase 2 (pending) — slim the web image
+## 5. Web/MCP release boundary
 
-Once the standalone endpoint is validated in Scout, remove the co-hosted MCP
-server from the web image:
-- `Dockerfile`: drop the MCP build + runtime stages.
-- `start.sh`: remove the MCP HTTP server line.
-- `nginx.conf`: remove the `/mcp` and `/mcp/healthz` location blocks.
+The cutover is complete. The web image does not build, install, start, or route
+the MCP server. Deploy MCP changes only with `./scripts/deploy-mcp.sh` (or
+`azd deploy mcp`) to the standalone `azure-diagram-mcp` Container App.
 
-Until then, `/mcp` on the web app still works as a fallback during cutover.
+Do not add `/mcp` fallback routing to the web app. Independent release cadence,
+authentication, scaling, and failure isolation are part of the supported
+architecture.

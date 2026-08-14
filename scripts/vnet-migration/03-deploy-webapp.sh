@@ -27,6 +27,7 @@ ACR="acrazurediagrams1767583743"
 IMAGE="azure-diagram-builder"
 TAG="vnet"
 ACR_IMAGE="$ACR.azurecr.io/$IMAGE:$TAG"
+NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
 
 COSMOS_ACCOUNT="aqcosmosdb007"
 COSMOS_DATA_CONTRIBUTOR="00000000-0000-0000-0000-000000000002"  # Cosmos DB Built-in Data Contributor
@@ -35,9 +36,7 @@ SPEECH_ACCOUNT="aq-speech-008"
 
 SOURCE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 ENV_FILE="$SOURCE_DIR/.env"
-MCP_TOKEN_FILE="$SOURCE_DIR/.env.mcp"
 [[ -f "$ENV_FILE" ]] || { echo "❌ .env not found at $ENV_FILE"; exit 1; }
-[[ -f "$MCP_TOKEN_FILE" ]] || { echo "❌ .env.mcp not found at $MCP_TOKEN_FILE"; exit 1; }
 
 get_file_val() {
   { grep -E "^$1=" "$2" | head -1 | cut -d= -f2- \
@@ -58,16 +57,11 @@ VITE_DEPLOY52="$(get_val VITE_AZURE_OPENAI_DEPLOYMENT_GPT52)"
 [[ -n "$OPENAI_KEY" && -n "$VITE_ENDPOINT" && -n "$VITE_DEPLOY52" ]] \
   || { echo "❌ Missing one of AZURE_OPENAI_API_KEY / VITE_AZURE_OPENAI_ENDPOINT / VITE_AZURE_OPENAI_DEPLOYMENT_GPT52 in .env"; exit 1; }
 
-# Reuse the existing Scout token for the co-located /mcp endpoint. Keeping the
-# authoritative value in .env.mcp avoids duplicating or rotating client secrets
-# and ensures every future web deployment preserves MCP authentication.
-MCP_TOKEN="$(get_file_val MCP_AUTH_TOKEN "$MCP_TOKEN_FILE")"
-[[ -n "$MCP_TOKEN" ]] || { echo "❌ MCP_AUTH_TOKEN not set in $MCP_TOKEN_FILE"; exit 1; }
-chmod 600 "$MCP_TOKEN_FILE"
-
 # Admin token for GET /api/feedback/list — generate + persist to .env if absent.
 FEEDBACK_TOKEN="$(get_val FEEDBACK_ADMIN_TOKEN)"
 if [[ -z "$FEEDBACK_TOKEN" ]]; then
+  git -C "$SOURCE_DIR" check-ignore -q .env \
+    || { echo "❌ Refusing to write FEEDBACK_ADMIN_TOKEN: .env is not gitignored"; exit 1; }
   FEEDBACK_TOKEN="$(openssl rand -hex 32)"
   printf '\nFEEDBACK_ADMIN_TOKEN=%s\n' "$FEEDBACK_TOKEN" >> "$ENV_FILE"
   echo "🔑 Generated FEEDBACK_ADMIN_TOKEN and appended to .env"
@@ -88,7 +82,9 @@ while IFS='=' read -r key value; do
   fi
 done < <(grep -v '^#' "$ENV_FILE" | grep -v '^[[:space:]]*$')
 
-az acr build --registry "$ACR" --image "$IMAGE:$TAG" "${BUILD_ARGS[@]}" "$SOURCE_DIR"
+az acr build --registry "$ACR" --image "$IMAGE:$TAG" \
+  --build-arg "NPM_REGISTRY=$NPM_REGISTRY" \
+  "${BUILD_ARGS[@]}" "$SOURCE_DIR"
 
 # ── ACR admin creds (old app used admin-cred pull) ──────────────────────────
 ACR_USER="$(az acr credential show -n "$ACR" --query username -o tsv)"
@@ -99,15 +95,12 @@ if az containerapp show -n "$NEW_APP" -g "$RG" -o none 2>/dev/null; then
   echo "✓ App $NEW_APP already exists — updating image to $ACR_IMAGE"
   az containerapp registry set -n "$NEW_APP" -g "$RG" \
     --server "$ACR.azurecr.io" --username "$ACR_USER" --password "$ACR_PW" -o none
-  az containerapp secret set -n "$NEW_APP" -g "$RG" \
-    --secrets "mcp-auth-token=$MCP_TOKEN" -o none
   # The :vnet tag string is unchanged between deploys, so ACA would NOT create a
   # new revision (it only diffs the template, not the resolved digest). Force a
   # unique revision suffix so the new image digest is actually pulled and served.
   REV_SUFFIX="v$(date +%Y%m%d%H%M%S)"
   echo "  ↻ forcing new revision: $REV_SUFFIX"
   az containerapp update -n "$NEW_APP" -g "$RG" --image "$ACR_IMAGE" \
-    --set-env-vars "MCP_AUTH_TOKEN=secretref:mcp-auth-token" \
     --revision-suffix "$REV_SUFFIX" -o none
 else
   echo "🚀 Creating $NEW_APP in $NEW_ENV ..."
@@ -126,7 +119,6 @@ else
         vite-azure-openai-endpoint="$VITE_ENDPOINT" \
         vite-azure-openai-deployment-gpt52="$VITE_DEPLOY52" \
         feedback-admin-token="$FEEDBACK_TOKEN" \
-        mcp-auth-token="$MCP_TOKEN" \
     --env-vars \
         AZURE_COSMOS_ENDPOINT="https://aqcosmosdb007.documents.azure.com:443/" \
         COSMOS_DATABASE_ID="diagrams-db" \
@@ -140,7 +132,6 @@ else
         VITE_AZURE_OPENAI_API_KEY=secretref:vite-azure-openai-api-key \
         VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=secretref:vite-azure-openai-deployment-gpt52 \
         FEEDBACK_ADMIN_TOKEN=secretref:feedback-admin-token \
-        MCP_AUTH_TOKEN=secretref:mcp-auth-token \
         PUBLIC_URL="https://pending.invalid" \
     -o none
 fi

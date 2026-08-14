@@ -14,6 +14,10 @@
 FROM node:20-alpine AS build
 WORKDIR /app/mcp-server
 
+ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
+ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
+ENV NPM_CONFIG_REPLACE_REGISTRY_HOST=always
+
 # Install deps first for better layer caching.
 COPY mcp-server/package*.json ./
 RUN npm ci
@@ -35,6 +39,10 @@ RUN npm run build
 # ── Runtime stage ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runtime
 WORKDIR /srv/mcp-server
+
+ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
+ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
+ENV NPM_CONFIG_REPLACE_REGISTRY_HOST=always
 
 ENV NODE_ENV=production \
     MCP_HTTP_HOST=0.0.0.0 \
