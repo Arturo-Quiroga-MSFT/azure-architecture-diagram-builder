@@ -33,6 +33,7 @@ import { resolveServiceName, SERVICE_CATALOG } from './serviceCatalog.js';
 export interface TfService {
   name: string;
   type: string;
+  region?: string;
   description?: string;
   groupId?: string;
 }

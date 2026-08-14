@@ -30,6 +30,7 @@ import { resolveServiceName, SERVICE_CATALOG } from './serviceCatalog.js';
 export interface BicepService {
   name: string;
   type: string;
+  region?: string;
   description?: string;
   groupId?: string;
 }

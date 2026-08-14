@@ -225,6 +225,31 @@ async function main() {
     }));
     assert.equal(manifest.project.name, 'contract-test');
 
+    const regionalArchitecture = {
+      services: [
+        { name: 'Primary Web', type: 'App Service', region: 'East US 2' },
+        { name: 'Secondary Data', type: 'SQL Database', region: 'Central US' },
+      ],
+      connections: [{ from: 'Primary Web', to: 'Secondary Data', label: 'Query replicated application data' }],
+      groups: [],
+    };
+    const regionalManifest = textPayload(await client.callTool({
+      name: 'generate_manifest',
+      arguments: {
+        projectName: 'regional-contract-test',
+        location: 'eastus2',
+        iacTool: 'bicep',
+        ...regionalArchitecture,
+      },
+    }));
+    assert.deepEqual(regionalManifest.architecture.services.map(service => service.region), ['eastus2', 'centralus']);
+
+    const importedRegionalManifest = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(regionalManifest), format: 'manifest' },
+    }));
+    assert.deepEqual(importedRegionalManifest.services.map(service => service.region), ['eastus2', 'centralus']);
+
     const bicep = textPayload(await client.callTool({
       name: 'generate_bicep',
       arguments: {
@@ -235,6 +260,17 @@ async function main() {
     }));
     assert.equal(bicep.iacTool, 'bicep');
     assert(bicep.bicep.includes('resource'));
+
+    const regionalBicep = textPayload(await client.callTool({
+      name: 'generate_bicep',
+      arguments: {
+        projectName: 'regional-contract-test',
+        location: 'eastus2',
+        ...regionalArchitecture,
+      },
+    }));
+    assert(regionalBicep.note.includes('is not yet emitted as multi-region IaC'));
+    assert(regionalBicep.note.includes('centralus, eastus2'));
 
     const terraform = textPayload(await client.callTool({
       name: 'generate_terraform',
@@ -265,6 +301,57 @@ async function main() {
     assert.equal(estimate.structuredContent?.term, 'payg');
     assert.equal(estimate.structuredContent?.serviceCount, 1);
 
+    const mixedRegionEstimate = await client.callTool({
+      name: 'estimate_costs',
+      arguments: {
+        region: 'eastus2',
+        term: 'payg',
+        services: [
+          { name: 'Primary API', type: 'API Management', tier: 'standard', region: 'eastus2' },
+          { name: 'Secondary API', type: 'API Management', tier: 'standard', region: 'Central US' },
+          { name: 'Shared Monitor', type: 'Azure Monitor', region: 'eastus2' },
+        ],
+      },
+    });
+    const mixed = mixedRegionEstimate.structuredContent;
+    assert.equal(mixed?.serviceCount, 3);
+    assert.equal(mixed?.numericallyPricedResourceCount, 2);
+    assert.equal(mixed?.excludedResourceCount, 1);
+    assert.equal(mixed?.usageBasedResourceCount, 1);
+    assert.equal(mixed?.numericCoveragePercent, 66.67);
+    assert.equal(mixed?.isPartialBaseline, true);
+    assert.equal(mixed?.baselineLabel, 'Partial fixed-price baseline covering 2/3 resources');
+    assert.equal(mixed?.regionProxyUsed, true);
+    assert.equal(mixed?.proxiedResourceCount, 1);
+    assert.deepEqual(mixed?.requestedRegions, ['centralus', 'eastus2']);
+    assert.deepEqual(mixed?.effectiveRegions, ['eastus2']);
+    const secondary = mixed?.estimates.find(item => item.name === 'Secondary API');
+    assert.equal(secondary?.requestedRegion, 'centralus');
+    assert.equal(secondary?.effectiveRegion, 'eastus2');
+    assert.equal(secondary?.regionProxyUsed, true);
+    assert(secondary?.regionProxyReason.includes('No bundled pricing snapshot'));
+
+    const quantityEstimate = await client.callTool({
+      name: 'estimate_costs',
+      arguments: {
+        region: 'eastus2',
+        services: [
+          { name: 'Regional APIs', type: 'API Management', region: 'Central US', quantity: 10 },
+          { name: 'Shared Monitors', type: 'Azure Monitor', region: 'eastus2', quantity: 2 },
+        ],
+      },
+    });
+    const quantityCoverage = quantityEstimate.structuredContent;
+    assert.equal(quantityCoverage?.serviceCount, 2);
+    assert.equal(quantityCoverage?.totalResourceCount, 12);
+    assert.equal(quantityCoverage?.numericallyPricedResourceCount, 10);
+    assert.equal(quantityCoverage?.excludedResourceCount, 2);
+    assert.equal(quantityCoverage?.usageBasedResourceCount, 2);
+    assert.equal(quantityCoverage?.proxiedResourceCount, 10);
+    assert.equal(quantityCoverage?.numericCoveragePercent, 83.33);
+    assert.equal(quantityCoverage?.baselineLabel, 'Partial fixed-price baseline covering 10/12 resources');
+    assert.equal(quantityCoverage?.excludedServices[0]?.quantity, 2);
+
     const firstHarden = textPayload(await client.callTool({
       name: 'harden_architecture',
       arguments: initialArchitecture,
@@ -283,6 +370,15 @@ async function main() {
     assert.deepEqual(secondHarden.services, firstHarden.services);
     assert.deepEqual(secondHarden.connections, firstHarden.connections);
     assert.deepEqual(secondHarden.groups, firstHarden.groups);
+
+    const regionalHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: regionalArchitecture,
+    }));
+    assert.equal(regionalHarden.services.find(service => service.name === 'Primary Web')?.region, 'East US 2');
+    assert.equal(regionalHarden.services.find(service => service.name === 'Secondary Data')?.region, 'Central US');
+    assert.equal(regionalHarden.services.find(service => service.name === 'Redis Cache')?.region, 'East US 2');
+    assert.equal(regionalHarden.services.find(service => service.name === 'Azure Backup')?.region, 'Central US');
 
     const imported = textPayload(await client.callTool({
       name: 'import_architecture',
@@ -315,6 +411,22 @@ async function main() {
     assert.equal(scene.metadata.architectureName, 'Contract Test Architecture');
     assert.equal(scene.nodes.filter(node => node.type === 'azureNode').length, initialArchitecture.services.length);
 
+    const regionalScene = textPayload(await client.callTool({
+      name: 'export_reactflow_scene',
+      arguments: {
+        architectureName: 'Regional Contract Test',
+        region: 'none',
+        ...regionalArchitecture,
+      },
+    }));
+    const regionalSceneServices = regionalScene.nodes.filter(node => node.type === 'azureNode');
+    assert.deepEqual(regionalSceneServices.map(node => node.data.region), ['eastus2', 'centralus']);
+    const importedRegionalScene = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(regionalScene), format: 'reactflow' },
+    }));
+    assert.deepEqual(importedRegionalScene.services.map(service => service.region), ['eastus2', 'centralus']);
+
     for (const iacTool of ['bicep', 'terraform']) {
       const guide = textPayload(await client.callTool({
         name: 'generate_deployment_guide',
@@ -329,6 +441,18 @@ async function main() {
       assert.equal(guide.iacTool, iacTool);
       assert(guide.markdown.includes('contract-test'));
     }
+
+    const regionalGuide = textPayload(await client.callTool({
+      name: 'generate_deployment_guide',
+      arguments: {
+        projectName: 'regional-contract-test',
+        location: 'eastus2',
+        iacTool: 'bicep',
+        ...regionalArchitecture,
+      },
+    }));
+    assert(regionalGuide.markdown.includes('Regional placement limitation'));
+    assert(regionalGuide.markdown.includes('is not yet emitted as multi-region IaC'));
 
     console.log('MCP contract test passed: stateless missing/stale-session recovery, all 12 handlers, 3 resources, 3 prompts, auth, metadata, pricing, hardening idempotency, and deployment guides.');
   } finally {

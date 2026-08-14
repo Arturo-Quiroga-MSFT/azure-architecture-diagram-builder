@@ -19,6 +19,7 @@ import { resolveServiceName } from './serviceCatalog.js';
 export interface GuideService {
   name: string;
   type: string;
+  region?: string;
   groupId?: string;
 }
 

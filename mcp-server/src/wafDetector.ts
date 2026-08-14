@@ -43,6 +43,7 @@ export interface ValidationFinding {
 export interface ServiceInput {
   name: string;
   type: string;
+  region?: string;
 }
 
 export interface ConnectionInput {

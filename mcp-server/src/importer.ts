@@ -18,6 +18,7 @@
 export interface ImportedService {
   name: string;
   type: string;
+  region?: string;
   description?: string;
   groupId?: string;
 }
@@ -112,6 +113,7 @@ export function importArchitecture(
     const services: ImportedService[] = rawServices.map(s => ({
       name: String(s.name ?? s.id ?? 'Unnamed'),
       type: String(s.type ?? 'Unknown'),
+      region: s.region ? String(s.region).trim().toLowerCase().replace(/[\s_-]+/g, '') : undefined,
       description: s.description ? String(s.description) : undefined,
       groupId: s.groupId ? String(s.groupId) : undefined,
     }));
@@ -162,6 +164,7 @@ export function importArchitecture(
         continue;
       }
       const d = (node.data ?? {}) as AnyObj;
+      const pricing = (d.pricing ?? {}) as AnyObj;
       const name = String(d.label ?? node.id ?? 'Unnamed');
       const type = typeFromNode(node, opts.iconFileToType);
       if (!type) warnings.push(`Node "${name}" had no resolvable service type; using label.`);
@@ -169,6 +172,9 @@ export function importArchitecture(
       services.push({
         name,
         type: type ?? name,
+        region: d.region || pricing.region
+          ? String(d.region ?? pricing.region).trim().toLowerCase().replace(/[\s_-]+/g, '')
+          : undefined,
         description: d.description ? String(d.description) : undefined,
         groupId: parent && groupNodeIds.has(String(parent)) ? String(parent) : (parent ? String(parent) : undefined),
       });

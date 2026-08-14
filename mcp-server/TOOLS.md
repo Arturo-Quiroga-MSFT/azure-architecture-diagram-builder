@@ -80,7 +80,8 @@ rules (per-service best practices) — and returns a 0–100 score.
 Numeric monthly costs from a distilled snapshot of the **Azure Retail Prices**
 API, region- and term-aware.
 
-**Input:** `{ services[] (name, type, tier?, quantity?), region?, term? }`
+**Input:** `{ services[] (name, type, region?, tier?, quantity?), region?, term? }`
+- `services[].region`: per-service Azure region; overrides the request-level region
 - `tier`: `basic | standard | premium` → low/expected/high SKU band
 - `region`: `eastus2` (default), `swedencentral`, `westeurope`, `canadacentral`, `brazilsouth`, `australiaeast`, `southeastasia`, `mexicocentral`
 - `term`: `payg` (default) or `reserved1yr`
@@ -89,7 +90,20 @@ API, region- and term-aware.
 low/expected/high tier uses its own meter when one exists; a tier without one
 stays PAYG. The tool never extrapolates one SKU's discount to another.
 
-**Output (`structuredContent`):** `{ region, term, currency, pricesAsOf, totalMonthlyCost {low,expected,high}, byCategory{}, estimates[] }`. Services without distilled pricing fall back to a curated `catalogCostRange` and are flagged.
+**Output (`structuredContent`):** includes the backward-compatible
+`totalMonthlyCost`, plus explicit fixed-baseline coverage and regional
+provenance:
+
+- `serviceCount` (input rows) and quantity-aware `totalResourceCount`
+- `numericallyPricedResourceCount / totalResourceCount` and `numericCoveragePercent`
+- `isPartialBaseline`, `baselineLabel`, and categorized `excludedServices`
+- per-estimate `requestedRegion`, `effectiveRegion`, and `regionProxyUsed`
+- response-level `requestedRegions`, `effectiveRegions`, and proxy count
+
+Services without distilled pricing fall back to a curated `catalogCostRange`
+and are excluded from the numeric baseline. If a requested region is not in the
+bundled snapshot, the fallback is explicit; the tool never labels proxy rates as
+native rates for that region.
 
 `pricingSource.generatedAt` is when the compact MCP sidecar was generated.
 `pricesAsOf` is the newest contributing Azure Retail Prices meter effective
@@ -106,7 +120,8 @@ architecture — importable into the web app or consumable by `az prototype buil
 **Input:** `{ projectName, location?, iacTool?, services[], connections?[], groups?[] }`
 
 **Output:** the manifest JSON (`{ schemaVersion, architecture: { ... } }`).
-Round-trips back via `import_architecture` (§10).
+Optional normalized `services[].region` values round-trip back via
+`import_architecture` (§10).
 
 ---
 
@@ -235,6 +250,8 @@ badges come from the same pricing resolution as `estimate_costs`.
 
 **Input:** `{ services[], connections?[], groups?[], title?, format? (svg|html), direction? (TB|LR), theme? (light|dark), profile? (presentation|technical|cost), region?, author?, generatedBy? }`
 
+`services[].region` overrides the render-level `region` for cost enrichment.
+
 **Output:** the SVG or HTML markup (text).
 
 - `presentation` (default): semantic reflow for ultra-wide capability groups and global/primary/secondary regional architectures, graph-derived request paths, WAF policy associations, quieter supporting edges, representative labels, larger text, and no pricing.
@@ -253,6 +270,7 @@ catalog for icon paths.
 - `direction: auto` (default) picks **LR** for 4+ groups or dense graphs, else **TB**.
 
 **Output:** the React Flow scene JSON. Round-trips back via `import_architecture` (§10).
+Per-service regions are preserved in node data and embedded pricing provenance.
 
 ---
 
@@ -293,6 +311,9 @@ round-trip so an agent can reload a previously saved design and keep working.
   "groups": [ ... ]
 }
 ```
+
+For manifests, `services[].region` is preserved. For React Flow scenes, region
+is recovered from `data.region` or `data.pricing.region`.
 
 ### Typical flow
 

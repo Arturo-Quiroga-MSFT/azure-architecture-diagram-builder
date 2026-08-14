@@ -168,7 +168,7 @@ export function hardenArchitecture(
   if (needApim && !firstOf(GATEWAY_TYPES)) {
     const backend = firstOf(COMPUTE_TYPES);
     const addedApim = addService(
-      { name: 'API Management', type: 'API Management', description: 'Unified API gateway' },
+      { name: 'API Management', type: 'API Management', region: backend?.region, description: 'Unified API gateway' },
       HARDEN_GATEWAY_GROUP,
     );
     const conns: string[] = [];
@@ -219,8 +219,7 @@ export function hardenArchitecture(
   if (patterns.has('no-cache')) {
     const compute = firstOf(COMPUTE_TYPES);
     const added = addService(
-      { name: 'Redis Cache', type: 'Redis Cache', description: 'Low-latency cache tier' },
-      compute?.groupId ? undefined : undefined,
+      { name: 'Redis Cache', type: 'Redis Cache', region: compute?.region, description: 'Low-latency cache tier', groupId: compute?.groupId },
     );
     const conns: string[] = [];
     if (compute) { const s = addConnection({ from: compute.name, to: 'Redis Cache', label: 'Cache hot data for low latency', type: 'sync' }); if (s) conns.push(s); }
@@ -231,7 +230,7 @@ export function hardenArchitecture(
   if (patterns.has('no-key-vault')) {
     const compute = firstOf(GATEWAY_TYPES) ?? firstOf(COMPUTE_TYPES);
     const added = addService(
-      { name: 'Key Vault', type: 'Key Vault', description: 'Secrets, keys & certificates' },
+      { name: 'Key Vault', type: 'Key Vault', region: compute?.region, description: 'Secrets, keys & certificates' },
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
@@ -243,7 +242,7 @@ export function hardenArchitecture(
   if (patterns.has('no-backup')) {
     const db = firstOf(DATABASE_TYPES);
     const added = addService(
-      { name: 'Azure Backup', type: 'Backup', description: 'Point-in-time restore / DR' },
+      { name: 'Azure Backup', type: 'Backup', region: db?.region, description: 'Point-in-time restore / DR' },
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
@@ -255,11 +254,11 @@ export function hardenArchitecture(
   if (patterns.has('no-monitoring')) {
     const compute = firstOf(COMPUTE_TYPES) ?? firstOf(GATEWAY_TYPES);
     const addedAi = addService(
-      { name: 'App Insights', type: 'Application Insights', description: 'App telemetry' },
+      { name: 'App Insights', type: 'Application Insights', region: compute?.region, description: 'App telemetry' },
       HARDEN_SECOPS_GROUP,
     );
     const addedMon = addService(
-      { name: 'Azure Monitor', type: 'Azure Monitor', description: 'Metrics, logs & alerts' },
+      { name: 'Azure Monitor', type: 'Azure Monitor', region: compute?.region, description: 'Metrics, logs & alerts' },
       HARDEN_SECOPS_GROUP,
     );
     const conns: string[] = [];
