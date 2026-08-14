@@ -17,12 +17,15 @@ Azure architectures conversationally.
   `common/extensions-catalog/items/mcp-servers.ts`
   (id `mcp-azure-architecture-diagram-builder`, `microsoftOnly`).
 
-> Only `/mcp` speaks MCP on that host; `/healthz` falls through to the web-app
-> SPA, so don't use it as the server URL.
+> Only `/mcp` speaks MCP. `GET /healthz` is the standalone server's unauthenticated
+> health probe; use `/mcp`, not `/healthz`, as Scout's server URL.
 
 ## Capabilities
 
-The current server exposes **12 tools, 3 resources, and 3 prompts**.
+The production endpoint has been verified to expose **12 tools, 3 resources,
+and 3 prompts**. The title/annotation contract described below is validated in
+the current source branch by `npm run test:contracts`; it is not a production
+claim until that branch is reviewed and deployed to the standalone MCP app.
 
 ### Tools
 
@@ -30,7 +33,7 @@ The current server exposes **12 tools, 3 resources, and 3 prompts**.
 | --- | --- |
 | `list_services` | Browse the Azure service catalog (categories, aliases, pricing, cost ranges). |
 | `validate_architecture` | Score a design against Well-Architected Framework rules (deterministic, no LLM). |
-| `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot — region- and term-aware (PAYG / 1-year reserved), with by-category totals. Instance-priced services use a representative SKU; Microsoft Fabric uses F-SKU capacity; usage-based services (AI, per-GB storage, composite networking) report curated catalog ranges. |
+| `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot, with regional and by-category totals. PAYG is the default. In `reserved1yr` mode each tier uses its own exact one-year Savings Plan meter when available; unavailable tiers remain PAYG. Instance-priced services use configured representative SKUs, Microsoft Fabric uses F-SKU capacity bands, and services without a trusted fixed monthly value report curated catalog ranges. |
 | `generate_manifest` | Emit an `az prototype` interchange manifest. |
 | `generate_bicep` | Emit deployable Bicep with Well-Architected secure defaults and a map of which finding each setting resolves. Design-time only. |
 | `generate_terraform` | Emit Terraform for the architecture with secure defaults. Design-time only. |
@@ -41,7 +44,10 @@ The current server exposes **12 tools, 3 resources, and 3 prompts**.
 | `render_diagram` | Render an architecture diagram as SVG (static) or interactive HTML. Now supports a **light/dark theme**, **per-node cost badges**, a **total-cost/usage footer**, a **metadata panel** (author/date/provenance), and **filled group headers**. See [Output enhancements](#output-enhancements-july-2026). |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app. Now emits a per-node **`pricing`** object and edge **`pathStyle`** for near-full parity with app-generated scenes. |
 
-**Structured outputs:** `validate_architecture`, `estimate_costs`, and `get_waf_rules` return typed `structuredContent` (validated against a declared `outputSchema`) alongside a concise human summary, and carry read-only/idempotent tool annotations — so agents can consume the data machine-readably instead of parsing prose.
+**Current source contract:** all 12 tools expose a human-readable title and
+`readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: false`.
+`validate_architecture`, `estimate_costs`, and `get_waf_rules` additionally
+return typed `structuredContent` validated against declared output schemas.
 
 ### Resources
 
@@ -64,6 +70,7 @@ The current server exposes **12 tools, 3 resources, and 3 prompts**.
 | Parameter | Values | Effect |
 | --- | --- | --- |
 | `theme` | `light` (default), `dark` | Canvas/card/text palette. Dark uses `#1E1E1E` canvas + `#2D2D30` cards. |
+| `title` | string | Diagram title shown in the rendered artifact. |
 | `region` | Azure region (default `eastus2`), or `none` | Region used for best-effort cost badges. `none` disables cost enrichment. |
 | `author` | string | Shown in the metadata panel (top-right). |
 | `generatedBy` | string | Provenance label (e.g. the model that produced the design). |
@@ -112,28 +119,33 @@ renderers** were upgraded (they stay small — tens of KB):
 - **Light/dark theme** (`theme` param) — dark matches the app's canvas look.
 - **Metadata panel** (author / date / provenance) via `author` / `generatedBy`.
 - **Filled group headers** (colored header bars) instead of thin dashed labels.
-- **Scene-JSON parity:** `export_reactflow_scene` now emits a per-node
-  `pricing` object (`estimatedCost` / `tier` / `isUsageBased` / `costRange`) and
-  edge `pathStyle: "orthogonal"`, matching app-generated scenes.
+- **Scene-JSON parity:** `export_reactflow_scene` emits a per-node `pricing`
+  object (`estimatedCost`, `tier`, `skuName`, `quantity`, `region`,
+  `isUsageBased`) and edge `data.pathStyle: "orthogonal"`.
 
-### Design decision — honest usage-based pricing
+### Design decision — pricing without invented precision
 
-The web app assigns representative point estimates to usage-based services
-(e.g. Event Hubs `$27.60`, Cosmos DB `$0.02`), which can be misleading for
-per-token / per-transaction / per-GB meters. The MCP server deliberately does
-**not** invent these numbers: it shows the catalog **range** and flags the
-service as usage-based, so agents and users see an honest band rather than a
-false precision.
+The MCP server emits a point estimate only when the distillation has a trusted
+representative deployable SKU or a fixed Fabric capacity band. Per-token,
+per-transaction, per-GB, and composite-billed services without that basis use
+the catalog range and are flagged as missing distilled numeric data.
 
 ### Known limitation
 
-Firm numeric badges only appear for **instance-priced** services present in the
-distilled Azure Retail Prices snapshot (`mcp-server/src/pricing.generated.json`).
-Usage-based services (Event Hubs, Service Bus, Functions, Cosmos DB, Blob, Log
-Analytics, most AI services) show ranges, not point values. For an authoritative
-quote at scale, use the Azure Pricing Calculator.
+Firm numeric badges only appear for services present in the distilled Azure
+Retail Prices sidecar (`mcp-server/src/pricing.generated.json`). Other services
+show catalog ranges. `pricingSource.generatedAt` records sidecar generation;
+per-estimate `pricesAsOf` records the newest contributing meter effective date.
+Those dates are intentionally distinct. For an authoritative workload quote,
+use the Azure Pricing Calculator.
 
 ## Changelog
+
+- **2026-08-14 — Tool contract hardening (source validated; deployment pending).** All 12 tools now use
+  `registerTool`, expose titles and safety annotations, and have their handlers
+  smoke-tested by a standalone authenticated HTTP contract test. Pricing guidance
+  now distinguishes PAYG, exact per-tier one-year Savings Plan coverage,
+  sidecar generation time, and meter effective dates.
 
 - **2026-08-06 — Multi-region profile iteration.** Added deterministic
   regression coverage for a 29-node, 46-connection global/primary/secondary
@@ -148,21 +160,20 @@ quote at scale, use the Azure Pricing Calculator.
   `export_reactflow_scene` for scene parity. Added an `Azure Functions` alias in
   the service catalog (was resolving to `null`, so Functions rendered no badge).
   Files: `mcp-server/src/{svgRenderer,htmlRenderer,layoutEngine,index,serviceCatalog}.ts`.
-  Deployed via `scripts/deploy-mcp-instance.sh` (`az acr build` compiles the
-  TypeScript in-cloud); endpoint and bearer token unchanged. Verified live
-  end-to-end through the authenticated `/mcp` endpoint.
+  The current standalone deployment path is `scripts/deploy-mcp.sh`; the
+  endpoint and bearer-token contract remain stable.
 
 ## Redeploying after MCP server changes
 
 ```sh
-cd mcp-server && npm run build           # local type-check / sanity
-cd .. && bash scripts/deploy-mcp-instance.sh
+cd mcp-server && npm run test:contracts  # build + authenticated HTTP contract
+cd .. && bash scripts/deploy-mcp.sh      # standalone MCP ACA only
 ```
 
-`deploy-mcp-instance.sh` is idempotent: it runs `az acr build` (which rebuilds
-and recompiles from source in the cloud), rolls out a new Container App
-revision, and reuses the configured `mcp-auth-token`. The endpoint URL remains
-stable.
+`deploy-mcp.sh` runs `az acr build`, rolls out a uniquely tagged revision of the
+standalone `azure-diagram-mcp` Container App, and preserves its configured
+bearer-token secret. It does not build or update the web Container App. The MCP
+endpoint URL remains stable.
 
 ## Configure the server in Scout
 
@@ -248,10 +259,8 @@ not.
 
 - Never paste bearer tokens into tracked files, issue descriptions, screenshots,
   transcripts, or shell history.
-- Keep the decoupled server token in the repo-root `.env.mcp`, which is ignored
-  by Git and should be mode `0600`. The primary VNet web deployment reuses this
-  token for its co-located `/mcp` endpoint, so hardening that endpoint does not
-  require a second Scout token. The legacy combined-image deployment uses
-  `.env.mcp-instance` instead.
+- Keep the standalone server token in the repo-root `.env.mcp`, which is ignored
+  by Git and should be mode `0600`. It belongs only to the standalone
+  `azure-diagram-mcp` Container App. The web app is not an MCP deployment target.
 - Rotate a token immediately if it is disclosed, then update Scout through the
   same approved secret channel.

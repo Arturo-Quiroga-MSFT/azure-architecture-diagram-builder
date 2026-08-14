@@ -7,9 +7,16 @@
 
 ---
 
-## ✅ Status (updated 2026-07-04)
+## Current status (updated 2026-08-14)
 
-**The entire P0 tier is shipped, deployed to the Scout MCP endpoint, and verified live.**
+The standalone server exposes **12 tools, 3 resources, and 3 prompts**. P0 is
+implemented. Deterministic topology hardening, manifest/React Flow import,
+Terraform, deployment guides, resources, and prompts are also implemented.
+All 12 tools now expose titles and read-only/idempotent/closed-world annotations.
+The local authenticated HTTP contract is covered by `npm run test:contracts`.
+
+This document preserves the original gap analysis below. Treat completed item
+instructions as historical context, not as the next implementation sequence.
 
 | Item | Status | Notes |
 | --- | --- | --- |
@@ -18,9 +25,14 @@
 | **P0-1b** Microsoft Fabric F-SKU capacity | ✅ Shipped | Numeric monthly reservation (F2/F8/F64). AI (Foundry) + per-GB storage intentionally remain catalog ranges (usage-dominated → a fixed monthly would mislead) |
 | **P0-2** `generate_bicep` | ✅ Shipped | Deployable Bicep with WAF secure defaults pre-set + structured `findingsResolved`; `az bicep build` verified |
 | **P0-3** structured outputs | ✅ Shipped | `validate_architecture`, `estimate_costs`, `get_waf_rules` return typed `structuredContent` (+ `outputSchema`) with a human summary |
-| **P1-5** tool annotations | ✅ Shipped (early) | read-only/idempotent/openWorld annotations added to the P0-3 tools |
+| **P1-5** tool annotations | ✅ Implemented locally | All 12 tools expose titles plus read-only/idempotent/closed-world annotations; protocol contract test passes |
 
-**Next up:** P1 tier — `suggest_remediations`, `harden_architecture`, `import_arm`/`import_diagram_image`, portable `render_diagram` output, remaining annotations.
+**Evidence-gated next candidates:** broader typed structured outputs, Entra/OAuth,
+and telemetry/evaluation. Do not add Blueprint/Reference-generation or composite
+orchestration tools: those require model/browser behavior that belongs in the
+web app or calling agent. Reconsider an Azure Resource Graph mapper only after
+the multi-subscription/resource-group workflow and auth/provenance boundary are
+defined.
 
 ---
 
@@ -36,14 +48,15 @@
 
 ---
 
-## ▶️ START HERE (do this first)
+## Historical implementation sequence
 
-**Work in this exact order: `P0-1` → `P0-2` → `P0-3`.**
+The original implementation order was `P0-1` → `P0-2` → `P0-3`.
 1. **`P0-1`** — `estimate_costs` live-pricing parity.
 2. **`P0-2`** — new `generate_bicep` tool (WAF config fixes pre-set).
 3. **`P0-3`** — structured outputs (`outputSchema` / `structuredContent`).
 
-**After *each* item:** `npm run build`, then **run the MCP Inspector locally** and exercise the changed tool before moving to the next item. Do not batch all three and test once — validate incrementally so regressions are caught early. Only proceed to P1 once P0-1→P0-3 pass in the Inspector (and, if possible, a Scout smoke test).
+For current contract changes, run `npm run test:contracts`. Use MCP Inspector
+for interactive exploration and a Scout smoke test before production rollout.
 
 ```
 npx @modelcontextprotocol/inspector node dist/index.js
@@ -59,8 +72,10 @@ npx @modelcontextprotocol/inspector node dist/index.js
 - After each item: `npm run build`, run the MCP Inspector locally, and (where possible) a Scout smoke test against the deployed ACA endpoint.
 - Keep both transports working: **stdio** (local) and **Streamable-HTTP** (remote/ACA).
 
-### Current state
-8 tools in `src/index.ts`: `list_services`, `validate_architecture`, `estimate_costs`, `generate_bicep`, `generate_manifest`, `get_waf_rules`, `render_diagram`, `export_reactflow_scene`.
+### Original state
+The initial backlog was based on 8 tools in `src/index.ts`: `list_services`,
+`validate_architecture`, `estimate_costs`, `generate_bicep`, `generate_manifest`,
+`get_waf_rules`, `render_diagram`, and `export_reactflow_scene`.
 The observations below drove this backlog (most are now addressed — see the Status table above):
 - **Costs are catalog *ranges*, not live prices.** `estimate_costs` returns `info.costRange` strings (e.g. "$24–$29,185/mo"); several services report "no catalog data." The **web app already has a live per-region Azure Retail Prices engine** (`npm run pricing:refresh`, PAYG/Reserved, Fabric) — the MCP tool should reach parity.
 - **No IaC/Bicep tool.** `generate_manifest` emits an `az prototype` interchange manifest, but there is no tool that emits deployable **Bicep** with WAF config fixes pre-set. Scout sessions repeatedly *promise* Bicep and stop.
