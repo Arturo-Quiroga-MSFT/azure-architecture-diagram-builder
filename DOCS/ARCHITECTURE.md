@@ -245,7 +245,7 @@ consumable by **Microsoft Scout** and any MCP-compatible client.
 
 | Tool | Purpose |
 |------|---------|
-| `list_services` | Browse the Azure service catalog (categories, aliases, pricing) |
+| `list_services` | Browse the 94-service canonical AADB catalog (categories, aliases, pricing) |
 | `validate_architecture` | Score a design against Well-Architected Framework rules (no LLM) |
 | `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot — region- and term-aware (PAYG / 1-year reserved); instance-priced services use a representative SKU, Microsoft Fabric uses F-SKU capacity, usage-based services report catalog ranges |
 | `generate_bicep` | Emit deployable Bicep with WAF secure defaults pre-set (HTTPS-only + TLS 1.2, managed identity, Key Vault soft-delete/purge, health check, autoscale, staging slots) + a structured map of which WAF finding each setting resolves |
@@ -258,7 +258,8 @@ consumable by **Microsoft Scout** and any MCP-compatible client.
 
 - **Transport** — stdio (local) and Streamable-HTTP (`npm run start:http`); selected via `--http`/`--stdio` or `MCP_TRANSPORT`.
 - **Auth** — `MCP_AUTH_TOKEN` enforces `Authorization: Bearer <token>` (constant-time compare); `/healthz` + a pre-auth `/mcp` liveness probe support connector wizards.
-- **Rendering** — `svgRenderer.ts` embeds official Azure icons as data-URIs, smooths edges, and uses a `longest-path` dagre ranker to minimize crossings; `layoutEngine.ts` resolves categories alias-aware via `serviceCatalog.ts`.
+- **Catalog** — `serviceCatalog.generated.json` is generated from the web app's canonical `SERVICE_ICON_MAP`; build-time validation rejects ambiguous identities and drift tests enforce icon/pricing ownership parity.
+- **Rendering** — `svgRenderer.ts` embeds official Azure icons as data-URIs, smooths edges, and uses a `longest-path` dagre ranker to minimize crossings; `layoutEngine.ts` resolves categories alias-aware via the generated catalog loader in `serviceCatalog.ts`.
 - **Deploy** — `scripts/deploy-mcp-instance.sh` builds and ships an isolated MCP ACA instance; see `SCOUT/README.md` for the Scout registration walkthrough.
 
 ## File Structure

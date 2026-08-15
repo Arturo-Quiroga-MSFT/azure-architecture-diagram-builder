@@ -824,8 +824,8 @@
     "category": "fabric",
     "aliases": [
       "Fabric Report",
-      "Power BI Dashboard",
-      "Power BI"
+      "Fabric Power BI Report",
+      "Power BI Report (Fabric)"
     ]
   },
   "Fabric SQL Database": {

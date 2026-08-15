@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T16:04:09.605Z",
+  "generatedAt": "2026-08-15T16:58:49.983Z",
   "source": "src/data/pricing/regions (Azure Retail Prices snapshot)",
   "hoursPerMonth": 730,
   "currency": "USD",
@@ -57,7 +57,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 306.6,
         "expected": 1226.4,
         "high": 9811.2,
@@ -163,7 +163,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-11-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 408.8,
         "expected": 1635.2,
         "high": 13081.6,
@@ -269,7 +269,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-11-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 292,
         "expected": 1168,
         "high": 9344,
@@ -375,7 +375,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-11-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 292,
         "expected": 1168,
         "high": 9344,
@@ -481,7 +481,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-11-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 262.8,
         "expected": 1051.2,
         "high": 8409.6,
@@ -587,7 +587,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 262.8,
         "expected": 1051.2,
         "high": 8409.6,
@@ -693,7 +693,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-11-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 306.6,
         "expected": 1226.4,
         "high": 9811.2,
@@ -799,7 +799,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-11-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 277.4,
         "expected": 1109.6,
         "high": 8876.8,
@@ -905,7 +905,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 277.4,
         "expected": 1109.6,
         "high": 8876.8,
@@ -1011,7 +1011,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 321.2,
         "expected": 1284.8,
         "high": 10278.4,
@@ -1117,7 +1117,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 277.4,
         "expected": 1109.6,
         "high": 8876.8,
@@ -1223,7 +1223,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 306.6,
         "expected": 1226.4,
         "high": 9811.2,
@@ -1329,7 +1329,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 321.2,
         "expected": 1284.8,
         "high": 10278.4,
@@ -1435,7 +1435,7 @@
         "tierCount": 2,
         "pricesAsOf": "2025-10-01"
       },
-      "microsoft_fabric": {
+      "microsoft_fabric_capacity": {
         "low": 262.8,
         "expected": 1051.2,
         "high": 8409.6,
