@@ -145,11 +145,19 @@ Generate comprehensive deployment documentation including:
 - **Grounded in Microsoft Learn** — before generating, the app searches official Microsoft Learn documentation for your services (via a server-side proxy to the Microsoft Learn MCP endpoint) and feeds the results into the model so commands, API versions, and Bicep schemas reflect current docs. A **“Grounded with Microsoft Learn”** references section lists the cited pages, which are also included in the exported Markdown. Grounding is best-effort: if docs are unavailable the guide still generates.
 
 ### 💰 Real-Time Multi-Region Cost Estimation
-Get instant cost estimates across **8 Azure regions**:
+Get instant cost estimates across **8 currently bundled Azure regions**:
 - 🇺🇸 East US 2 · 🇦🇺 Australia East · 🇨🇦 Canada Central · 🇧🇷 Brazil South · 🇲🇽 Mexico Central · 🇳🇱 West Europe · 🇸🇪 Sweden Central · 🇸🇬 Southeast Asia
 
+The next audited snapshot expansion is planned for Central US, West US 2,
+UK South, North Europe, and Japan East. Those five are not bundled yet. Numeric
+snapshot estimates disclose the effective proxy region; usage-based and catalog
+range exclusions use no regional meter and therefore do not claim a proxy.
+
 Features include:
-- **PAYG ↔ Savings Plan (1-year) toggle** — flip the entire estimate between pay-as-you-go and 1-year commitment pricing. Each meter's **real 1-year Savings Plan rate** (from the Azure Retail Prices API) is used per-SKU when available; services without a savings-plan meter fall back to a representative discount, and Microsoft Fabric Capacity is **exact**. Usage-based services stay at PAYG.
+- **PAYG and 1-year Savings Plan analysis** — each tier uses its own real
+  SKU-specific one-year meter when available; unavailable tiers remain PAYG.
+  Discounts are never extrapolated across unrelated SKUs. Usage-based services
+  remain PAYG/catalog-range items.
 - **“Prices as of” stamp** — every cost export records the pricing-data refresh date and the selected billing term.
 - **True per-region meters** — pricing is pre-fetched per region from the Azure Retail Prices API (refresh anytime with `npm run pricing:refresh`), including per-region **Microsoft Fabric** capacity (CU) and OneLake storage rates.
 - Color-coded legend (green/yellow/red based on cost thresholds)

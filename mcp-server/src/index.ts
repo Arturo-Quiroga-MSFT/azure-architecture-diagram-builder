@@ -43,6 +43,7 @@ import {
 
 import {
   detectWafPatterns,
+  getRegionalTopologyEvidence,
   getWafRules,
   groupFindingsByPillar,
 } from './wafDetector.js';
@@ -228,6 +229,17 @@ server.registerTool(
         pattern: z.number(),
         service: z.number(),
       }),
+      regionalTopology: z.object({
+        explicitlyLocatedServingServices: z.array(z.string()),
+        explicitServingRegions: z.array(z.string()),
+        redundantServingTypes: z.array(z.string()),
+        hasServingRegionEvidence: z.boolean(),
+        hasMultiRegionServingTier: z.boolean(),
+        databaseTypes: z.array(z.string()),
+        redundantDatabaseTypes: z.array(z.string()),
+        hasDatabaseTier: z.boolean(),
+        hasMultiRegionDatabaseTier: z.boolean(),
+      }),
       findingsByPillar: z.record(
         z.string(),
         z.object({
@@ -255,6 +267,7 @@ server.registerTool(
 
     const result = detectWafPatterns(services, conns);
     const grouped = groupFindingsByPillar(result.findings);
+    const regionalTopology = getRegionalTopologyEvidence(services);
 
     const structured = {
       score: result.score,
@@ -264,6 +277,7 @@ server.registerTool(
         pattern: result.patternRulesApplied,
         service: result.serviceRulesApplied,
       },
+      regionalTopology,
       findingsByPillar: Object.fromEntries(
         Object.entries(grouped).map(([pillar, findings]) => [
           pillar,
@@ -906,8 +920,12 @@ server.registerTool(
   {
     title: 'Harden Azure Architecture',
     description:
-      'Deterministically HARDEN an architecture by clearing pattern-level WAF anti-patterns (single-region, no-identity, no-waf, no-api-gateway, direct-db-access, single-database, no-cache, no-key-vault, no-backup, no-monitoring). Adds the remediating services (Entra ID, Front Door + WAF, API Management, geo-replica, Redis, Key Vault, Backup, Monitor) and rewires connections, then re-validates. Returns the hardened services/connections/groups (ready to pass to render_diagram, generate_bicep, or export_reactflow_scene), a change log, and before/after WAF scores. Collapses the manual add-service → re-validate loop into one call. No LLM. Only fixes topology; config-level findings are resolved by generate_bicep.',
+      'Deterministically harden an architecture by clearing diagram-addressable WAF anti-patterns and re-validating. Regional risks are evidence-based: Front Door alone never clears single-region, and database replicas are never invented without a concrete target. Pass secondaryRegion to add an explicitly located secondary serving instance, explicit database replicas, and routing to both regions. Without secondaryRegion, single-region and single-database remain unresolved. No LLM; config-level findings are resolved by generate_bicep.',
     inputSchema: {
+      secondaryRegion: z
+        .string()
+        .optional()
+        .describe('Explicit Azure region for deterministic regional remediation (for example centralus). Required to remediate single-region or single-database findings; must differ from the primary region.'),
       services: z
         .array(
           z.object({
@@ -942,11 +960,29 @@ server.registerTool(
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
-  async ({ services, connections, groups }) => {
+  async ({ services, connections, groups, secondaryRegion }) => {
+    if (secondaryRegion) {
+      const targetRegion = normalizeAzureRegion(secondaryRegion);
+      const primaryRegions = new Set(
+        services
+          .map(service => service.region ? normalizeAzureRegion(service.region) : null)
+          .filter((region): region is string => Boolean(region) && region !== targetRegion),
+      );
+      if (primaryRegions.size === 0) {
+        return {
+          isError: true,
+          content: [{
+            type: 'text' as const,
+            text: `secondaryRegion ${targetRegion} must differ from at least one explicitly located primary service region.`,
+          }],
+        };
+      }
+    }
     const result = hardenArchitecture(
       services,
       (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
+      { secondaryRegion },
     );
 
     const summary =

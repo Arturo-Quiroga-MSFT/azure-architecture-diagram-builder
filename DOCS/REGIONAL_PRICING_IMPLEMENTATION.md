@@ -17,6 +17,25 @@ AADB bundles an Azure Retail Prices API snapshot for these eight regions:
 
 The UI loads the selected region's bundled files and recalculates node estimates when the region changes. These are snapshot-derived estimates, not live quotes. `PRICING_DATA_AS_OF` is the snapshot fetch date; individual meters can have earlier effective dates.
 
+### Recommended audited expansion (not yet bundled)
+
+Add these five regions through the same paginated, staged, atomic refresh and
+semantic-audit process:
+
+- Central US — established East US 2 DR target in checked-in Scout scenarios
+- West US 2 — established DR target in the ARM template and Scout scenarios
+- UK South — measured UK user demand
+- North Europe — strongest paired-region complement to West Europe
+- Japan East — measured Japan usage and strongest next APAC coverage
+
+Expected growth is about 400 JSON files, 375 regional download tasks, and
+roughly 420 additional API pages per full refresh. Until that refresh is
+validated and committed, numeric estimates for these regions must identify any
+effective proxy rather than claim native snapshot coverage. Usage-based and
+catalog-range exclusions consume no regional meter and do not claim a proxy.
+Central India is the highest-priority candidate for the following expansion wave
+based on measured user geography.
+
 ## Snapshot Integrity
 
 The August 13 snapshot was fetched from Azure Retail Prices API preview `2023-01-01-preview` with pagination enabled and staged before atomic replacement.

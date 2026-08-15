@@ -208,11 +208,140 @@ async function main() {
       groups: [],
     };
 
+    const regionalArchitecture = {
+      services: [
+        { name: 'Primary Web', type: 'App Service', region: 'East US 2' },
+        { name: 'Secondary Data', type: 'SQL Database', region: 'Central US' },
+      ],
+      connections: [{ from: 'Primary Web', to: 'Secondary Data', label: 'Query replicated application data' }],
+      groups: [],
+    };
+
     const validation = await client.callTool({
       name: 'validate_architecture',
       arguments: initialArchitecture,
     });
     assert.equal(typeof validation.structuredContent?.score, 'number');
+
+    const frontDoorOneRegion = await client.callTool({
+      name: 'validate_architecture',
+      arguments: {
+        services: [
+          { name: 'Front Door', type: 'Azure Front Door' },
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+          { name: 'Data East', type: 'SQL Database', region: 'eastus2' },
+        ],
+        connections: [
+          { from: 'Front Door', to: 'Web East', label: 'Route requests to application' },
+          { from: 'Web East', to: 'Data East', label: 'Query application data' },
+        ],
+      },
+    });
+    assert(frontDoorOneRegion.structuredContent?.patternsDetected.includes('single-region'));
+    assert(frontDoorOneRegion.structuredContent?.patternsDetected.includes('no-waf'));
+    assert.equal(frontDoorOneRegion.structuredContent?.regionalTopology.hasMultiRegionServingTier, false);
+
+    const detachedWafValidation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: {
+        services: [
+          { name: 'Front Door', type: 'Azure Front Door' },
+          { name: 'WAF Policy', type: 'Web Application Firewall' },
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+        ],
+        connections: [{ from: 'Front Door', to: 'Web East', label: 'Route application requests' }],
+      },
+    });
+    assert(detachedWafValidation.structuredContent?.patternsDetected.includes('no-waf'));
+
+    const detachedWafHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: [
+          { name: 'Front Door', type: 'Azure Front Door' },
+          { name: 'Corporate WAF', type: 'Web Application Firewall' },
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+        ],
+        connections: [{ from: 'Front Door', to: 'Web East', label: 'Route application requests' }],
+        groups: [],
+      },
+    }));
+    assert.equal(detachedWafHarden.services.filter(service => service.type === 'Web Application Firewall').length, 1);
+    assert(detachedWafHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'Corporate WAF'));
+    assert(detachedWafHarden.changes.some(change => change.action.includes('Associated the existing')));
+    assert(!detachedWafHarden.after.patternsDetected.includes('no-waf'));
+
+    const frontDoorWafHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: [
+          { name: 'Front Door', type: 'Azure Front Door' },
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+        ],
+        connections: [{ from: 'Front Door', to: 'Web East', label: 'Route application requests' }],
+        groups: [],
+      },
+    }));
+    assert.equal(frontDoorWafHarden.services.filter(service => service.type === 'Azure Front Door').length, 1);
+    assert(frontDoorWafHarden.services.some(service => service.name === 'WAF Policy'));
+    assert(frontDoorWafHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'WAF Policy'));
+    assert(!frontDoorWafHarden.after.patternsDetected.includes('no-waf'));
+
+    const appGatewayWafHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: [
+          { name: 'Application Gateway', type: 'Application Gateway', region: 'eastus2' },
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+        ],
+        connections: [{ from: 'Application Gateway', to: 'Web East', label: 'Route application requests' }],
+        groups: [],
+      },
+    }));
+    assert.equal(appGatewayWafHarden.services.some(service => service.type === 'Azure Front Door'), false);
+    assert(appGatewayWafHarden.connections.some(edge => edge.from === 'Application Gateway' && edge.to === 'WAF Policy'));
+
+    const splitRegionalValidation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: regionalArchitecture,
+    });
+    assert(splitRegionalValidation.structuredContent?.patternsDetected.includes('single-region'));
+    assert(splitRegionalValidation.structuredContent?.patternsDetected.includes('single-database'));
+    assert.deepEqual(splitRegionalValidation.structuredContent?.regionalTopology.explicitServingRegions, ['eastus2']);
+
+    const duplicatedServingValidation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: {
+        services: [
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+          { name: 'Web Central', type: 'App Service', region: 'centralus' },
+          { name: 'Data East', type: 'SQL Database', region: 'eastus2' },
+        ],
+        connections: [
+          { from: 'Web East', to: 'Data East', label: 'Query application data' },
+          { from: 'Web Central', to: 'Data East', label: 'Fail over application reads' },
+        ],
+      },
+    });
+    assert(!duplicatedServingValidation.structuredContent?.patternsDetected.includes('single-region'));
+    assert(duplicatedServingValidation.structuredContent?.patternsDetected.includes('single-database'));
+    assert.deepEqual(duplicatedServingValidation.structuredContent?.regionalTopology.redundantServingTypes, ['app service']);
+
+    assert(!validation.structuredContent?.patternsDetected.includes('single-region'));
+    assert.equal(validation.structuredContent?.regionalTopology.hasServingRegionEvidence, false);
+
+    const apimDirectValidation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: {
+        services: [
+          { name: 'Public API', type: 'API Management', region: 'eastus2' },
+          { name: 'API Data', type: 'SQL Database', region: 'eastus2' },
+        ],
+        connections: [{ from: 'Public API', to: 'API Data', label: 'Query database directly' }],
+      },
+    });
+    assert(apimDirectValidation.structuredContent?.patternsDetected.includes('no-waf'));
+    assert(apimDirectValidation.structuredContent?.patternsDetected.includes('direct-db-access'));
 
     const manifest = textPayload(await client.callTool({
       name: 'generate_manifest',
@@ -225,14 +354,6 @@ async function main() {
     }));
     assert.equal(manifest.project.name, 'contract-test');
 
-    const regionalArchitecture = {
-      services: [
-        { name: 'Primary Web', type: 'App Service', region: 'East US 2' },
-        { name: 'Secondary Data', type: 'SQL Database', region: 'Central US' },
-      ],
-      connections: [{ from: 'Primary Web', to: 'Secondary Data', label: 'Query replicated application data' }],
-      groups: [],
-    };
     const regionalManifest = textPayload(await client.callTool({
       name: 'generate_manifest',
       arguments: {
@@ -309,7 +430,7 @@ async function main() {
         services: [
           { name: 'Primary API', type: 'API Management', tier: 'standard', region: 'eastus2' },
           { name: 'Secondary API', type: 'API Management', tier: 'standard', region: 'Central US' },
-          { name: 'Shared Monitor', type: 'Azure Monitor', region: 'eastus2' },
+          { name: 'Shared Monitor', type: 'Azure Monitor', region: 'Central US' },
         ],
       },
     });
@@ -330,6 +451,10 @@ async function main() {
     assert.equal(secondary?.effectiveRegion, 'eastus2');
     assert.equal(secondary?.regionProxyUsed, true);
     assert(secondary?.regionProxyReason.includes('No bundled pricing snapshot'));
+    const excludedMonitor = mixed?.excludedServices.find(item => item.name === 'Shared Monitor');
+    assert.equal(excludedMonitor?.requestedRegion, 'centralus');
+    assert.equal(excludedMonitor?.effectiveRegion, 'centralus');
+    assert.equal(excludedMonitor?.regionProxyUsed, false);
 
     const quantityEstimate = await client.callTool({
       name: 'estimate_costs',
@@ -379,6 +504,134 @@ async function main() {
     assert.equal(regionalHarden.services.find(service => service.name === 'Secondary Data')?.region, 'Central US');
     assert.equal(regionalHarden.services.find(service => service.name === 'Redis Cache')?.region, 'East US 2');
     assert.equal(regionalHarden.services.find(service => service.name === 'Azure Backup')?.region, 'Central US');
+    assert(regionalHarden.after.patternsDetected.includes('single-region'));
+    assert(regionalHarden.after.patternsDetected.includes('single-database'));
+    assert(regionalHarden.unresolved.includes('single-region'));
+    assert(regionalHarden.unresolved.includes('single-database'));
+    assert.equal(regionalHarden.services.some(service => service.name.endsWith(' Replica')), false);
+    assert.equal(regionalHarden.changes.some(change => change.pattern.includes('single-region')), false);
+
+    const explicitlyRegionalInput = {
+      services: [
+        { name: 'Web East', type: 'App Service', region: 'eastus2' },
+        { name: 'Data East', type: 'SQL Database', region: 'eastus2' },
+      ],
+      connections: [{ from: 'Web East', to: 'Data East', label: 'Query application data' }],
+      groups: [],
+      secondaryRegion: 'centralus',
+    };
+    const explicitlyRegionalHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: explicitlyRegionalInput,
+    }));
+    assert.equal(explicitlyRegionalHarden.services.find(service => service.name === 'Web East Secondary')?.region, 'centralus');
+    assert.equal(explicitlyRegionalHarden.services.find(service => service.name === 'Data East Replica')?.region, 'centralus');
+    assert(explicitlyRegionalHarden.services.some(service => service.name === 'Front Door' && service.type === 'Azure Front Door'));
+    assert(explicitlyRegionalHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'Web East'));
+    assert(explicitlyRegionalHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'Web East Secondary'));
+    assert(!explicitlyRegionalHarden.after.patternsDetected.includes('single-region'));
+    assert(!explicitlyRegionalHarden.after.patternsDetected.includes('single-database'));
+    assert(!explicitlyRegionalHarden.unresolved.includes('single-region'));
+    assert(!explicitlyRegionalHarden.unresolved.includes('single-database'));
+    assert(!explicitlyRegionalHarden.changes.some(change => change.action.includes('Front Door as global edge (enables WAF + multi-region failover)')));
+
+    const secondExplicitRegionalHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: explicitlyRegionalHarden.services,
+        connections: explicitlyRegionalHarden.connections,
+        groups: explicitlyRegionalHarden.groups,
+        secondaryRegion: 'centralus',
+      },
+    }));
+    assert.deepEqual(secondExplicitRegionalHarden.changes, []);
+
+    const staticWebHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: [{ name: 'Portal', type: 'Static Web Apps', region: 'eastus2' }],
+        connections: [],
+        groups: [],
+      },
+    }));
+    assert(staticWebHarden.services.some(service => service.name === 'Front Door'));
+    assert(staticWebHarden.services.some(service => service.name === 'WAF Policy'));
+    assert(staticWebHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'Portal'));
+    assert(staticWebHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'WAF Policy'));
+    assert(!staticWebHarden.after.patternsDetected.includes('no-waf'));
+    assert(staticWebHarden.after.patternsDetected.includes('single-region'));
+
+    const apimDirectHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: [
+          { name: 'Public API', type: 'API Management', region: 'eastus2' },
+          { name: 'API Data', type: 'SQL Database', region: 'eastus2' },
+          { name: 'API Events', type: 'Azure Cosmos DB', region: 'eastus2' },
+        ],
+        connections: [
+          { from: 'Public API', to: 'API Data', label: 'Query SQL directly' },
+          { from: 'Public API', to: 'API Events', label: 'Query events directly' },
+        ],
+        groups: [],
+      },
+    }));
+    const generatedBackends = apimDirectHarden.services.filter(service => service.name.startsWith('Public API Backend'));
+    assert.equal(generatedBackends.length, 1);
+    const generatedBackend = generatedBackends[0];
+    assert.equal(generatedBackend?.type, 'App Service');
+    assert.equal(generatedBackend?.region, 'eastus2');
+    assert(!apimDirectHarden.connections.some(edge => edge.from === 'Public API' && edge.to === 'API Data'));
+    assert(!apimDirectHarden.connections.some(edge => edge.from === 'Public API' && edge.to === 'API Events'));
+    assert(apimDirectHarden.connections.some(edge => edge.from === 'Public API' && edge.to === 'Public API Backend'));
+    assert(apimDirectHarden.connections.some(edge => edge.from === 'Public API Backend' && edge.to === 'API Data'));
+    assert(apimDirectHarden.connections.some(edge => edge.from === 'Public API Backend' && edge.to === 'API Events'));
+    assert(!apimDirectHarden.after.patternsDetected.includes('direct-db-access'));
+
+    const equalRegionHarden = await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        ...explicitlyRegionalInput,
+        secondaryRegion: 'eastus2',
+      },
+    });
+    assert.equal(equalRegionHarden.isError, true);
+    assert(equalRegionHarden.content.find(item => item.type === 'text')?.text.includes('must differ'));
+
+    const collisionHarden = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: {
+        services: [
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+          { name: 'Web East Secondary', type: 'Key Vault', region: 'centralus' },
+          { name: 'Data East', type: 'SQL Database', region: 'eastus2' },
+          { name: 'Data East Replica', type: 'Key Vault', region: 'centralus' },
+        ],
+        connections: [{ from: 'Web East', to: 'Data East', label: 'Query application data' }],
+        groups: [],
+        secondaryRegion: 'centralus',
+      },
+    }));
+    assert.equal(collisionHarden.services.find(service => service.name === 'Web East Secondary 2')?.region, 'centralus');
+    assert.equal(collisionHarden.services.find(service => service.name === 'Data East Replica 2')?.region, 'centralus');
+    assert(collisionHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'Web East Secondary 2'));
+    assert(collisionHarden.connections.some(edge => edge.from === 'Data East' && edge.to === 'Data East Replica 2'));
+
+    const mixedDatabaseValidation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: {
+        services: [
+          { name: 'Web East', type: 'App Service', region: 'eastus2' },
+          { name: 'Web Central', type: 'App Service', region: 'centralus' },
+          { name: 'SQL East', type: 'SQL Database', region: 'eastus2' },
+          { name: 'SQL Central', type: 'SQL Database', region: 'centralus' },
+          { name: 'Cosmos East', type: 'Azure Cosmos DB', region: 'eastus2' },
+        ],
+        connections: [],
+      },
+    });
+    assert(mixedDatabaseValidation.structuredContent?.patternsDetected.includes('single-database'));
+    assert.deepEqual(mixedDatabaseValidation.structuredContent?.regionalTopology.redundantDatabaseTypes, ['sql database']);
 
     const imported = textPayload(await client.callTool({
       name: 'import_architecture',

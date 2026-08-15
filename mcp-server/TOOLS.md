@@ -63,9 +63,20 @@ rules (per-service best practices) — and returns a 0–100 score.
   "totalFindings": 7,
   "patternsDetected": ["single-region"],
   "rulesApplied": { "pattern": N, "service": M },
+  "regionalTopology": {
+    "explicitServingRegions": ["eastus2"],
+    "redundantServingTypes": [],
+    "hasMultiRegionServingTier": false,
+    "redundantDatabaseTypes": [],
+    "hasMultiRegionDatabaseTier": false
+  },
   "findingsByPillar": { "Security": { "count": 3, "findings": [ { "severity", "category", "issue", "recommendation", "resources" } ] } }
 }
 ```
+
+Regional and WAF findings require explicit topology evidence. Global routing
+does not count as a second serving region, and a WAF policy must be associated
+by an edge with Front Door or Application Gateway.
 
 > The score is capped at the diagram layer. Topology findings are cleared by
 > `harden_architecture` (§6); config-level findings are resolved by
@@ -101,9 +112,10 @@ provenance:
 - response-level `requestedRegions`, `effectiveRegions`, and proxy count
 
 Services without distilled pricing fall back to a curated `catalogCostRange`
-and are excluded from the numeric baseline. If a requested region is not in the
-bundled snapshot, the fallback is explicit; the tool never labels proxy rates as
-native rates for that region.
+and are excluded from the numeric baseline. If a numeric estimate requests a
+region outside the bundled snapshot, the fallback is explicit; the tool never
+labels proxy rates as native rates for that region. Catalog/usage exclusions use
+no regional meter and therefore retain the requested region without a proxy.
 
 `pricingSource.generatedAt` is when the compact MCP sidecar was generated.
 `pricesAsOf` is the newest contributing Azure Retail Prices meter effective
@@ -172,10 +184,10 @@ shrinking, then re-validates.
 |--------------|-------------------|
 | `no-identity` | Microsoft Entra ID (+ authN/authZ edge) |
 | `no-waf` | Azure Front Door + WAF Policy on the edge |
-| `single-region` | Azure Front Door (global entry + failover) |
+| `single-region` | With `secondaryRegion`: duplicate an explicit serving type in that region and route Front Door to both instances. Without it: unresolved. |
 | `no-api-gateway` | API Management (unified gateway) |
 | `direct-db-access` | Reroutes frontend→DB through the API layer |
-| `single-database` | Geo-replicated read replica (`<db> Replica`) |
+| `single-database` | With `secondaryRegion`: add same-type `<db> Replica` in that explicit region. Without it: unresolved. |
 | `no-cache` | Azure Cache for Redis |
 | `no-key-vault` | Key Vault |
 | `no-backup` | Azure Backup |
@@ -190,11 +202,25 @@ shrinking, then re-validates.
 
 ```jsonc
 {
+  "secondaryRegion?": "centralus",
   "services":   [{ "name": "...", "type": "...", "description?": "...", "groupId?": "..." }],
   "connections?": [{ "from": "...", "to": "...", "label?": "...", "type?": "sync|async|optional" }],
   "groups?":    [{ "id": "...", "label": "..." }]
 }
 ```
+
+Regional evidence is conservative:
+
+- Front Door, Traffic Manager, WAF, CDN, and Entra ID do not count as a second region.
+- WAF protection requires an explicit association edge between a WAF policy and
+  Front Door or Application Gateway; detached policy nodes do not qualify.
+- Unlocated services do not prove or disprove regional redundancy.
+- `single-region` clears only when the same serving type is explicitly present
+  in at least two regions.
+- `single-database` clears only when every database type is explicitly present
+  in at least two regions.
+- The hardener never invents a target region. Pass `secondaryRegion` when
+  deterministic regional remediation is intended.
 
 ### Output
 
@@ -205,7 +231,7 @@ shrinking, then re-validates.
   "after":     { "score": 18, "patternsDetected": [], "totalFindings": M },
   "changes":   [{ "pattern": "no-identity", "action": "...", "addedServices": [...], "addedConnections": ["A → B"] }],
   "unresolved":[],          // topology patterns that couldn't be auto-fixed
-  "note":      "All pattern-level anti-patterns cleared. Remaining WAF findings are config-level — resolve them with generate_bicep.",
+  "note":      "Regional findings remain unresolved without secondaryRegion; otherwise all remediated pattern findings are revalidated.",
   "services":  [...],       // hardened architecture — pass straight to render_diagram / generate_bicep / export_reactflow_scene
   "connections":[...],
   "groups":    [...]        // new groups (Global Edge & Security, API Gateway, Security & Ops) appended
