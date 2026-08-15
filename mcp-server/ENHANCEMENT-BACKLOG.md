@@ -42,7 +42,7 @@ defined.
 2. Correct multi-region validation and hardening semantics — deployed
 3. Synchronize the MCP service catalog with the app catalog — deployed
 4. Improve manifest/import fidelity and structured outputs — deployed
-5. Add deterministic regional cost comparison — implemented locally
+5. Add deterministic regional cost comparison — deployed
 6. Add deterministic ARM-template import
 
 ### Pricing-region expansion
@@ -50,7 +50,7 @@ defined.
 Completed in the August 15 snapshot: `centralus`, `westus2`, `uksouth`,
 `northeurope`, `japaneast`, and `centralindia`. The authoritative bundle now
 contains 14 regions, 1,120 files, and no unresolved continuation links or
-wrong-region items. Step 5 can use this native coverage; do not substitute
+wrong-region items. Step 5 uses this native coverage and does not substitute
 heuristic regional multipliers.
 
 ### Canonical service catalog synchronization
@@ -61,7 +61,7 @@ pre-switch comparison found 25 app-only services and zero MCP-only services.
 Build-time validation rejects ambiguous canonical keys, display names, or
 aliases. `npm run test:catalog` verifies identity resolution, icon-map parity,
 legacy aliases, and ownership of all bundled numeric pricing policies. This
-change is implemented locally and is not marked deployed here.
+change is deployed and production-verified.
 
 ### Round-trip fidelity and structured outputs
 
@@ -71,22 +71,23 @@ across manifest and React Flow export/import. Existing IDs also survive
 `import_architecture` → `harden_architecture` → export/import; cloned hardening
 resources do not duplicate source IDs. Legacy web-app scenes still recover types
 from icon paths and import correctly when group nodes follow their children.
-The protocol contract independently measures 12/12 tools with output schemas and
+The protocol contract independently measured 12/12 tools at Step 4 with output schemas and
 checks text/structured parity for representative JSON and artifact tools. This
-change is implemented locally and is not marked deployed here.
+change is deployed and production-verified.
 
 ### Deterministic regional cost comparison
 
 Step 5 adds `compare_region_costs`, which composes the same extracted
 architecture estimator used by `estimate_costs`. It places the identical service
 list wholly in each candidate, evaluates native bundled snapshots only, exposes
-coverage/exclusions and meter dates per region, and ranks expected fixed-price
+coverage/exclusions and meter dates per region, and ranks selected-tier fixed-price
 baselines only when every requested candidate has equivalent numeric coverage,
 a common currency, and no proxy. Unsupported candidates and usage-only designs
 return comparison evidence with an explicit reason and no ranking. The protocol
 contract covers native ranking, baseline deltas, unsupported-region withholding,
-no-numeric-baseline withholding, and normalized duplicate rejection. This change
-is implemented locally and is not marked deployed here.
+no-numeric-baseline withholding, and normalized duplicate rejection. The live
+13-tool endpoint verified native ranking, exact premium one-year selection, and
+unsupported-region withholding. This change is deployed and production-verified.
 
 ---
 

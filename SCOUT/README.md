@@ -24,12 +24,9 @@ Azure architectures conversationally.
 
 ## Capabilities
 
-The production endpoint has been verified to expose **12 tools, 3 resources,
+The production endpoint has been verified to expose **13 tools, 3 resources,
 and 3 prompts**. The title/annotation contract described below is deployed and
 verified; stateless session recovery is covered by `npm run test:contracts`.
-
-The current source branch adds a thirteenth tool, `compare_region_costs`; this
-count remains 12 here until that revision is deployed and production-verified.
 
 ### Tools
 
@@ -146,6 +143,14 @@ use the Azure Pricing Calculator.
 
 ## Changelog
 
+- **2026-08-15 — Regional cost comparison (deployed and production-verified).**
+  Added `compare_region_costs` as tool 13. It compares identical service lists
+  across native bundled pricing regions, ranks selected-tier fixed-price
+  baselines only when coverage/currency are equivalent and no proxy is used,
+  and withholds ranking for unsupported or usage-only candidates. Production
+  verified 13-tool discovery, native East US 2/Central US/West Europe ranking,
+  exact one-year premium-tier selection, and unsupported `westus3` withholding.
+
 - **2026-08-14 — Tool contract hardening (deployed and production-verified).** All 12 tools now use
   `registerTool`, expose titles and safety annotations, and have their handlers
   smoke-tested by a standalone authenticated HTTP contract test. Pricing guidance
@@ -192,7 +197,7 @@ In Scout's **Add MCP Server** dialog, use:
 | **Bearer token** | Obtain the current value from the app owner through an approved secret channel. |
 | **Tool-call timeout** | Leave blank (default ~60), or `120` if renders time out |
 
-Scout should discover 12 tools, 3 resources, and 3 prompts. If discovery returns
+Scout should discover 13 tools, 3 resources, and 3 prompts. If discovery returns
 zero capabilities, verify the `/mcp` suffix, the bearer-token value, and that no
 leading or trailing whitespace was included.
 
