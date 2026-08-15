@@ -22,5 +22,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Pricing JSON is runtime-fetched and must remain as files. Inlining empty
+    // or small regional assets would recreate a large JavaScript module graph.
+    assetsInlineLimit: 0,
   },
 })
