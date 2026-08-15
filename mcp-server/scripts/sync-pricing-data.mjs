@@ -4,7 +4,7 @@
 
 /**
  * Build-time helper: distill the web app's raw Azure Retail Prices JSON
- * (src/data/pricing/regions/<region>/<service>.json — ~25 MB across 8 regions)
+ * (src/data/pricing/regions/<region>/<service>.json — bundled across 14 regions)
  * into a compact per-region sidecar the MCP server can bundle and query at
  * runtime WITHOUT shipping the full dataset.
  *
@@ -150,9 +150,13 @@ function distillFile(filePath, stem) {
   const items = Array.isArray(parsed.Items) ? parsed.Items : [];
   const currency = parsed.BillingCurrency || 'USD';
 
-  // Consumption meters only (exclude reservations/spot rows; those are handled
-  // via each item's savingsPlan for the reserved-term estimate).
-  const consumption = items.filter((i) => i.type === 'Consumption');
+  // Consumption meters only. Spot/Low Priority and secondary/failover meters
+  // are not valid defaults and must not influence low/expected/high bands.
+  const consumption = items.filter((item) => {
+    if (item.type !== 'Consumption') return false;
+    const identity = `${item.skuName || ''} ${item.armSkuName || ''} ${item.meterName || ''} ${item.productName || ''}`;
+    return !/spot|low priority|secondary|failover|passive/i.test(identity);
+  });
   if (consumption.length === 0) return null;
 
   // Dedupe to the cheapest monthly per SKU (matches web app tier parsing).
@@ -201,8 +205,6 @@ function distillFile(filePath, stem) {
       let match = null;
       for (const [sku, entry] of perSku.entries()) {
         const m = entry.monthly;
-        // Skip geo-replica / failover SKUs — not a representative primary cost.
-        if (/secondary|failover|passive/i.test(sku)) continue;
         if (m > 0 && sku.toLowerCase().includes(pat)) {
           if (!match || m < match.m) match = { sku, m, reservedMonthly: entry.reservedMonthly };
         }

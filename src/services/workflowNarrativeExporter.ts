@@ -171,7 +171,7 @@ export function buildWorkflowMarkdown(input: WorkflowNarrativeInput): string {
   if (typeof totalMonthlyCost === 'number' && totalMonthlyCost > 0) {
     lines.push('## Estimated Monthly Cost');
     lines.push('');
-    const term = pricingMode === 'reserved1yr' ? 'mixed 1-year estimate; see per-service provenance' : 'pay-as-you-go';
+    const term = pricingMode === 'reserved1yr' ? 'exact SKU-specific 1-year Savings Plan where available; otherwise PAYG' : 'pay-as-you-go';
     const where = region ? `, ${region}` : '';
     lines.push(`Approximately **$${totalMonthlyCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo** (${term}${where}).`);
     lines.push('');

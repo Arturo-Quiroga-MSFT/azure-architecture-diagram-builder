@@ -32,8 +32,8 @@ Comparing them is like comparing a rearview mirror to a GPS. One shows where you
 | **Output** | Interactive diagram with official Azure icons | Generic Draw.io diagram (boxes and arrows) |
 | **AI models** | 7 models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, DeepSeek V3.2 Speciale, Grok 4.1 Fast) | Single model (Copilot's current model) |
 | **Azure icon library** | 714 official Azure icons across 29 categories | Generic shapes; no official Azure icon set |
-| **Real-time cost estimation** | Yes — Azure Retail Prices API across 8 regions | No |
-| **Multi-region cost comparison** | Yes — side-by-side pricing for 8 Azure regions | No |
+| **Real-time cost estimation** | Yes — bundled Azure Retail Prices API snapshot across 14 regions | No |
+| **Multi-region cost comparison** | Yes — side-by-side pricing for 14 Azure regions | No |
 | **Well-Architected Framework validation** | Yes — all 5 pillars with severity grading and auto-remediation | No |
 | **Multi-model comparison** | Yes — run the same prompt through multiple models, compare results | No |
 | **Infrastructure as Code generation** | Yes — Bicep and ARM templates | No |

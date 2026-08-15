@@ -29,8 +29,19 @@ const SERVICES = [
 // Regions to download for
 const REGIONS = [
   { id: 'eastus2', armName: 'eastus2' },
+  { id: 'centralus', armName: 'centralus' },
+  { id: 'westus2', armName: 'westus2' },
   { id: 'swedencentral', armName: 'swedencentral' },
   { id: 'westeurope', armName: 'westeurope' },
+  { id: 'northeurope', armName: 'northeurope' },
+  { id: 'uksouth', armName: 'uksouth' },
+  { id: 'canadacentral', armName: 'canadacentral' },
+  { id: 'brazilsouth', armName: 'brazilsouth' },
+  { id: 'mexicocentral', armName: 'mexicocentral' },
+  { id: 'australiaeast', armName: 'australiaeast' },
+  { id: 'southeastasia', armName: 'southeastasia' },
+  { id: 'japaneast', armName: 'japaneast' },
+  { id: 'centralindia', armName: 'centralindia' },
 ];
 
 const BASE_URL = 'https://prices.azure.com/api/retail/prices';

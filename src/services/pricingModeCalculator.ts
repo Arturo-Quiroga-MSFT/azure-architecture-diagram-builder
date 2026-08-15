@@ -1,4 +1,3 @@
-import { getReserved1yrDiscount } from '../data/azurePricing';
 import type { NodePricingConfig } from '../types/pricing';
 
 export type PricingMode = 'payg' | 'reserved1yr';
@@ -8,7 +7,6 @@ export type PricingEstimateSource =
   | 'static-payg'
   | 'custom'
   | 'real-savings-plan'
-  | 'estimated-discount'
   | 'payg-unchanged-usage'
   | 'payg-unchanged-no-offer'
   | 'custom-unchanged';
@@ -19,7 +17,6 @@ export function getPricingEstimateSourceLabel(source: PricingEstimateSource): st
     'static-payg': 'Static fallback estimate',
     custom: 'Custom user-provided price',
     'real-savings-plan': 'Azure Retail Prices real 1-year Savings Plan meter',
-    'estimated-discount': 'Estimated 1-year discount applied to PAYG',
     'payg-unchanged-usage': 'Usage-based service; unchanged PAYG estimate',
     'payg-unchanged-no-offer': 'No 1-year offer; unchanged PAYG estimate',
     'custom-unchanged': 'Custom price; unchanged in 1-year mode',
@@ -28,7 +25,7 @@ export function getPricingEstimateSourceLabel(source: PricingEstimateSource): st
 }
 
 export function calculateNodeMonthlyCost(
-  serviceType: string,
+  _serviceType: string,
   pricing: NodePricingConfig,
   pricingMode: PricingMode = 'payg'
 ): { cost: number; source: PricingEstimateSource } {
@@ -46,7 +43,5 @@ export function calculateNodeMonthlyCost(
   if (pricing.reserved1yrCost != null && pricing.reserved1yrCost > 0) {
     return { cost: pricing.reserved1yrCost * pricing.quantity, source: 'real-savings-plan' };
   }
-  const discount = getReserved1yrDiscount(serviceType);
-  if (discount > 0) return { cost: payg * (1 - discount), source: 'estimated-discount' };
   return { cost: payg, source: 'payg-unchanged-no-offer' };
 }

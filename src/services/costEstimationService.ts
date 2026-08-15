@@ -332,7 +332,7 @@ export function calculateCostBreakdown(
     currency: 'USD',
     lastCalculated: new Date().toISOString(),
     pricesAsOf: PRICING_DATA_AS_OF,
-    pricingTerm: pricingMode === 'reserved1yr' ? '1-year estimate (mixed provenance)' : 'Pay-as-you-go estimate',
+    pricingTerm: pricingMode === 'reserved1yr' ? '1-year Savings Plan where exact SKU meter exists; otherwise PAYG' : 'Pay-as-you-go estimate',
   };
 
   // Track costs by group and category

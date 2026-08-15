@@ -1,14 +1,14 @@
 # Azure Architecture Diagram Builder - System Architecture
 
-**Last Updated**: July 2026 (native Visio VSDX + workflow-Markdown exports, `generate_bicep` MCP tool, structured MCP outputs, Microsoft Fabric F-SKU pricing, canvas UX)
+**Last Updated**: August 2026 (14-region pricing snapshot, region-aware/stateless MCP, exact SKU-specific one-year pricing, native Visio VSDX + workflow-Markdown exports)
 
 ## Overview
 
-The Azure Architecture Diagram Builder is a web-based tool that uses AI to generate Azure architecture diagrams with real-time pricing estimates. Built with React, TypeScript, and Vite, it leverages **12 AI models** via Azure OpenAI (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5) for diagram generation, validation, and Infrastructure as Code. The Azure Retail Prices API provides cost estimation across **8 regions** (PAYG and 1-year Reserved), including Microsoft Fabric capacity and OneLake.
+The Azure Architecture Diagram Builder is a web-based tool that uses AI to generate Azure architecture diagrams with snapshot-derived pricing estimates. Built with React, TypeScript, and Vite, it leverages **12 AI models** via Azure OpenAI (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5) for diagram generation, validation, and Infrastructure as Code. The Azure Retail Prices API snapshot provides cost estimation across **14 regions** (PAYG and exact SKU-specific one-year Savings Plan rates where available), including Microsoft Fabric capacity and OneLake.
 
 A lightweight Express.js **token server** (`127.0.0.1:3001`, co-located with nginx in the container) is the security boundary: it proxies all Azure OpenAI traffic (`/api/openai`) so the key never reaches the browser, grounds deployment guides in Microsoft Learn (`/api/docs-search`), persists user feedback to Cosmos DB (`/api/feedback`), and issues keyless Speech tokens (`/api/speech-token`) via `DefaultAzureCredential` (Managed Identity).
 
-The project also ships a standalone **MCP server** (`mcp-server/`) exposing 8 tools over stdio + Streamable-HTTP, consumable by **Microsoft Scout** and other MCP clients. The app is deployed on Azure Container Apps and instrumented with Application Insights.
+The project also ships a standalone **MCP server** (`mcp-server/`) exposing 12 tools over stdio + stateless Streamable HTTP, consumable by **Microsoft Scout** and other MCP clients. The app is deployed on Azure Container Apps and instrumented with Application Insights.
 
 ## High-Level Architecture
 
@@ -36,14 +36,14 @@ graph TB
     end
 
     subgraph "Data Layer"
-        PricingData[(Pricing JSON Files<br/>49-71 services × 8 regions)]
+        PricingData[(Pricing JSON Files<br/>80 queries × 14 regions)]
         IconData[(SVG Icons<br/>714 files in 29 categories)]
         Mappings[Service & Icon Mappings<br/>incl. Microsoft Fabric]
     end
 
     subgraph "Backend Layer"
         TokenServer[Express.js Token Server<br/>127.0.0.1:3001<br/>/api/openai · /api/docs-search<br/>/api/feedback · /api/speech-token]
-        MCP[MCP Server<br/>8 tools · stdio + HTTP<br/>used by Microsoft Scout]
+        MCP[MCP Server<br/>12 tools · stdio + stateless HTTP<br/>used by Microsoft Scout]
     end
 
     subgraph "External APIs"
@@ -400,7 +400,7 @@ azure-diagrams/
 - **Vite Dynamic Imports** - SVG icon loading (`import.meta.glob`)
 
 ### Data Management
-- **JSON files** - cached regional pricing per region (49-71 services × 8 regions), including Microsoft Fabric capacity & OneLake meters; refresh with `npm run pricing:refresh`
+- **JSON files** - 80-query regional pricing inventory × 14 regions, including Microsoft Fabric capacity & OneLake meters; refresh with `npm run pricing:refresh`
 - **SVG files** - Azure service icons (714 files) plus the Microsoft Fabric icon set
 - **In-memory caching** - Performance optimization
 - **localStorage** - Model settings, per-feature overrides, version history, export history
@@ -434,8 +434,8 @@ azure-diagrams/
   - Title Case conversion with acronym preservation (AI, SQL, CDN, API, etc.)
 
 ### 3. Regional Pricing Engine
-- **8 regions supported**: East US 2, Sweden Central, West Europe, Brazil South, Canada Central, Australia East, Mexico Central, Southeast Asia
-- **49-71 services per region**: pre-fetched pricing files, incl. Microsoft Fabric capacity & OneLake meters
+- **14 regions supported**: East US 2, Central US, West US 2, Sweden Central, West Europe, North Europe, UK South, Brazil South, Canada Central, Australia East, Mexico Central, Southeast Asia, Japan East, Central India
+- **80 pricing queries per region**: pre-fetched files, incl. Microsoft Fabric capacity & OneLake meters
 - **Dynamic loading**: Pricing fetched on-demand per service/region
 - **Caching**: Two-level cache (raw data + parsed pricing)
 - **Fallback system**: Usage-based services use estimated costs
@@ -540,7 +540,7 @@ scripts/fetch-multi-region-pricing.sh
 - Fetches from Azure Retail Prices API
 - Filters by region and service name
 - Stores in `src/data/pricing/regions/{region}/{service}.json`
-- 49-71 services × 8 regions (plus per-region Microsoft Fabric meters); refresh with `npm run pricing:refresh`
+- 80 pricing queries × 14 regions (plus per-region Microsoft Fabric meters); refresh with `npm run pricing:refresh`
 
 ### Pricing Data Structure
 ```json
@@ -773,7 +773,7 @@ The Azure Architecture Diagram Builder demonstrates a sophisticated integration 
 Key architectural decisions:
 
 - **12-model AI support** with reactive model selection via `useModelSettings()` hook and per-feature overrides
-- **File-based pricing cache** for reliability and performance across 8 regions
+- **File-based pricing cache** for reliability and performance across 14 regions
 - **Two-path icon resolution** for flexible service name handling (945-line mapping + 1,163-line normalization)
 - **Layered service mappings** to bridge AI outputs with Azure reality
 - **React Flow canvas** for professional diagram rendering with 21 custom components
@@ -786,4 +786,4 @@ Key architectural decisions:
 - **azd template** (`azure.yaml` + `infra/`) for one-command provision and deploy, qualifying for Azure-Samples gallery
 - **Azure Container Apps deployment** with ACR builds and auto-scaling (1–3 replicas)
 
-The system successfully handles the complexity of 714 icons (plus the Microsoft Fabric set), per-region pricing across 8 regions, 12 AI models, and variable service naming conventions to deliver a seamless user experience.
+The system successfully handles the complexity of 714 icons (plus the Microsoft Fabric set), per-region pricing across 14 regions, 12 AI models, and variable service naming conventions to deliver a seamless user experience.

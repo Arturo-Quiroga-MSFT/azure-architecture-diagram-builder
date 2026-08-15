@@ -145,13 +145,11 @@ Generate comprehensive deployment documentation including:
 - **Grounded in Microsoft Learn** — before generating, the app searches official Microsoft Learn documentation for your services (via a server-side proxy to the Microsoft Learn MCP endpoint) and feeds the results into the model so commands, API versions, and Bicep schemas reflect current docs. A **“Grounded with Microsoft Learn”** references section lists the cited pages, which are also included in the exported Markdown. Grounding is best-effort: if docs are unavailable the guide still generates.
 
 ### 💰 Real-Time Multi-Region Cost Estimation
-Get instant cost estimates across **8 currently bundled Azure regions**:
-- 🇺🇸 East US 2 · 🇦🇺 Australia East · 🇨🇦 Canada Central · 🇧🇷 Brazil South · 🇲🇽 Mexico Central · 🇳🇱 West Europe · 🇸🇪 Sweden Central · 🇸🇬 Southeast Asia
-
-The next audited snapshot expansion is planned for Central US, West US 2,
-UK South, North Europe, and Japan East. Those five are not bundled yet. Numeric
-snapshot estimates disclose the effective proxy region; usage-based and catalog
-range exclusions use no regional meter and therefore do not claim a proxy.
+Get instant cost estimates across **14 bundled Azure regions**:
+- 🇺🇸 East US 2 · 🇺🇸 Central US · 🇺🇸 West US 2
+- 🇨🇦 Canada Central · 🇧🇷 Brazil South · 🇲🇽 Mexico Central
+- 🇳🇱 West Europe · 🇮🇪 North Europe · 🇬🇧 UK South · 🇸🇪 Sweden Central
+- 🇸🇬 Southeast Asia · 🇯🇵 Japan East · 🇮🇳 Central India · 🇦🇺 Australia East
 
 Features include:
 - **PAYG and 1-year Savings Plan analysis** — each tier uses its own real
@@ -171,7 +169,7 @@ Features include:
   - `-analysis.md` — intelligent Markdown report: TL;DR callout, top cost drivers, a **Mermaid pie chart** of cost by category, fixed vs usage-based split, Reserved Instance flags, and a **ranked multi-region comparison table** showing cheapest/most expensive region and potential savings
   - `.csv` — spreadsheet for Excel
   - `.json` — structured breakdown for programmatic use
-  - `-multiregion-comparison.csv` — per-service pricing across all 8 regions for side-by-side comparison
+  - `-multiregion-comparison.csv` — per-service pricing across all 14 regions for side-by-side comparison
 
 ### 🟦 Microsoft Fabric Support
 Design **Microsoft Fabric** data platforms alongside core Azure services:
@@ -322,7 +320,7 @@ sequenceDiagram
     TS-->>UI: Diagram specification (JSON)
     UI->>UI: Render nodes & auto-layout (Dagre + overlap resolution)
     UI->>P: Fetch regional pricing (pre-fetched per region)
-    P-->>UI: Cost data (8 regions, PAYG / Reserved)
+    P-->>UI: Cost data (14 regions, PAYG / exact SKU-specific 1-year where available)
 
     U->>UI: Refine via Architecture Chat
     UI->>TS: POST /api/openai (modification prompt, live canvas)
@@ -870,7 +868,7 @@ azure-diagrams/
 │   ├── hooks/                # Shared React hooks
 │   │   └── useDraggableResizable.ts  # Pointer-capture drag-to-move + drag-to-resize hook
 │   ├── data/                 # Static data
-│   │   ├── pricing/          # Regional pricing data (568 files: 71 services × 8 regions)
+│   │   ├── pricing/          # Regional pricing data (1,120 files: 80 queries × 14 regions)
 │   │   ├── azurePricing.ts   # Service mappings
 │   │   └── serviceIconMapping.ts  # Icon mappings
 │   ├── utils/                # Utilities
@@ -1082,6 +1080,11 @@ All edge types now render correctly: solid sync edges, dashed async edges, dotte
 - **ModelBadge** — Shows which AI model generated the current diagram
 - **Chat Completions Fallback** — Automatic fallback for models not supporting Responses API
 - **Two-Row Toolbar** — Split toolbar for better fit on normal-width windows
+
+### August 2026
+- **14-Region Pricing Expansion** — Added Central US, West US 2, UK South,
+  North Europe, Japan East, and Central India through the paginated, atomic
+  Retail Prices refresh and semantic audit pipeline.
 
 ### March 2026
 - **8 Azure Regions** — Expanded from 5 to 8 regions: added Australia East (HERO), Southeast Asia (Singapore), Mexico Central (Querétaro) with full pricing data (568 JSON files)

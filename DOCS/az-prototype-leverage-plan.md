@@ -40,13 +40,13 @@ You could offer a **"Generate Production IaC"** option alongside your existing D
 `az prototype` supports custom MCP handlers (Use Case 11). You could expose the Diagram Builder's capabilities as an **MCP tool**, allowing `az prototype`'s agent team to:
 - Generate visual architecture diagrams during the design phase
 - Trigger WAF validation using your multi-model comparison engine
-- Pull multi-region cost estimates from your pricing data (49 services × 8 regions)
+- Pull multi-region cost estimates from the bundled pricing data (80 queries × 14 regions)
 
 This positions the Diagram Builder as an **agent tool** within the `az prototype` ecosystem.
 
 ### 5. **Shared Cost Estimation Intelligence**
 
-- Your app has granular per-SKU pricing across 8 regions with CSV/JSON export
+- Your app has granular per-SKU pricing across 14 regions with CSV/JSON export
 - `az prototype` does S/M/L t-shirt sizing using Azure Retail Prices
 
 These could be **bidirectional**: your detailed regional pricing feeds `az prototype`'s cost-analyst agent with richer data, and `az prototype`'s governance-aware sizing informs your cost breakdowns with production tier recommendations.

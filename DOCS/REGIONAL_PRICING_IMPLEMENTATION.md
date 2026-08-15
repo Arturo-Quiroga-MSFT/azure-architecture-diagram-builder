@@ -1,53 +1,46 @@
 # Regional Pricing Implementation
 
-**Last validated:** August 13, 2026
+**Last validated:** August 15, 2026
 
 ## Scope
 
-AADB bundles an Azure Retail Prices API snapshot for these eight regions:
+AADB bundles an Azure Retail Prices API snapshot for these 14 regions:
 
 - East US 2
+- Central US
+- West US 2
 - Australia East
 - Canada Central
 - Brazil South
 - Mexico Central
 - West Europe
+- North Europe
+- UK South
 - Sweden Central
 - Southeast Asia
+- Japan East
+- Central India
 
 The UI loads the selected region's bundled files and recalculates node estimates when the region changes. These are snapshot-derived estimates, not live quotes. `PRICING_DATA_AS_OF` is the snapshot fetch date; individual meters can have earlier effective dates.
 
-### Recommended audited expansion (not yet bundled)
-
-Add these five regions through the same paginated, staged, atomic refresh and
-semantic-audit process:
-
-- Central US — established East US 2 DR target in checked-in Scout scenarios
-- West US 2 — established DR target in the ARM template and Scout scenarios
-- UK South — measured UK user demand
-- North Europe — strongest paired-region complement to West Europe
-- Japan East — measured Japan usage and strongest next APAC coverage
-
-Expected growth is about 400 JSON files, 375 regional download tasks, and
-roughly 420 additional API pages per full refresh. Until that refresh is
-validated and committed, numeric estimates for these regions must identify any
-effective proxy rather than claim native snapshot coverage. Usage-based and
-catalog-range exclusions consume no regional meter and do not claim a proxy.
-Central India is the highest-priority candidate for the following expansion wave
-based on measured user geography.
-
 ## Snapshot Integrity
 
-The August 13 snapshot was fetched from Azure Retail Prices API preview `2023-01-01-preview` with pagination enabled and staged before atomic replacement.
+The August 15 snapshot was fetched from Azure Retail Prices API preview `2023-01-01-preview` with pagination enabled, throttle-aware retries, and staged atomic replacement.
 
 | Check | Measured result |
 |---|---:|
-| Regions | 8 |
+| Regions | 14 |
 | Files per region | 80 |
-| Total files | 640 |
-| API pages fetched | 672 |
-| Items returned across unique queries | 97,756 |
+| Total files | 1,120 |
+| API pages fetched | 1,177 |
+| Items returned across unique queries | 174,981 |
+| Snapshot inventory SHA-256 | `0c06fd94da961a095b3a9f6084dac978fbcca37ca3c58849ac288c245257030a` |
+| Raw Consumption meter records in regional files | 188,488 |
+| Raw records carrying a real one-year Savings Plan | 27,307 (14.5%) |
+| Empty regional inventory files retained | 460 |
 | Files with unresolved continuation links | 0 |
+| Wrong-region items in non-global files | 0 |
+| Disallowed default selections (Spot/Low Priority/secondary/failover/passive) | 0 |
 
 The manifest is stored at `src/data/pricing/snapshot-manifest.json`. Empty files are retained so every region has the same query inventory; an empty result is not presented as a price.
 
@@ -72,34 +65,36 @@ The UI identifies each PAYG estimate as one of:
 - `static-payg`: documented fallback estimate, potentially region-adjusted.
 - `custom`: user-provided monthly price.
 
-The August 13 semantic audit evaluated 1,472 service-label/region combinations:
+The August 15 semantic audit evaluated 2,576 service-label/region combinations:
 
 | PAYG source | Combinations |
 |---|---:|
-| Retail API meter | 732 |
-| Static fallback | 716 |
-| No supported estimate | 24 |
+| Retail API meter | 1,295 |
+| Static fallback | 1,243 |
+| No supported estimate | 38 |
 
-The 24 unsupported combinations are Batch and Bot Service in all eight regions, Content Safety in four regions, Custom Vision in three regions, and Face in Mexico Central. AADB does not fabricate a zero-dollar price for these cases.
+Unsupported combinations remain explicit; AADB does not fabricate a zero-dollar
+price when neither a selected Retail API meter nor a documented static fallback
+exists.
 
 ## One-Year Mode
 
-The `1yr estimate` mode is intentionally labeled as mixed provenance. It is not a claim that every service has a reserved or Savings Plan offer.
+The `1yr estimate` mode uses exact SKU-specific Savings Plan coverage only. It
+is not a claim that every service has a reserved or Savings Plan offer.
 
 Selection order:
 
 1. Use the selected SKU's embedded real 1-year Savings Plan rate when present.
-2. Otherwise apply the documented representative percentage only to configured reservation-eligible services.
-3. Leave usage-based services, services without an offer, and custom prices unchanged.
+2. Leave usage-based services, services without an offer, and custom prices unchanged at PAYG/custom values.
 
 | One-year source | Combinations |
 |---|---:|
-| Real SKU-specific Savings Plan meter | 32 |
-| Representative percentage estimate | 168 |
-| Usage-based estimate unchanged at PAYG | 616 |
-| No offer; unchanged at PAYG | 656 |
+| Real SKU-specific Savings Plan meter | 56 |
+| Usage-based estimate unchanged at PAYG | 1,068 |
+| No offer; unchanged at PAYG | 1,414 |
+| Unsupported because no PAYG value exists | 38 |
 
-The 32 real-meter combinations are duplicate display labels for two underlying defaults available across all eight regions: Virtual Machines/VM Scale Sets using D2s v3, and MySQL using Standard_B2ms2. Tooltips and exports expose provenance per node.
+The 56 real-meter combinations are duplicate display labels for two underlying defaults available across all 14 regions: Virtual Machines/VM Scale Sets using D2s v3, and MySQL using Standard_B2ms2. Tooltips and exports expose provenance per node.
 
 ## MCP Pricing
 
@@ -110,7 +105,7 @@ The MCP server uses a distilled sidecar generated from the same snapshot. It sto
 ```bash
 npm run pricing:refresh
 npm run pricing:audit
-npm run pricing:audit-semantics -- --json=/tmp/aadb-pricing-semantics.json
+npx tsx scripts/audit-pricing-semantics.ts --json=/tmp/aadb-pricing-semantics.json
 npm run test:pricing-mode
 npm run build
 npm run mcp:build
@@ -121,6 +116,6 @@ npm run mcp:build
 ## Limitations
 
 - Estimates exclude negotiated agreements, taxes, support, free grants, and architecture-specific utilization unless represented by a custom price.
-- Static and percentage fallbacks are estimates, not Azure quotes.
+- Static PAYG fallbacks are estimates, not Azure quotes.
 - A snapshot being complete does not mean every Azure service publishes every meter in every region.
 - Savings Plan availability is SKU-specific. The mixed one-year total must not be described as universally reserved pricing.

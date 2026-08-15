@@ -71,8 +71,7 @@ export interface PricingTier {
   /**
    * Real 1-year Savings Plan monthly cost for this SKU, derived from the
    * meter's embedded savingsPlan[] "1 Year" rate. Undefined when the meter
-   * carries no savings-plan rate (then the cost engine falls back to a
-   * representative discount percentage).
+  * carries no savings-plan rate; one-year mode then leaves the SKU at PAYG.
    */
   reserved1yrMonthly?: number;
 }
@@ -108,11 +107,11 @@ export interface NodePricingConfig {
   isUsageBased?: boolean;     // Whether pricing is usage-based (consumption)
   /**
    * Real 1-year Savings Plan monthly cost (per unit) for this SKU, when the
-   * meter carried a savings-plan rate. Used for the reserved-term estimate in
-   * preference to the representative discount table.
+  * meter carried a savings-plan rate. When absent, one-year mode leaves this
+  * SKU at PAYG rather than extrapolating another SKU's discount.
    */
   reserved1yrCost?: number;
-  /** True when reserved1yrCost came from a real savings-plan meter (not the % fallback). */
+  /** True when reserved1yrCost came from a real savings-plan meter. */
   reservedIsSavingsPlan?: boolean;
   usageEstimate?: {           // For usage-based services
     type: 'light' | 'medium' | 'heavy';
@@ -143,7 +142,7 @@ export interface CostBreakdown {
     quantity: number;
     tier: string;
     /** Exact source used for this line in the selected pricing mode. */
-    pricingSource?: 'retail-payg' | 'static-payg' | 'custom' | 'real-savings-plan' | 'estimated-discount' | 'payg-unchanged-usage' | 'payg-unchanged-no-offer' | 'custom-unchanged';
+    pricingSource?: 'retail-payg' | 'static-payg' | 'custom' | 'real-savings-plan' | 'payg-unchanged-usage' | 'payg-unchanged-no-offer' | 'custom-unchanged';
   }[];
   byGroup: {
     groupId: string;

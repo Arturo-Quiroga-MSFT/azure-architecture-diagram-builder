@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Compare pricing across three regions for key services
+# Compare pricing across all bundled regions for key services
 # Generates a comparison report showing price differences
 
-REGIONS=("eastus2" "swedencentral" "westeurope")
+REGIONS=("eastus2" "centralus" "westus2" "australiaeast" "canadacentral" "brazilsouth" "mexicocentral" "westeurope" "northeurope" "uksouth" "swedencentral" "southeastasia" "japaneast" "centralindia")
 SERVICES=("Azure App Service" "Virtual Machines" "Storage" "SQL Database" "Azure Cosmos DB")
 
 OUTPUT_FILE="pricing_comparison_$(date +%Y%m%d_%H%M%S).txt"

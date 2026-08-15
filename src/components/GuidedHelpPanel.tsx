@@ -76,7 +76,7 @@ const CREATE_FEATURES = [
 const ASSESS_FEATURES = [
   { icon: <ShieldCheck size={18} />, title: 'Well-Architected validation', body: 'Review Cost Optimization, Operational Excellence, Performance Efficiency, Reliability, and Security. Apply selected recommendations, review the resulting iteration, and revalidate after material changes.' },
   { icon: <GitCompare size={18} />, title: 'Compare Validation', body: 'Ask multiple models to review the same architecture, compare findings, and use consensus to separate recurring gaps from model-specific opinions.' },
-  { icon: <CircleDollarSign size={18} />, title: 'Cost and region', body: 'Inspect PAYG monthly estimates across eight regions. Tooltips and exports identify Retail API rates, static fallback estimates, usage assumptions, and custom prices.' },
+  { icon: <CircleDollarSign size={18} />, title: 'Cost and region', body: 'Inspect PAYG monthly estimates across 14 regions. Tooltips and exports identify Retail API rates, static fallback estimates, usage assumptions, and custom prices.' },
   { icon: <ClipboardCheck size={18} />, title: 'Validation timing', body: 'Review and refine the generated concept first, then use the Validate & Improve journey stage before sharing or building. Revalidate after material changes.' },
 ];
 

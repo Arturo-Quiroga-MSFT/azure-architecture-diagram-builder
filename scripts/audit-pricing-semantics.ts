@@ -6,10 +6,9 @@ import {
   USAGE_BASED_SERVICES,
   getDefaultTier,
   hasFallbackPricing,
-  getReserved1yrDiscount,
 } from '../src/data/azurePricing';
 
-const regions = ['eastus2', 'australiaeast', 'canadacentral', 'brazilsouth', 'mexicocentral', 'westeurope', 'swedencentral', 'southeastasia'];
+const regions = JSON.parse(readFileSync(new URL('./pricing-regions.json', import.meta.url), 'utf8')) as string[];
 const root = 'src/data/pricing/regions';
 
 const aiProductMap: Record<string, { file: string; productName: string }> = {
@@ -63,7 +62,8 @@ function parseTiers(items: RawItem[], serviceName: string, ai: boolean): Tier[] 
   for (const item of consumption) {
     const name = item.skuName || item.armSkuName;
     if (!name) continue;
-    if (/spot|low priority/i.test(`${name} ${item.meterName || ''}`)) continue;
+    const meterIdentity = `${name} ${item.armSkuName || ''} ${item.meterName || ''} ${item.productName || ''}`;
+    if (/spot|low priority|secondary|failover|passive/i.test(meterIdentity)) continue;
     const unit = item.unitOfMeasure || '1 Hour';
     const rate = item.retailPrice || item.unitPrice || 0;
     const payg = monthly(rate, unit);
@@ -98,9 +98,10 @@ for (const region of regions) {
     const fallbackAvailable = hasFallbackPricing(serviceType);
     const paygSource = selected ? 'retail-api' : fallbackAvailable ? 'static-fallback' : 'none';
     let oneYearSource = 'payg-unchanged';
-    if (!usageBased) {
+    if (paygSource === 'none') {
+      oneYearSource = 'unsupported-no-payg';
+    } else if (!usageBased) {
       if (selected?.oneYear && selected.oneYear > 0) oneYearSource = 'real-savings-plan';
-      else if (getReserved1yrDiscount(serviceType) > 0) oneYearSource = 'percentage-fallback';
       else oneYearSource = 'payg-unchanged-no-offer';
     } else {
       oneYearSource = 'payg-unchanged-usage';
@@ -116,7 +117,7 @@ const byRegion = Object.fromEntries(regions.map((region) => {
   return [region, { payg: counts('paygSource'), oneYear: counts('oneYearSource') }];
 }));
 
-const suspiciousSelections = rows.filter((row) => /spot|low priority/i.test(String(row.selectedTier || '') + ' ' + String(row.selectedMeter || '')));
+const suspiciousSelections = rows.filter((row) => /spot|low priority|secondary|failover|passive/i.test(String(row.selectedTier || '') + ' ' + String(row.selectedMeter || '')));
 const report = {
   generatedAt: new Date().toISOString(),
   regionCount: regions.length,
@@ -125,9 +126,16 @@ const report = {
   paygSources: summarize('paygSource'),
   oneYearSources: summarize('oneYearSource'),
   byRegion,
-  suspiciousSpotOrLowPrioritySelections: suspiciousSelections,
+  suspiciousDisallowedSelections: suspiciousSelections,
   rows,
 };
+
+const outputArg = process.argv.find((arg) => arg.startsWith('--json='));
+if (outputArg) {
+  const output = outputArg.slice('--json='.length);
+  const { writeFileSync } = await import('node:fs');
+  writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
+}
 
 const jsonArg = process.argv.find((arg) => arg.startsWith('--json='));
 if (jsonArg) {
@@ -138,5 +146,5 @@ if (jsonArg) {
 console.log(`Pricing semantics: ${rows.length} service-type/region combinations (${serviceTypes.length} service labels x ${regions.length} regions)`);
 console.log('PAYG source:', report.paygSources);
 console.log('1-year mode source:', report.oneYearSources);
-console.log(`Suspicious default selections (Spot/Low Priority): ${suspiciousSelections.length}`);
+console.log(`Suspicious default selections (Spot/Low Priority/secondary/failover/passive): ${suspiciousSelections.length}`);
 for (const region of regions) console.log(region, JSON.stringify(byRegion[region]));

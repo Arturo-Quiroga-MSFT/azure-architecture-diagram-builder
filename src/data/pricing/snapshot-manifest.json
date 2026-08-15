@@ -1,26 +1,33 @@
 {
   "schemaVersion": 1,
-  "startedAt": "2026-08-13T22:04:35.527Z",
-  "completedAt": "2026-08-13T22:07:24.262Z",
-  "snapshotDate": "2026-08-13",
+  "startedAt": "2026-08-15T00:37:04.839Z",
+  "completedAt": "2026-08-15T03:37:48.495Z",
+  "snapshotDate": "2026-08-15",
   "source": "Azure Retail Prices API",
   "apiVersion": "2023-01-01-preview",
   "currency": "USD",
   "regions": [
     "eastus2",
+    "centralus",
+    "westus2",
     "australiaeast",
     "canadacentral",
     "brazilsouth",
     "mexicocentral",
     "westeurope",
+    "northeurope",
+    "uksouth",
     "swedencentral",
-    "southeastasia"
+    "southeastasia",
+    "japaneast",
+    "centralindia"
   ],
   "filesPerRegion": 80,
   "uniqueServiceQueries": 80,
-  "downloadTasks": 605,
-  "totalPages": 672,
-  "totalItemsAcrossQueries": 97756,
+  "downloadTasks": 1055,
+  "totalPages": 1177,
+  "totalItemsAcrossQueries": 174981,
+  "snapshotInventorySha256": "0c06fd94da961a095b3a9f6084dac978fbcca37ca3c58849ac288c245257030a",
   "emptyDownloads": [
     {
       "serviceName": "Azure AI Document Intelligence",
@@ -28,6 +35,18 @@
     },
     {
       "serviceName": "Azure AI Document Intelligence",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
       "scope": "canadacentral"
     },
     {
@@ -44,27 +63,39 @@
     },
     {
       "serviceName": "Azure AI Document Intelligence",
-      "scope": "swedencentral"
+      "scope": "northeurope"
     },
     {
-      "serviceName": "Azure AI Language",
-      "scope": "eastus2"
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "swedencentral"
     },
     {
       "serviceName": "Azure AI Document Intelligence",
       "scope": "southeastasia"
     },
     {
-      "serviceName": "Azure AI Language",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Azure AI Language",
-      "scope": "brazilsouth"
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "japaneast"
     },
     {
       "serviceName": "Azure AI Document Intelligence",
-      "scope": "australiaeast"
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "westus2"
     },
     {
       "serviceName": "Azure AI Language",
@@ -72,58 +103,10 @@
     },
     {
       "serviceName": "Azure AI Language",
-      "scope": "westeurope"
-    },
-    {
-      "serviceName": "Azure AI Language",
-      "scope": "southeastasia"
-    },
-    {
-      "serviceName": "Azure AI Speech",
-      "scope": "eastus2"
-    },
-    {
-      "serviceName": "Azure AI Language",
-      "scope": "swedencentral"
-    },
-    {
-      "serviceName": "Azure AI Speech",
-      "scope": "australiaeast"
-    },
-    {
-      "serviceName": "Azure AI Speech",
       "scope": "canadacentral"
     },
     {
-      "serviceName": "Azure AI Speech",
-      "scope": "brazilsouth"
-    },
-    {
-      "serviceName": "Azure AI Speech",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Azure AI Speech",
-      "scope": "westeurope"
-    },
-    {
-      "serviceName": "Azure AI Speech",
-      "scope": "swedencentral"
-    },
-    {
-      "serviceName": "Azure AI Translator",
-      "scope": "eastus2"
-    },
-    {
-      "serviceName": "Azure AI Translator",
-      "scope": "australiaeast"
-    },
-    {
-      "serviceName": "Azure AI Translator",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Azure AI Translator",
+      "serviceName": "Azure AI Language",
       "scope": "brazilsouth"
     },
     {
@@ -131,51 +114,75 @@
       "scope": "mexicocentral"
     },
     {
-      "serviceName": "Azure AI Translator",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Azure AI Translator",
+      "serviceName": "Azure AI Language",
       "scope": "westeurope"
     },
     {
-      "serviceName": "Azure AI Translator",
-      "scope": "southeastasia"
+      "serviceName": "Azure AI Language",
+      "scope": "northeurope"
     },
     {
-      "serviceName": "Azure AI Translator",
+      "serviceName": "Azure AI Language",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure AI Language",
       "scope": "swedencentral"
     },
     {
-      "serviceName": "Azure AI Vision",
-      "scope": "australiaeast"
-    },
-    {
-      "serviceName": "Azure AI Vision",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Azure AI Vision",
-      "scope": "eastus2"
-    },
-    {
-      "serviceName": "Azure AI Vision",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Azure AI Vision",
-      "scope": "brazilsouth"
-    },
-    {
-      "serviceName": "Azure AI Vision",
-      "scope": "westeurope"
-    },
-    {
-      "serviceName": "Azure AI Vision",
+      "serviceName": "Azure AI Language",
       "scope": "southeastasia"
     },
     {
-      "serviceName": "Azure AI Vision",
+      "serviceName": "Azure AI Language",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure AI Speech",
       "scope": "swedencentral"
     },
     {
@@ -183,8 +190,136 @@
       "scope": "southeastasia"
     },
     {
+      "serviceName": "Azure AI Speech",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "centralindia"
+    },
+    {
       "serviceName": "Azure Automation",
       "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "westus2"
     },
     {
       "serviceName": "Azure Automation",
@@ -196,6 +331,10 @@
     },
     {
       "serviceName": "Azure Automation",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Automation",
       "scope": "mexicocentral"
     },
     {
@@ -204,11 +343,27 @@
     },
     {
       "serviceName": "Azure Automation",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Automation",
       "scope": "swedencentral"
     },
     {
       "serviceName": "Azure Automation",
       "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure Backup",
@@ -216,7 +371,19 @@
     },
     {
       "serviceName": "Azure Backup",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Backup",
       "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "canadacentral"
     },
     {
       "serviceName": "Azure Backup",
@@ -232,6 +399,14 @@
     },
     {
       "serviceName": "Azure Backup",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Backup",
       "scope": "swedencentral"
     },
     {
@@ -239,80 +414,140 @@
       "scope": "southeastasia"
     },
     {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "eastus2"
-    },
-    {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "australiaeast"
-    },
-    {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "brazilsouth"
-    },
-    {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "westeurope"
-    },
-    {
-      "serviceName": "Azure Automation",
-      "scope": "brazilsouth"
-    },
-    {
-      "serviceName": "Azure Cache for Redis",
-      "scope": "southeastasia"
-    },
-    {
-      "serviceName": "Azure CDN",
-      "scope": "eastus2"
-    },
-    {
-      "serviceName": "Azure CDN",
-      "scope": "australiaeast"
-    },
-    {
-      "serviceName": "Azure CDN",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Azure CDN",
-      "scope": "brazilsouth"
-    },
-    {
-      "serviceName": "Azure CDN",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Azure CDN",
-      "scope": "westeurope"
+      "serviceName": "Azure Backup",
+      "scope": "japaneast"
     },
     {
       "serviceName": "Azure Backup",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
       "scope": "canadacentral"
     },
     {
-      "serviceName": "Azure CDN",
-      "scope": "southeastasia"
+      "serviceName": "Azure Cache for Redis",
+      "scope": "brazilsouth"
     },
     {
-      "serviceName": "Azure CDN",
-      "scope": "swedencentral"
+      "serviceName": "Azure Cache for Redis",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Azure Cache for Redis",
       "scope": "swedencentral"
     },
     {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "centralindia"
+    },
+    {
       "serviceName": "Azure Data Lake Storage",
       "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "australiaeast"
     },
     {
       "serviceName": "Azure Data Lake Storage",
@@ -332,15 +567,27 @@
     },
     {
       "serviceName": "Azure Data Lake Storage",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
       "scope": "swedencentral"
     },
     {
       "serviceName": "Azure Data Lake Storage",
-      "scope": "australiaeast"
+      "scope": "southeastasia"
     },
     {
       "serviceName": "Azure Data Lake Storage",
-      "scope": "southeastasia"
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure Event Grid",
@@ -348,7 +595,19 @@
     },
     {
       "serviceName": "Azure Event Grid",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Event Grid",
       "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "canadacentral"
     },
     {
       "serviceName": "Azure Event Grid",
@@ -356,14 +615,22 @@
     },
     {
       "serviceName": "Azure Event Grid",
-      "scope": "westeurope"
-    },
-    {
-      "serviceName": "Azure Event Grid",
       "scope": "mexicocentral"
     },
     {
       "serviceName": "Azure Event Grid",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Event Grid",
       "scope": "swedencentral"
     },
     {
@@ -371,32 +638,24 @@
       "scope": "southeastasia"
     },
     {
-      "serviceName": "Azure Event Hubs",
-      "scope": "eastus2"
-    },
-    {
-      "serviceName": "Azure Event Hubs",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Azure Event Hubs",
-      "scope": "brazilsouth"
-    },
-    {
-      "serviceName": "Azure Event Hubs",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Azure Event Hubs",
-      "scope": "westeurope"
-    },
-    {
-      "serviceName": "Azure Event Hubs",
-      "scope": "swedencentral"
+      "serviceName": "Azure Event Grid",
+      "scope": "japaneast"
     },
     {
       "serviceName": "Azure Event Grid",
-      "scope": "canadacentral"
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "westus2"
     },
     {
       "serviceName": "Azure Event Hubs",
@@ -404,11 +663,59 @@
     },
     {
       "serviceName": "Azure Event Hubs",
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
       "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure IoT Central",
       "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "australiaeast"
     },
     {
       "serviceName": "Azure IoT Central",
@@ -424,25 +731,45 @@
     },
     {
       "serviceName": "Azure IoT Central",
-      "scope": "australiaeast"
-    },
-    {
-      "serviceName": "Azure IoT Central",
       "scope": "westeurope"
     },
     {
       "serviceName": "Azure IoT Central",
-      "scope": "southeastasia"
+      "scope": "northeurope"
     },
     {
-      "serviceName": "Azure IoT Hub",
-      "scope": "eastus2"
+      "serviceName": "Azure IoT Central",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Azure IoT Central",
       "scope": "swedencentral"
     },
     {
+      "serviceName": "Azure IoT Central",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "westus2"
+    },
+    {
       "serviceName": "Azure IoT Hub",
       "scope": "australiaeast"
     },
@@ -461,6 +788,30 @@
     {
       "serviceName": "Azure IoT Hub",
       "scope": "westeurope"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure Key Vault",
@@ -468,6 +819,14 @@
     },
     {
       "serviceName": "Azure Key Vault",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Key Vault",
       "scope": "australiaeast"
     },
     {
@@ -483,24 +842,32 @@
       "scope": "mexicocentral"
     },
     {
-      "serviceName": "Azure IoT Hub",
-      "scope": "southeastasia"
-    },
-    {
       "serviceName": "Azure Key Vault",
       "scope": "westeurope"
     },
     {
       "serviceName": "Azure Key Vault",
-      "scope": "southeastasia"
+      "scope": "northeurope"
     },
     {
-      "serviceName": "Azure IoT Hub",
-      "scope": "swedencentral"
+      "serviceName": "Azure Key Vault",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Azure Key Vault",
       "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure Load Balancer",
@@ -508,6 +875,14 @@
     },
     {
       "serviceName": "Azure Load Balancer",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
       "scope": "australiaeast"
     },
     {
@@ -528,11 +903,27 @@
     },
     {
       "serviceName": "Azure Load Balancer",
-      "scope": "southeastasia"
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Azure Load Balancer",
       "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure OpenAI Service",
@@ -540,11 +931,23 @@
     },
     {
       "serviceName": "Azure OpenAI Service",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
       "scope": "australiaeast"
     },
     {
       "serviceName": "Azure OpenAI Service",
       "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "brazilsouth"
     },
     {
       "serviceName": "Azure OpenAI Service",
@@ -556,6 +959,14 @@
     },
     {
       "serviceName": "Azure OpenAI Service",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
       "scope": "swedencentral"
     },
     {
@@ -564,7 +975,11 @@
     },
     {
       "serviceName": "Azure OpenAI Service",
-      "scope": "brazilsouth"
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure Sentinel",
@@ -572,11 +987,23 @@
     },
     {
       "serviceName": "Azure Sentinel",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Sentinel",
       "scope": "australiaeast"
     },
     {
       "serviceName": "Azure Sentinel",
       "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "brazilsouth"
     },
     {
       "serviceName": "Azure Sentinel",
@@ -588,6 +1015,14 @@
     },
     {
       "serviceName": "Azure Sentinel",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Sentinel",
       "scope": "swedencentral"
     },
     {
@@ -595,8 +1030,12 @@
       "scope": "southeastasia"
     },
     {
-      "serviceName": "Azure Service Bus",
-      "scope": "australiaeast"
+      "serviceName": "Azure Sentinel",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure Service Bus",
@@ -604,15 +1043,27 @@
     },
     {
       "serviceName": "Azure Service Bus",
-      "scope": "canadacentral"
+      "scope": "centralus"
     },
     {
-      "serviceName": "Azure Sentinel",
-      "scope": "brazilsouth"
+      "serviceName": "Azure Service Bus",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "canadacentral"
     },
     {
       "serviceName": "Azure Service Bus",
       "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "mexicocentral"
     },
     {
       "serviceName": "Azure Service Bus",
@@ -620,19 +1071,47 @@
     },
     {
       "serviceName": "Azure Service Bus",
-      "scope": "mexicocentral"
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Azure SignalR Service",
       "scope": "eastus2"
     },
     {
-      "serviceName": "Azure Service Bus",
-      "scope": "southeastasia"
+      "serviceName": "Azure SignalR Service",
+      "scope": "centralus"
     },
     {
-      "serviceName": "Azure Service Bus",
-      "scope": "swedencentral"
+      "serviceName": "Azure SignalR Service",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "canadacentral"
     },
     {
       "serviceName": "Azure SignalR Service",
@@ -644,11 +1123,15 @@
     },
     {
       "serviceName": "Azure SignalR Service",
-      "scope": "canadacentral"
+      "scope": "westeurope"
     },
     {
       "serviceName": "Azure SignalR Service",
-      "scope": "westeurope"
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Azure SignalR Service",
@@ -660,7 +1143,23 @@
     },
     {
       "serviceName": "Azure SignalR Service",
-      "scope": "australiaeast"
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "westus2"
     },
     {
       "serviceName": "Azure Traffic Manager",
@@ -672,6 +1171,10 @@
     },
     {
       "serviceName": "Azure Traffic Manager",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
       "scope": "mexicocentral"
     },
     {
@@ -680,7 +1183,11 @@
     },
     {
       "serviceName": "Azure Traffic Manager",
-      "scope": "eastus2"
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Azure Traffic Manager",
@@ -692,7 +1199,11 @@
     },
     {
       "serviceName": "Azure Traffic Manager",
-      "scope": "brazilsouth"
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "centralindia"
     },
     {
       "serviceName": "CDN",
@@ -700,6 +1211,22 @@
     },
     {
       "serviceName": "Cognitive Services",
+      "scope": "eastus2"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Cognitive Services",
       "scope": "canadacentral"
     },
     {
@@ -712,7 +1239,15 @@
     },
     {
       "serviceName": "Cognitive Services",
-      "scope": "australiaeast"
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Cognitive Services",
@@ -723,16 +1258,32 @@
       "scope": "southeastasia"
     },
     {
+      "serviceName": "Cognitive Services",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "centralindia"
+    },
+    {
       "serviceName": "Computer Vision",
       "scope": "eastus2"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "westus2"
     },
     {
       "serviceName": "Computer Vision",
       "scope": "australiaeast"
     },
     {
-      "serviceName": "Cognitive Services",
-      "scope": "westeurope"
+      "serviceName": "Computer Vision",
+      "scope": "canadacentral"
     },
     {
       "serviceName": "Computer Vision",
@@ -745,6 +1296,14 @@
     {
       "serviceName": "Computer Vision",
       "scope": "westeurope"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Computer Vision",
@@ -755,12 +1314,16 @@
       "scope": "southeastasia"
     },
     {
-      "serviceName": "Cognitive Services",
-      "scope": "eastus2"
+      "serviceName": "Computer Vision",
+      "scope": "japaneast"
     },
     {
       "serviceName": "Computer Vision",
-      "scope": "canadacentral"
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "centralus"
     },
     {
       "serviceName": "Digital Twins",
@@ -777,6 +1340,10 @@
     {
       "serviceName": "Digital Twins",
       "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Form Recognizer",
@@ -784,19 +1351,11 @@
     },
     {
       "serviceName": "Form Recognizer",
-      "scope": "brazilsouth"
+      "scope": "centralus"
     },
     {
       "serviceName": "Form Recognizer",
-      "scope": "canadacentral"
-    },
-    {
-      "serviceName": "Form Recognizer",
-      "scope": "mexicocentral"
-    },
-    {
-      "serviceName": "Form Recognizer",
-      "scope": "swedencentral"
+      "scope": "westus2"
     },
     {
       "serviceName": "Form Recognizer",
@@ -804,11 +1363,47 @@
     },
     {
       "serviceName": "Form Recognizer",
-      "scope": "southeastasia"
+      "scope": "canadacentral"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "mexicocentral"
     },
     {
       "serviceName": "Form Recognizer",
       "scope": "westeurope"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "centralindia"
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "westus2"
     },
     {
       "serviceName": "IoT Central",
@@ -823,12 +1418,24 @@
       "scope": "mexicocentral"
     },
     {
-      "serviceName": "Load Balancer",
-      "scope": "australiaeast"
+      "serviceName": "IoT Central",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Load Balancer",
       "scope": "eastus2"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "australiaeast"
     },
     {
       "serviceName": "Load Balancer",
@@ -844,15 +1451,31 @@
     },
     {
       "serviceName": "Load Balancer",
-      "scope": "swedencentral"
-    },
-    {
-      "serviceName": "Load Balancer",
       "scope": "westeurope"
     },
     {
       "serviceName": "Load Balancer",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "swedencentral"
+    },
+    {
+      "serviceName": "Load Balancer",
       "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Microsoft Purview",
@@ -864,6 +1487,14 @@
     },
     {
       "serviceName": "Site Recovery",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Site Recovery",
       "scope": "australiaeast"
     },
     {
@@ -872,7 +1503,23 @@
     },
     {
       "serviceName": "Site Recovery",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Site Recovery",
       "scope": "mexicocentral"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "westeurope"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Site Recovery",
@@ -880,7 +1527,15 @@
     },
     {
       "serviceName": "Site Recovery",
-      "scope": "brazilsouth"
+      "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Speech Services",
@@ -888,6 +1543,14 @@
     },
     {
       "serviceName": "Speech Services",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Speech Services",
       "scope": "australiaeast"
     },
     {
@@ -908,27 +1571,43 @@
     },
     {
       "serviceName": "Speech Services",
-      "scope": "swedencentral"
+      "scope": "northeurope"
     },
     {
-      "serviceName": "Site Recovery",
-      "scope": "westeurope"
+      "serviceName": "Speech Services",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "swedencentral"
     },
     {
       "serviceName": "Speech Services",
       "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Static Web Apps",
       "scope": "global"
     },
     {
-      "serviceName": "Site Recovery",
-      "scope": "southeastasia"
+      "serviceName": "Text Analytics",
+      "scope": "eastus2"
     },
     {
       "serviceName": "Text Analytics",
-      "scope": "eastus2"
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "westus2"
     },
     {
       "serviceName": "Text Analytics",
@@ -940,11 +1619,23 @@
     },
     {
       "serviceName": "Text Analytics",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Text Analytics",
       "scope": "mexicocentral"
     },
     {
       "serviceName": "Text Analytics",
       "scope": "westeurope"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "uksouth"
     },
     {
       "serviceName": "Text Analytics",
@@ -955,12 +1646,24 @@
       "scope": "southeastasia"
     },
     {
+      "serviceName": "Text Analytics",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "centralindia"
+    },
+    {
       "serviceName": "Traffic Manager",
       "scope": "eastus2"
     },
     {
-      "serviceName": "Text Analytics",
-      "scope": "brazilsouth"
+      "serviceName": "Traffic Manager",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "westus2"
     },
     {
       "serviceName": "Traffic Manager",
@@ -972,6 +1675,10 @@
     },
     {
       "serviceName": "Traffic Manager",
+      "scope": "brazilsouth"
+    },
+    {
+      "serviceName": "Traffic Manager",
       "scope": "mexicocentral"
     },
     {
@@ -980,11 +1687,27 @@
     },
     {
       "serviceName": "Traffic Manager",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Traffic Manager",
       "scope": "swedencentral"
     },
     {
       "serviceName": "Traffic Manager",
       "scope": "southeastasia"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "japaneast"
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "centralindia"
     },
     {
       "serviceName": "Translator",
@@ -992,10 +1715,22 @@
     },
     {
       "serviceName": "Translator",
+      "scope": "centralus"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "westus2"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "australiaeast"
+    },
+    {
+      "serviceName": "Translator",
       "scope": "canadacentral"
     },
     {
-      "serviceName": "Traffic Manager",
+      "serviceName": "Translator",
       "scope": "brazilsouth"
     },
     {
@@ -1008,6 +1743,14 @@
     },
     {
       "serviceName": "Translator",
+      "scope": "northeurope"
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "uksouth"
+    },
+    {
+      "serviceName": "Translator",
       "scope": "swedencentral"
     },
     {
@@ -1016,11 +1759,11 @@
     },
     {
       "serviceName": "Translator",
-      "scope": "australiaeast"
+      "scope": "japaneast"
     },
     {
       "serviceName": "Translator",
-      "scope": "brazilsouth"
+      "scope": "centralindia"
     }
   ],
   "downloads": [
@@ -1053,6 +1796,24 @@
     },
     {
       "serviceName": "API Management",
+      "scope": "centralindia",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "centralus",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
       "scope": "eastus2",
       "stems": [
         "api_management"
@@ -1062,12 +1823,30 @@
     },
     {
       "serviceName": "API Management",
+      "scope": "japaneast",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
       "scope": "mexicocentral",
       "stems": [
         "api_management"
       ],
       "pages": 1,
       "items": 14
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "northeurope",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
     },
     {
       "serviceName": "API Management",
@@ -1089,12 +1868,30 @@
     },
     {
       "serviceName": "API Management",
+      "scope": "uksouth",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 29
+    },
+    {
+      "serviceName": "API Management",
       "scope": "westeurope",
       "stems": [
         "api_management"
       ],
       "pages": 1,
       "items": 29
+    },
+    {
+      "serviceName": "API Management",
+      "scope": "westus2",
+      "stems": [
+        "api_management"
+      ],
+      "pages": 1,
+      "items": 30
     },
     {
       "serviceName": "Application Gateway",
@@ -1125,12 +1922,39 @@
     },
     {
       "serviceName": "Application Gateway",
+      "scope": "centralindia",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "centralus",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
       "scope": "eastus2",
       "stems": [
         "application_gateway"
       ],
       "pages": 1,
       "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
+      "scope": "japaneast",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 23
     },
     {
       "serviceName": "Application Gateway",
@@ -1143,6 +1967,15 @@
     },
     {
       "serviceName": "Application Gateway",
+      "scope": "northeurope",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
       "scope": "southeastasia",
       "stems": [
         "application_gateway"
@@ -1161,6 +1994,15 @@
     },
     {
       "serviceName": "Application Gateway",
+      "scope": "uksouth",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Application Gateway",
       "scope": "westeurope",
       "stems": [
         "application_gateway"
@@ -1169,6 +2011,15 @@
       "items": 27
     },
     {
+      "serviceName": "Application Gateway",
+      "scope": "westus2",
+      "stems": [
+        "application_gateway"
+      ],
+      "pages": 1,
+      "items": 23
+    },
+    {
       "serviceName": "Application Insights",
       "scope": "australiaeast",
       "stems": [
@@ -1197,12 +2048,39 @@
     },
     {
       "serviceName": "Application Insights",
+      "scope": "centralindia",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "centralus",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Application Insights",
       "scope": "eastus2",
       "stems": [
         "application_insights"
       ],
       "pages": 1,
       "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "japaneast",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
     },
     {
       "serviceName": "Application Insights",
@@ -1215,6 +2093,15 @@
     },
     {
       "serviceName": "Application Insights",
+      "scope": "northeurope",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
       "scope": "southeastasia",
       "stems": [
         "application_insights"
@@ -1233,7 +2120,25 @@
     },
     {
       "serviceName": "Application Insights",
+      "scope": "uksouth",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 4
+    },
+    {
+      "serviceName": "Application Insights",
       "scope": "westeurope",
+      "stems": [
+        "application_insights"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Application Insights",
+      "scope": "westus2",
       "stems": [
         "application_insights"
       ],
@@ -1269,6 +2174,24 @@
     },
     {
       "serviceName": "Azure AI Document Intelligence",
+      "scope": "centralindia",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "centralus",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
       "scope": "eastus2",
       "stems": [
         "azure_ai_document_intelligence"
@@ -1278,7 +2201,25 @@
     },
     {
       "serviceName": "Azure AI Document Intelligence",
+      "scope": "japaneast",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "northeurope",
       "stems": [
         "azure_ai_document_intelligence"
       ],
@@ -1305,7 +2246,25 @@
     },
     {
       "serviceName": "Azure AI Document Intelligence",
+      "scope": "uksouth",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
       "scope": "westeurope",
+      "stems": [
+        "azure_ai_document_intelligence"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Document Intelligence",
+      "scope": "westus2",
       "stems": [
         "azure_ai_document_intelligence"
       ],
@@ -1341,6 +2300,24 @@
     },
     {
       "serviceName": "Azure AI Language",
+      "scope": "centralindia",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "centralus",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
       "scope": "eastus2",
       "stems": [
         "azure_ai_language"
@@ -1350,7 +2327,25 @@
     },
     {
       "serviceName": "Azure AI Language",
+      "scope": "japaneast",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "northeurope",
       "stems": [
         "azure_ai_language"
       ],
@@ -1377,7 +2372,25 @@
     },
     {
       "serviceName": "Azure AI Language",
+      "scope": "uksouth",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
       "scope": "westeurope",
+      "stems": [
+        "azure_ai_language"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Language",
+      "scope": "westus2",
       "stems": [
         "azure_ai_language"
       ],
@@ -1413,6 +2426,24 @@
     },
     {
       "serviceName": "Azure AI Speech",
+      "scope": "centralindia",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "centralus",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
       "scope": "eastus2",
       "stems": [
         "azure_ai_speech"
@@ -1422,7 +2453,25 @@
     },
     {
       "serviceName": "Azure AI Speech",
+      "scope": "japaneast",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "northeurope",
       "stems": [
         "azure_ai_speech"
       ],
@@ -1449,7 +2498,25 @@
     },
     {
       "serviceName": "Azure AI Speech",
+      "scope": "uksouth",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
       "scope": "westeurope",
+      "stems": [
+        "azure_ai_speech"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Speech",
+      "scope": "westus2",
       "stems": [
         "azure_ai_speech"
       ],
@@ -1485,6 +2552,24 @@
     },
     {
       "serviceName": "Azure AI Translator",
+      "scope": "centralindia",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "centralus",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
       "scope": "eastus2",
       "stems": [
         "azure_ai_translator"
@@ -1494,7 +2579,25 @@
     },
     {
       "serviceName": "Azure AI Translator",
+      "scope": "japaneast",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "northeurope",
       "stems": [
         "azure_ai_translator"
       ],
@@ -1521,7 +2624,25 @@
     },
     {
       "serviceName": "Azure AI Translator",
+      "scope": "uksouth",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
       "scope": "westeurope",
+      "stems": [
+        "azure_ai_translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Translator",
+      "scope": "westus2",
       "stems": [
         "azure_ai_translator"
       ],
@@ -1557,6 +2678,24 @@
     },
     {
       "serviceName": "Azure AI Vision",
+      "scope": "centralindia",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "centralus",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
       "scope": "eastus2",
       "stems": [
         "azure_ai_vision"
@@ -1566,7 +2705,25 @@
     },
     {
       "serviceName": "Azure AI Vision",
+      "scope": "japaneast",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "northeurope",
       "stems": [
         "azure_ai_vision"
       ],
@@ -1593,7 +2750,25 @@
     },
     {
       "serviceName": "Azure AI Vision",
+      "scope": "uksouth",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
       "scope": "westeurope",
+      "stems": [
+        "azure_ai_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure AI Vision",
+      "scope": "westus2",
       "stems": [
         "azure_ai_vision"
       ],
@@ -1629,6 +2804,24 @@
     },
     {
       "serviceName": "Azure API for FHIR",
+      "scope": "centralindia",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "centralus",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 2
+    },
+    {
+      "serviceName": "Azure API for FHIR",
       "scope": "eastus2",
       "stems": [
         "azure_api_for_fhir"
@@ -1638,12 +2831,30 @@
     },
     {
       "serviceName": "Azure API for FHIR",
+      "scope": "japaneast",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 25
+    },
+    {
+      "serviceName": "Azure API for FHIR",
       "scope": "mexicocentral",
       "stems": [
         "azure_api_for_fhir"
       ],
       "pages": 1,
       "items": 1
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "northeurope",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 28
     },
     {
       "serviceName": "Azure API for FHIR",
@@ -1665,7 +2876,25 @@
     },
     {
       "serviceName": "Azure API for FHIR",
+      "scope": "uksouth",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure API for FHIR",
       "scope": "westeurope",
+      "stems": [
+        "azure_api_for_fhir"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure API for FHIR",
+      "scope": "westus2",
       "stems": [
         "azure_api_for_fhir"
       ],
@@ -1701,7 +2930,34 @@
     },
     {
       "serviceName": "Azure App Service",
+      "scope": "centralindia",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 129
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "centralus",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 135
+    },
+    {
+      "serviceName": "Azure App Service",
       "scope": "eastus2",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 134
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "japaneast",
       "stems": [
         "azure_app_service"
       ],
@@ -1716,6 +2972,15 @@
       ],
       "pages": 1,
       "items": 133
+    },
+    {
+      "serviceName": "Azure App Service",
+      "scope": "northeurope",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 130
     },
     {
       "serviceName": "Azure App Service",
@@ -1737,6 +3002,15 @@
     },
     {
       "serviceName": "Azure App Service",
+      "scope": "uksouth",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 129
+    },
+    {
+      "serviceName": "Azure App Service",
       "scope": "westeurope",
       "stems": [
         "azure_app_service"
@@ -1745,6 +3019,15 @@
       "items": 134
     },
     {
+      "serviceName": "Azure App Service",
+      "scope": "westus2",
+      "stems": [
+        "azure_app_service"
+      ],
+      "pages": 1,
+      "items": 133
+    },
+    {
       "serviceName": "Azure Automation",
       "scope": "australiaeast",
       "stems": [
@@ -1773,6 +3056,24 @@
     },
     {
       "serviceName": "Azure Automation",
+      "scope": "centralindia",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "centralus",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
       "scope": "eastus2",
       "stems": [
         "azure_automation"
@@ -1782,7 +3083,25 @@
     },
     {
       "serviceName": "Azure Automation",
+      "scope": "japaneast",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "northeurope",
       "stems": [
         "azure_automation"
       ],
@@ -1809,7 +3128,25 @@
     },
     {
       "serviceName": "Azure Automation",
+      "scope": "uksouth",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
       "scope": "westeurope",
+      "stems": [
+        "azure_automation"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Automation",
+      "scope": "westus2",
       "stems": [
         "azure_automation"
       ],
@@ -1845,6 +3182,24 @@
     },
     {
       "serviceName": "Azure Backup",
+      "scope": "centralindia",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "centralus",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
       "scope": "eastus2",
       "stems": [
         "azure_backup"
@@ -1854,7 +3209,25 @@
     },
     {
       "serviceName": "Azure Backup",
+      "scope": "japaneast",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "northeurope",
       "stems": [
         "azure_backup"
       ],
@@ -1881,7 +3254,25 @@
     },
     {
       "serviceName": "Azure Backup",
+      "scope": "uksouth",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
       "scope": "westeurope",
+      "stems": [
+        "azure_backup"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Backup",
+      "scope": "westus2",
       "stems": [
         "azure_backup"
       ],
@@ -1917,6 +3308,24 @@
     },
     {
       "serviceName": "Azure Cache for Redis",
+      "scope": "centralindia",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "centralus",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
       "scope": "eastus2",
       "stems": [
         "azure_cache_for_redis"
@@ -1926,7 +3335,25 @@
     },
     {
       "serviceName": "Azure Cache for Redis",
+      "scope": "japaneast",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "northeurope",
       "stems": [
         "azure_cache_for_redis"
       ],
@@ -1953,7 +3380,25 @@
     },
     {
       "serviceName": "Azure Cache for Redis",
+      "scope": "uksouth",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
       "scope": "westeurope",
+      "stems": [
+        "azure_cache_for_redis"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Cache for Redis",
+      "scope": "westus2",
       "stems": [
         "azure_cache_for_redis"
       ],
@@ -1989,6 +3434,24 @@
     },
     {
       "serviceName": "Azure CDN",
+      "scope": "centralindia",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "centralus",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
       "scope": "eastus2",
       "stems": [
         "azure_cdn"
@@ -1998,7 +3461,25 @@
     },
     {
       "serviceName": "Azure CDN",
+      "scope": "japaneast",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "northeurope",
       "stems": [
         "azure_cdn"
       ],
@@ -2025,7 +3506,25 @@
     },
     {
       "serviceName": "Azure CDN",
+      "scope": "uksouth",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
       "scope": "westeurope",
+      "stems": [
+        "azure_cdn"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure CDN",
+      "scope": "westus2",
       "stems": [
         "azure_cdn"
       ],
@@ -2061,6 +3560,24 @@
     },
     {
       "serviceName": "Azure Cognitive Search",
+      "scope": "centralindia",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 26
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "centralus",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
       "scope": "eastus2",
       "stems": [
         "azure_cognitive_search"
@@ -2070,12 +3587,30 @@
     },
     {
       "serviceName": "Azure Cognitive Search",
+      "scope": "japaneast",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 28
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
       "scope": "mexicocentral",
       "stems": [
         "azure_cognitive_search"
       ],
       "pages": 1,
       "items": 20
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "northeurope",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 30
     },
     {
       "serviceName": "Azure Cognitive Search",
@@ -2097,12 +3632,30 @@
     },
     {
       "serviceName": "Azure Cognitive Search",
+      "scope": "uksouth",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
       "scope": "westeurope",
       "stems": [
         "azure_cognitive_search"
       ],
       "pages": 1,
       "items": 30
+    },
+    {
+      "serviceName": "Azure Cognitive Search",
+      "scope": "westus2",
+      "stems": [
+        "azure_cognitive_search"
+      ],
+      "pages": 1,
+      "items": 24
     },
     {
       "serviceName": "Azure Container Apps",
@@ -2133,6 +3686,24 @@
     },
     {
       "serviceName": "Azure Container Apps",
+      "scope": "centralindia",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "centralus",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
       "scope": "eastus2",
       "stems": [
         "azure_container_apps"
@@ -2142,7 +3713,25 @@
     },
     {
       "serviceName": "Azure Container Apps",
+      "scope": "japaneast",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "northeurope",
       "stems": [
         "azure_container_apps"
       ],
@@ -2169,7 +3758,25 @@
     },
     {
       "serviceName": "Azure Container Apps",
+      "scope": "uksouth",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
       "scope": "westeurope",
+      "stems": [
+        "azure_container_apps"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Azure Container Apps",
+      "scope": "westus2",
       "stems": [
         "azure_container_apps"
       ],
@@ -2205,7 +3812,34 @@
     },
     {
       "serviceName": "Azure Cosmos DB",
+      "scope": "centralindia",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "centralus",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
       "scope": "eastus2",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "japaneast",
       "stems": [
         "azure_cosmos_db"
       ],
@@ -2220,6 +3854,15 @@
       ],
       "pages": 1,
       "items": 88
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "northeurope",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
     },
     {
       "serviceName": "Azure Cosmos DB",
@@ -2241,7 +3884,25 @@
     },
     {
       "serviceName": "Azure Cosmos DB",
+      "scope": "uksouth",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 108
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
       "scope": "westeurope",
+      "stems": [
+        "azure_cosmos_db"
+      ],
+      "pages": 1,
+      "items": 109
+    },
+    {
+      "serviceName": "Azure Cosmos DB",
+      "scope": "westus2",
       "stems": [
         "azure_cosmos_db"
       ],
@@ -2277,6 +3938,24 @@
     },
     {
       "serviceName": "Azure Data Factory",
+      "scope": "centralindia",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "centralus",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
       "scope": "eastus2",
       "stems": [
         "azure_data_factory"
@@ -2286,7 +3965,25 @@
     },
     {
       "serviceName": "Azure Data Factory",
+      "scope": "japaneast",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "northeurope",
       "stems": [
         "azure_data_factory"
       ],
@@ -2313,7 +4010,25 @@
     },
     {
       "serviceName": "Azure Data Factory",
+      "scope": "uksouth",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
       "scope": "westeurope",
+      "stems": [
+        "azure_data_factory"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Azure Data Factory",
+      "scope": "westus2",
       "stems": [
         "azure_data_factory"
       ],
@@ -2349,6 +4064,24 @@
     },
     {
       "serviceName": "Azure Data Lake Storage",
+      "scope": "centralindia",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "centralus",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
       "scope": "eastus2",
       "stems": [
         "azure_data_lake_storage"
@@ -2358,7 +4091,25 @@
     },
     {
       "serviceName": "Azure Data Lake Storage",
+      "scope": "japaneast",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "northeurope",
       "stems": [
         "azure_data_lake_storage"
       ],
@@ -2385,7 +4136,25 @@
     },
     {
       "serviceName": "Azure Data Lake Storage",
+      "scope": "uksouth",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
       "scope": "westeurope",
+      "stems": [
+        "azure_data_lake_storage"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Data Lake Storage",
+      "scope": "westus2",
       "stems": [
         "azure_data_lake_storage"
       ],
@@ -2421,7 +4190,34 @@
     },
     {
       "serviceName": "Azure Database for MySQL",
+      "scope": "centralindia",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "centralus",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 81
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
       "scope": "eastus2",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "japaneast",
       "stems": [
         "azure_database_for_mysql"
       ],
@@ -2436,6 +4232,15 @@
       ],
       "pages": 1,
       "items": 47
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "northeurope",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 84
     },
     {
       "serviceName": "Azure Database for MySQL",
@@ -2457,12 +4262,30 @@
     },
     {
       "serviceName": "Azure Database for MySQL",
+      "scope": "uksouth",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 77
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
       "scope": "westeurope",
       "stems": [
         "azure_database_for_mysql"
       ],
       "pages": 1,
       "items": 84
+    },
+    {
+      "serviceName": "Azure Database for MySQL",
+      "scope": "westus2",
+      "stems": [
+        "azure_database_for_mysql"
+      ],
+      "pages": 1,
+      "items": 77
     },
     {
       "serviceName": "Azure Database for PostgreSQL",
@@ -2493,6 +4316,24 @@
     },
     {
       "serviceName": "Azure Database for PostgreSQL",
+      "scope": "centralindia",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 145
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "centralus",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 145
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
       "scope": "eastus2",
       "stems": [
         "azure_database_for_postgresql"
@@ -2502,12 +4343,30 @@
     },
     {
       "serviceName": "Azure Database for PostgreSQL",
+      "scope": "japaneast",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 144
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
       "scope": "mexicocentral",
       "stems": [
         "azure_database_for_postgresql"
       ],
       "pages": 1,
       "items": 87
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "northeurope",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 146
     },
     {
       "serviceName": "Azure Database for PostgreSQL",
@@ -2529,12 +4388,30 @@
     },
     {
       "serviceName": "Azure Database for PostgreSQL",
+      "scope": "uksouth",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 140
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
       "scope": "westeurope",
       "stems": [
         "azure_database_for_postgresql"
       ],
       "pages": 1,
       "items": 150
+    },
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "scope": "westus2",
+      "stems": [
+        "azure_database_for_postgresql"
+      ],
+      "pages": 1,
+      "items": 140
     },
     {
       "serviceName": "Azure DevOps",
@@ -2574,6 +4451,24 @@
     },
     {
       "serviceName": "Azure Event Grid",
+      "scope": "centralindia",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "centralus",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
       "scope": "eastus2",
       "stems": [
         "azure_event_grid"
@@ -2583,7 +4478,25 @@
     },
     {
       "serviceName": "Azure Event Grid",
+      "scope": "japaneast",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "northeurope",
       "stems": [
         "azure_event_grid"
       ],
@@ -2610,7 +4523,25 @@
     },
     {
       "serviceName": "Azure Event Grid",
+      "scope": "uksouth",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
       "scope": "westeurope",
+      "stems": [
+        "azure_event_grid"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Grid",
+      "scope": "westus2",
       "stems": [
         "azure_event_grid"
       ],
@@ -2646,6 +4577,24 @@
     },
     {
       "serviceName": "Azure Event Hubs",
+      "scope": "centralindia",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "centralus",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
       "scope": "eastus2",
       "stems": [
         "azure_event_hubs"
@@ -2655,7 +4604,25 @@
     },
     {
       "serviceName": "Azure Event Hubs",
+      "scope": "japaneast",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "northeurope",
       "stems": [
         "azure_event_hubs"
       ],
@@ -2682,7 +4649,25 @@
     },
     {
       "serviceName": "Azure Event Hubs",
+      "scope": "uksouth",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
       "scope": "westeurope",
+      "stems": [
+        "azure_event_hubs"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Event Hubs",
+      "scope": "westus2",
       "stems": [
         "azure_event_hubs"
       ],
@@ -2718,6 +4703,24 @@
     },
     {
       "serviceName": "Azure Firewall",
+      "scope": "centralindia",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "centralus",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
       "scope": "eastus2",
       "stems": [
         "azure_firewall"
@@ -2727,7 +4730,25 @@
     },
     {
       "serviceName": "Azure Firewall",
+      "scope": "japaneast",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "northeurope",
       "stems": [
         "azure_firewall"
       ],
@@ -2754,7 +4775,25 @@
     },
     {
       "serviceName": "Azure Firewall",
+      "scope": "uksouth",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
       "scope": "westeurope",
+      "stems": [
+        "azure_firewall"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Azure Firewall",
+      "scope": "westus2",
       "stems": [
         "azure_firewall"
       ],
@@ -2799,6 +4838,24 @@
     },
     {
       "serviceName": "Azure IoT Central",
+      "scope": "centralindia",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "centralus",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
       "scope": "eastus2",
       "stems": [
         "azure_iot_central"
@@ -2808,7 +4865,25 @@
     },
     {
       "serviceName": "Azure IoT Central",
+      "scope": "japaneast",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "northeurope",
       "stems": [
         "azure_iot_central"
       ],
@@ -2835,7 +4910,25 @@
     },
     {
       "serviceName": "Azure IoT Central",
+      "scope": "uksouth",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
       "scope": "westeurope",
+      "stems": [
+        "azure_iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Central",
+      "scope": "westus2",
       "stems": [
         "azure_iot_central"
       ],
@@ -2871,6 +4964,24 @@
     },
     {
       "serviceName": "Azure IoT Hub",
+      "scope": "centralindia",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "centralus",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
       "scope": "eastus2",
       "stems": [
         "azure_iot_hub"
@@ -2880,7 +4991,25 @@
     },
     {
       "serviceName": "Azure IoT Hub",
+      "scope": "japaneast",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "northeurope",
       "stems": [
         "azure_iot_hub"
       ],
@@ -2907,7 +5036,25 @@
     },
     {
       "serviceName": "Azure IoT Hub",
+      "scope": "uksouth",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
       "scope": "westeurope",
+      "stems": [
+        "azure_iot_hub"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure IoT Hub",
+      "scope": "westus2",
       "stems": [
         "azure_iot_hub"
       ],
@@ -2943,6 +5090,24 @@
     },
     {
       "serviceName": "Azure Key Vault",
+      "scope": "centralindia",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "centralus",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
       "scope": "eastus2",
       "stems": [
         "azure_key_vault"
@@ -2952,7 +5117,25 @@
     },
     {
       "serviceName": "Azure Key Vault",
+      "scope": "japaneast",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "northeurope",
       "stems": [
         "azure_key_vault"
       ],
@@ -2979,7 +5162,25 @@
     },
     {
       "serviceName": "Azure Key Vault",
+      "scope": "uksouth",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
       "scope": "westeurope",
+      "stems": [
+        "azure_key_vault"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Key Vault",
+      "scope": "westus2",
       "stems": [
         "azure_key_vault"
       ],
@@ -3015,6 +5216,24 @@
     },
     {
       "serviceName": "Azure Kubernetes Service",
+      "scope": "centralindia",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "centralus",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
       "scope": "eastus2",
       "stems": [
         "azure_kubernetes_service"
@@ -3024,7 +5243,25 @@
     },
     {
       "serviceName": "Azure Kubernetes Service",
+      "scope": "japaneast",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "northeurope",
       "stems": [
         "azure_kubernetes_service"
       ],
@@ -3051,7 +5288,25 @@
     },
     {
       "serviceName": "Azure Kubernetes Service",
+      "scope": "uksouth",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
       "scope": "westeurope",
+      "stems": [
+        "azure_kubernetes_service"
+      ],
+      "pages": 1,
+      "items": 10
+    },
+    {
+      "serviceName": "Azure Kubernetes Service",
+      "scope": "westus2",
       "stems": [
         "azure_kubernetes_service"
       ],
@@ -3087,6 +5342,24 @@
     },
     {
       "serviceName": "Azure Load Balancer",
+      "scope": "centralindia",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "centralus",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
       "scope": "eastus2",
       "stems": [
         "azure_load_balancer"
@@ -3096,7 +5369,25 @@
     },
     {
       "serviceName": "Azure Load Balancer",
+      "scope": "japaneast",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "northeurope",
       "stems": [
         "azure_load_balancer"
       ],
@@ -3123,7 +5414,25 @@
     },
     {
       "serviceName": "Azure Load Balancer",
+      "scope": "uksouth",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
       "scope": "westeurope",
+      "stems": [
+        "azure_load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Load Balancer",
+      "scope": "westus2",
       "stems": [
         "azure_load_balancer"
       ],
@@ -3159,6 +5468,24 @@
     },
     {
       "serviceName": "Azure Machine Learning",
+      "scope": "centralindia",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "centralus",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 23
+    },
+    {
+      "serviceName": "Azure Machine Learning",
       "scope": "eastus2",
       "stems": [
         "azure_machine_learning"
@@ -3168,12 +5495,30 @@
     },
     {
       "serviceName": "Azure Machine Learning",
+      "scope": "japaneast",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Azure Machine Learning",
       "scope": "mexicocentral",
       "stems": [
         "azure_machine_learning"
       ],
       "pages": 1,
       "items": 7
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "northeurope",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 11
     },
     {
       "serviceName": "Azure Machine Learning",
@@ -3195,12 +5540,30 @@
     },
     {
       "serviceName": "Azure Machine Learning",
+      "scope": "uksouth",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 25
+    },
+    {
+      "serviceName": "Azure Machine Learning",
       "scope": "westeurope",
       "stems": [
         "azure_machine_learning"
       ],
       "pages": 1,
       "items": 30
+    },
+    {
+      "serviceName": "Azure Machine Learning",
+      "scope": "westus2",
+      "stems": [
+        "azure_machine_learning"
+      ],
+      "pages": 1,
+      "items": 27
     },
     {
       "serviceName": "Azure Monitor",
@@ -3231,7 +5594,34 @@
     },
     {
       "serviceName": "Azure Monitor",
+      "scope": "centralindia",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "centralus",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
       "scope": "eastus2",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "japaneast",
       "stems": [
         "azure_monitor"
       ],
@@ -3246,6 +5636,15 @@
       ],
       "pages": 1,
       "items": 156
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "northeurope",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
     },
     {
       "serviceName": "Azure Monitor",
@@ -3267,7 +5666,25 @@
     },
     {
       "serviceName": "Azure Monitor",
+      "scope": "uksouth",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
       "scope": "westeurope",
+      "stems": [
+        "azure_monitor"
+      ],
+      "pages": 1,
+      "items": 204
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "scope": "westus2",
       "stems": [
         "azure_monitor"
       ],
@@ -3303,6 +5720,24 @@
     },
     {
       "serviceName": "Azure OpenAI Service",
+      "scope": "centralindia",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "centralus",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
       "scope": "eastus2",
       "stems": [
         "azure_openai_service"
@@ -3312,7 +5747,25 @@
     },
     {
       "serviceName": "Azure OpenAI Service",
+      "scope": "japaneast",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "northeurope",
       "stems": [
         "azure_openai_service"
       ],
@@ -3339,7 +5792,25 @@
     },
     {
       "serviceName": "Azure OpenAI Service",
+      "scope": "uksouth",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
       "scope": "westeurope",
+      "stems": [
+        "azure_openai_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure OpenAI Service",
+      "scope": "westus2",
       "stems": [
         "azure_openai_service"
       ],
@@ -3375,6 +5846,24 @@
     },
     {
       "serviceName": "Azure Sentinel",
+      "scope": "centralindia",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "centralus",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
       "scope": "eastus2",
       "stems": [
         "azure_sentinel"
@@ -3384,7 +5873,25 @@
     },
     {
       "serviceName": "Azure Sentinel",
+      "scope": "japaneast",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "northeurope",
       "stems": [
         "azure_sentinel"
       ],
@@ -3411,7 +5918,25 @@
     },
     {
       "serviceName": "Azure Sentinel",
+      "scope": "uksouth",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
       "scope": "westeurope",
+      "stems": [
+        "azure_sentinel"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Sentinel",
+      "scope": "westus2",
       "stems": [
         "azure_sentinel"
       ],
@@ -3447,6 +5972,24 @@
     },
     {
       "serviceName": "Azure Service Bus",
+      "scope": "centralindia",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "centralus",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
       "scope": "eastus2",
       "stems": [
         "azure_service_bus"
@@ -3456,7 +5999,25 @@
     },
     {
       "serviceName": "Azure Service Bus",
+      "scope": "japaneast",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "northeurope",
       "stems": [
         "azure_service_bus"
       ],
@@ -3483,7 +6044,25 @@
     },
     {
       "serviceName": "Azure Service Bus",
+      "scope": "uksouth",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
       "scope": "westeurope",
+      "stems": [
+        "azure_service_bus"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Service Bus",
+      "scope": "westus2",
       "stems": [
         "azure_service_bus"
       ],
@@ -3519,6 +6098,24 @@
     },
     {
       "serviceName": "Azure SignalR Service",
+      "scope": "centralindia",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "centralus",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
       "scope": "eastus2",
       "stems": [
         "azure_signalr_service"
@@ -3528,7 +6125,25 @@
     },
     {
       "serviceName": "Azure SignalR Service",
+      "scope": "japaneast",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "northeurope",
       "stems": [
         "azure_signalr_service"
       ],
@@ -3555,7 +6170,25 @@
     },
     {
       "serviceName": "Azure SignalR Service",
+      "scope": "uksouth",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
       "scope": "westeurope",
+      "stems": [
+        "azure_signalr_service"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure SignalR Service",
+      "scope": "westus2",
       "stems": [
         "azure_signalr_service"
       ],
@@ -3591,7 +6224,34 @@
     },
     {
       "serviceName": "Azure Synapse Analytics",
+      "scope": "centralindia",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "centralus",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 122
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
       "scope": "eastus2",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 123
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "japaneast",
       "stems": [
         "azure_synapse_analytics"
       ],
@@ -3606,6 +6266,15 @@
       ],
       "pages": 1,
       "items": 121
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "northeurope",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
     },
     {
       "serviceName": "Azure Synapse Analytics",
@@ -3627,7 +6296,25 @@
     },
     {
       "serviceName": "Azure Synapse Analytics",
+      "scope": "uksouth",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
       "scope": "westeurope",
+      "stems": [
+        "azure_synapse_analytics"
+      ],
+      "pages": 1,
+      "items": 127
+    },
+    {
+      "serviceName": "Azure Synapse Analytics",
+      "scope": "westus2",
       "stems": [
         "azure_synapse_analytics"
       ],
@@ -3663,6 +6350,24 @@
     },
     {
       "serviceName": "Azure Traffic Manager",
+      "scope": "centralindia",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "centralus",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
       "scope": "eastus2",
       "stems": [
         "azure_traffic_manager"
@@ -3672,7 +6377,25 @@
     },
     {
       "serviceName": "Azure Traffic Manager",
+      "scope": "japaneast",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
       "scope": "mexicocentral",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "northeurope",
       "stems": [
         "azure_traffic_manager"
       ],
@@ -3699,7 +6422,25 @@
     },
     {
       "serviceName": "Azure Traffic Manager",
+      "scope": "uksouth",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
       "scope": "westeurope",
+      "stems": [
+        "azure_traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Azure Traffic Manager",
+      "scope": "westus2",
       "stems": [
         "azure_traffic_manager"
       ],
@@ -3735,7 +6476,34 @@
     },
     {
       "serviceName": "Backup",
+      "scope": "centralindia",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "centralus",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
       "scope": "eastus2",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "japaneast",
       "stems": [
         "backup"
       ],
@@ -3750,6 +6518,15 @@
       ],
       "pages": 1,
       "items": 29
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "northeurope",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
     },
     {
       "serviceName": "Backup",
@@ -3771,7 +6548,25 @@
     },
     {
       "serviceName": "Backup",
+      "scope": "uksouth",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
       "scope": "westeurope",
+      "stems": [
+        "backup"
+      ],
+      "pages": 1,
+      "items": 38
+    },
+    {
+      "serviceName": "Backup",
+      "scope": "westus2",
       "stems": [
         "backup"
       ],
@@ -3816,6 +6611,24 @@
     },
     {
       "serviceName": "Cognitive Services",
+      "scope": "centralindia",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "centralus",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
       "scope": "eastus2",
       "stems": [
         "cognitive_services"
@@ -3825,7 +6638,25 @@
     },
     {
       "serviceName": "Cognitive Services",
+      "scope": "japaneast",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
       "scope": "mexicocentral",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "northeurope",
       "stems": [
         "cognitive_services"
       ],
@@ -3852,7 +6683,25 @@
     },
     {
       "serviceName": "Cognitive Services",
+      "scope": "uksouth",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
       "scope": "westeurope",
+      "stems": [
+        "cognitive_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Cognitive Services",
+      "scope": "westus2",
       "stems": [
         "cognitive_services"
       ],
@@ -3888,6 +6737,24 @@
     },
     {
       "serviceName": "Computer Vision",
+      "scope": "centralindia",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "centralus",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
       "scope": "eastus2",
       "stems": [
         "computer_vision"
@@ -3897,7 +6764,25 @@
     },
     {
       "serviceName": "Computer Vision",
+      "scope": "japaneast",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
       "scope": "mexicocentral",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "northeurope",
       "stems": [
         "computer_vision"
       ],
@@ -3924,7 +6809,25 @@
     },
     {
       "serviceName": "Computer Vision",
+      "scope": "uksouth",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
       "scope": "westeurope",
+      "stems": [
+        "computer_vision"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Computer Vision",
+      "scope": "westus2",
       "stems": [
         "computer_vision"
       ],
@@ -3960,7 +6863,34 @@
     },
     {
       "serviceName": "Container Instances",
+      "scope": "centralindia",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "centralus",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Container Instances",
       "scope": "eastus2",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "japaneast",
       "stems": [
         "container_instances"
       ],
@@ -3975,6 +6905,15 @@
       ],
       "pages": 1,
       "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "northeurope",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
     },
     {
       "serviceName": "Container Instances",
@@ -3996,7 +6935,25 @@
     },
     {
       "serviceName": "Container Instances",
+      "scope": "uksouth",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 14
+    },
+    {
+      "serviceName": "Container Instances",
       "scope": "westeurope",
+      "stems": [
+        "container_instances"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Container Instances",
+      "scope": "westus2",
       "stems": [
         "container_instances"
       ],
@@ -4032,6 +6989,24 @@
     },
     {
       "serviceName": "Container Registry",
+      "scope": "centralindia",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "centralus",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
       "scope": "eastus2",
       "stems": [
         "container_registry"
@@ -4041,7 +7016,25 @@
     },
     {
       "serviceName": "Container Registry",
+      "scope": "japaneast",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
       "scope": "mexicocentral",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "northeurope",
       "stems": [
         "container_registry"
       ],
@@ -4068,7 +7061,25 @@
     },
     {
       "serviceName": "Container Registry",
+      "scope": "uksouth",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
       "scope": "westeurope",
+      "stems": [
+        "container_registry"
+      ],
+      "pages": 1,
+      "items": 15
+    },
+    {
+      "serviceName": "Container Registry",
+      "scope": "westus2",
       "stems": [
         "container_registry"
       ],
@@ -4113,7 +7124,34 @@
     },
     {
       "serviceName": "Digital Twins",
+      "scope": "centralindia",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "centralus",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
       "scope": "eastus2",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "japaneast",
       "stems": [
         "digital_twins"
       ],
@@ -4128,6 +7166,15 @@
       ],
       "pages": 1,
       "items": 0
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "northeurope",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
     },
     {
       "serviceName": "Digital Twins",
@@ -4149,7 +7196,25 @@
     },
     {
       "serviceName": "Digital Twins",
+      "scope": "uksouth",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Digital Twins",
       "scope": "westeurope",
+      "stems": [
+        "digital_twins"
+      ],
+      "pages": 1,
+      "items": 3
+    },
+    {
+      "serviceName": "Digital Twins",
+      "scope": "westus2",
       "stems": [
         "digital_twins"
       ],
@@ -4185,7 +7250,34 @@
     },
     {
       "serviceName": "Event Grid",
+      "scope": "centralindia",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "centralus",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
       "scope": "eastus2",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "japaneast",
       "stems": [
         "event_grid"
       ],
@@ -4203,6 +7295,15 @@
     },
     {
       "serviceName": "Event Grid",
+      "scope": "northeurope",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
       "scope": "southeastasia",
       "stems": [
         "event_grid"
@@ -4221,7 +7322,25 @@
     },
     {
       "serviceName": "Event Grid",
+      "scope": "uksouth",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
       "scope": "westeurope",
+      "stems": [
+        "event_grid"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Event Grid",
+      "scope": "westus2",
       "stems": [
         "event_grid"
       ],
@@ -4257,6 +7376,24 @@
     },
     {
       "serviceName": "Event Hubs",
+      "scope": "centralindia",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "centralus",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
       "scope": "eastus2",
       "stems": [
         "event_hubs"
@@ -4266,7 +7403,25 @@
     },
     {
       "serviceName": "Event Hubs",
+      "scope": "japaneast",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
       "scope": "mexicocentral",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "northeurope",
       "stems": [
         "event_hubs"
       ],
@@ -4293,7 +7448,25 @@
     },
     {
       "serviceName": "Event Hubs",
+      "scope": "uksouth",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
       "scope": "westeurope",
+      "stems": [
+        "event_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Event Hubs",
+      "scope": "westus2",
       "stems": [
         "event_hubs"
       ],
@@ -4329,7 +7502,34 @@
     },
     {
       "serviceName": "ExpressRoute",
+      "scope": "centralindia",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "centralus",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
       "scope": "eastus2",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "japaneast",
       "stems": [
         "expressroute"
       ],
@@ -4344,6 +7544,15 @@
       ],
       "pages": 1,
       "items": 6
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "northeurope",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
     },
     {
       "serviceName": "ExpressRoute",
@@ -4365,7 +7574,25 @@
     },
     {
       "serviceName": "ExpressRoute",
+      "scope": "uksouth",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
       "scope": "westeurope",
+      "stems": [
+        "expressroute"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "ExpressRoute",
+      "scope": "westus2",
       "stems": [
         "expressroute"
       ],
@@ -4401,6 +7628,24 @@
     },
     {
       "serviceName": "Form Recognizer",
+      "scope": "centralindia",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "centralus",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
       "scope": "eastus2",
       "stems": [
         "form_recognizer"
@@ -4410,7 +7655,25 @@
     },
     {
       "serviceName": "Form Recognizer",
+      "scope": "japaneast",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
       "scope": "mexicocentral",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "northeurope",
       "stems": [
         "form_recognizer"
       ],
@@ -4437,7 +7700,25 @@
     },
     {
       "serviceName": "Form Recognizer",
+      "scope": "uksouth",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
       "scope": "westeurope",
+      "stems": [
+        "form_recognizer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Form Recognizer",
+      "scope": "westus2",
       "stems": [
         "form_recognizer"
       ],
@@ -4473,6 +7754,24 @@
     },
     {
       "serviceName": "Foundry Models",
+      "scope": "centralindia",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 140
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "centralus",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 2,
+      "items": 1034
+    },
+    {
+      "serviceName": "Foundry Models",
       "scope": "eastus2",
       "stems": [
         "foundry_models"
@@ -4482,12 +7781,30 @@
     },
     {
       "serviceName": "Foundry Models",
+      "scope": "japaneast",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 670
+    },
+    {
+      "serviceName": "Foundry Models",
       "scope": "mexicocentral",
       "stems": [
         "foundry_models"
       ],
       "pages": 1,
       "items": 4
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "northeurope",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 2,
+      "items": 1053
     },
     {
       "serviceName": "Foundry Models",
@@ -4509,12 +7826,30 @@
     },
     {
       "serviceName": "Foundry Models",
+      "scope": "uksouth",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 673
+    },
+    {
+      "serviceName": "Foundry Models",
       "scope": "westeurope",
       "stems": [
         "foundry_models"
       ],
       "pages": 2,
       "items": 1240
+    },
+    {
+      "serviceName": "Foundry Models",
+      "scope": "westus2",
+      "stems": [
+        "foundry_models"
+      ],
+      "pages": 1,
+      "items": 450
     },
     {
       "serviceName": "Foundry Tools",
@@ -4545,6 +7880,24 @@
     },
     {
       "serviceName": "Foundry Tools",
+      "scope": "centralindia",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 511
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "centralus",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 530
+    },
+    {
+      "serviceName": "Foundry Tools",
       "scope": "eastus2",
       "stems": [
         "foundry_tools"
@@ -4554,12 +7907,30 @@
     },
     {
       "serviceName": "Foundry Tools",
+      "scope": "japaneast",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 528
+    },
+    {
+      "serviceName": "Foundry Tools",
       "scope": "mexicocentral",
       "stems": [
         "foundry_tools"
       ],
       "pages": 1,
       "items": 26
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "northeurope",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 507
     },
     {
       "serviceName": "Foundry Tools",
@@ -4581,12 +7952,30 @@
     },
     {
       "serviceName": "Foundry Tools",
+      "scope": "uksouth",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 529
+    },
+    {
+      "serviceName": "Foundry Tools",
       "scope": "westeurope",
       "stems": [
         "foundry_tools"
       ],
       "pages": 1,
       "items": 568
+    },
+    {
+      "serviceName": "Foundry Tools",
+      "scope": "westus2",
+      "stems": [
+        "foundry_tools"
+      ],
+      "pages": 1,
+      "items": 559
     },
     {
       "serviceName": "Functions",
@@ -4617,6 +8006,24 @@
     },
     {
       "serviceName": "Functions",
+      "scope": "centralindia",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "centralus",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
       "scope": "eastus2",
       "stems": [
         "functions"
@@ -4626,7 +8033,25 @@
     },
     {
       "serviceName": "Functions",
+      "scope": "japaneast",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
       "scope": "mexicocentral",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "northeurope",
       "stems": [
         "functions"
       ],
@@ -4653,7 +8078,25 @@
     },
     {
       "serviceName": "Functions",
+      "scope": "uksouth",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
       "scope": "westeurope",
+      "stems": [
+        "functions"
+      ],
+      "pages": 1,
+      "items": 13
+    },
+    {
+      "serviceName": "Functions",
+      "scope": "westus2",
       "stems": [
         "functions"
       ],
@@ -4689,6 +8132,24 @@
     },
     {
       "serviceName": "IoT Central",
+      "scope": "centralindia",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "centralus",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "IoT Central",
       "scope": "eastus2",
       "stems": [
         "iot_central"
@@ -4698,12 +8159,30 @@
     },
     {
       "serviceName": "IoT Central",
+      "scope": "japaneast",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "IoT Central",
       "scope": "mexicocentral",
       "stems": [
         "iot_central"
       ],
       "pages": 1,
       "items": 0
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "northeurope",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 6
     },
     {
       "serviceName": "IoT Central",
@@ -4725,12 +8204,30 @@
     },
     {
       "serviceName": "IoT Central",
+      "scope": "uksouth",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "IoT Central",
       "scope": "westeurope",
       "stems": [
         "iot_central"
       ],
       "pages": 1,
       "items": 6
+    },
+    {
+      "serviceName": "IoT Central",
+      "scope": "westus2",
+      "stems": [
+        "iot_central"
+      ],
+      "pages": 1,
+      "items": 0
     },
     {
       "serviceName": "IoT Hub",
@@ -4761,6 +8258,24 @@
     },
     {
       "serviceName": "IoT Hub",
+      "scope": "centralindia",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "centralus",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "IoT Hub",
       "scope": "eastus2",
       "stems": [
         "iot_hub"
@@ -4770,12 +8285,30 @@
     },
     {
       "serviceName": "IoT Hub",
+      "scope": "japaneast",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "IoT Hub",
       "scope": "mexicocentral",
       "stems": [
         "iot_hub"
       ],
       "pages": 1,
       "items": 7
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "northeurope",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
     },
     {
       "serviceName": "IoT Hub",
@@ -4797,7 +8330,25 @@
     },
     {
       "serviceName": "IoT Hub",
+      "scope": "uksouth",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "IoT Hub",
       "scope": "westeurope",
+      "stems": [
+        "iot_hub"
+      ],
+      "pages": 1,
+      "items": 12
+    },
+    {
+      "serviceName": "IoT Hub",
+      "scope": "westus2",
       "stems": [
         "iot_hub"
       ],
@@ -4833,7 +8384,34 @@
     },
     {
       "serviceName": "Key Vault",
+      "scope": "centralindia",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "centralus",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Key Vault",
       "scope": "eastus2",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "japaneast",
       "stems": [
         "key_vault"
       ],
@@ -4848,6 +8426,15 @@
       ],
       "pages": 1,
       "items": 16
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "northeurope",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
     },
     {
       "serviceName": "Key Vault",
@@ -4869,7 +8456,25 @@
     },
     {
       "serviceName": "Key Vault",
+      "scope": "uksouth",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
       "scope": "westeurope",
+      "stems": [
+        "key_vault"
+      ],
+      "pages": 1,
+      "items": 17
+    },
+    {
+      "serviceName": "Key Vault",
+      "scope": "westus2",
       "stems": [
         "key_vault"
       ],
@@ -4905,6 +8510,24 @@
     },
     {
       "serviceName": "Load Balancer",
+      "scope": "centralindia",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "centralus",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
       "scope": "eastus2",
       "stems": [
         "load_balancer"
@@ -4914,7 +8537,25 @@
     },
     {
       "serviceName": "Load Balancer",
+      "scope": "japaneast",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
       "scope": "mexicocentral",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "northeurope",
       "stems": [
         "load_balancer"
       ],
@@ -4941,7 +8582,25 @@
     },
     {
       "serviceName": "Load Balancer",
+      "scope": "uksouth",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
       "scope": "westeurope",
+      "stems": [
+        "load_balancer"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Load Balancer",
+      "scope": "westus2",
       "stems": [
         "load_balancer"
       ],
@@ -4977,6 +8636,24 @@
     },
     {
       "serviceName": "Log Analytics",
+      "scope": "centralindia",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "centralus",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "Log Analytics",
       "scope": "eastus2",
       "stems": [
         "log_analytics"
@@ -4986,7 +8663,25 @@
     },
     {
       "serviceName": "Log Analytics",
+      "scope": "japaneast",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
       "scope": "mexicocentral",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "northeurope",
       "stems": [
         "log_analytics"
       ],
@@ -5013,7 +8708,25 @@
     },
     {
       "serviceName": "Log Analytics",
+      "scope": "uksouth",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 6
+    },
+    {
+      "serviceName": "Log Analytics",
       "scope": "westeurope",
+      "stems": [
+        "log_analytics"
+      ],
+      "pages": 1,
+      "items": 7
+    },
+    {
+      "serviceName": "Log Analytics",
+      "scope": "westus2",
       "stems": [
         "log_analytics"
       ],
@@ -5049,6 +8762,24 @@
     },
     {
       "serviceName": "Logic Apps",
+      "scope": "centralindia",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "centralus",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Logic Apps",
       "scope": "eastus2",
       "stems": [
         "logic_apps"
@@ -5058,12 +8789,30 @@
     },
     {
       "serviceName": "Logic Apps",
+      "scope": "japaneast",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Logic Apps",
       "scope": "mexicocentral",
       "stems": [
         "logic_apps"
       ],
       "pages": 1,
       "items": 12
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "northeurope",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 19
     },
     {
       "serviceName": "Logic Apps",
@@ -5085,7 +8834,25 @@
     },
     {
       "serviceName": "Logic Apps",
+      "scope": "uksouth",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 27
+    },
+    {
+      "serviceName": "Logic Apps",
       "scope": "westeurope",
+      "stems": [
+        "logic_apps"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Logic Apps",
+      "scope": "westus2",
       "stems": [
         "logic_apps"
       ],
@@ -5121,6 +8888,24 @@
     },
     {
       "serviceName": "Microsoft Defender for Cloud",
+      "scope": "centralindia",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "centralus",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
       "scope": "eastus2",
       "stems": [
         "microsoft_defender_for_cloud"
@@ -5130,12 +8915,30 @@
     },
     {
       "serviceName": "Microsoft Defender for Cloud",
+      "scope": "japaneast",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 43
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
       "scope": "mexicocentral",
       "stems": [
         "microsoft_defender_for_cloud"
       ],
       "pages": 1,
       "items": 29
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "northeurope",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
     },
     {
       "serviceName": "Microsoft Defender for Cloud",
@@ -5157,7 +8960,25 @@
     },
     {
       "serviceName": "Microsoft Defender for Cloud",
+      "scope": "uksouth",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
       "scope": "westeurope",
+      "stems": [
+        "microsoft_defender_for_cloud"
+      ],
+      "pages": 1,
+      "items": 44
+    },
+    {
+      "serviceName": "Microsoft Defender for Cloud",
+      "scope": "westus2",
       "stems": [
         "microsoft_defender_for_cloud"
       ],
@@ -5193,7 +9014,34 @@
     },
     {
       "serviceName": "Microsoft Fabric",
+      "scope": "centralindia",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 273
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "centralus",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 268
+    },
+    {
+      "serviceName": "Microsoft Fabric",
       "scope": "eastus2",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "japaneast",
       "stems": [
         "microsoft_fabric"
       ],
@@ -5208,6 +9056,15 @@
       ],
       "pages": 1,
       "items": 270
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "northeurope",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
     },
     {
       "serviceName": "Microsoft Fabric",
@@ -5229,7 +9086,25 @@
     },
     {
       "serviceName": "Microsoft Fabric",
+      "scope": "uksouth",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
       "scope": "westeurope",
+      "stems": [
+        "microsoft_fabric"
+      ],
+      "pages": 1,
+      "items": 271
+    },
+    {
+      "serviceName": "Microsoft Fabric",
+      "scope": "westus2",
       "stems": [
         "microsoft_fabric"
       ],
@@ -5265,7 +9140,34 @@
     },
     {
       "serviceName": "Microsoft Purview",
+      "scope": "centralindia",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "centralus",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 16
+    },
+    {
+      "serviceName": "Microsoft Purview",
       "scope": "eastus2",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "japaneast",
       "stems": [
         "microsoft_purview"
       ],
@@ -5280,6 +9182,15 @@
       ],
       "pages": 1,
       "items": 0
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "northeurope",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
     },
     {
       "serviceName": "Microsoft Purview",
@@ -5301,7 +9212,25 @@
     },
     {
       "serviceName": "Microsoft Purview",
+      "scope": "uksouth",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
       "scope": "westeurope",
+      "stems": [
+        "microsoft_purview"
+      ],
+      "pages": 1,
+      "items": 21
+    },
+    {
+      "serviceName": "Microsoft Purview",
+      "scope": "westus2",
       "stems": [
         "microsoft_purview"
       ],
@@ -5337,6 +9266,24 @@
     },
     {
       "serviceName": "Network Watcher",
+      "scope": "centralindia",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "centralus",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
       "scope": "eastus2",
       "stems": [
         "network_watcher"
@@ -5346,7 +9293,25 @@
     },
     {
       "serviceName": "Network Watcher",
+      "scope": "japaneast",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
       "scope": "mexicocentral",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "northeurope",
       "stems": [
         "network_watcher"
       ],
@@ -5373,7 +9338,25 @@
     },
     {
       "serviceName": "Network Watcher",
+      "scope": "uksouth",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
       "scope": "westeurope",
+      "stems": [
+        "network_watcher"
+      ],
+      "pages": 1,
+      "items": 19
+    },
+    {
+      "serviceName": "Network Watcher",
+      "scope": "westus2",
       "stems": [
         "network_watcher"
       ],
@@ -5409,7 +9392,34 @@
     },
     {
       "serviceName": "Notification Hubs",
+      "scope": "centralindia",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "centralus",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
       "scope": "eastus2",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "japaneast",
       "stems": [
         "notification_hubs"
       ],
@@ -5424,6 +9434,15 @@
       ],
       "pages": 1,
       "items": 9
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "northeurope",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
     },
     {
       "serviceName": "Notification Hubs",
@@ -5445,7 +9464,25 @@
     },
     {
       "serviceName": "Notification Hubs",
+      "scope": "uksouth",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
       "scope": "westeurope",
+      "stems": [
+        "notification_hubs"
+      ],
+      "pages": 1,
+      "items": 11
+    },
+    {
+      "serviceName": "Notification Hubs",
+      "scope": "westus2",
       "stems": [
         "notification_hubs"
       ],
@@ -5481,7 +9518,34 @@
     },
     {
       "serviceName": "Redis Cache",
+      "scope": "centralindia",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "centralus",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
       "scope": "eastus2",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "japaneast",
       "stems": [
         "redis_cache"
       ],
@@ -5499,6 +9563,15 @@
     },
     {
       "serviceName": "Redis Cache",
+      "scope": "northeurope",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
       "scope": "southeastasia",
       "stems": [
         "redis_cache"
@@ -5517,7 +9590,25 @@
     },
     {
       "serviceName": "Redis Cache",
+      "scope": "uksouth",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 88
+    },
+    {
+      "serviceName": "Redis Cache",
       "scope": "westeurope",
+      "stems": [
+        "redis_cache"
+      ],
+      "pages": 1,
+      "items": 89
+    },
+    {
+      "serviceName": "Redis Cache",
+      "scope": "westus2",
       "stems": [
         "redis_cache"
       ],
@@ -5553,7 +9644,34 @@
     },
     {
       "serviceName": "Service Bus",
+      "scope": "centralindia",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "centralus",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
       "scope": "eastus2",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "japaneast",
       "stems": [
         "service_bus"
       ],
@@ -5571,6 +9689,15 @@
     },
     {
       "serviceName": "Service Bus",
+      "scope": "northeurope",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
       "scope": "southeastasia",
       "stems": [
         "service_bus"
@@ -5589,7 +9716,25 @@
     },
     {
       "serviceName": "Service Bus",
+      "scope": "uksouth",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
       "scope": "westeurope",
+      "stems": [
+        "service_bus"
+      ],
+      "pages": 1,
+      "items": 18
+    },
+    {
+      "serviceName": "Service Bus",
+      "scope": "westus2",
       "stems": [
         "service_bus"
       ],
@@ -5625,6 +9770,24 @@
     },
     {
       "serviceName": "SignalR",
+      "scope": "centralindia",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "centralus",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
       "scope": "eastus2",
       "stems": [
         "signalr"
@@ -5634,7 +9797,25 @@
     },
     {
       "serviceName": "SignalR",
+      "scope": "japaneast",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
       "scope": "mexicocentral",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "northeurope",
       "stems": [
         "signalr"
       ],
@@ -5661,7 +9842,25 @@
     },
     {
       "serviceName": "SignalR",
+      "scope": "uksouth",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
       "scope": "westeurope",
+      "stems": [
+        "signalr"
+      ],
+      "pages": 1,
+      "items": 5
+    },
+    {
+      "serviceName": "SignalR",
+      "scope": "westus2",
       "stems": [
         "signalr"
       ],
@@ -5697,6 +9896,24 @@
     },
     {
       "serviceName": "Site Recovery",
+      "scope": "centralindia",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "centralus",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
       "scope": "eastus2",
       "stems": [
         "site_recovery"
@@ -5706,7 +9923,25 @@
     },
     {
       "serviceName": "Site Recovery",
+      "scope": "japaneast",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
       "scope": "mexicocentral",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "northeurope",
       "stems": [
         "site_recovery"
       ],
@@ -5733,7 +9968,25 @@
     },
     {
       "serviceName": "Site Recovery",
+      "scope": "uksouth",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
       "scope": "westeurope",
+      "stems": [
+        "site_recovery"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Site Recovery",
+      "scope": "westus2",
       "stems": [
         "site_recovery"
       ],
@@ -5769,6 +10022,24 @@
     },
     {
       "serviceName": "Speech Services",
+      "scope": "centralindia",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "centralus",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
       "scope": "eastus2",
       "stems": [
         "speech_services"
@@ -5778,7 +10049,25 @@
     },
     {
       "serviceName": "Speech Services",
+      "scope": "japaneast",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
       "scope": "mexicocentral",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "northeurope",
       "stems": [
         "speech_services"
       ],
@@ -5805,7 +10094,25 @@
     },
     {
       "serviceName": "Speech Services",
+      "scope": "uksouth",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
       "scope": "westeurope",
+      "stems": [
+        "speech_services"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Speech Services",
+      "scope": "westus2",
       "stems": [
         "speech_services"
       ],
@@ -5841,6 +10148,24 @@
     },
     {
       "serviceName": "SQL Database",
+      "scope": "centralindia",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 276
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "centralus",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 323
+    },
+    {
+      "serviceName": "SQL Database",
       "scope": "eastus2",
       "stems": [
         "sql_database"
@@ -5850,12 +10175,30 @@
     },
     {
       "serviceName": "SQL Database",
+      "scope": "japaneast",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 319
+    },
+    {
+      "serviceName": "SQL Database",
       "scope": "mexicocentral",
       "stems": [
         "sql_database"
       ],
       "pages": 1,
       "items": 306
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "northeurope",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 328
     },
     {
       "serviceName": "SQL Database",
@@ -5877,12 +10220,30 @@
     },
     {
       "serviceName": "SQL Database",
+      "scope": "uksouth",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 318
+    },
+    {
+      "serviceName": "SQL Database",
       "scope": "westeurope",
       "stems": [
         "sql_database"
       ],
       "pages": 1,
       "items": 328
+    },
+    {
+      "serviceName": "SQL Database",
+      "scope": "westus2",
+      "stems": [
+        "sql_database"
+      ],
+      "pages": 1,
+      "items": 326
     },
     {
       "serviceName": "Static Web Apps",
@@ -5922,6 +10283,24 @@
     },
     {
       "serviceName": "Storage",
+      "scope": "centralindia",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1426
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "centralus",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1506
+    },
+    {
+      "serviceName": "Storage",
       "scope": "eastus2",
       "stems": [
         "storage"
@@ -5931,12 +10310,30 @@
     },
     {
       "serviceName": "Storage",
+      "scope": "japaneast",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1452
+    },
+    {
+      "serviceName": "Storage",
       "scope": "mexicocentral",
       "stems": [
         "storage"
       ],
       "pages": 1,
       "items": 687
+    },
+    {
+      "serviceName": "Storage",
+      "scope": "northeurope",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1508
     },
     {
       "serviceName": "Storage",
@@ -5958,6 +10355,15 @@
     },
     {
       "serviceName": "Storage",
+      "scope": "uksouth",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1483
+    },
+    {
+      "serviceName": "Storage",
       "scope": "westeurope",
       "stems": [
         "storage"
@@ -5966,6 +10372,15 @@
       "items": 1508
     },
     {
+      "serviceName": "Storage",
+      "scope": "westus2",
+      "stems": [
+        "storage"
+      ],
+      "pages": 2,
+      "items": 1506
+    },
+    {
       "serviceName": "Stream Analytics",
       "scope": "australiaeast",
       "stems": [
@@ -5994,6 +10409,24 @@
     },
     {
       "serviceName": "Stream Analytics",
+      "scope": "centralindia",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "centralus",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
       "scope": "eastus2",
       "stems": [
         "stream_analytics"
@@ -6003,7 +10436,25 @@
     },
     {
       "serviceName": "Stream Analytics",
+      "scope": "japaneast",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
       "scope": "mexicocentral",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "northeurope",
       "stems": [
         "stream_analytics"
       ],
@@ -6030,7 +10481,25 @@
     },
     {
       "serviceName": "Stream Analytics",
+      "scope": "uksouth",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
       "scope": "westeurope",
+      "stems": [
+        "stream_analytics"
+      ],
+      "pages": 1,
+      "items": 9
+    },
+    {
+      "serviceName": "Stream Analytics",
+      "scope": "westus2",
       "stems": [
         "stream_analytics"
       ],
@@ -6066,6 +10535,24 @@
     },
     {
       "serviceName": "Text Analytics",
+      "scope": "centralindia",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "centralus",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
       "scope": "eastus2",
       "stems": [
         "text_analytics"
@@ -6075,7 +10562,25 @@
     },
     {
       "serviceName": "Text Analytics",
+      "scope": "japaneast",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
       "scope": "mexicocentral",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "northeurope",
       "stems": [
         "text_analytics"
       ],
@@ -6102,7 +10607,25 @@
     },
     {
       "serviceName": "Text Analytics",
+      "scope": "uksouth",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
       "scope": "westeurope",
+      "stems": [
+        "text_analytics"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Text Analytics",
+      "scope": "westus2",
       "stems": [
         "text_analytics"
       ],
@@ -6138,6 +10661,24 @@
     },
     {
       "serviceName": "Traffic Manager",
+      "scope": "centralindia",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "centralus",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
       "scope": "eastus2",
       "stems": [
         "traffic_manager"
@@ -6147,7 +10688,25 @@
     },
     {
       "serviceName": "Traffic Manager",
+      "scope": "japaneast",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
       "scope": "mexicocentral",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "northeurope",
       "stems": [
         "traffic_manager"
       ],
@@ -6174,7 +10733,25 @@
     },
     {
       "serviceName": "Traffic Manager",
+      "scope": "uksouth",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
       "scope": "westeurope",
+      "stems": [
+        "traffic_manager"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Traffic Manager",
+      "scope": "westus2",
       "stems": [
         "traffic_manager"
       ],
@@ -6210,6 +10787,24 @@
     },
     {
       "serviceName": "Translator",
+      "scope": "centralindia",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "centralus",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
       "scope": "eastus2",
       "stems": [
         "translator"
@@ -6219,7 +10814,25 @@
     },
     {
       "serviceName": "Translator",
+      "scope": "japaneast",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
       "scope": "mexicocentral",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "northeurope",
       "stems": [
         "translator"
       ],
@@ -6246,7 +10859,25 @@
     },
     {
       "serviceName": "Translator",
+      "scope": "uksouth",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
       "scope": "westeurope",
+      "stems": [
+        "translator"
+      ],
+      "pages": 1,
+      "items": 0
+    },
+    {
+      "serviceName": "Translator",
+      "scope": "westus2",
       "stems": [
         "translator"
       ],
@@ -6282,6 +10913,24 @@
     },
     {
       "serviceName": "Virtual Machines",
+      "scope": "centralindia",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 8,
+      "items": 7310
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "centralus",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 9,
+      "items": 8134
+    },
+    {
+      "serviceName": "Virtual Machines",
       "scope": "eastus2",
       "stems": [
         "virtual_machines"
@@ -6291,12 +10940,30 @@
     },
     {
       "serviceName": "Virtual Machines",
+      "scope": "japaneast",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 8,
+      "items": 7532
+    },
+    {
+      "serviceName": "Virtual Machines",
       "scope": "mexicocentral",
       "stems": [
         "virtual_machines"
       ],
       "pages": 6,
       "items": 5520
+    },
+    {
+      "serviceName": "Virtual Machines",
+      "scope": "northeurope",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 9,
+      "items": 8889
     },
     {
       "serviceName": "Virtual Machines",
@@ -6318,6 +10985,15 @@
     },
     {
       "serviceName": "Virtual Machines",
+      "scope": "uksouth",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 10,
+      "items": 9163
+    },
+    {
+      "serviceName": "Virtual Machines",
       "scope": "westeurope",
       "stems": [
         "virtual_machines"
@@ -6326,6 +11002,15 @@
       "items": 9022
     },
     {
+      "serviceName": "Virtual Machines",
+      "scope": "westus2",
+      "stems": [
+        "virtual_machines"
+      ],
+      "pages": 9,
+      "items": 8256
+    },
+    {
       "serviceName": "Virtual Network",
       "scope": "australiaeast",
       "stems": [
@@ -6354,6 +11039,24 @@
     },
     {
       "serviceName": "Virtual Network",
+      "scope": "centralindia",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "centralus",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
       "scope": "eastus2",
       "stems": [
         "virtual_network"
@@ -6363,7 +11066,25 @@
     },
     {
       "serviceName": "Virtual Network",
+      "scope": "japaneast",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
       "scope": "mexicocentral",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "northeurope",
       "stems": [
         "virtual_network"
       ],
@@ -6390,7 +11111,25 @@
     },
     {
       "serviceName": "Virtual Network",
+      "scope": "uksouth",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
       "scope": "westeurope",
+      "stems": [
+        "virtual_network"
+      ],
+      "pages": 1,
+      "items": 8
+    },
+    {
+      "serviceName": "Virtual Network",
+      "scope": "westus2",
       "stems": [
         "virtual_network"
       ],
@@ -6426,6 +11165,24 @@
     },
     {
       "serviceName": "VPN Gateway",
+      "scope": "centralindia",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "centralus",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
       "scope": "eastus2",
       "stems": [
         "vpn_gateway"
@@ -6435,7 +11192,25 @@
     },
     {
       "serviceName": "VPN Gateway",
+      "scope": "japaneast",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
       "scope": "mexicocentral",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "northeurope",
       "stems": [
         "vpn_gateway"
       ],
@@ -6462,7 +11237,25 @@
     },
     {
       "serviceName": "VPN Gateway",
+      "scope": "uksouth",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
       "scope": "westeurope",
+      "stems": [
+        "vpn_gateway"
+      ],
+      "pages": 1,
+      "items": 30
+    },
+    {
+      "serviceName": "VPN Gateway",
+      "scope": "westus2",
       "stems": [
         "vpn_gateway"
       ],

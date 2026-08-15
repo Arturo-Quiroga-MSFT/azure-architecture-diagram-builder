@@ -157,21 +157,9 @@ export function formatPercentage(value: number, decimals: number = 1): string {
  */
 export const AZURE_REGIONS: RegionPricing[] = [
   {
-    region: 'eastus',
-    displayName: 'East US',
-    armRegionName: 'eastus',
-    multiplier: 1.0
-  },
-  {
     region: 'eastus2',
     displayName: 'East US 2',
     armRegionName: 'eastus2',
-    multiplier: 1.0
-  },
-  {
-    region: 'westus',
-    displayName: 'West US',
-    armRegionName: 'westus',
     multiplier: 1.0
   },
   {
@@ -184,6 +172,12 @@ export const AZURE_REGIONS: RegionPricing[] = [
     region: 'centralus',
     displayName: 'Central US',
     armRegionName: 'centralus',
+    multiplier: 1.0
+  },
+  {
+    region: 'swedencentral',
+    displayName: 'Sweden Central',
+    armRegionName: 'swedencentral',
     multiplier: 1.0
   },
   {
@@ -205,33 +199,15 @@ export const AZURE_REGIONS: RegionPricing[] = [
     multiplier: 1.06
   },
   {
-    region: 'ukwest',
-    displayName: 'UK West',
-    armRegionName: 'ukwest',
-    multiplier: 1.06
-  },
-  {
     region: 'southeastasia',
     displayName: 'Southeast Asia',
     armRegionName: 'southeastasia',
     multiplier: 1.05
   },
   {
-    region: 'eastasia',
-    displayName: 'East Asia',
-    armRegionName: 'eastasia',
-    multiplier: 1.10
-  },
-  {
     region: 'japaneast',
     displayName: 'Japan East',
     armRegionName: 'japaneast',
-    multiplier: 1.12
-  },
-  {
-    region: 'japanwest',
-    displayName: 'Japan West',
-    armRegionName: 'japanwest',
     multiplier: 1.12
   },
   {
@@ -241,16 +217,16 @@ export const AZURE_REGIONS: RegionPricing[] = [
     multiplier: 1.15
   },
   {
-    region: 'australiasoutheast',
-    displayName: 'Australia Southeast',
-    armRegionName: 'australiasoutheast',
-    multiplier: 1.15
-  },
-  {
     region: 'brazilsouth',
     displayName: 'Brazil South',
     armRegionName: 'brazilsouth',
     multiplier: 1.20
+  },
+  {
+    region: 'mexicocentral',
+    displayName: 'Mexico Central',
+    armRegionName: 'mexicocentral',
+    multiplier: 1.0
   },
   {
     region: 'canadacentral',
@@ -259,10 +235,10 @@ export const AZURE_REGIONS: RegionPricing[] = [
     multiplier: 1.04
   },
   {
-    region: 'canadaeast',
-    displayName: 'Canada East',
-    armRegionName: 'canadaeast',
-    multiplier: 1.04
+    region: 'centralindia',
+    displayName: 'Central India',
+    armRegionName: 'centralindia',
+    multiplier: 1.0
   },
 ];
 
@@ -301,7 +277,7 @@ export function applyRegionalPricing(basePrice: number, region: string): number 
  * Get default region
  */
 export function getDefaultRegion(): RegionPricing {
-  return AZURE_REGIONS[0]; // East US
+  return AZURE_REGIONS[0]; // East US 2
 }
 
 /**

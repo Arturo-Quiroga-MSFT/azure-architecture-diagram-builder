@@ -12,9 +12,10 @@ const currentRoot = join(pricingParent, 'regions');
 const stageRoot = join(pricingParent, `.regions-refresh-${process.pid}`);
 const backupRoot = join(pricingParent, `.regions-backup-${process.pid}`);
 const manifestPath = join(pricingParent, 'snapshot-manifest.json');
+const tempManifestPath = join(pricingParent, `.snapshot-manifest-${process.pid}.json`);
 const pricingSourcePath = join(repoRoot, 'src', 'data', 'azurePricing.ts');
 
-const regions = ['eastus2', 'australiaeast', 'canadacentral', 'brazilsouth', 'mexicocentral', 'westeurope', 'swedencentral', 'southeastasia'];
+const regions = JSON.parse(readFileSync(join(here, 'pricing-regions.json'), 'utf8'));
 const globalStems = new Set(['azure_front_door_service', 'content_delivery_network', 'cdn', 'static_web_apps', 'azure_devops']);
 const emptyServiceNames = {
   azure_ai_document_intelligence: 'Azure AI Document Intelligence',
@@ -52,7 +53,7 @@ const emptyServiceNames = {
 };
 const apiVersion = '2023-01-01-preview';
 const maxPages = 100;
-const maxRetries = 5;
+const maxRetries = Math.max(1, Number(process.env.PRICING_REFRESH_MAX_RETRIES || 12));
 const concurrency = Math.max(1, Math.min(Number(process.env.PRICING_REFRESH_CONCURRENCY || 4), 8));
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
@@ -106,17 +107,31 @@ function normalizeNextPageLink(value) {
 async function fetchJson(url, label) {
   let lastError;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let retryAfterMs = 0;
     try {
       const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(120_000) });
       const text = await response.text();
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${text.slice(0, 240)}`);
+      if (!response.ok) {
+        const retryAfter = response.headers.get('retry-after');
+        if (retryAfter) {
+          const seconds = Number(retryAfter);
+          retryAfterMs = Number.isFinite(seconds)
+            ? seconds * 1000
+            : Math.max(0, Date.parse(retryAfter) - Date.now());
+        }
+        throw new Error(`HTTP ${response.status}: ${text.slice(0, 240)}`);
+      }
       const data = JSON.parse(text);
       if (!Array.isArray(data.Items)) throw new Error(`response has no Items array: ${text.slice(0, 240)}`);
       return data;
     } catch (error) {
       lastError = error;
       console.warn(`[pricing-refresh] ${label} attempt ${attempt}/${maxRetries} failed: ${error instanceof Error ? error.message : error}`);
-      if (attempt < maxRetries) await sleep(750 * attempt);
+      if (attempt < maxRetries) {
+        const exponentialMs = Math.min(60_000, 2_000 * (2 ** (attempt - 1)));
+        const jitterMs = Math.floor(Math.random() * 1_000);
+        await sleep(Math.max(retryAfterMs, exponentialMs) + jitterMs);
+      }
     }
   }
   throw new Error(`${label} failed after ${maxRetries} attempts: ${lastError instanceof Error ? lastError.message : lastError}`);
@@ -193,8 +208,18 @@ function stampPricingDate(date) {
   writeFileSync(pricingSourcePath, updated);
 }
 
-function sha256(file) {
-  return createHash('sha256').update(readFileSync(file)).digest('hex');
+function snapshotInventorySha256(root, regionNames, stems) {
+  const hash = createHash('sha256');
+  for (const region of [...regionNames].sort()) {
+    for (const stem of [...stems].sort()) {
+      const relative = `${region}/${stem}.json`;
+      hash.update(relative);
+      hash.update('\0');
+      hash.update(readFileSync(join(root, relative)));
+      hash.update('\0');
+    }
+  }
+  return hash.digest('hex');
 }
 
 async function main() {
@@ -257,26 +282,32 @@ async function main() {
     downloadTasks: tasks.length,
     totalPages: records.reduce((sum, item) => sum + item.pages, 0),
     totalItemsAcrossQueries: records.reduce((sum, item) => sum + item.items, 0),
+    snapshotInventorySha256: snapshotInventorySha256(stageRoot, regions, stems),
     emptyDownloads: records.filter((item) => item.items === 0).map((item) => ({ serviceName: item.serviceName, scope: item.scope })),
     downloads: records.sort((a, b) => `${a.serviceName}|${a.scope}`.localeCompare(`${b.serviceName}|${b.scope}`)),
   };
-  writeFileSync(join(stageRoot, '..', `.snapshot-manifest-${process.pid}.json`), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(tempManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
   let swapped = false;
+  const originalPricingSource = readFileSync(pricingSourcePath, 'utf8');
+  const originalManifest = readFileSync(manifestPath, 'utf8');
+  let manifestSwapped = false;
   try {
     renameSync(currentRoot, backupRoot);
     renameSync(stageRoot, currentRoot);
     swapped = true;
     stampPricingDate(snapshotDate);
-    const tempManifest = join(pricingParent, `.snapshot-manifest-${process.pid}.json`);
-    renameSync(tempManifest, manifestPath);
-    manifest.manifestSha256 = sha256(manifestPath);
+    renameSync(tempManifestPath, manifestPath);
+    manifestSwapped = true;
     rmSync(backupRoot, { recursive: true, force: true });
   } catch (error) {
     if (swapped) {
       rmSync(currentRoot, { recursive: true, force: true });
       renameSync(backupRoot, currentRoot);
     }
+    writeFileSync(pricingSourcePath, originalPricingSource);
+    if (manifestSwapped) writeFileSync(manifestPath, originalManifest);
+    rmSync(tempManifestPath, { force: true });
     throw error;
   }
 
@@ -286,5 +317,6 @@ async function main() {
 main().catch((error) => {
   console.error(`[pricing-refresh] FAILED: ${error instanceof Error ? error.stack || error.message : error}`);
   rmSync(stageRoot, { recursive: true, force: true });
+  rmSync(tempManifestPath, { force: true });
   process.exit(1);
 });

@@ -37,14 +37,16 @@ Discovers all available Azure services from the Pricing API.
 ---
 
 ### 3. `fetch-multi-region-pricing.sh`
-Fetches pricing for specific services across 3 regions (East US 2, Sweden Central, West Europe).
+Legacy exploratory fetch helper for the 14 bundled region codes. It is not the
+authoritative snapshot refresh because it does not provide atomic replacement,
+complete pagination validation, or the canonical 80-query inventory.
 
 ```bash
 ./scripts/fetch-multi-region-pricing.sh
 ```
 
 **What it does:**
-- Downloads pricing for 9 key services across 3 regions
+- Downloads its embedded service list across 14 regions
 - Organizes data by region in separate directories
 - Limits to 100 items per service/region for testing
 - Includes small delays to avoid rate limiting
@@ -97,7 +99,7 @@ Generates a comparison report showing price differences across regions.
 ```
 
 **What it does:**
-- Compares pricing for 5 key services across 3 regions
+- Compares pricing for 5 key services across all 14 bundled regions
 - Shows top 3 SKUs per service/region
 - Generates readable text report
 
@@ -191,8 +193,8 @@ curl -s "https://prices.azure.com/api/retail/prices?api-version=2023-01-01-previ
 
 ## Next Steps
 
-After experimentation, you can:
-1. Update the local `prices.json` file with fresh data
-2. Extend the service mapping in `src/data/azurePricing.ts`
-3. Implement automated refresh (weekly/monthly) in production
-4. Add more regions to `AZURE_REGIONS` in `src/utils/pricingHelpers.ts`
+For production snapshot work:
+1. Update `src/data/pricingRegions.ts`, then align the non-TypeScript refresh/audit lists that consume the same region IDs.
+2. Run `npm run pricing:refresh` for paginated, staged, atomic replacement.
+3. Run `npm run pricing:audit`, `npm run pricing:audit-semantics`, `npm run test:pricing-mode`, `npm run build`, and the MCP contract suite.
+4. Keep `src/utils/pricingHelpers.ts`, audit region lists, docs, and MCP discovery metadata aligned with the canonical bundle.
