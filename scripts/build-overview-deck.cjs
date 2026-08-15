@@ -247,7 +247,7 @@ function featureCard(slide, x, y, w, h, glyph, title, body, accent) {
   const feats = [
     ['AI', 'AI generation', 'Natural-language prompts become laid-out diagrams across 12+ frontier models.', C.azure],
     ['WAF', 'WAF validation', 'Scored Well-Architected reviews surface concrete reliability, security & cost gaps.', C.teal],
-    ['$', 'Multi-region cost', 'Live estimates across 8 Azure regions with ranked comparison and savings flags.', C.green],
+    ['$', 'Multi-region cost', 'Snapshot-derived estimates across 14 Azure regions with ranked comparison and savings flags.', C.green],
     ['IaC', 'Deployment guides', 'Generates Bicep templates, prerequisites, and verification steps per service.', C.azure],
     ['⇄', 'Workflow & narration', 'Animated step-by-step data-flow walkthroughs with optional avatar narration.', C.cyan],
     ['↧', '8 export formats', 'PNG, SVG, PPTX, Draw.io, HTML, JSON, CSV, and az-prototype IaC round-trips.', C.amber],

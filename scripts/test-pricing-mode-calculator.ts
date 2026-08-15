@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { getDefaultTier, getFallbackPricing, hasFallbackPricing } from '../src/data/azurePricing';
 import { calculateNodeMonthlyCost } from '../src/services/pricingModeCalculator';
+import { AVAILABLE_REGIONS } from '../src/data/pricingRegions';
+import { AZURE_REGIONS, getDefaultRegion } from '../src/utils/pricingHelpers';
 import type { NodePricingConfig } from '../src/types/pricing';
 
 function pricing(overrides: Partial<NodePricingConfig> = {}): NodePricingConfig {
@@ -18,6 +21,17 @@ function pricing(overrides: Partial<NodePricingConfig> = {}): NodePricingConfig 
     ...overrides,
   };
 }
+
+const expectedRegions = JSON.parse(readFileSync('scripts/pricing-regions.json', 'utf8')) as string[];
+const snapshotManifest = JSON.parse(readFileSync('src/data/pricing/snapshot-manifest.json', 'utf8'));
+assert.equal(expectedRegions.length, 14);
+for (const region of ['centralus', 'westus2', 'uksouth', 'northeurope', 'japaneast', 'centralindia']) {
+  assert(expectedRegions.includes(region));
+}
+assert.deepEqual(AVAILABLE_REGIONS.map(region => region.id), expectedRegions);
+assert.deepEqual(AZURE_REGIONS.map(region => region.armRegionName).sort(), [...expectedRegions].sort());
+assert.deepEqual(snapshotManifest.regions, expectedRegions);
+assert.equal(getDefaultRegion().armRegionName, 'eastus2');
 
 assert.equal(getDefaultTier('Virtual Machine'), getDefaultTier('Virtual Machines'));
 assert.equal(getFallbackPricing('Virtual Machine'), getFallbackPricing('Virtual Machines'));
@@ -49,7 +63,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   calculateNodeMonthlyCost('Virtual Machine', pricing(), 'reserved1yr'),
-  { cost: 126, source: 'estimated-discount' },
+  { cost: 200, source: 'payg-unchanged-no-offer' },
 );
 assert.deepEqual(
   calculateNodeMonthlyCost('Storage', pricing({ isUsageBased: true }), 'reserved1yr'),

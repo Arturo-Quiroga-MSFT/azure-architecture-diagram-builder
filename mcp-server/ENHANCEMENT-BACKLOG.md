@@ -36,22 +36,20 @@ defined.
 
 ### Stepwise follow-up sequence (agreed 2026-08-14)
 
-1. Region-aware canonical architecture and honest pricing coverage — implemented on feature branch; validation passed
-2. Correct multi-region validation and hardening semantics — implemented on feature branch; validation passed
+1. Region-aware canonical architecture and honest pricing coverage — deployed
+2. Correct multi-region validation and hardening semantics — deployed
 3. Synchronize the MCP service catalog with the app catalog
 4. Improve manifest/import fidelity and structured outputs
 5. Add deterministic regional cost comparison
 6. Add deterministic ARM-template import
 
-### Required pricing-region expansion
+### Pricing-region expansion
 
-Before regional comparison (step 5), refresh and audit five additional native
-pricing regions: `centralus`, `westus2`, `uksouth`, `northeurope`, and
-`japaneast`. Central US and West US 2 are established DR targets in checked-in
-Scout/ARM scenarios; UK and Japan have measured user demand; North Europe is the
-strongest paired-region complement to existing West Europe coverage. Expected
-snapshot growth: about 400 JSON files and roughly 420 paginated API calls per
-full refresh. Do not replace this with heuristic regional multipliers.
+Completed in the August 15 snapshot: `centralus`, `westus2`, `uksouth`,
+`northeurope`, `japaneast`, and `centralindia`. The authoritative bundle now
+contains 14 regions, 1,120 files, and no unresolved continuation links or
+wrong-region items. Step 5 can use this native coverage; do not substitute
+heuristic regional multipliers.
 
 ---
 

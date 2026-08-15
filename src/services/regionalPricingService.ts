@@ -7,30 +7,10 @@
  */
 
 import { AzureRetailPrice, ServicePricing, PricingTier } from '../types/pricing';
+import { AVAILABLE_REGIONS, type AzureRegion, type RegionInfo } from '../data/pricingRegions';
 
-export type AzureRegion = 'eastus2' | 'swedencentral' | 'westeurope' | 'canadacentral' | 'brazilsouth' | 'australiaeast' | 'southeastasia' | 'mexicocentral';
-
-export type RegionType = 'HERO' | 'HUB' | 'SATELLITE' | 'MICRO';
-
-export interface RegionInfo {
-  id: AzureRegion;
-  displayName: string;
-  location: string;
-  flag: string;
-  regionType: RegionType;
-  geography: string;
-}
-
-export const AVAILABLE_REGIONS: RegionInfo[] = [
-  { id: 'eastus2',       displayName: 'East US 2',        location: 'Virginia',    flag: '🇺🇸', regionType: 'HERO', geography: 'United States' },
-  { id: 'australiaeast', displayName: 'Australia East',   location: 'Sydney',      flag: '🇦🇺', regionType: 'HERO', geography: 'Australia' },
-  { id: 'canadacentral', displayName: 'Canada Central',   location: 'Toronto',     flag: '🇨🇦', regionType: 'HUB',  geography: 'Canada' },
-  { id: 'brazilsouth',   displayName: 'Brazil South',     location: 'São Paulo',   flag: '🇧🇷', regionType: 'HUB',  geography: 'Brazil' },
-  { id: 'mexicocentral', displayName: 'Mexico Central',   location: 'Querétaro',   flag: '🇲🇽', regionType: 'HUB',  geography: 'Mexico' },
-  { id: 'westeurope',    displayName: 'West Europe',      location: 'Netherlands', flag: '🇳🇱', regionType: 'HUB',  geography: 'Europe' },
-  { id: 'swedencentral', displayName: 'Sweden Central',   location: 'Gävle',       flag: '🇸🇪', regionType: 'HUB',  geography: 'Europe' },
-  { id: 'southeastasia', displayName: 'Southeast Asia',   location: 'Singapore',   flag: '🇸🇬', regionType: 'HUB',  geography: 'Asia Pacific' },
-];
+export { AVAILABLE_REGIONS };
+export type { AzureRegion, RegionInfo };
 
 interface RegionalPricingData {
   BillingCurrency: string;
@@ -340,7 +320,8 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
   items.forEach(item => {
     const skuName = item.skuName || item.armSkuName;
     if (!skuName) return;
-    if (/spot|low priority/i.test(`${skuName} ${item.meterName || ''}`)) return;
+    const meterIdentity = `${skuName} ${item.armSkuName || ''} ${item.meterName || ''} ${(item as any).productName || ''}`;
+    if (/spot|low priority|secondary|failover|passive/i.test(meterIdentity)) return;
     
     // Handle different billing units for AI services
     const unitOfMeasure = (item as any).unitOfMeasure || '1 Hour';

@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { Terminal, Download, X } from 'lucide-react';
+import { AVAILABLE_REGIONS } from '../data/pricingRegions';
 import './AzPrototypeExportModal.css';
 
 export interface AzPrototypeExportModalProps {
@@ -28,22 +29,10 @@ export interface AzPrototypeExportModalProps {
   architectureName?: string;
 }
 
-const AZURE_REGIONS = [
-  { value: 'eastus', label: 'East US' },
-  { value: 'eastus2', label: 'East US 2' },
-  { value: 'westus2', label: 'West US 2' },
-  { value: 'westus3', label: 'West US 3' },
-  { value: 'centralus', label: 'Central US' },
-  { value: 'westeurope', label: 'West Europe' },
-  { value: 'northeurope', label: 'North Europe' },
-  { value: 'swedencentral', label: 'Sweden Central' },
-  { value: 'uksouth', label: 'UK South' },
-  { value: 'southeastasia', label: 'Southeast Asia' },
-  { value: 'australiaeast', label: 'Australia East' },
-  { value: 'canadacentral', label: 'Canada Central' },
-  { value: 'brazilsouth', label: 'Brazil South' },
-  { value: 'japaneast', label: 'Japan East' },
-];
+const AZURE_REGIONS = AVAILABLE_REGIONS.map(region => ({
+  value: region.id,
+  label: region.displayName,
+}));
 
 export default function AzPrototypeExportModal({
   isOpen,
@@ -58,7 +47,7 @@ export default function AzPrototypeExportModal({
   const [projectName, setProjectName] = useState(
     () => (architectureName || 'my-prototype').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').slice(0, 40),
   );
-  const [location, setLocation] = useState('eastus');
+  const [location, setLocation] = useState('eastus2');
   const [iacTool, setIacTool] = useState<'bicep' | 'terraform'>('bicep');
   const [includeCosts, setIncludeCosts] = useState(hasCostData);
   const [includeWorkflow, setIncludeWorkflow] = useState(true);

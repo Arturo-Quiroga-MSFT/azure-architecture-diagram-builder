@@ -11,6 +11,7 @@ import { ServicePricing } from '../types/pricing';
 import { 
   getRegionalServicePricing, 
   getActiveRegion,
+  AVAILABLE_REGIONS,
   AzureRegion 
 } from './regionalPricingService';
 
@@ -49,7 +50,7 @@ export function getAvailableServices(): string[] {
  * Get available regions
  */
 export function getAvailableRegions(): string[] {
-  return ['eastus2', 'canadacentral', 'brazilsouth', 'westeurope', 'swedencentral'];
+  return AVAILABLE_REGIONS.map(region => region.id);
 }
 
 /**

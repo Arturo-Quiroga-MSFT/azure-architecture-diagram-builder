@@ -3,12 +3,15 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const here = resolve(fileURLToPath(new URL('.', import.meta.url)));
 const repoRoot = resolve(here, '..');
 const pricingRoot = join(repoRoot, 'src', 'data', 'pricing', 'regions');
-const expectedRegions = ['eastus2', 'australiaeast', 'canadacentral', 'brazilsouth', 'mexicocentral', 'westeurope', 'swedencentral', 'southeastasia'];
+const manifestPath = join(repoRoot, 'src', 'data', 'pricing', 'snapshot-manifest.json');
+const expectedRegions = JSON.parse(readFileSync(join(here, 'pricing-regions.json'), 'utf8'));
 const canonicalRegion = 'eastus2';
+const globalStems = new Set(['azure_front_door_service', 'content_delivery_network', 'cdn', 'static_web_apps', 'azure_devops']);
 
 function readJson(file) {
   try {
@@ -21,12 +24,25 @@ function readJson(file) {
 const canonicalFiles = new Set(
   readdirSync(join(pricingRoot, canonicalRegion)).filter((file) => file.endsWith('.json')),
 );
+const manifest = readJson(manifestPath).data;
+const inventoryHash = createHash('sha256');
+for (const region of [...expectedRegions].sort()) {
+  for (const file of [...canonicalFiles].sort()) {
+    inventoryHash.update(`${region}/${file}`);
+    inventoryHash.update('\0');
+    inventoryHash.update(readFileSync(join(pricingRoot, region, file)));
+    inventoryHash.update('\0');
+  }
+}
+const actualInventorySha256 = inventoryHash.digest('hex');
 
 const report = {
   generatedAt: new Date().toISOString(),
   pricingRoot,
   canonicalRegion,
   expectedRegions,
+  expectedInventorySha256: manifest?.snapshotInventorySha256 ?? null,
+  actualInventorySha256,
   regions: {},
   totals: {
     files: 0,
@@ -35,6 +51,7 @@ const report = {
     filesWithNextPageLink: 0,
     consumptionItems: 0,
     itemsWith1yrSavingsPlan: 0,
+    regionalItemMismatches: 0,
   },
   verdicts: [],
 };
@@ -53,6 +70,7 @@ for (const region of expectedRegions) {
   let filesWithNextPageLink = 0;
   let consumptionItems = 0;
   let itemsWith1yrSavingsPlan = 0;
+  let regionalItemMismatches = 0;
   let oldestEffective = '';
   let newestEffective = '';
   let newestMtime = '';
@@ -75,6 +93,9 @@ for (const region of expectedRegions) {
     for (const item of items) {
       if (item.type === 'Consumption') fileConsumption++;
       if (Array.isArray(item.savingsPlan) && item.savingsPlan.some((plan) => /1\s*year/i.test(plan.term || ''))) fileSavings++;
+      if (!globalStems.has(basename(file, '.json')) && String(item.armRegionName || '').toLowerCase() !== region) {
+        regionalItemMismatches++;
+      }
       const effective = String(item.effectiveStartDate || '').slice(0, 10);
       if (effective && (!oldestEffective || effective < oldestEffective)) oldestEffective = effective;
       if (effective && (!newestEffective || effective > newestEffective)) newestEffective = effective;
@@ -95,6 +116,7 @@ for (const region of expectedRegions) {
     filesWithNextPageLink,
     consumptionItems,
     itemsWith1yrSavingsPlan,
+    regionalItemMismatches,
     oneYearRawMeterCoveragePercent: consumptionItems ? Number((100 * itemsWith1yrSavingsPlan / consumptionItems).toFixed(1)) : 0,
     oldestEffective: oldestEffective || null,
     newestEffective: newestEffective || null,
@@ -108,6 +130,7 @@ for (const region of expectedRegions) {
   report.totals.filesWithNextPageLink += filesWithNextPageLink;
   report.totals.consumptionItems += consumptionItems;
   report.totals.itemsWith1yrSavingsPlan += itemsWith1yrSavingsPlan;
+  report.totals.regionalItemMismatches += regionalItemMismatches;
 }
 
 report.totals.oneYearRawMeterCoveragePercent = report.totals.consumptionItems
@@ -116,6 +139,8 @@ report.totals.oneYearRawMeterCoveragePercent = report.totals.consumptionItems
 
 if (report.totals.malformedFiles > 0) report.verdicts.push('FAIL: malformed pricing files exist.');
 if (report.totals.filesWithNextPageLink > 0) report.verdicts.push('FAIL: snapshot contains unconsumed NextPageLink values and is truncated.');
+if (report.totals.regionalItemMismatches > 0) report.verdicts.push('FAIL: non-global pricing files contain meters from the wrong Azure region.');
+if (!report.expectedInventorySha256 || report.expectedInventorySha256 !== report.actualInventorySha256) report.verdicts.push('FAIL: snapshot inventory SHA-256 does not match the manifest.');
 if (Object.values(report.regions).some((region) => region.missingFiles.length > 0)) report.verdicts.push('FAIL: regional file inventories are inconsistent.');
 if (report.totals.itemsWith1yrSavingsPlan < report.totals.consumptionItems) report.verdicts.push('INFO: real one-year Savings Plan rates exist for only a subset of raw consumption meters.');
 if (report.verdicts.length === 0) report.verdicts.push('PASS: structural snapshot checks passed.');
@@ -128,14 +153,15 @@ if (outputArg) {
 }
 
 console.log('Azure pricing snapshot coverage');
-console.log(`Regions: ${expectedRegions.length}; files: ${report.totals.files}; malformed: ${report.totals.malformedFiles}; empty: ${report.totals.emptyFiles}; paginated/truncated: ${report.totals.filesWithNextPageLink}`);
+console.log(`Regions: ${expectedRegions.length}; files: ${report.totals.files}; malformed: ${report.totals.malformedFiles}; empty: ${report.totals.emptyFiles}; paginated/truncated: ${report.totals.filesWithNextPageLink}; wrong-region items: ${report.totals.regionalItemMismatches}`);
 console.log(`Raw Consumption meters: ${report.totals.consumptionItems}; with real 1-year Savings Plan: ${report.totals.itemsWith1yrSavingsPlan} (${report.totals.oneYearRawMeterCoveragePercent}%)`);
+console.log(`Snapshot inventory SHA-256: ${report.actualInventorySha256} (${report.actualInventorySha256 === report.expectedInventorySha256 ? 'matches manifest' : 'MISMATCH'})`);
 for (const region of expectedRegions) {
   const item = report.regions[region];
-  console.log(`${region.padEnd(18)} files=${String(item.fileCount).padEnd(3)} missing=${String(item.missingFiles.length).padEnd(2)} empty=${String(item.emptyFiles).padEnd(2)} truncated=${item.filesWithNextPageLink} real1yrRaw=${item.oneYearRawMeterCoveragePercent}% newestMeter=${item.newestEffective || 'n/a'}`);
+  console.log(`${region.padEnd(18)} files=${String(item.fileCount).padEnd(3)} missing=${String(item.missingFiles.length).padEnd(2)} empty=${String(item.emptyFiles).padEnd(2)} truncated=${item.filesWithNextPageLink} wrongRegion=${item.regionalItemMismatches} real1yrRaw=${item.oneYearRawMeterCoveragePercent}% newestMeter=${item.newestEffective || 'n/a'}`);
 }
 for (const verdict of report.verdicts) console.log(verdict);
 
-if (report.totals.malformedFiles > 0 || report.totals.filesWithNextPageLink > 0 || Object.values(report.regions).some((region) => region.missingFiles.length > 0)) {
+if (report.totals.malformedFiles > 0 || report.totals.filesWithNextPageLink > 0 || report.totals.regionalItemMismatches > 0 || report.actualInventorySha256 !== report.expectedInventorySha256 || Object.values(report.regions).some((region) => region.missingFiles.length > 0)) {
   process.exitCode = 1;
 }

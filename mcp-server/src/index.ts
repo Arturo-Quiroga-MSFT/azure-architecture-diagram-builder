@@ -331,7 +331,7 @@ server.registerTool(
       region: z
         .string()
         .optional()
-        .describe('Fallback Azure region for services without services[].region (default: eastus2). Bundled snapshots: eastus2, swedencentral, westeurope, canadacentral, brazilsouth, australiaeast, southeastasia, mexicocentral. Other regions use an explicitly reported proxy.'),
+        .describe('Fallback Azure region for services without services[].region (default: eastus2). Bundled snapshots: eastus2, centralus, westus2, australiaeast, canadacentral, brazilsouth, mexicocentral, westeurope, northeurope, uksouth, swedencentral, southeastasia, japaneast, centralindia. Other regions use an explicitly reported proxy for numeric snapshot estimates.'),
       term: z
         .string()
         .optional()

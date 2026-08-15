@@ -94,7 +94,10 @@ API, region- and term-aware.
 **Input:** `{ services[] (name, type, region?, tier?, quantity?), region?, term? }`
 - `services[].region`: per-service Azure region; overrides the request-level region
 - `tier`: `basic | standard | premium` → low/expected/high SKU band
-- `region`: `eastus2` (default), `swedencentral`, `westeurope`, `canadacentral`, `brazilsouth`, `australiaeast`, `southeastasia`, `mexicocentral`
+- `region`: `eastus2` (default), `centralus`, `westus2`, `australiaeast`,
+  `canadacentral`, `brazilsouth`, `mexicocentral`, `westeurope`,
+  `northeurope`, `uksouth`, `swedencentral`, `southeastasia`, `japaneast`,
+  `centralindia`
 - `term`: `payg` (default) or `reserved1yr`
 
 `reserved1yr` means exact, SKU-specific one-year Savings Plan pricing. Each

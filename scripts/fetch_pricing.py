@@ -7,7 +7,11 @@ import urllib.parse
 import os
 import time
 
-REGIONS = ['eastus2', 'canadacentral', 'swedencentral', 'westeurope', 'brazilsouth']
+REGIONS = [
+    'eastus2', 'centralus', 'westus2', 'australiaeast', 'canadacentral',
+    'brazilsouth', 'mexicocentral', 'westeurope', 'northeurope', 'uksouth',
+    'swedencentral', 'southeastasia', 'japaneast', 'centralindia',
+]
 
 # Service name in API -> output filename
 SERVICES = {

@@ -1281,45 +1281,11 @@ export function getFabricCapacityMonthly(
 }
 
 /**
- * FALLBACK 1-year discount (fraction OFF pay-as-you-go) for reservation-eligible
- * services. This is only used when a meter carries NO real 1-year Savings Plan
- * rate — the cost engine prefers each meter's actual savingsPlan[] "1 Year" rate
- * (see regionalPricingService.parsePricingTiers) and falls back to these
- * representative values otherwise. Usage-based/consumption services (storage,
- * bandwidth, OneLake, serverless) are NOT eligible and stay at PAYG. Fabric is
- * exact (matches FABRIC_CAPACITY_SKUS). Treat the fallbacks as estimates.
- */
-export const RESERVED_1YR_DISCOUNT: Record<string, number> = {
-  'Virtual Machines': 0.37,
-  'Virtual Machine': 0.37,
-  'Azure Kubernetes Service': 0.37, // underlying node VMs
-  'AKS': 0.37,
-  'App Service': 0.36,
-  'App Services': 0.36,
-  'SQL Database': 0.35,
-  'Azure SQL Database': 0.35,
-  'Azure Cosmos DB': 0.35,
-  'Cosmos DB': 0.35,
-  'Azure Cache for Redis': 0.36,
-  'Azure Database for PostgreSQL': 0.34,
-  'PostgreSQL': 0.34,
-  'Azure Database for MySQL': 0.34,
-  'MySQL': 0.34,
-  'Azure Synapse Analytics': 0.28,
-  'Microsoft Fabric Capacity': 0.405, // exact: ~40.5% off PAYG
-};
-
-/** 1-year reserved discount fraction for a service (0 if not reservation-eligible). */
-export function getReserved1yrDiscount(serviceType: string): number {
-  return RESERVED_1YR_DISCOUNT[getPricingConfigKey(serviceType, RESERVED_1YR_DISCOUNT)] || 0;
-}
-
-/**
  * Date the bundled regional pricing data was last refreshed (YYYY-MM-DD).
  * The `npm run pricing:refresh` script bumps this automatically after a
  * successful fetch so cost exports can show an accurate "Prices as of" stamp.
  */
-export const PRICING_DATA_AS_OF = '2026-08-13';
+export const PRICING_DATA_AS_OF = '2026-08-15';
 
 /**
  * Check if service has pricing data available

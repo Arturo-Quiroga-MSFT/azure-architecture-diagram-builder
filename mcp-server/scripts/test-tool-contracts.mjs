@@ -421,6 +421,22 @@ async function main() {
     assert.equal(estimate.structuredContent?.region, 'eastus2');
     assert.equal(estimate.structuredContent?.term, 'payg');
     assert.equal(estimate.structuredContent?.serviceCount, 1);
+    assert.deepEqual(estimate.structuredContent?.pricingSource.regions.sort(), [
+      'australiaeast',
+      'brazilsouth',
+      'canadacentral',
+      'centralindia',
+      'centralus',
+      'eastus2',
+      'japaneast',
+      'mexicocentral',
+      'northeurope',
+      'southeastasia',
+      'swedencentral',
+      'uksouth',
+      'westeurope',
+      'westus2',
+    ]);
 
     const mixedRegionEstimate = await client.callTool({
       name: 'estimate_costs',
@@ -442,19 +458,46 @@ async function main() {
     assert.equal(mixed?.numericCoveragePercent, 66.67);
     assert.equal(mixed?.isPartialBaseline, true);
     assert.equal(mixed?.baselineLabel, 'Partial fixed-price baseline covering 2/3 resources');
-    assert.equal(mixed?.regionProxyUsed, true);
-    assert.equal(mixed?.proxiedResourceCount, 1);
+    assert.equal(mixed?.regionProxyUsed, false);
+    assert.equal(mixed?.proxiedResourceCount, 0);
     assert.deepEqual(mixed?.requestedRegions, ['centralus', 'eastus2']);
-    assert.deepEqual(mixed?.effectiveRegions, ['eastus2']);
+    assert.deepEqual(mixed?.effectiveRegions, ['centralus', 'eastus2']);
     const secondary = mixed?.estimates.find(item => item.name === 'Secondary API');
     assert.equal(secondary?.requestedRegion, 'centralus');
-    assert.equal(secondary?.effectiveRegion, 'eastus2');
-    assert.equal(secondary?.regionProxyUsed, true);
-    assert(secondary?.regionProxyReason.includes('No bundled pricing snapshot'));
+    assert.equal(secondary?.effectiveRegion, 'centralus');
+    assert.equal(secondary?.regionProxyUsed, false);
     const excludedMonitor = mixed?.excludedServices.find(item => item.name === 'Shared Monitor');
     assert.equal(excludedMonitor?.requestedRegion, 'centralus');
     assert.equal(excludedMonitor?.effectiveRegion, 'centralus');
     assert.equal(excludedMonitor?.regionProxyUsed, false);
+
+    for (const nativeRegion of ['centralus', 'westus2', 'uksouth', 'northeurope', 'japaneast', 'centralindia']) {
+      const nativeEstimate = await client.callTool({
+        name: 'estimate_costs',
+        arguments: {
+          region: nativeRegion,
+          services: [{ name: `${nativeRegion} API`, type: 'API Management', region: nativeRegion }],
+        },
+      });
+      const nativeOutput = nativeEstimate.structuredContent;
+      assert.equal(nativeOutput?.hasPricingData, true, `${nativeRegion} must have a native numeric estimate`);
+      assert.equal(nativeOutput?.regionProxyUsed, false, `${nativeRegion} must not use a proxy`);
+      assert.equal(nativeOutput?.estimates[0]?.requestedRegion, nativeRegion);
+      assert.equal(nativeOutput?.estimates[0]?.effectiveRegion, nativeRegion);
+      assert.equal(nativeOutput?.estimates[0]?.regionProxyUsed, false);
+    }
+
+    for (const nativeRegion of estimate.structuredContent?.pricingSource.regions ?? []) {
+      const vmEstimate = await client.callTool({
+        name: 'estimate_costs',
+        arguments: {
+          region: nativeRegion,
+          services: [{ name: `${nativeRegion} VM`, type: 'Virtual Machines', region: nativeRegion }],
+        },
+      });
+      const sampleSku = vmEstimate.structuredContent?.estimates[0]?.sampleSku ?? '';
+      assert(!/spot|low priority/i.test(sampleSku), `${nativeRegion} VM sample must exclude Spot/Low Priority: ${sampleSku}`);
+    }
 
     const quantityEstimate = await client.callTool({
       name: 'estimate_costs',
@@ -472,10 +515,26 @@ async function main() {
     assert.equal(quantityCoverage?.numericallyPricedResourceCount, 10);
     assert.equal(quantityCoverage?.excludedResourceCount, 2);
     assert.equal(quantityCoverage?.usageBasedResourceCount, 2);
-    assert.equal(quantityCoverage?.proxiedResourceCount, 10);
+    assert.equal(quantityCoverage?.proxiedResourceCount, 0);
     assert.equal(quantityCoverage?.numericCoveragePercent, 83.33);
     assert.equal(quantityCoverage?.baselineLabel, 'Partial fixed-price baseline covering 10/12 resources');
     assert.equal(quantityCoverage?.excludedServices[0]?.quantity, 2);
+
+    const unsupportedRegionEstimate = await client.callTool({
+      name: 'estimate_costs',
+      arguments: {
+        region: 'westus3',
+        services: [{ name: 'Future API', type: 'API Management', region: 'westus3' }],
+      },
+    });
+    const unsupportedRegion = unsupportedRegionEstimate.structuredContent;
+    assert.equal(unsupportedRegion?.regionProxyUsed, true);
+    assert.equal(unsupportedRegion?.proxiedResourceCount, 1);
+    assert.deepEqual(unsupportedRegion?.requestedRegions, ['westus3']);
+    assert.deepEqual(unsupportedRegion?.effectiveRegions, ['eastus2']);
+    assert.equal(unsupportedRegion?.estimates[0]?.requestedRegion, 'westus3');
+    assert.equal(unsupportedRegion?.estimates[0]?.effectiveRegion, 'eastus2');
+    assert.equal(unsupportedRegion?.estimates[0]?.regionProxyUsed, true);
 
     const firstHarden = textPayload(await client.callTool({
       name: 'harden_architecture',
