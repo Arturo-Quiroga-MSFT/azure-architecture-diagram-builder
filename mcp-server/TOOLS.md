@@ -46,6 +46,11 @@ names/aliases to canonical service types before calling the other tools.
 `{ key, displayName, category, aliases, hasPricingData, isUsageBased, costRange }`.
 Also available as the `azure://catalog/services` resource.
 
+All 12 tools advertise an MCP `outputSchema` and return `structuredContent` on
+successful calls. Existing text payloads remain available for compatibility;
+artifact tools include the generated SVG, HTML, Bicep, Terraform, or Markdown in
+their structured result as well.
+
 ---
 
 ## 2. `validate_architecture`
@@ -283,7 +288,9 @@ badges come from the same pricing resolution as `estimate_costs`.
 
 `services[].region` overrides the render-level `region` for cost enrichment.
 
-**Output:** the SVG or HTML markup (text).
+**Output:** the SVG or HTML markup in both the existing text content and
+`structuredContent.content`. New clients should read the structured result;
+the duplicate text payload remains for backward compatibility.
 
 - `presentation` (default): semantic reflow for ultra-wide capability groups and global/primary/secondary regional architectures, graph-derived request paths, WAF policy associations, quieter supporting edges, representative labels, larger text, and no pricing.
 - `technical`: natural layout with every connection label and no pricing.
@@ -297,15 +304,20 @@ Export a **React Flow scene JSON** compatible with the web app (Open / Import
 Architecture). Reuses the dagre layout for positions and the web app icon
 catalog for icon paths.
 
-**Input:** `{ services[], connections?[], groups?[], architectureName?, architecturePrompt?, author?, direction? (TB|LR|auto), region?, workflow?[] }`
+**Input:** `{ services[], connections?[], groups?[], architectureName?, architecturePrompt?, author?, direction? (TB|LR|auto), region?, workflow?[] }`.
+Services and connections may carry optional stable `id` values.
 - `direction: auto` (default) picks **LR** for 4+ groups or dense graphs, else **TB**.
 
 **Output:** the React Flow scene JSON. Round-trips back via `import_architecture` (§10).
 Per-service regions are preserved in node data and embedded pricing provenance.
+React Flow node IDs remain deterministic name-derived routing IDs; canonical
+service IDs are stored in `node.data.architectureId`. Original group IDs are in
+`group.data.architectureGroupId`. Explicit connection IDs are used as edge IDs
+and also stored in `edge.data.architectureId`.
 
 ---
 
-## 10. `import_architecture` (new)
+## 10. `import_architecture`
 
 **Module:** [`src/importer.ts`](src/importer.ts)
 
@@ -336,10 +348,14 @@ round-trip so an agent can reload a previously saved design and keep working.
   "format": "manifest | reactflow",
   "projectName?": "...",
   "location?": "...",
+  "iacTool?": "bicep | terraform",
+  "author?": "...",
+  "architecturePrompt?": "...",
   "warnings": [ ... ],          // non-fatal parse notes (e.g. unresolved type)
   "services": [ ... ],          // canonical shape — feed straight into any tool
   "connections": [ ... ],
-  "groups": [ ... ]
+  "groups": [ ... ],
+  "workflow": [ ... ]
 }
 ```
 

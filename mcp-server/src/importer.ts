@@ -16,6 +16,7 @@
  */
 
 export interface ImportedService {
+  id?: string;
   name: string;
   type: string;
   region?: string;
@@ -23,6 +24,7 @@ export interface ImportedService {
   groupId?: string;
 }
 export interface ImportedConnection {
+  id?: string;
   from: string;
   to: string;
   label?: string;
@@ -32,13 +34,22 @@ export interface ImportedGroup {
   id: string;
   label: string;
 }
+export interface ImportedWorkflowStep {
+  step: number;
+  description: string;
+  services: string[];
+}
 export interface ImportResult {
   format: 'manifest' | 'reactflow';
   projectName?: string;
   location?: string;
+  iacTool?: string;
+  author?: string;
+  architecturePrompt?: string;
   services: ImportedService[];
   connections: ImportedConnection[];
   groups: ImportedGroup[];
+  workflow: ImportedWorkflowStep[];
   warnings: string[];
 }
 
@@ -63,8 +74,13 @@ function asObject(input: unknown): AnyObj {
   throw new Error('Input must be a JSON string or object.');
 }
 
-/** Reverse a React Flow node's Azure service type. */
-function typeFromNode(node: AnyObj, iconFileToType?: Record<string, string>): string | null {
+interface ResolvedNodeType {
+  type: string | null;
+  source: 'explicit' | 'icon' | 'label' | 'none';
+}
+
+/** Reverse a React Flow node's Azure service type and retain its provenance. */
+function typeFromNode(node: AnyObj, iconFileToType?: Record<string, string>): ResolvedNodeType {
   const d = (node.data ?? {}) as AnyObj;
   const explicit =
     (d.azureServiceType as string) ??
@@ -72,16 +88,16 @@ function typeFromNode(node: AnyObj, iconFileToType?: Record<string, string>): st
     (d.azureType as string) ??
     (d.type as string) ??
     (node.azureServiceType as string);
-  if (typeof explicit === 'string' && explicit.trim()) return explicit.trim();
+  if (typeof explicit === 'string' && explicit.trim()) return { type: explicit.trim(), source: 'explicit' };
 
   const ip = (d.iconPath as string) ?? (d.icon as string);
   if (typeof ip === 'string' && iconFileToType) {
     const m = ip.match(/\/([^/]+)\.svg$/i);
-    if (m && iconFileToType[m[1]]) return iconFileToType[m[1]];
+    if (m && iconFileToType[m[1]]) return { type: iconFileToType[m[1]], source: 'icon' };
   }
   const label = d.label as string;
-  if (typeof label === 'string' && label.trim()) return label.trim();
-  return null;
+  if (typeof label === 'string' && label.trim()) return { type: label.trim(), source: 'label' };
+  return { type: null, source: 'none' };
 }
 
 function isGroupNode(node: AnyObj): boolean {
@@ -109,8 +125,11 @@ export function importArchitecture(
     const rawServices = Array.isArray(arch.services) ? (arch.services as AnyObj[]) : [];
     const rawConns = Array.isArray(arch.connections) ? (arch.connections as AnyObj[]) : [];
     const rawGroups = Array.isArray(arch.groups) ? (arch.groups as AnyObj[]) : [];
+    const rawWorkflow = Array.isArray(arch.workflow) ? (arch.workflow as AnyObj[]) : [];
+    const metadata = (obj.metadata ?? {}) as AnyObj;
 
     const services: ImportedService[] = rawServices.map(s => ({
+      id: s.id ? String(s.id) : undefined,
       name: String(s.name ?? s.id ?? 'Unnamed'),
       type: String(s.type ?? 'Unknown'),
       region: s.region ? String(s.region).trim().toLowerCase().replace(/[\s_-]+/g, '') : undefined,
@@ -118,6 +137,7 @@ export function importArchitecture(
       groupId: s.groupId ? String(s.groupId) : undefined,
     }));
     const connections: ImportedConnection[] = rawConns.map(c => ({
+      id: c.id ? String(c.id) : undefined,
       from: String(c.from),
       to: String(c.to),
       label: c.label ? String(c.label) : undefined,
@@ -127,15 +147,26 @@ export function importArchitecture(
       id: String(g.id),
       label: String(g.label ?? g.id),
     }));
+    const workflow: ImportedWorkflowStep[] = rawWorkflow.map(item => ({
+      step: Number(item.step),
+      description: String(item.description ?? ''),
+      services: Array.isArray(item.services) ? item.services.map(String) : [],
+    }));
 
     if (services.length === 0) warnings.push('Manifest contained no services.');
     return {
       format: 'manifest',
       projectName: project.name ? String(project.name) : undefined,
-      location: project.location ? String(project.location) : undefined,
+      location: project.location
+        ? String(project.location).trim().toLowerCase().replace(/[\s_-]+/g, '')
+        : undefined,
+      iacTool: project.iacTool ? String(project.iacTool) : undefined,
+      author: metadata.author ? String(metadata.author) : undefined,
+      architecturePrompt: metadata.architecturePrompt ? String(metadata.architecturePrompt) : undefined,
       services,
       connections,
       groups,
+      workflow,
       warnings,
     };
   }
@@ -152,31 +183,43 @@ export function importArchitecture(
     const groups: ImportedGroup[] = [];
     const services: ImportedService[] = [];
     const nameByNodeId = new Map<string, string>();
-    const groupNodeIds = new Set<string>();
+    const groupIdByNodeId = new Map<string, string>();
 
     for (const node of nodes) {
       const id = String(node.id ?? '');
       if (!id) continue;
       if (isGroupNode(node)) {
-        groupNodeIds.add(id);
         const d = (node.data ?? {}) as AnyObj;
-        groups.push({ id, label: String(d.label ?? id) });
-        continue;
+        const canonicalGroupId = String(d.architectureGroupId ?? d.groupId ?? id);
+        groupIdByNodeId.set(id, canonicalGroupId);
+        groups.push({ id: canonicalGroupId, label: String(d.label ?? canonicalGroupId) });
       }
+    }
+
+    for (const node of nodes) {
+      const id = String(node.id ?? '');
+      if (!id || isGroupNode(node)) continue;
       const d = (node.data ?? {}) as AnyObj;
       const pricing = (d.pricing ?? {}) as AnyObj;
       const name = String(d.label ?? node.id ?? 'Unnamed');
-      const type = typeFromNode(node, opts.iconFileToType);
-      if (!type) warnings.push(`Node "${name}" had no resolvable service type; using label.`);
+      const resolvedType = typeFromNode(node, opts.iconFileToType);
+      if (resolvedType.source === 'label') {
+        warnings.push(`Node "${name}" had no explicit or recognized icon type; using its label as the service type.`);
+      } else if (resolvedType.source === 'none') {
+        warnings.push(`Node "${name}" had no resolvable service type; using its generated name.`);
+      }
       const parent = (node.parentNode ?? node.parentId) as string | undefined;
       services.push({
+        id: d.architectureId || d.serviceId ? String(d.architectureId ?? d.serviceId) : undefined,
         name,
-        type: type ?? name,
+        type: resolvedType.type ?? name,
         region: d.region || pricing.region
           ? String(d.region ?? pricing.region).trim().toLowerCase().replace(/[\s_-]+/g, '')
           : undefined,
         description: d.description ? String(d.description) : undefined,
-        groupId: parent && groupNodeIds.has(String(parent)) ? String(parent) : (parent ? String(parent) : undefined),
+        groupId: d.groupId
+          ? String(d.groupId)
+          : (parent ? groupIdByNodeId.get(String(parent)) ?? String(parent) : undefined),
       });
       nameByNodeId.set(id, name);
     }
@@ -188,6 +231,7 @@ export function importArchitecture(
       if (!from || !to) continue; // skip edges touching group nodes / unknowns
       const d = (e.data ?? {}) as AnyObj;
       connections.push({
+        id: d.architectureId || d.connectionId ? String(d.architectureId ?? d.connectionId) : undefined,
         from,
         to,
         label: e.label ? String(e.label) : undefined,
@@ -196,13 +240,23 @@ export function importArchitecture(
     }
 
     const meta = (obj.metadata ?? {}) as AnyObj;
+    const rawWorkflow = Array.isArray(obj.workflow) ? (obj.workflow as AnyObj[]) : [];
+    const workflow: ImportedWorkflowStep[] = rawWorkflow.map(item => ({
+      step: Number(item.step),
+      description: String(item.description ?? ''),
+      services: Array.isArray(item.services) ? item.services.map(String) : [],
+    }));
     if (services.length === 0) warnings.push('Scene contained no service nodes.');
     return {
       format: 'reactflow',
       projectName: meta.architectureName ? String(meta.architectureName) : undefined,
+      location: meta.location ? String(meta.location) : undefined,
+      author: meta.author ? String(meta.author) : undefined,
+      architecturePrompt: obj.architecturePrompt ? String(obj.architecturePrompt) : undefined,
       services,
       connections,
       groups,
+      workflow,
       warnings,
     };
   }

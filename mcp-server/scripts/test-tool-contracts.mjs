@@ -180,13 +180,13 @@ async function main() {
     assert.deepEqual(tools.map(tool => tool.name).sort(), EXPECTED_TOOLS);
     for (const tool of tools) {
       assert(tool.title?.trim(), `${tool.name} must expose a title`);
+      assert(tool.outputSchema, `${tool.name} must expose an output schema`);
       assert.deepEqual(tool.annotations, {
         readOnlyHint: true,
         idempotentHint: true,
         openWorldHint: false,
       }, `${tool.name} must expose the standard deterministic annotations`);
     }
-
     const { resources } = await client.listResources();
     assert.deepEqual(resources.map(resource => resource.uri).sort(), EXPECTED_RESOURCES);
 
@@ -199,10 +199,12 @@ async function main() {
     }));
     assert(listedServices.totalServices > 0);
 
-    const fullCatalog = textPayload(await client.callTool({
+    const fullCatalogResult = await client.callTool({
       name: 'list_services',
       arguments: {},
-    }));
+    });
+    const fullCatalog = textPayload(fullCatalogResult);
+    assert.deepEqual(fullCatalogResult.structuredContent, fullCatalog);
     assert.equal(fullCatalog.totalServices, 94);
     assert(fullCatalog.services.some(service => service.key === 'Microsoft Foundry'));
     assert(fullCatalog.services.some(service => service.key === 'Microsoft Fabric Capacity'));
@@ -279,7 +281,7 @@ async function main() {
     assert(detachedWafHarden.changes.some(change => change.action.includes('Associated the existing')));
     assert(!detachedWafHarden.after.patternsDetected.includes('no-waf'));
 
-    const frontDoorWafHarden = textPayload(await client.callTool({
+    const frontDoorWafHardenResult = await client.callTool({
       name: 'harden_architecture',
       arguments: {
         services: [
@@ -289,7 +291,9 @@ async function main() {
         connections: [{ from: 'Front Door', to: 'Web East', label: 'Route application requests' }],
         groups: [],
       },
-    }));
+    });
+    const frontDoorWafHarden = textPayload(frontDoorWafHardenResult);
+    assert.deepEqual(frontDoorWafHardenResult.structuredContent, frontDoorWafHarden);
     assert.equal(frontDoorWafHarden.services.filter(service => service.type === 'Azure Front Door').length, 1);
     assert(frontDoorWafHarden.services.some(service => service.name === 'WAF Policy'));
     assert(frontDoorWafHarden.connections.some(edge => edge.from === 'Front Door' && edge.to === 'WAF Policy'));
@@ -351,7 +355,7 @@ async function main() {
     assert(apimDirectValidation.structuredContent?.patternsDetected.includes('no-waf'));
     assert(apimDirectValidation.structuredContent?.patternsDetected.includes('direct-db-access'));
 
-    const manifest = textPayload(await client.callTool({
+    const manifestResult = await client.callTool({
       name: 'generate_manifest',
       arguments: {
         projectName: 'contract-test',
@@ -359,8 +363,11 @@ async function main() {
         iacTool: 'bicep',
         ...initialArchitecture,
       },
-    }));
+    });
+    const manifest = textPayload(manifestResult);
+    assert.deepEqual(manifestResult.structuredContent, manifest);
     assert.equal(manifest.project.name, 'contract-test');
+    assert.equal('groupId' in manifest.architecture.services[0], false);
 
     const regionalManifest = textPayload(await client.callTool({
       name: 'generate_manifest',
@@ -373,20 +380,24 @@ async function main() {
     }));
     assert.deepEqual(regionalManifest.architecture.services.map(service => service.region), ['eastus2', 'centralus']);
 
-    const importedRegionalManifest = textPayload(await client.callTool({
+    const importedRegionalManifestResult = await client.callTool({
       name: 'import_architecture',
       arguments: { content: JSON.stringify(regionalManifest), format: 'manifest' },
-    }));
+    });
+    const importedRegionalManifest = textPayload(importedRegionalManifestResult);
+    assert.deepEqual(importedRegionalManifestResult.structuredContent, importedRegionalManifest);
     assert.deepEqual(importedRegionalManifest.services.map(service => service.region), ['eastus2', 'centralus']);
 
-    const bicep = textPayload(await client.callTool({
+    const bicepResult = await client.callTool({
       name: 'generate_bicep',
       arguments: {
         projectName: 'contract-test',
         location: 'eastus2',
         ...initialArchitecture,
       },
-    }));
+    });
+    const bicep = textPayload(bicepResult);
+    assert.deepEqual(bicepResult.structuredContent, bicep);
     assert.equal(bicep.iacTool, 'bicep');
     assert(bicep.bicep.includes('resource'));
 
@@ -401,14 +412,16 @@ async function main() {
     assert(regionalBicep.note.includes('is not yet emitted as multi-region IaC'));
     assert(regionalBicep.note.includes('centralus, eastus2'));
 
-    const terraform = textPayload(await client.callTool({
+    const terraformResult = await client.callTool({
       name: 'generate_terraform',
       arguments: {
         projectName: 'contract-test',
         location: 'eastus2',
         ...initialArchitecture,
       },
-    }));
+    });
+    const terraform = textPayload(terraformResult);
+    assert.deepEqual(terraformResult.structuredContent, terraform);
     assert.equal(terraform.iacTool, 'terraform');
     assert(terraform.terraform.includes('terraform {'));
 
@@ -719,15 +732,20 @@ async function main() {
     assert(renderedItem && renderedItem.type === 'text');
     assert(renderedItem.text.includes('<svg'));
     assert(renderedItem.text.includes('Contract Test Architecture'));
+    assert.equal(rendered.structuredContent?.format, 'svg');
+    assert.equal(rendered.structuredContent?.mimeType, 'image/svg+xml');
+    assert.equal(rendered.structuredContent?.content, renderedItem.text);
 
-    const scene = textPayload(await client.callTool({
+    const sceneResult = await client.callTool({
       name: 'export_reactflow_scene',
       arguments: {
         architectureName: 'Contract Test Architecture',
         region: 'none',
         ...initialArchitecture,
       },
-    }));
+    });
+    const scene = textPayload(sceneResult);
+    assert.deepEqual(sceneResult.structuredContent, scene);
     assert.equal(scene.metadata.architectureName, 'Contract Test Architecture');
     assert.equal(scene.nodes.filter(node => node.type === 'azureNode').length, initialArchitecture.services.length);
 
@@ -747,8 +765,158 @@ async function main() {
     }));
     assert.deepEqual(importedRegionalScene.services.map(service => service.region), ['eastus2', 'centralus']);
 
+    const roundTripArchitecture = {
+      services: [
+        { id: 'svc-web-primary', name: 'Primary Web', type: 'Azure App Service', region: 'East US 2', description: 'Primary API', groupId: 'serving-tier' },
+        { id: 'svc-events', name: 'Events', type: 'Event Hubs', region: 'Central US', description: 'Event backbone', groupId: 'data-tier' },
+      ],
+      connections: [
+        { id: 'conn-publish', from: 'Primary Web', to: 'Events', label: 'Publish domain events', type: 'async' },
+      ],
+      groups: [
+        { id: 'serving-tier', label: 'Serving Tier' },
+        { id: 'data-tier', label: 'Data Tier' },
+      ],
+      workflow: [
+        { step: 1, description: 'Publish events', services: ['Primary Web', 'Events'] },
+      ],
+    };
+    const roundTripSceneResult = await client.callTool({
+      name: 'export_reactflow_scene',
+      arguments: {
+        architectureName: 'Round Trip Contract',
+        architecturePrompt: 'Build a regional event platform',
+        author: 'Contract Author',
+        region: 'none',
+        ...roundTripArchitecture,
+      },
+    });
+    const roundTripScene = textPayload(roundTripSceneResult);
+    assert.deepEqual(roundTripSceneResult.structuredContent, roundTripScene);
+    assert.equal(roundTripScene.edges[0].id, 'conn-publish');
+    const roundTripImportResult = await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(roundTripScene), format: 'reactflow' },
+    });
+    const roundTripImport = textPayload(roundTripImportResult);
+    assert.deepEqual(roundTripImportResult.structuredContent, roundTripImport);
+    assert.equal(roundTripImport.author, 'Contract Author');
+    assert.equal(roundTripImport.architecturePrompt, 'Build a regional event platform');
+    assert.deepEqual(roundTripImport.workflow, roundTripArchitecture.workflow);
+    assert.deepEqual(roundTripImport.services, [
+      { id: 'svc-web-primary', name: 'Primary Web', type: 'App Service', region: 'eastus2', description: 'Primary API', groupId: 'serving-tier' },
+      { id: 'svc-events', name: 'Events', type: 'Event Hubs', region: 'centralus', description: 'Event backbone', groupId: 'data-tier' },
+    ]);
+    assert.deepEqual(roundTripImport.connections, roundTripArchitecture.connections);
+    assert.deepEqual(roundTripImport.groups, roundTripArchitecture.groups);
+
+    const hardenedRoundTripResult = await client.callTool({
+      name: 'harden_architecture',
+      arguments: roundTripImport,
+    });
+    const hardenedRoundTrip = textPayload(hardenedRoundTripResult);
+    assert.equal(hardenedRoundTrip.services.find(service => service.name === 'Primary Web')?.id, 'svc-web-primary');
+    assert.equal(hardenedRoundTrip.services.find(service => service.name === 'Events')?.id, 'svc-events');
+    assert.equal(hardenedRoundTrip.connections.find(connection => connection.from === 'Primary Web' && connection.to === 'Events')?.id, 'conn-publish');
+    const hardenedIds = hardenedRoundTrip.services.map(service => service.id).filter(Boolean);
+    assert.equal(new Set(hardenedIds).size, hardenedIds.length, 'Hardening must not duplicate stable service IDs');
+    const hardenedScene = textPayload(await client.callTool({
+      name: 'export_reactflow_scene',
+      arguments: {
+        architectureName: 'Hardened Round Trip',
+        region: 'none',
+        services: hardenedRoundTrip.services,
+        connections: hardenedRoundTrip.connections,
+        groups: hardenedRoundTrip.groups,
+      },
+    }));
+    const reimportedHardened = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(hardenedScene), format: 'reactflow' },
+    }));
+    assert.equal(reimportedHardened.services.find(service => service.name === 'Primary Web')?.id, 'svc-web-primary');
+    assert.equal(reimportedHardened.services.find(service => service.name === 'Events')?.id, 'svc-events');
+    assert.equal(reimportedHardened.connections.find(connection => connection.from === 'Primary Web' && connection.to === 'Events')?.id, 'conn-publish');
+
+    const roundTripManifestResult = await client.callTool({
+      name: 'generate_manifest',
+      arguments: {
+        projectName: 'round-trip-manifest',
+        location: 'East US 2',
+        iacTool: 'terraform',
+        architecturePrompt: 'Build a regional event platform',
+        author: 'Contract Author',
+        ...roundTripArchitecture,
+      },
+    });
+    const roundTripManifest = textPayload(roundTripManifestResult);
+    assert.deepEqual(roundTripManifestResult.structuredContent, roundTripManifest);
+    const importedRoundTripManifestResult = await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(roundTripManifest), format: 'manifest' },
+    });
+    const importedRoundTripManifest = textPayload(importedRoundTripManifestResult);
+    assert.equal(importedRoundTripManifest.iacTool, 'terraform');
+    assert.equal(importedRoundTripManifest.location, 'eastus2');
+    assert.equal(importedRoundTripManifest.author, 'Contract Author');
+    assert.equal(importedRoundTripManifest.architecturePrompt, 'Build a regional event platform');
+    assert.deepEqual(importedRoundTripManifest.workflow, roundTripArchitecture.workflow);
+    assert.deepEqual(importedRoundTripManifest.services, [
+      { id: 'svc-web-primary', name: 'Primary Web', type: 'App Service', region: 'eastus2', description: 'Primary API', groupId: 'serving-tier' },
+      { id: 'svc-events', name: 'Events', type: 'Event Hubs', region: 'centralus', description: 'Event backbone', groupId: 'data-tier' },
+    ]);
+    assert.deepEqual(importedRoundTripManifest.connections, roundTripArchitecture.connections);
+
+    const legacyWebScene = {
+      nodes: [
+        {
+          id: 'web-node',
+          type: 'azureNode',
+          parentNode: 'legacy-group-node',
+          data: {
+            label: 'Legacy Web',
+            iconPath: '/Azure_Public_Service_Icons/Icons/app services/app-service.svg',
+            region: 'East US 2',
+          },
+        },
+        {
+          id: 'legacy-group-node',
+          type: 'groupNode',
+          data: { label: 'Legacy Tier' },
+        },
+      ],
+      edges: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+      metadata: { architectureName: 'Legacy Scene' },
+    };
+    const importedLegacyScene = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(legacyWebScene), format: 'reactflow' },
+    }));
+    assert.deepEqual(importedLegacyScene.groups, [{ id: 'legacy-group-node', label: 'Legacy Tier' }]);
+    assert.deepEqual(importedLegacyScene.services, [{
+      name: 'Legacy Web',
+      type: 'App Service',
+      region: 'eastus2',
+      groupId: 'legacy-group-node',
+    }]);
+    assert.deepEqual(importedLegacyScene.warnings, []);
+
+    const importedCustomScene = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: {
+        format: 'reactflow',
+        content: JSON.stringify({
+          nodes: [{ id: 'custom-node', type: 'azureNode', data: { label: 'Partner Appliance' } }],
+          edges: [],
+        }),
+      },
+    }));
+    assert.equal(importedCustomScene.services[0].type, 'Partner Appliance');
+    assert.match(importedCustomScene.warnings[0], /using its label as the service type/i);
+
     for (const iacTool of ['bicep', 'terraform']) {
-      const guide = textPayload(await client.callTool({
+      const guideResult = await client.callTool({
         name: 'generate_deployment_guide',
         arguments: {
           projectName: 'contract-test',
@@ -757,7 +925,9 @@ async function main() {
           services: initialArchitecture.services,
           connections: initialArchitecture.connections,
         },
-      }));
+      });
+      const guide = textPayload(guideResult);
+      assert.deepEqual(guideResult.structuredContent, guide);
       assert.equal(guide.iacTool, iacTool);
       assert(guide.markdown.includes('contract-test'));
     }

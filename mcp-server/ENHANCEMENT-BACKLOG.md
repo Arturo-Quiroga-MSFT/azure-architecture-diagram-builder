@@ -24,7 +24,7 @@ instructions as historical context, not as the next implementation sequence.
 | **P0-1a** representative-SKU (trustworthy `expected`) | ✅ Shipped | `expected` = a typical-deployment SKU (App Service P1v3, Redis C1, SQL S3, VM D2s v4, AKS Standard, APIM Basic, AI Search S1) — not a median-of-all-SKUs |
 | **P0-1b** Microsoft Fabric F-SKU capacity | ✅ Shipped | Numeric monthly reservation (F2/F8/F64). AI (Foundry) + per-GB storage intentionally remain catalog ranges (usage-dominated → a fixed monthly would mislead) |
 | **P0-2** `generate_bicep` | ✅ Shipped | Deployable Bicep with WAF secure defaults pre-set + structured `findingsResolved`; `az bicep build` verified |
-| **P0-3** structured outputs | ✅ Shipped | `validate_architecture`, `estimate_costs`, `get_waf_rules` return typed `structuredContent` (+ `outputSchema`) with a human summary |
+| **P0-3** structured outputs | ✅ Expanded locally | All 12 tools advertise `outputSchema` and return `structuredContent` on successful calls while retaining their existing text payloads |
 | **P1-5** tool annotations | ✅ Implemented locally | All 12 tools expose titles plus read-only/idempotent/closed-world annotations; protocol contract test passes |
 
 **Evidence-gated next candidates:** broader typed structured outputs, Entra/OAuth,
@@ -39,7 +39,7 @@ defined.
 1. Region-aware canonical architecture and honest pricing coverage — deployed
 2. Correct multi-region validation and hardening semantics — deployed
 3. Synchronize the MCP service catalog with the app catalog — implemented locally
-4. Improve manifest/import fidelity and structured outputs
+4. Improve manifest/import fidelity and structured outputs — implemented locally
 5. Add deterministic regional cost comparison
 6. Add deterministic ARM-template import
 
@@ -59,6 +59,18 @@ pre-switch comparison found 25 app-only services and zero MCP-only services.
 Build-time validation rejects ambiguous canonical keys, display names, or
 aliases. `npm run test:catalog` verifies identity resolution, icon-map parity,
 legacy aliases, and ownership of all bundled numeric pricing policies. This
+change is implemented locally and is not marked deployed here.
+
+### Round-trip fidelity and structured outputs
+
+Step 4 preserves stable service/connection IDs, canonical service types, original
+group IDs, workflow, author/prompt, IaC tool, and normalized location metadata
+across manifest and React Flow export/import. Existing IDs also survive
+`import_architecture` → `harden_architecture` → export/import; cloned hardening
+resources do not duplicate source IDs. Legacy web-app scenes still recover types
+from icon paths and import correctly when group nodes follow their children.
+The protocol contract independently measures 12/12 tools with output schemas and
+checks text/structured parity for representative JSON and artifact tools. This
 change is implemented locally and is not marked deployed here.
 
 ---

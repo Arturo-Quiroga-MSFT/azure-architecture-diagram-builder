@@ -17,10 +17,12 @@
 import { detectWafPatterns, type ServiceInput, type ConnectionInput } from './wafDetector.js';
 
 export interface HardenService extends ServiceInput {
+  id?: string;
   description?: string;
   groupId?: string;
 }
 export interface HardenConnection extends ConnectionInput {
+  id?: string;
   type?: 'sync' | 'async' | 'optional';
 }
 export interface HardenGroup {
@@ -185,6 +187,7 @@ export function hardenArchitecture(
       };
       const addedSecondary = addService({
         ...primary,
+        id: undefined,
         name: secondaryName,
         region: secondaryRegion,
         description: `Secondary ${primary.type} serving instance in ${secondaryRegion}`,
@@ -320,6 +323,7 @@ export function hardenArchitecture(
       };
       const added = addService({
         ...primary,
+        id: undefined,
         name: replicaName,
         region: secondaryRegion,
         description: `Geo-replicated ${primary.type} instance in ${secondaryRegion}`,
