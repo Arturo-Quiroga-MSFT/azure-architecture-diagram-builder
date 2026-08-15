@@ -11,9 +11,10 @@
  *   1. Browse the canonical AADB service catalog (94 services with categories & pricing)
  *   2. Validate architectures against Azure WAF rules (deterministic, no LLM)
  *   3. Estimate monthly costs for a set of Azure services
- *   4. Generate an az prototype interchange manifest from services & connections
- *   5. Query WAF rules by pillar or service type
- *   6. Render professional architecture diagrams (SVG/HTML) replacing Mermaid
+ *   4. Compare one architecture across native Azure pricing regions
+ *   5. Generate an az prototype interchange manifest from services & connections
+ *   6. Query WAF rules by pillar or service type
+ *   7. Render professional architecture diagrams (SVG/HTML) replacing Mermaid
  *
  * Transports: stdio for local integrations, or Streamable HTTP for the
  * standalone Azure Container App and other remote clients.
@@ -51,7 +52,9 @@ import {
 import { computeLayout, reflowLayoutForPresentation } from './layoutEngine.js';
 import { renderSvg } from './svgRenderer.js';
 import { renderHtml } from './htmlRenderer.js';
-import { estimateServiceCost, getPricingMeta, normalizeAzureRegion, type PricingTerm, type CostTier } from './pricing.js';
+import { estimateServiceCost, getPricingMeta, normalizeAzureRegion } from './pricing.js';
+import { estimateArchitectureCosts, summarizeArchitectureCosts } from './costEstimator.js';
+import { compareRegionalCosts, summarizeRegionalComparison } from './regionalCostComparison.js';
 import { generateBicep } from './bicepGenerator.js';
 import { generateTerraform } from './terraformGenerator.js';
 import { generateDeploymentGuide } from './deploymentGuide.js';
@@ -370,6 +373,7 @@ server.registerTool(
       effectiveRegions: z.array(z.string()),
       hasPricingData: z.boolean(),
       totalMonthlyCost: z.object({ low: z.number(), expected: z.number(), high: z.number() }),
+      selectedMonthlyCost: z.number(),
       byCategory: z.record(
         z.string(),
         z.object({ count: z.number(), services: z.array(z.string()), expectedMonthlyCost: z.number() }),
@@ -424,202 +428,118 @@ server.registerTool(
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ services, region, term }) => {
-    const targetRegion = normalizeAzureRegion(region ?? 'eastus2');
-    const targetTerm: PricingTerm = term === 'reserved1yr' ? 'reserved1yr' : 'payg';
-
-    const estimates: Array<Record<string, unknown>> = [];
-
-    // Numeric running totals across services that have pricing data.
-    const totals = { low: 0, expected: 0, high: 0 };
-    const categoryTotals = new Map<
-      string,
-      { count: number; services: string[]; expectedMonthlyCost: number }
-    >();
-    let anyPricingData = false;
-    let currency = 'USD';
-    let pricesAsOf: string | null = null;
-    const servicesMissingData: string[] = [];
-    const excludedServices: Array<{
-      name: string;
-      type: string;
-      quantity: number;
-      requestedRegion: string;
-      effectiveRegion: string;
-      regionProxyUsed: boolean;
-      reason: 'usage-based' | 'catalog-range' | 'no-pricing-data';
-      catalogCostRange: string;
-    }> = [];
-    const requestedRegions = new Set<string>();
-    const effectiveRegions = new Set<string>();
-    let totalResourceCount = 0;
-    let numericallyPricedResourceCount = 0;
-    let usageBasedResourceCount = 0;
-    let catalogRangeResourceCount = 0;
-    let noPricingDataResourceCount = 0;
-    let proxiedResourceCount = 0;
-
-    for (const svc of services) {
-      const resolved = resolveServiceName(svc.type);
-      const info = resolved ? SERVICE_CATALOG[resolved] : null;
-      const tier = (svc.tier as CostTier) ?? 'standard';
-      const qty = svc.quantity && svc.quantity > 0 ? svc.quantity : 1;
-      totalResourceCount += qty;
-
-      const cat = info?.category ?? 'other';
-      if (!categoryTotals.has(cat)) {
-        categoryTotals.set(cat, { count: 0, services: [], expectedMonthlyCost: 0 });
-      }
-      const catEntry = categoryTotals.get(cat)!;
-      catEntry.count += qty;
-      catEntry.services.push(svc.name);
-
-      // Prefer the explicit pricingServiceName from the catalog; fall back to
-      // the resolved catalog key or the raw type.
-      const pricingName = info?.pricingServiceName ?? resolved ?? svc.type;
-      const est = estimateServiceCost({
-        pricingServiceName: pricingName,
-        region: svc.region ?? targetRegion,
-        fallbackRegion: targetRegion,
-        term: targetTerm,
-        tier,
-        quantity: qty,
-      });
-      requestedRegions.add(est.requestedRegion);
-
-      if (est.hasPricingData && est.monthlyCost) {
-        effectiveRegions.add(est.effectiveRegion);
-        if (est.regionProxyUsed) proxiedResourceCount += qty;
-        numericallyPricedResourceCount += qty;
-        anyPricingData = true;
-        currency = est.currency ?? currency;
-        if (est.pricesAsOf && (!pricesAsOf || est.pricesAsOf > pricesAsOf)) {
-          pricesAsOf = est.pricesAsOf;
-        }
-        totals.low += est.monthlyCost.low * qty;
-        totals.expected += est.monthlyCost.expected * qty;
-        totals.high += est.monthlyCost.high * qty;
-        catEntry.expectedMonthlyCost += est.selectedMonthlyCost ? est.selectedMonthlyCost * qty : est.monthlyCost.expected * qty;
-
-        estimates.push({
-          name: svc.name,
-          type: resolved ?? svc.type,
-          category: cat,
-          requestedRegion: est.requestedRegion,
-          effectiveRegion: est.effectiveRegion,
-          regionProxyUsed: est.regionProxyUsed,
-          regionProxyReason: est.regionProxyReason,
-          tier,
-          quantity: qty,
-          hasPricingData: true,
-          currency: est.currency,
-          term: targetTerm,
-          sampleSku: est.sampleSku,
-          expectedBasis: est.expectedBasis,
-          reservedApplied: est.reservedApplied ?? false,
-          monthlyCostPerInstance: est.monthlyCost,
-          selectedMonthlyCost: est.selectedMonthlyCost,
-          totalMonthlyCost: est.totalMonthlyCost,
-          pricesAsOf: est.pricesAsOf,
-        });
-      } else {
-        servicesMissingData.push(svc.name);
-        const reason = info?.isUsageBased
-          ? 'usage-based' as const
-          : info?.costRange
-            ? 'catalog-range' as const
-            : 'no-pricing-data' as const;
-        if (reason === 'usage-based') usageBasedResourceCount += qty;
-        else if (reason === 'catalog-range') catalogRangeResourceCount += qty;
-        else noPricingDataResourceCount += qty;
-        const catalogCostRange = info?.costRange ?? 'No pricing data available';
-        excludedServices.push({
-          name: svc.name,
-          type: resolved ?? svc.type,
-          quantity: qty,
-          requestedRegion: est.requestedRegion,
-          effectiveRegion: est.requestedRegion,
-          regionProxyUsed: false,
-          reason,
-          catalogCostRange,
-        });
-        estimates.push({
-          name: svc.name,
-          type: resolved ?? svc.type,
-          category: cat,
-          requestedRegion: est.requestedRegion,
-          effectiveRegion: est.requestedRegion,
-          regionProxyUsed: false,
-          tier,
-          quantity: qty,
-          hasPricingData: false,
-          catalogCostRange,
-          note: info?.isUsageBased
-            ? 'Usage-based service — no trusted fixed monthly value is distilled; using the catalog range.'
-            : 'No distilled pricing for this service/region; using catalog range.',
-        });
-      }
-    }
-
-    const roundedTotals = {
-      low: Math.round(totals.low * 100) / 100,
-      expected: Math.round(totals.expected * 100) / 100,
-      high: Math.round(totals.high * 100) / 100,
-    };
-    const excludedResourceCount = totalResourceCount - numericallyPricedResourceCount;
-    const numericCoveragePercent = totalResourceCount > 0
-      ? Math.round((numericallyPricedResourceCount / totalResourceCount) * 10000) / 100
-      : 0;
-    const isPartialBaseline = excludedResourceCount > 0;
-    const baselineLabel = isPartialBaseline
-      ? `Partial fixed-price baseline covering ${numericallyPricedResourceCount}/${totalResourceCount} resources`
-      : `Fixed-price baseline covering all ${totalResourceCount} resources`;
-
-    const structured = {
-      region: targetRegion,
-      term: targetTerm,
-      currency,
-      pricesAsOf,
-      serviceCount: services.length,
-      totalResourceCount,
-      numericallyPricedResourceCount,
-      excludedResourceCount,
-      catalogRangeResourceCount,
-      usageBasedResourceCount,
-      noPricingDataResourceCount,
-      numericCoveragePercent,
-      isPartialBaseline,
-      baselineLabel,
-      regionProxyUsed: proxiedResourceCount > 0,
-      proxiedResourceCount,
-      requestedRegions: [...requestedRegions].sort(),
-      effectiveRegions: [...effectiveRegions].sort(),
-      hasPricingData: anyPricingData,
-      totalMonthlyCost: roundedTotals,
-      byCategory: Object.fromEntries(
-        [...categoryTotals.entries()].map(([cat, data]) => [
-          cat,
-          {
-            count: data.count,
-            services: data.services,
-            expectedMonthlyCost: Math.round(data.expectedMonthlyCost * 100) / 100,
-          },
-        ]),
-      ),
-      estimates,
-      excludedServices,
-      servicesMissingData,
-      pricingSource: getPricingMeta(),
-      note:
-        'Numeric costs are derived from a distilled Azure Retail Prices snapshot (per region). Instance-priced services use a configured representative SKU with low/high spanning eligible PAYG SKUs; Microsoft Fabric uses F2/F8/F64 capacity bands. In reserved1yr mode, each tier uses its own exact one-year Savings Plan meter when available and otherwise remains PAYG. Usage-based and composite-billed services without a trusted fixed monthly value report curated catalog ranges. generatedAt identifies sidecar generation; pricesAsOf identifies the newest contributing meter date. For authoritative quotes use the Azure Pricing Calculator.',
-    };
-
-    const proxyNote = proxiedResourceCount
-      ? ` ${proxiedResourceCount} resource(s) use an explicit regional proxy; inspect requestedRegion/effectiveRegion.`
-      : '';
-    const summary = `${baselineLabel}: ~$${roundedTotals.expected.toLocaleString()}/mo expected ($${roundedTotals.low.toLocaleString()}–$${roundedTotals.high.toLocaleString()} numeric range, ${targetTerm}, ${currency}). ${excludedResourceCount} resource(s) are excluded from this baseline.${proxyNote}`;
+    const structured = estimateArchitectureCosts({ services, region, term });
+    const summary = summarizeArchitectureCosts(structured);
 
     return {
       content: [{ type: 'text' as const, text: summary }],
+      structuredContent: structured,
+    };
+  },
+);
+
+// ── Tool 3b: compare_region_costs ─────────────────────────────────────
+
+server.registerTool(
+  'compare_region_costs',
+  {
+    title: 'Compare Azure Region Costs',
+    description:
+      'Compare the same architecture across 2-14 Azure regions using only native bundled Retail Prices snapshots. Candidate regions override placement for every service so quantities, tiers, and term remain identical. Returns per-region fixed-price baselines, exclusions, meter dates, deltas, and a ranking only when every requested region is native and numeric coverage is equivalent. Never uses heuristic regional multipliers or pricing proxies.',
+    inputSchema: {
+      services: z.array(z.object({
+        name: z.string().describe('Service instance name'),
+        type: z.string().describe('Azure service type'),
+        tier: z.enum(['basic', 'standard', 'premium']).optional().describe('Pricing tier. Default: standard.'),
+        quantity: z.number().optional().describe('Number of instances. Default: 1.'),
+      })).min(1).describe('The identical service list to place wholly in each candidate region'),
+      regions: z.array(z.string()).min(2).max(14).describe('Two to fourteen distinct candidate Azure regions'),
+      baselineRegion: z.string().optional().describe('Candidate used for deltas. Default: first region.'),
+      term: z.enum(['payg', 'reserved1yr']).optional().describe('Pricing term. Default: payg.'),
+    },
+    outputSchema: {
+      term: z.enum(['payg', 'reserved1yr']),
+      baselineRegion: z.string(),
+      requestedRegions: z.array(z.string()),
+      comparedRegions: z.array(z.string()),
+      unsupportedRegions: z.array(z.string()),
+      serviceCount: z.number(),
+      totalResourceCount: z.number(),
+      rankingEligible: z.boolean(),
+      rankingReason: z.string(),
+      coverageConsistent: z.boolean(),
+      currencyConsistent: z.boolean(),
+      comparisons: z.array(z.object({
+        region: z.string(),
+        nativePricing: z.literal(true),
+        currency: z.string(),
+        pricesAsOf: z.string().nullable(),
+        serviceCount: z.number(),
+        totalResourceCount: z.number(),
+        numericallyPricedResourceCount: z.number(),
+        excludedResourceCount: z.number(),
+        numericCoveragePercent: z.number(),
+        isPartialBaseline: z.boolean(),
+        baselineLabel: z.string(),
+        totalMonthlyCost: z.object({ low: z.number(), expected: z.number(), high: z.number() }),
+        selectedMonthlyCost: z.number(),
+        numericServices: z.array(z.string()),
+        excludedServices: z.array(z.object({
+          name: z.string(),
+          type: z.string(),
+          quantity: z.number(),
+          requestedRegion: z.string(),
+          effectiveRegion: z.string(),
+          regionProxyUsed: z.boolean(),
+          reason: z.enum(['usage-based', 'catalog-range', 'no-pricing-data']),
+          catalogCostRange: z.string(),
+        })),
+        byCategory: z.record(z.string(), z.object({
+          count: z.number(),
+          services: z.array(z.string()),
+          expectedMonthlyCost: z.number(),
+        })),
+        deltaFromBaseline: z.object({ amount: z.number(), percent: z.number().nullable() }).nullable(),
+      })),
+      ranking: z.array(z.object({
+        rank: z.number(),
+        region: z.string(),
+        selectedMonthlyCost: z.number(),
+        deltaFromBaseline: z.number(),
+        deltaPercent: z.number().nullable(),
+      })),
+      cheapest: z.object({ region: z.string(), selectedMonthlyCost: z.number() }).nullable(),
+      mostExpensive: z.object({ region: z.string(), selectedMonthlyCost: z.number() }).nullable(),
+      potentialMonthlySavings: z.object({ amount: z.number(), percent: z.number().nullable() }).nullable(),
+      pricingSource: z.object({ generatedAt: z.string(), currency: z.string(), regions: z.array(z.string()) }),
+      note: z.string(),
+    },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ services, regions, baselineRegion, term }) => {
+    const normalizedRegions = regions.map(normalizeAzureRegion);
+    if (new Set(normalizedRegions).size !== normalizedRegions.length) {
+      return {
+        isError: true,
+        content: [{ type: 'text' as const, text: 'compare_region_costs requires distinct regions after normalization.' }],
+      };
+    }
+    const normalizedBaseline = baselineRegion ? normalizeAzureRegion(baselineRegion) : normalizedRegions[0];
+    if (!normalizedRegions.includes(normalizedBaseline)) {
+      return {
+        isError: true,
+        content: [{ type: 'text' as const, text: `baselineRegion ${normalizedBaseline} must be one of the requested regions.` }],
+      };
+    }
+
+    const structured = compareRegionalCosts({
+      services,
+      regions: normalizedRegions,
+      baselineRegion: normalizedBaseline,
+      term,
+    });
+    return {
+      content: [{ type: 'text' as const, text: summarizeRegionalComparison(structured) }],
       structuredContent: structured,
     };
   },

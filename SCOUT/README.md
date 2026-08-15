@@ -28,6 +28,9 @@ The production endpoint has been verified to expose **12 tools, 3 resources,
 and 3 prompts**. The title/annotation contract described below is deployed and
 verified; stateless session recovery is covered by `npm run test:contracts`.
 
+The current source branch adds a thirteenth tool, `compare_region_costs`; this
+count remains 12 here until that revision is deployed and production-verified.
+
 ### Tools
 
 | Tool | Purpose |
@@ -35,6 +38,7 @@ verified; stateless session recovery is covered by `npm run test:contracts`.
 | `list_services` | Browse the Azure service catalog (categories, aliases, pricing, cost ranges). |
 | `validate_architecture` | Score a design against Well-Architected Framework rules (deterministic, no LLM). Regional redundancy requires the same explicitly located serving type across at least two regions; global edge services alone do not qualify. |
 | `estimate_costs` | **Numeric** monthly fixed-price baseline (low/expected/high) from a distilled Azure Retail Prices snapshot. Each service may specify its own region; unsupported regions disclose the effective proxy region. Responses report numeric coverage, categorized exclusions, and partial-baseline status. PAYG is the default. In `reserved1yr` mode each tier uses its own exact one-year Savings Plan meter when available; unavailable tiers remain PAYG. |
+| `compare_region_costs` | Compare an identical architecture across 2–14 candidate regions using native bundled snapshots only. Rankings are withheld when a candidate is unsupported, numeric coverage differs, currencies differ, a proxy appears, or no numeric baseline exists. |
 | `generate_manifest` | Emit an `az prototype` interchange manifest. |
 | `generate_bicep` | Emit deployable Bicep with Well-Architected secure defaults and a map of which finding each setting resolves. Design-time only. |
 | `generate_terraform` | Emit Terraform for the architecture with secure defaults. Design-time only. |
@@ -45,10 +49,10 @@ verified; stateless session recovery is covered by `npm run test:contracts`.
 | `render_diagram` | Render an architecture diagram as SVG (static) or interactive HTML. Now supports a **light/dark theme**, **per-node cost badges**, a **total-cost/usage footer**, a **metadata panel** (author/date/provenance), and **filled group headers**. See [Output enhancements](#output-enhancements-july-2026). |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app. Now emits a per-node **`pricing`** object and edge **`pathStyle`** for near-full parity with app-generated scenes. |
 
-**Current source contract:** all 12 tools expose a human-readable title and
+**Current source contract:** all 13 tools expose a human-readable title and
 `readOnlyHint: true`, `idempotentHint: true`, `openWorldHint: false`.
-`validate_architecture`, `estimate_costs`, and `get_waf_rules` additionally
-return typed `structuredContent` validated against declared output schemas.
+All successful calls return typed `structuredContent` validated against declared
+output schemas while retaining backward-compatible text payloads.
 
 ### Resources
 

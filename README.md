@@ -422,7 +422,7 @@ graph TB
 
 ## 🔌 MCP Server & Microsoft Scout Integration
 
-The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server/`) that exposes its core capabilities as **12 tools, 3 resources, and 3 prompts**, so any MCP-compatible client — including **[Microsoft Scout](https://learn.microsoft.com/en-us/microsoft-scout/get-started)** — can design, validate, cost, and render Azure architectures conversationally.
+The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server/`) that exposes its core capabilities as **13 tools, 3 resources, and 3 prompts**, so any MCP-compatible client — including **[Microsoft Scout](https://learn.microsoft.com/en-us/microsoft-scout/get-started)** — can design, validate, compare regional costs, and render Azure architectures conversationally.
 
 ### Tools
 
@@ -432,6 +432,7 @@ The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server
 | `validate_architecture` | Score a design against Well-Architected Framework rules (deterministic, no LLM) |
 | `harden_architecture` | **NEW** — deterministically clear pattern-level WAF anti-patterns (identity, WAF, API gateway, DB replica, cache, Key Vault, backup, monitoring, multi-region) and re-validate; collapses the manual add-service → re-validate loop into one call |
 | `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot — region- and term-aware (PAYG / 1-year reserved), with by-category totals. Instance-priced services use a representative SKU; Microsoft Fabric uses F-SKU capacity; usage-based services report curated catalog ranges |
+| `compare_region_costs` | Compare one architecture across native snapshot regions; rank selected-tier fixed-price baselines only when all candidates have equivalent numeric coverage, a common currency, and no proxies |
 | `generate_bicep` | Emit deployable Bicep with Well-Architected secure defaults pre-set (HTTPS-only + TLS 1.2, managed identity, Key Vault soft-delete/purge, health check, autoscale, staging slots, Storage/Cosmos/Redis hardening) + a structured map of which WAF finding each setting resolves. Design-time only |
 | `generate_terraform` | **NEW** — deployable Terraform (azurerm) with the same Well-Architected secure defaults as `generate_bicep` |
 | `generate_deployment_guide` | **NEW** — step-by-step Markdown deploy runbook (Bicep or Terraform): prereqs, deploy commands, a post-deploy hardening checklist, smoke tests, and teardown |
@@ -441,14 +442,14 @@ The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server
 | `export_reactflow_scene` | Produce a React Flow scene for the web app |
 | `import_architecture` | **NEW** — inverse of the export tools: parse a manifest / React Flow scene back to the canonical `{services, connections, groups}` shape |
 
-> **Structured outputs:** `validate_architecture`, `estimate_costs`, and `get_waf_rules` return typed `structuredContent` (validated against a declared `outputSchema`) alongside a concise human summary, and carry read-only/idempotent tool annotations — so agents consume the data machine-readably instead of parsing prose.
+> **Structured outputs:** all 13 tools return typed `structuredContent` on successful calls (validated against declared `outputSchema` contracts) while retaining backward-compatible text payloads and read-only/idempotent annotations.
 
 > **Resources & prompts:** beyond tools, the server publishes read-only **resources** (`azure://catalog/services`, `azure://waf/rules`, `azure://pricing/meta`) and starter **prompts** (`design-secure-web-app`, `design-event-driven-platform`, `harden-and-cost`) so any MCP client gets browsable reference data and guided entry points. Full reference: [`mcp-server/TOOLS.md`](mcp-server/TOOLS.md).
 
 ### Transport & auth
 - **Dual transport** — stdio (local clients) and **Streamable-HTTP** (remote clients). Launch HTTP with `npm run start:http` (or `MCP_TRANSPORT=http`).
 - **Bearer-token auth** — set `MCP_AUTH_TOKEN`; the server enforces `Authorization: Bearer <token>` with a constant-time comparison. A `/healthz` probe and a pre-auth liveness response on `/mcp` keep connector wizards happy.
-- **Ops-ready** — stateful sessions (one transport per `mcp-session-id`), CORS preflight, graceful shutdown.
+- **Ops-ready** — stateless Streamable HTTP tolerates missing/stale session IDs across revisions and replicas, with CORS preflight and graceful shutdown.
 
 ### Use it from Scout
 Register the deployed MCP endpoint (`https://<your-mcp-host>/mcp`) as a **custom remote MCP server** in Scout's Extensions panel with your Bearer token (stored encrypted). See [`SCOUT/README.md`](SCOUT/README.md) for the walkthrough, and deploy an isolated MCP instance with [`scripts/deploy-mcp-instance.sh`](scripts/deploy-mcp-instance.sh).
@@ -471,7 +472,7 @@ The MCP server also works in **GitHub Copilot agent mode** in VS Code — no cod
 }
 ```
 
-Reload the MCP servers (**MCP: List Servers**), paste your token when prompted (the value in `.env.mcp`), and the 12 tools appear in Copilot Chat. Attach resources via **Add Context > MCP Resources**, and invoke prompts with `/azure-diagram-builder.design-secure-web-app`. Prefer local development? The bundled config also defines a `stdio` server that runs `mcp-server/dist/index.js` (run `npm run build` in `mcp-server/` first).
+Reload the MCP servers (**MCP: List Servers**), paste your token when prompted (the value in `.env.mcp`), and the 13 tools appear in Copilot Chat. Attach resources via **Add Context > MCP Resources**, and invoke prompts with `/azure-diagram-builder.design-secure-web-app`. Prefer local development? The bundled config also defines a `stdio` server that runs `mcp-server/dist/index.js` (run `npm run build` in `mcp-server/` first).
 
 ---
 
@@ -887,7 +888,7 @@ azure-diagrams/
 │   ├── deploy-mcp-instance.sh  # Deploy the isolated MCP server ACA instance
 │   └── fetch-multi-region-pricing.sh  # Refresh per-region pricing (npm run pricing:refresh)
 ├── Azure_Public_Service_Icons/  # 714 official Azure icons (29 categories)
-├── mcp-server/               # MCP server (12 tools + 3 resources + 3 prompts, stdio + HTTP, Bearer auth)
+├── mcp-server/               # MCP server (13 tools + 3 resources + 3 prompts, stdio + HTTP, Bearer auth)
 │   └── src/                  # serviceCatalog, wafDetector, layoutEngine, svgRenderer, htmlRenderer
 ├── SCOUT/                    # Microsoft Scout integration notes & sample session
 ├── DOCS/                     # Documentation
@@ -913,7 +914,7 @@ azure-diagrams/
 #### 🤖 14 AI models
 Added three new GPT-5.6 reasoning variants — **GPT-5.6 Sol**, **GPT-5.6 Terra**, and **GPT-5.6 Luna** — plus **Kimi K2.7 Code**, and retired the GPT-5.2 / GPT-5.3 Codex deployments. The lineup is now **14 models**, each assignable per feature (generation, validation, deployment guide, blueprint).
 
-#### 🔌 MCP server grew to 12 tools + resources + prompts
+#### 🔌 MCP server grew to 13 tools + resources + prompts
 Four new tools: **`harden_architecture`** (deterministically clears topology WAF anti-patterns in one call), **`generate_terraform`** (azurerm IaC with the same secure defaults as Bicep), **`generate_deployment_guide`** (Markdown deploy runbook), and **`import_architecture`** (round-trips a manifest / React Flow scene back in). The server now also exposes **3 MCP resources** (catalog, WAF rules, pricing) and **3 starter prompts**. See [`mcp-server/TOOLS.md`](mcp-server/TOOLS.md).
 
 #### 🎨 Diagram rendering polish

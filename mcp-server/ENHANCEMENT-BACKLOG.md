@@ -9,10 +9,12 @@
 
 ## Current status (updated 2026-08-15)
 
-The standalone server exposes **12 tools, 3 resources, and 3 prompts**. P0 is
+The standalone server exposes **13 tools, 3 resources, and 3 prompts** in the
+current source. P0 is
 implemented. Deterministic topology hardening, manifest/React Flow import,
 Terraform, deployment guides, resources, and prompts are also implemented.
-All 12 tools now expose titles and read-only/idempotent/closed-world annotations.
+All 13 tools now expose titles, output schemas, structured successful-call
+results, and read-only/idempotent/closed-world annotations.
 The local authenticated HTTP contract is covered by `npm run test:contracts`.
 
 This document preserves the original gap analysis below. Treat completed item
@@ -24,8 +26,8 @@ instructions as historical context, not as the next implementation sequence.
 | **P0-1a** representative-SKU (trustworthy `expected`) | ✅ Shipped | `expected` = a typical-deployment SKU (App Service P1v3, Redis C1, SQL S3, VM D2s v4, AKS Standard, APIM Basic, AI Search S1) — not a median-of-all-SKUs |
 | **P0-1b** Microsoft Fabric F-SKU capacity | ✅ Shipped | Numeric monthly reservation (F2/F8/F64). AI (Foundry) + per-GB storage intentionally remain catalog ranges (usage-dominated → a fixed monthly would mislead) |
 | **P0-2** `generate_bicep` | ✅ Shipped | Deployable Bicep with WAF secure defaults pre-set + structured `findingsResolved`; `az bicep build` verified |
-| **P0-3** structured outputs | ✅ Expanded locally | All 12 tools advertise `outputSchema` and return `structuredContent` on successful calls while retaining their existing text payloads |
-| **P1-5** tool annotations | ✅ Implemented locally | All 12 tools expose titles plus read-only/idempotent/closed-world annotations; protocol contract test passes |
+| **P0-3** structured outputs | ✅ Deployed | All tools advertise `outputSchema` and return `structuredContent` on successful calls while retaining their existing text payloads |
+| **P1-5** tool annotations | ✅ Deployed | All tools expose titles plus read-only/idempotent/closed-world annotations; protocol contract test passes |
 
 **Evidence-gated next candidates:** broader typed structured outputs, Entra/OAuth,
 and telemetry/evaluation. Do not add Blueprint/Reference-generation or composite
@@ -38,9 +40,9 @@ defined.
 
 1. Region-aware canonical architecture and honest pricing coverage — deployed
 2. Correct multi-region validation and hardening semantics — deployed
-3. Synchronize the MCP service catalog with the app catalog — implemented locally
-4. Improve manifest/import fidelity and structured outputs — implemented locally
-5. Add deterministic regional cost comparison
+3. Synchronize the MCP service catalog with the app catalog — deployed
+4. Improve manifest/import fidelity and structured outputs — deployed
+5. Add deterministic regional cost comparison — implemented locally
 6. Add deterministic ARM-template import
 
 ### Pricing-region expansion
@@ -72,6 +74,19 @@ from icon paths and import correctly when group nodes follow their children.
 The protocol contract independently measures 12/12 tools with output schemas and
 checks text/structured parity for representative JSON and artifact tools. This
 change is implemented locally and is not marked deployed here.
+
+### Deterministic regional cost comparison
+
+Step 5 adds `compare_region_costs`, which composes the same extracted
+architecture estimator used by `estimate_costs`. It places the identical service
+list wholly in each candidate, evaluates native bundled snapshots only, exposes
+coverage/exclusions and meter dates per region, and ranks expected fixed-price
+baselines only when every requested candidate has equivalent numeric coverage,
+a common currency, and no proxy. Unsupported candidates and usage-only designs
+return comparison evidence with an explicit reason and no ranking. The protocol
+contract covers native ranking, baseline deltas, unsupported-region withholding,
+no-numeric-baseline withholding, and normalized duplicate rejection. This change
+is implemented locally and is not marked deployed here.
 
 ---
 
