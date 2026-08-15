@@ -65,8 +65,8 @@ export interface PatternDetectionResult {
 // ── Architecture-wide pattern rules ────────────────────────────────────
 
 const ARCHITECTURE_PATTERN_RULES: WafRule[] = [
-  { id: 'arch-no-redundancy',        pillar: 'Reliability',            severity: 'high',     category: 'High Availability',    issue: 'Single-region deployment with no failover capability', recommendation: 'Deploy across multiple Azure regions or availability zones. Use Azure Traffic Manager or Azure Front Door for global load balancing and automatic failover.', appliesTo: ['*'], pattern: 'single-region' },
-  { id: 'arch-single-database',      pillar: 'Reliability',            severity: 'high',     category: 'Data Resilience',      issue: 'Single database instance without replication or geo-redundancy', recommendation: 'Enable geo-replication, read replicas, or active-active configuration for your database to ensure data availability during outages.', appliesTo: ['*'], pattern: 'single-database' },
+  { id: 'arch-no-redundancy',        pillar: 'Reliability',            severity: 'high',     category: 'High Availability',    issue: 'Explicitly located serving tier is not duplicated across Azure regions', recommendation: 'Deploy the same request-serving service type in a second explicit region, then use Azure Front Door or Traffic Manager to route to both regional instances.', appliesTo: ['*'], pattern: 'single-region' },
+  { id: 'arch-single-database',      pillar: 'Reliability',            severity: 'high',     category: 'Data Resilience',      issue: 'Database tier lacks same-type replication across explicit Azure regions', recommendation: 'Place a same-type database replica in a concrete secondary region and configure geo-replication or active-active behavior appropriate to that service.', appliesTo: ['*'], pattern: 'single-database' },
   { id: 'arch-no-caching',           pillar: 'Performance Efficiency', severity: 'medium',   category: 'Caching',              issue: 'No caching layer detected between compute and data tiers', recommendation: 'Add Azure Cache for Redis or Azure CDN to reduce database load and improve response times for frequently accessed data.', appliesTo: ['*'], pattern: 'no-cache' },
   { id: 'arch-no-monitoring',        pillar: 'Operational Excellence', severity: 'high',     category: 'Observability',        issue: 'No monitoring or observability services detected in the architecture', recommendation: 'Add Azure Monitor, Application Insights, and Log Analytics to track application health, performance, and diagnose issues proactively.', appliesTo: ['*'], pattern: 'no-monitoring' },
   { id: 'arch-no-identity',          pillar: 'Security',               severity: 'critical', category: 'Identity & Access',    issue: 'No identity provider or authentication service detected', recommendation: 'Add Microsoft Entra ID for centralized authentication and authorization. Use managed identities for service-to-service communication.', appliesTo: ['*'], pattern: 'no-identity' },
@@ -119,7 +119,7 @@ const SERVICE_SPECIFIC_RULES: WafRule[] = [
 const DATABASE_TYPES = new Set([
   'sql database', 'azure cosmos db', 'postgresql', 'mysql',
   'azure database for postgresql', 'azure database for mysql',
-  'cosmos db', 'cosmosdb', 'redis cache', 'azure cache for redis',
+  'cosmos db', 'cosmosdb',
 ]);
 
 const COMPUTE_TYPES = new Set([
@@ -131,6 +131,13 @@ const COMPUTE_TYPES = new Set([
 const FRONTEND_TYPES = new Set([
   'static web apps', 'azure static web apps', 'cdn',
   'content delivery network', 'azure front door',
+]);
+
+const PUBLIC_EDGE_TYPES = new Set([
+  ...FRONTEND_TYPES,
+  'api management',
+  'apim',
+  'azure api management',
 ]);
 
 const CACHE_TYPES = new Set([
@@ -156,10 +163,21 @@ const API_GATEWAY_TYPES = new Set([
   'application gateway', 'azure front door',
 ]);
 
+const REGIONAL_SERVING_TYPES = new Set([
+  ...COMPUTE_TYPES,
+  'static web apps',
+  'azure static web apps',
+]);
+
 // ── Helpers ────────────────────────────────────────────────────────────
 
 function norm(t: string): string {
   return t.toLowerCase().trim();
+}
+
+function normRegion(region?: string): string | null {
+  if (!region?.trim()) return null;
+  return region.trim().toLowerCase().replace(/[\s_-]+/g, '');
 }
 
 function hasType(services: ServiceInput[], typeSet: Set<string>): boolean {
@@ -170,19 +188,72 @@ function ofType(services: ServiceInput[], typeSet: Set<string>): ServiceInput[] 
   return services.filter(s => typeSet.has(norm(s.type)));
 }
 
+function typesRepeatedAcrossExplicitRegions(
+  services: ServiceInput[],
+  typeSet: Set<string>,
+): Set<string> {
+  const regionsByType = new Map<string, Set<string>>();
+  for (const service of services) {
+    const type = norm(service.type);
+    const region = normRegion(service.region);
+    if (!typeSet.has(type) || !region) continue;
+    if (!regionsByType.has(type)) regionsByType.set(type, new Set());
+    regionsByType.get(type)!.add(region);
+  }
+  return new Set(
+    [...regionsByType.entries()]
+      .filter(([, regions]) => regions.size >= 2)
+      .map(([type]) => type),
+  );
+}
+
+export interface RegionalTopologyEvidence {
+  explicitlyLocatedServingServices: string[];
+  explicitServingRegions: string[];
+  redundantServingTypes: string[];
+  hasServingRegionEvidence: boolean;
+  hasMultiRegionServingTier: boolean;
+  databaseTypes: string[];
+  redundantDatabaseTypes: string[];
+  hasDatabaseTier: boolean;
+  hasMultiRegionDatabaseTier: boolean;
+}
+
+export function getRegionalTopologyEvidence(services: ServiceInput[]): RegionalTopologyEvidence {
+  const locatedServing = services.filter(service =>
+    REGIONAL_SERVING_TYPES.has(norm(service.type)) && normRegion(service.region),
+  );
+  const redundantServingTypes = typesRepeatedAcrossExplicitRegions(services, REGIONAL_SERVING_TYPES);
+  const databases = ofType(services, DATABASE_TYPES);
+  const databaseTypes = [...new Set(databases.map(service => norm(service.type)))].sort();
+  const redundantDatabaseTypes = typesRepeatedAcrossExplicitRegions(services, DATABASE_TYPES);
+  return {
+    explicitlyLocatedServingServices: locatedServing.map(service => service.name),
+    explicitServingRegions: [...new Set(locatedServing.map(service => normRegion(service.region)!))].sort(),
+    redundantServingTypes: [...redundantServingTypes].sort(),
+    hasServingRegionEvidence: locatedServing.length > 0,
+    hasMultiRegionServingTier: redundantServingTypes.size > 0,
+    databaseTypes,
+    redundantDatabaseTypes: [...redundantDatabaseTypes].sort(),
+    hasDatabaseTier: databases.length > 0,
+    hasMultiRegionDatabaseTier: databaseTypes.length > 0 && databaseTypes.every(type => redundantDatabaseTypes.has(type)),
+  };
+}
+
 // ── Pattern detection ──────────────────────────────────────────────────
 
 function detectPatterns(services: ServiceInput[], connections: ConnectionInput[]): string[] {
   const patterns: string[] = [];
 
-  const hasGlobalLB = services.some(s => {
-    const t = norm(s.type);
-    return t === 'azure traffic manager' || t === 'azure front door' || t === 'traffic manager';
-  });
-  if (!hasGlobalLB && services.length >= 3) patterns.push('single-region');
+  const regionalEvidence = getRegionalTopologyEvidence(services);
+  if (regionalEvidence.hasServingRegionEvidence && !regionalEvidence.hasMultiRegionServingTier) {
+    patterns.push('single-region');
+  }
 
   const databases = ofType(services, DATABASE_TYPES);
-  if (databases.length === 1) patterns.push('single-database');
+  if (regionalEvidence.hasDatabaseTier && !regionalEvidence.hasMultiRegionDatabaseTier) {
+    patterns.push('single-database');
+  }
 
   if (!hasType(services, CACHE_TYPES) && hasType(services, COMPUTE_TYPES) && databases.length > 0) {
     patterns.push('no-cache');
@@ -191,17 +262,25 @@ function detectPatterns(services: ServiceInput[], connections: ConnectionInput[]
   if (!hasType(services, MONITORING_TYPES)) patterns.push('no-monitoring');
   if (!hasType(services, IDENTITY_TYPES)) patterns.push('no-identity');
 
-  const hasFrontend = hasType(services, FRONTEND_TYPES);
+  const hasFrontend = hasType(services, PUBLIC_EDGE_TYPES);
   const hasWebApp = services.some(s => ['app service', 'static web apps', 'azure static web apps'].includes(norm(s.type)));
-  if ((hasFrontend || hasWebApp) && !hasType(services, WAF_TYPES)) {
-    const hasAppGw = services.some(s => norm(s.type) === 'application gateway');
-    const hasFD = services.some(s => norm(s.type) === 'azure front door');
-    if (!hasAppGw && !hasFD) patterns.push('no-waf');
+  const wafNames = new Set(services.filter(service => WAF_TYPES.has(norm(service.type))).map(service => norm(service.name)));
+  const wafAttachmentNames = new Set(services.filter(service =>
+    norm(service.type) === 'azure front door' || norm(service.type) === 'application gateway',
+  ).map(service => norm(service.name)));
+  const hasAttachedWaf = connections.some(connection => {
+    const from = norm(connection.from);
+    const to = norm(connection.to);
+    return (wafNames.has(from) && wafAttachmentNames.has(to)) ||
+      (wafAttachmentNames.has(from) && wafNames.has(to));
+  });
+  if ((hasFrontend || hasWebApp) && !hasAttachedWaf) {
+    patterns.push('no-waf');
   }
 
   // Direct frontend → database
   const frontendNames = new Set(
-    services.filter(s => FRONTEND_TYPES.has(norm(s.type))).map(s => s.name.toLowerCase()),
+    services.filter(s => PUBLIC_EDGE_TYPES.has(norm(s.type))).map(s => s.name.toLowerCase()),
   );
   const dbNames = new Set(databases.map(s => s.name.toLowerCase()));
   for (const c of connections) {
@@ -226,12 +305,13 @@ function detectPatterns(services: ServiceInput[], connections: ConnectionInput[]
 
 function getAffectedResources(rule: WafRule, services: ServiceInput[]): string[] {
   switch (rule.pattern) {
+    case 'single-region':     return services.filter(s => REGIONAL_SERVING_TYPES.has(norm(s.type))).map(s => s.name);
     case 'single-database':   return ofType(services, DATABASE_TYPES).map(s => s.name);
     case 'no-cache':          return [...ofType(services, COMPUTE_TYPES), ...ofType(services, DATABASE_TYPES)].map(s => s.name);
     case 'no-monitoring':     return services.map(s => s.name);
     case 'no-identity':       return ofType(services, COMPUTE_TYPES).map(s => s.name);
-    case 'no-waf':            return services.filter(s => FRONTEND_TYPES.has(norm(s.type)) || norm(s.type) === 'app service').map(s => s.name);
-    case 'direct-db-access':  return [...services.filter(s => FRONTEND_TYPES.has(norm(s.type))), ...ofType(services, DATABASE_TYPES)].map(s => s.name);
+    case 'no-waf':            return services.filter(s => PUBLIC_EDGE_TYPES.has(norm(s.type)) || norm(s.type) === 'app service').map(s => s.name);
+    case 'direct-db-access':  return [...services.filter(s => PUBLIC_EDGE_TYPES.has(norm(s.type))), ...ofType(services, DATABASE_TYPES)].map(s => s.name);
     case 'no-key-vault':      return ofType(services, COMPUTE_TYPES).map(s => s.name);
     case 'no-backup':         return ofType(services, DATABASE_TYPES).map(s => s.name);
     case 'no-api-gateway':    return ofType(services, COMPUTE_TYPES).map(s => s.name);

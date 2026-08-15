@@ -56,6 +56,8 @@ export interface HardenResult {
 }
 
 const norm = (t: string): string => t.toLowerCase().trim();
+const normRegion = (region?: string): string | null =>
+  region?.trim() ? region.trim().toLowerCase().replace(/[\s_-]+/g, '') : null;
 
 // Minimal type sets mirroring wafDetector's classification, used only to pick
 // anchor nodes (which compute to wire Key Vault to, which DB to replicate, …).
@@ -69,9 +71,20 @@ const COMPUTE_TYPES = new Set([
   'kubernetes service', 'azure kubernetes service', 'container apps',
   'azure container apps', 'container instances',
 ]);
+const REGIONAL_SERVING_TYPES = new Set([
+  ...COMPUTE_TYPES,
+  'static web apps',
+  'azure static web apps',
+]);
 const FRONTEND_TYPES = new Set([
   'static web apps', 'azure static web apps', 'cdn',
   'content delivery network', 'azure front door',
+]);
+const DIRECT_DB_SOURCE_TYPES = new Set([
+  ...FRONTEND_TYPES,
+  'api management',
+  'apim',
+  'azure api management',
 ]);
 const GATEWAY_TYPES = new Set([
   'api management', 'apim', 'azure api management', 'application gateway',
@@ -90,16 +103,24 @@ export function hardenArchitecture(
   inputServices: HardenService[],
   inputConnections: HardenConnection[] = [],
   inputGroups: HardenGroup[] = [],
+  options: { secondaryRegion?: string } = {},
 ): HardenResult {
   const services: HardenService[] = inputServices.map(s => ({ ...s }));
   const connections: HardenConnection[] = inputConnections.map(c => ({ ...c }));
   const groups: HardenGroup[] = inputGroups.map(g => ({ ...g }));
   const changes: HardenChange[] = [];
+  const secondaryRegion = normRegion(options.secondaryRegion);
 
   const before = snapshot(services, connections);
 
   // ── Helpers ──────────────────────────────────────────────────────────
   const hasName = (name: string) => services.some(s => norm(s.name) === norm(name));
+  const uniqueName = (base: string): string => {
+    if (!hasName(base)) return base;
+    let suffix = 2;
+    while (hasName(`${base} ${suffix}`)) suffix++;
+    return `${base} ${suffix}`;
+  };
   const firstOf = (set: Set<string>): HardenService | undefined =>
     services.find(s => set.has(norm(s.type)));
   const ensureGroup = (g: HardenGroup) => {
@@ -120,8 +141,6 @@ export function hardenArchitecture(
     return `${c.from} → ${c.to}`;
   };
 
-  const patterns0 = new Set(before.patternsDetected);
-  void patterns0;
   const unresolved: string[] = [];
 
   const applyPass = (patterns: Set<string>): void => {
@@ -137,30 +156,90 @@ export function hardenArchitecture(
     if (added) changes.push({ pattern: 'no-identity', action: 'Added Microsoft Entra ID for centralized authentication', addedServices: ['Entra ID'], addedConnections: conns });
   }
 
-  // ── no-waf + single-region → Azure Front Door (global edge + WAF) ─────
-  // Front Door provides both a global load-balancer (clears single-region) and
-  // an entry point for WAF (clears no-waf). We add a WAF Policy alongside it.
-  const needFrontDoor = patterns.has('no-waf') || patterns.has('single-region');
-  if (needFrontDoor && !firstOf(FRONTEND_TYPES)) {
-    const entry = firstOf(GATEWAY_TYPES) ?? firstOf(COMPUTE_TYPES);
+  // ── no-waf → Azure Front Door (global edge + WAF entry point) ─────────
+  const hasWafAttachmentPoint = () => services.some(service =>
+    norm(service.type) === 'azure front door' || norm(service.type) === 'application gateway',
+  );
+  if (patterns.has('no-waf') && !hasWafAttachmentPoint()) {
+    const entry = firstOf(GATEWAY_TYPES) ?? firstOf(REGIONAL_SERVING_TYPES);
     const addedFd = addService(
-      { name: 'Front Door', type: 'Azure Front Door', description: 'Global HTTP entry + failover' },
+      { name: 'Front Door', type: 'Azure Front Door', description: 'Global HTTP entry and WAF attachment point' },
       HARDEN_EDGE_GROUP,
     );
     const conns: string[] = [];
     if (entry) { const s = addConnection({ from: 'Front Door', to: entry.name, label: 'Route global traffic to entry point', type: 'sync' }); if (s) conns.push(s); }
-    const cleared = [patterns.has('single-region') ? 'single-region' : '', patterns.has('no-waf') ? 'no-waf' : ''].filter(Boolean).join(' + ') || 'no-waf';
-    if (addedFd) changes.push({ pattern: cleared, action: 'Added Azure Front Door as global edge (enables WAF + multi-region failover)', addedServices: ['Front Door'], addedConnections: conns });
+    if (addedFd) changes.push({ pattern: 'no-waf', action: 'Added Azure Front Door as the global WAF entry point', addedServices: ['Front Door'], addedConnections: conns });
+  }
+
+  // ── single-region → explicit secondary serving instance ──────────────
+  if (patterns.has('single-region') && secondaryRegion) {
+    const primary = services.find(service => {
+      const region = normRegion(service.region);
+      return REGIONAL_SERVING_TYPES.has(norm(service.type)) && region && region !== secondaryRegion;
+    });
+    if (primary) {
+      const secondaryName = uniqueName(`${primary.name} Secondary`);
+      const secondaryGroup: HardenGroup = {
+        id: `hardened-region-${secondaryRegion}`,
+        label: `Secondary Region - ${secondaryRegion}`,
+      };
+      const addedSecondary = addService({
+        ...primary,
+        name: secondaryName,
+        region: secondaryRegion,
+        description: `Secondary ${primary.type} serving instance in ${secondaryRegion}`,
+        groupId: secondaryGroup.id,
+      }, secondaryGroup);
+
+      let frontDoor = services.find(service => norm(service.type) === 'azure front door');
+      let addedFrontDoor = false;
+      if (!frontDoor) {
+        addedFrontDoor = addService(
+          { name: 'Front Door', type: 'Azure Front Door', description: 'Global routing across explicit serving regions' },
+          HARDEN_EDGE_GROUP,
+        );
+        frontDoor = services.find(service => norm(service.type) === 'azure front door');
+      }
+
+      const conns: string[] = [];
+      if (frontDoor) {
+        const primaryEdge = addConnection({ from: frontDoor.name, to: primary.name, label: 'Route traffic to primary region', type: 'sync' });
+        const secondaryEdge = addConnection({ from: frontDoor.name, to: secondaryName, label: 'Fail over traffic to secondary region', type: 'sync' });
+        if (primaryEdge) conns.push(primaryEdge);
+        if (secondaryEdge) conns.push(secondaryEdge);
+      }
+      const addedServices = [addedSecondary ? secondaryName : '', addedFrontDoor ? 'Front Door' : ''].filter(Boolean);
+      if (addedServices.length || conns.length) {
+        changes.push({
+          pattern: 'single-region',
+          action: `Added an explicit ${primary.type} serving instance in ${secondaryRegion} and global routing to both regions`,
+          addedServices,
+          addedConnections: conns,
+        });
+      }
+    }
   }
   if (patterns.has('no-waf')) {
-    const fd = services.find(s => norm(s.type) === 'azure front door');
-    const addedWaf = addService(
-      { name: 'WAF Policy', type: 'Web Application Firewall', description: 'OWASP Top 10 protection' },
-      HARDEN_EDGE_GROUP,
+    const enforcementPoint = services.find(service =>
+      norm(service.type) === 'azure front door' || norm(service.type) === 'application gateway',
     );
+    let waf = services.find(service => norm(service.type) === 'web application firewall' || norm(service.type) === 'waf' || norm(service.type) === 'azure waf');
+    let addedWaf = false;
+    if (!waf) {
+      addedWaf = addService(
+        { name: 'WAF Policy', type: 'Web Application Firewall', description: 'OWASP Top 10 protection' },
+        HARDEN_EDGE_GROUP,
+      );
+      waf = services.find(service => norm(service.type) === 'web application firewall');
+    }
     const conns: string[] = [];
-    if (fd) { const s = addConnection({ from: fd.name, to: 'WAF Policy', label: 'Inspect requests for web threats', type: 'sync' }); if (s) conns.push(s); }
-    if (addedWaf) changes.push({ pattern: 'no-waf', action: 'Added Web Application Firewall policy on the edge', addedServices: ['WAF Policy'], addedConnections: conns });
+    if (enforcementPoint && waf) { const s = addConnection({ from: enforcementPoint.name, to: waf.name, label: 'Inspect requests for web threats', type: 'sync' }); if (s) conns.push(s); }
+    if (addedWaf || conns.length) changes.push({
+      pattern: 'no-waf',
+      action: addedWaf ? 'Added and associated a Web Application Firewall policy' : 'Associated the existing Web Application Firewall policy with the edge',
+      addedServices: addedWaf && waf ? [waf.name] : [],
+      addedConnections: conns,
+    });
   }
 
   // ── no-api-gateway + direct-db-access → API Management ────────────────
@@ -180,16 +259,38 @@ export function hardenArchitecture(
   if (patterns.has('direct-db-access')) {
     const apim = firstOf(GATEWAY_TYPES) ?? services.find(s => norm(s.name) === 'api management');
     const dbNames = new Set(services.filter(s => DATABASE_TYPES.has(norm(s.type))).map(s => norm(s.name)));
-    const frontNames = new Set(services.filter(s => FRONTEND_TYPES.has(norm(s.type))).map(s => norm(s.name)));
+    const frontNames = new Set(services.filter(s => DIRECT_DB_SOURCE_TYPES.has(norm(s.type))).map(s => norm(s.name)));
     const rewired: string[] = [];
+    let gatewayBackend: HardenService | undefined;
     if (apim) {
       for (const c of [...connections]) {
         if (frontNames.has(norm(c.from)) && dbNames.has(norm(c.to))) {
-          // Drop the direct edge; route frontend → APIM → db instead.
+          // Drop the direct edge. A gateway needs a compute backend; other
+          // frontends route through the existing gateway.
           const idx = connections.indexOf(c);
           if (idx >= 0) connections.splice(idx, 1);
-          const a = addConnection({ from: c.from, to: apim.name, label: 'Send API request through gateway', type: 'sync' });
-          const b = addConnection({ from: apim.name, to: c.to, label: 'Forward request to backend service', type: 'sync' });
+          let sourceForDatabase = apim.name;
+          let a: string | null = null;
+          if (norm(c.from) === norm(apim.name)) {
+            if (!gatewayBackend) {
+              const backendName = uniqueName(`${apim.name} Backend`);
+              addService({
+                name: backendName,
+                type: 'App Service',
+                region: apim.region,
+                description: 'Application backend between API Management and the data tier',
+                groupId: apim.groupId,
+              });
+              gatewayBackend = services.find(service => service.name === backendName);
+            }
+            if (gatewayBackend) {
+              a = addConnection({ from: apim.name, to: gatewayBackend.name, label: 'Forward requests to application backend', type: 'sync' });
+              sourceForDatabase = gatewayBackend.name;
+            }
+          } else {
+            a = addConnection({ from: c.from, to: apim.name, label: 'Send API request through gateway', type: 'sync' });
+          }
+          const b = addConnection({ from: sourceForDatabase, to: c.to, label: 'Query data through application backend', type: 'sync' });
           if (a) rewired.push(a);
           if (b) rewired.push(b);
         }
@@ -200,18 +301,39 @@ export function hardenArchitecture(
     }
   }
 
-  // ── single-database → geo-replica ────────────────────────────────────
-  if (patterns.has('single-database')) {
-    const primary = firstOf(DATABASE_TYPES);
-    if (primary) {
-      const replicaName = `${primary.name} Replica`;
-      const added = addService(
-        { name: replicaName, type: primary.type, description: 'Geo-replicated read replica', groupId: primary.groupId },
-      );
+  // ── single-database → replicas in an explicit secondary region ───────
+  if (patterns.has('single-database') && secondaryRegion) {
+    const databaseTypes = [...new Set(services.filter(service => DATABASE_TYPES.has(norm(service.type))).map(service => norm(service.type)))];
+    for (const databaseType of databaseTypes) {
+      const instances = services.filter(service => norm(service.type) === databaseType);
+      const explicitRegions = new Set(instances.map(service => normRegion(service.region)).filter((region): region is string => Boolean(region)));
+      if (explicitRegions.size >= 2) continue;
+      const primary = instances.find(service => {
+        const region = normRegion(service.region);
+        return region && region !== secondaryRegion;
+      });
+      if (!primary) continue;
+      const replicaName = uniqueName(`${primary.name} Replica`);
+      const secondaryGroup: HardenGroup = {
+        id: `hardened-region-${secondaryRegion}`,
+        label: `Secondary Region - ${secondaryRegion}`,
+      };
+      const added = addService({
+        ...primary,
+        name: replicaName,
+        region: secondaryRegion,
+        description: `Geo-replicated ${primary.type} instance in ${secondaryRegion}`,
+        groupId: secondaryGroup.id,
+      }, secondaryGroup);
       const conns: string[] = [];
-      const s = addConnection({ from: primary.name, to: replicaName, label: 'Geo-replicate data for failover', type: 'async' });
-      if (s) conns.push(s);
-      if (added) changes.push({ pattern: 'single-database', action: `Added a geo-replicated replica of ${primary.name}`, addedServices: [replicaName], addedConnections: conns });
+      const edge = addConnection({ from: primary.name, to: replicaName, label: `Replicate data to ${secondaryRegion}`, type: 'async' });
+      if (edge) conns.push(edge);
+      if (added) changes.push({
+        pattern: 'single-database',
+        action: `Added an explicit ${primary.type} replica in ${secondaryRegion}`,
+        addedServices: [replicaName],
+        addedConnections: conns,
+      });
     }
   }
 
@@ -270,16 +392,28 @@ export function hardenArchitecture(
   }
   };
 
-  // Iterate: adding services can newly trigger count-based patterns (e.g.
-  // no-key-vault fires only once the graph reaches 4+ services), so re-detect
-  // and re-remediate until the pattern set stops shrinking.
-  for (let pass = 0; pass < 4; pass++) {
+  // Iterate until both pattern and topology state stabilize. A remediation can
+  // clear one finding while graph growth exposes another, so count-only checks
+  // are insufficient.
+  const seenStates = new Set<string>();
+  for (let pass = 0; pass < 8; pass++) {
     const patterns = new Set(snapshot(services, connections).patternsDetected);
     if (patterns.size === 0) break;
-    const sizeBefore = patterns.size;
+    const stateBefore = JSON.stringify({
+      patterns: [...patterns].sort(),
+      services: services.map(service => [norm(service.name), norm(service.type), normRegion(service.region)]).sort(),
+      connections: connections.map(connection => [norm(connection.from), norm(connection.to)]).sort(),
+    });
+    if (seenStates.has(stateBefore)) break;
+    seenStates.add(stateBefore);
     applyPass(patterns);
-    const sizeAfter = snapshot(services, connections).patternsDetected.length;
-    if (sizeAfter >= sizeBefore) break; // no progress — avoid an infinite loop
+    const patternsAfter = snapshot(services, connections).patternsDetected;
+    const stateAfter = JSON.stringify({
+      patterns: [...patternsAfter].sort(),
+      services: services.map(service => [norm(service.name), norm(service.type), normRegion(service.region)]).sort(),
+      connections: connections.map(connection => [norm(connection.from), norm(connection.to)]).sort(),
+    });
+    if (stateAfter === stateBefore) break;
   }
 
   const after = snapshot(services, connections);

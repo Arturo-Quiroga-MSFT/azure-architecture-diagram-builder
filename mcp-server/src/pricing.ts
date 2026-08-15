@@ -131,9 +131,8 @@ export function estimateServiceCost(params: EstimateParams): ServiceCostEstimate
     return {
       hasPricingData: false,
       requestedRegion,
-      effectiveRegion,
-      regionProxyUsed,
-      regionProxyReason,
+      effectiveRegion: requestedRegion,
+      regionProxyUsed: false,
     };
   }
 
