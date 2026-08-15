@@ -10,6 +10,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
 const EXPECTED_TOOLS = [
+  'compare_region_costs',
   'estimate_costs',
   'export_reactflow_scene',
   'generate_bicep',
@@ -442,6 +443,7 @@ async function main() {
     assert.equal(estimate.structuredContent?.region, 'eastus2');
     assert.equal(estimate.structuredContent?.term, 'payg');
     assert.equal(estimate.structuredContent?.serviceCount, 1);
+    assert.equal(estimate.structuredContent?.selectedMonthlyCost, estimate.structuredContent?.estimates[0]?.totalMonthlyCost);
     assert.deepEqual(estimate.structuredContent?.pricingSource.regions.sort(), [
       'australiaeast',
       'brazilsouth',
@@ -556,6 +558,114 @@ async function main() {
     assert.equal(unsupportedRegion?.estimates[0]?.requestedRegion, 'westus3');
     assert.equal(unsupportedRegion?.estimates[0]?.effectiveRegion, 'eastus2');
     assert.equal(unsupportedRegion?.estimates[0]?.regionProxyUsed, true);
+
+    const regionalComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        baselineRegion: 'East US 2',
+        term: 'payg',
+        regions: ['East US 2', 'Central US', 'West Europe'],
+        services: [
+          { name: 'Web', type: 'App Service', quantity: 1 },
+          { name: 'Gateway', type: 'API Management', quantity: 2 },
+          { name: 'Monitor', type: 'Azure Monitor', quantity: 1 },
+        ],
+      },
+    });
+    const comparison = regionalComparison.structuredContent;
+    assert.equal(comparison?.rankingEligible, true);
+    assert.equal(comparison?.coverageConsistent, true);
+    assert.equal(comparison?.currencyConsistent, true);
+    assert.deepEqual(comparison?.requestedRegions, ['eastus2', 'centralus', 'westeurope']);
+    assert.deepEqual(comparison?.comparedRegions, ['eastus2', 'centralus', 'westeurope']);
+    assert.deepEqual(comparison?.unsupportedRegions, []);
+    assert.equal(comparison?.baselineRegion, 'eastus2');
+    assert.equal(comparison?.totalResourceCount, 4);
+    assert.equal(comparison?.comparisons.length, 3);
+    assert.equal(comparison?.ranking.length, 3);
+    assert.equal(comparison?.comparisons.every(row => row.nativePricing && row.numericCoveragePercent === 75), true);
+    assert.equal(comparison?.comparisons.every(row => row.numericallyPricedResourceCount === 3 && row.excludedResourceCount === 1), true);
+    assert.equal(comparison?.comparisons.every(row => row.excludedServices[0]?.name === 'Monitor'), true);
+    assert.equal(comparison?.comparisons.every(row => !row.excludedServices.some(service => service.regionProxyUsed)), true);
+    assert.equal(comparison?.comparisons.find(row => row.region === 'eastus2')?.deltaFromBaseline?.amount, 0);
+    const rankedSelected = comparison?.ranking.map(row => row.selectedMonthlyCost) ?? [];
+    assert.deepEqual(rankedSelected, [...rankedSelected].sort((left, right) => left - right));
+    assert.equal(comparison?.cheapest?.region, comparison?.ranking[0]?.region);
+    assert.equal(comparison?.mostExpensive?.region, comparison?.ranking.at(-1)?.region);
+    assert.equal(comparison?.potentialMonthlySavings?.amount, Math.round((rankedSelected.at(-1) - rankedSelected[0]) * 100) / 100);
+    assert(new Set(rankedSelected).size > 1, 'Native regional comparison should measure at least two distinct totals for this fixture');
+    assert.equal(comparison?.comparisons.every(row => row.pricesAsOf != null), true);
+
+    const premiumComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        term: 'reserved1yr',
+        regions: ['eastus2', 'centralus'],
+        services: [{ name: 'Premium Web', type: 'App Service', tier: 'premium' }],
+      },
+    });
+    assert.equal(premiumComparison.structuredContent?.term, 'reserved1yr');
+    assert.equal(premiumComparison.structuredContent?.rankingEligible, true);
+    assert.equal(premiumComparison.structuredContent?.comparisons.every(row => row.selectedMonthlyCost === row.totalMonthlyCost.high), true);
+
+    const unsupportedComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        regions: ['eastus2', 'centralus', 'westus3'],
+        services: [{ name: 'Gateway', type: 'API Management' }],
+      },
+    });
+    const unsupportedComparisonOutput = unsupportedComparison.structuredContent;
+    assert.equal(unsupportedComparisonOutput?.rankingEligible, false);
+    assert.deepEqual(unsupportedComparisonOutput?.unsupportedRegions, ['westus3']);
+    assert.deepEqual(unsupportedComparisonOutput?.comparedRegions, ['eastus2', 'centralus']);
+    assert.deepEqual(unsupportedComparisonOutput?.ranking, []);
+    assert.match(unsupportedComparisonOutput?.rankingReason ?? '', /no native bundled snapshot/i);
+    assert.equal(unsupportedComparisonOutput?.comparisons.every(row => row.nativePricing), true);
+
+    const allUnsupportedComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        regions: ['westus3', 'francecentral'],
+        services: [{ name: 'Gateways', type: 'API Management', quantity: 3 }],
+      },
+    });
+    assert.equal(allUnsupportedComparison.structuredContent?.rankingEligible, false);
+    assert.equal(allUnsupportedComparison.structuredContent?.totalResourceCount, 3);
+    assert.deepEqual(allUnsupportedComparison.structuredContent?.comparedRegions, []);
+    assert.deepEqual(allUnsupportedComparison.structuredContent?.unsupportedRegions, ['westus3', 'francecentral']);
+
+    const usageOnlyComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        regions: ['eastus2', 'centralus'],
+        services: [{ name: 'Agent Platform', type: 'Azure AI Foundry' }],
+      },
+    });
+    assert.equal(usageOnlyComparison.structuredContent?.rankingEligible, false);
+    assert.equal(usageOnlyComparison.structuredContent?.comparisons.every(row => row.numericCoveragePercent === 0), true);
+    assert.match(usageOnlyComparison.structuredContent?.rankingReason ?? '', /no numeric fixed-price baseline/i);
+
+    const duplicateRegionComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        regions: ['East US 2', 'east-us-2'],
+        services: [{ name: 'Gateway', type: 'API Management' }],
+      },
+    });
+    assert.equal(duplicateRegionComparison.isError, true);
+    assert.match(duplicateRegionComparison.content.find(item => item.type === 'text')?.text ?? '', /distinct regions/i);
+
+    const invalidBaselineComparison = await client.callTool({
+      name: 'compare_region_costs',
+      arguments: {
+        baselineRegion: 'westus2',
+        regions: ['eastus2', 'centralus'],
+        services: [{ name: 'Gateway', type: 'API Management' }],
+      },
+    });
+    assert.equal(invalidBaselineComparison.isError, true);
+    assert.match(invalidBaselineComparison.content.find(item => item.type === 'text')?.text ?? '', /must be one of the requested regions/i);
 
     const firstHarden = textPayload(await client.callTool({
       name: 'harden_architecture',
@@ -944,7 +1054,7 @@ async function main() {
     assert(regionalGuide.markdown.includes('Regional placement limitation'));
     assert(regionalGuide.markdown.includes('is not yet emitted as multi-region IaC'));
 
-    console.log('MCP contract test passed: stateless missing/stale-session recovery, all 12 handlers, 3 resources, 3 prompts, auth, metadata, pricing, hardening idempotency, and deployment guides.');
+    console.log('MCP contract test passed: stateless missing/stale-session recovery, all 13 handlers, 3 resources, 3 prompts, auth, metadata, pricing, regional comparison, hardening idempotency, and deployment guides.');
   } finally {
     if (client) await client.close().catch(() => {});
     if (child.exitCode === null) child.kill('SIGTERM');

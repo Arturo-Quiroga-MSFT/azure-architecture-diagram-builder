@@ -8,7 +8,7 @@ The Azure Architecture Diagram Builder is a web-based tool that uses AI to gener
 
 A lightweight Express.js **token server** (`127.0.0.1:3001`, co-located with nginx in the container) is the security boundary: it proxies all Azure OpenAI traffic (`/api/openai`) so the key never reaches the browser, grounds deployment guides in Microsoft Learn (`/api/docs-search`), persists user feedback to Cosmos DB (`/api/feedback`), and issues keyless Speech tokens (`/api/speech-token`) via `DefaultAzureCredential` (Managed Identity).
 
-The project also ships a standalone **MCP server** (`mcp-server/`) exposing 12 tools over stdio + stateless Streamable HTTP, consumable by **Microsoft Scout** and other MCP clients. The app is deployed on Azure Container Apps and instrumented with Application Insights.
+The project also ships a standalone **MCP server** (`mcp-server/`) exposing 13 tools over stdio + stateless Streamable HTTP, consumable by **Microsoft Scout** and other MCP clients. The app is deployed on Azure Container Apps and instrumented with Application Insights.
 
 ## High-Level Architecture
 
@@ -43,7 +43,7 @@ graph TB
 
     subgraph "Backend Layer"
         TokenServer[Express.js Token Server<br/>127.0.0.1:3001<br/>/api/openai · /api/docs-search<br/>/api/feedback · /api/speech-token]
-        MCP[MCP Server<br/>12 tools · stdio + stateless HTTP<br/>used by Microsoft Scout]
+        MCP[MCP Server<br/>13 tools · stdio + stateless HTTP<br/>used by Microsoft Scout]
     end
 
     subgraph "External APIs"
@@ -248,18 +248,20 @@ consumable by **Microsoft Scout** and any MCP-compatible client.
 | `list_services` | Browse the 94-service canonical AADB catalog (categories, aliases, pricing) |
 | `validate_architecture` | Score a design against Well-Architected Framework rules (no LLM) |
 | `estimate_costs` | **Numeric** monthly costs (low/expected/high) from a distilled Azure Retail Prices snapshot — region- and term-aware (PAYG / 1-year reserved); instance-priced services use a representative SKU, Microsoft Fabric uses F-SKU capacity, usage-based services report catalog ranges |
+| `compare_region_costs` | Compare the same architecture across native snapshot regions; rank only when coverage and currency are equivalent, with no proxies or heuristic multipliers |
 | `generate_bicep` | Emit deployable Bicep with WAF secure defaults pre-set (HTTPS-only + TLS 1.2, managed identity, Key Vault soft-delete/purge, health check, autoscale, staging slots) + a structured map of which WAF finding each setting resolves |
 | `generate_manifest` | Emit an `az prototype` interchange manifest |
 | `get_waf_rules` | Query WAF rules by pillar or service type |
 | `render_diagram` | Render a diagram as SVG/HTML with real Azure icons |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app |
 
-> All 12 MCP tools return typed **`structuredContent`** on successful calls (validated against a declared `outputSchema`) while retaining their existing text payloads, and carry read-only/idempotent tool annotations.
+> All 13 MCP tools return typed **`structuredContent`** on successful calls (validated against a declared `outputSchema`) while retaining their existing text payloads, and carry read-only/idempotent tool annotations.
 
 - **Transport** — stdio (local) and Streamable-HTTP (`npm run start:http`); selected via `--http`/`--stdio` or `MCP_TRANSPORT`.
 - **Auth** — `MCP_AUTH_TOKEN` enforces `Authorization: Bearer <token>` (constant-time compare); `/healthz` + a pre-auth `/mcp` liveness probe support connector wizards.
 - **Catalog** — `serviceCatalog.generated.json` is generated from the web app's canonical `SERVICE_ICON_MAP`; build-time validation rejects ambiguous identities and drift tests enforce icon/pricing ownership parity.
 - **Round trips** — manifests and React Flow scenes preserve stable service/connection IDs, canonical service types, group IDs, workflow, author/prompt, IaC tool, and normalized location metadata. Existing IDs survive deterministic hardening; newly cloned resources never reuse a source ID.
+- **Regional cost comparison** — applies one architecture wholly to each candidate and composes the same estimator used by `estimate_costs`. Rankings require native snapshots, identical numeric service coverage, a common currency, and no proxies.
 - **Rendering** — `svgRenderer.ts` embeds official Azure icons as data-URIs, smooths edges, and uses a `longest-path` dagre ranker to minimize crossings; `layoutEngine.ts` resolves categories alias-aware via the generated catalog loader in `serviceCatalog.ts`.
 - **Deploy** — `scripts/deploy-mcp-instance.sh` builds and ships an isolated MCP ACA instance; see `SCOUT/README.md` for the Scout registration walkthrough.
 

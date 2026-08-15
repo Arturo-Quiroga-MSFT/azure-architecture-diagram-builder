@@ -18,6 +18,7 @@ They are design-time only — nothing deploys Azure resources.
 | 1 | `list_services` | Browse the Azure service catalog (names, categories, aliases, pricing availability, cost ranges) | Discovery |
 | 2 | `validate_architecture` | WAF score (0–100) + findings by pillar, deterministic rule engine | Analyze |
 | 3 | `estimate_costs` | Numeric monthly costs (low/expected/high) from distilled Azure Retail Prices | Cost |
+| 3b | `compare_region_costs` | Compare one architecture across native pricing regions with evidence-gated ranking | Cost |
 | 4 | `generate_manifest` | `az prototype` interchange manifest (JSON) | Export |
 | 5 | `generate_bicep` | Deployable Bicep with WAF secure defaults pre-set; maps each setting to the finding it resolves | IaC |
 | 6 | `harden_architecture` | Deterministically clear pattern-level WAF anti-patterns (topology remediation) | Remediate |
@@ -46,7 +47,7 @@ names/aliases to canonical service types before calling the other tools.
 `{ key, displayName, category, aliases, hasPricingData, isUsageBased, costRange }`.
 Also available as the `azure://catalog/services` resource.
 
-All 12 tools advertise an MCP `outputSchema` and return `structuredContent` on
+All 13 tools advertise an MCP `outputSchema` and return `structuredContent` on
 successful calls. Existing text payloads remain available for compatibility;
 artifact tools include the generated SVG, HTML, Bicep, Terraform, or Markdown in
 their structured result as well.
@@ -93,7 +94,7 @@ by an edge with Front Door or Application Gateway.
 
 ## 3. `estimate_costs`
 
-**Module:** [`src/pricing.ts`](src/pricing.ts)
+**Modules:** [`src/costEstimator.ts`](src/costEstimator.ts), [`src/pricing.ts`](src/pricing.ts)
 
 Numeric monthly costs from a distilled snapshot of the **Azure Retail Prices**
 API, region- and term-aware.
@@ -117,6 +118,8 @@ provenance:
 
 - `serviceCount` (input rows) and quantity-aware `totalResourceCount`
 - `numericallyPricedResourceCount / totalResourceCount` and `numericCoveragePercent`
+- `selectedMonthlyCost`, the quantity-aware aggregate of each service's selected
+  tier; `totalMonthlyCost` remains the low/expected/high architecture band
 - `isPartialBaseline`, `baselineLabel`, and categorized `excludedServices`
 - per-estimate `requestedRegion`, `effectiveRegion`, and `regionProxyUsed`
 - response-level `requestedRegions`, `effectiveRegions`, and proxy count
@@ -131,6 +134,58 @@ no regional meter and therefore retain the requested region without a proxy.
 `pricesAsOf` is the newest contributing Azure Retail Prices meter effective
 date among the returned estimates. The dates measure different things and may
 differ.
+
+---
+
+## 3b. `compare_region_costs`
+
+**Module:** [`src/regionalCostComparison.ts`](src/regionalCostComparison.ts)
+
+Place the same services, quantities, tiers, and pricing term wholly in each
+candidate region and compare the resulting numeric fixed-price baselines. This
+tool composes `estimate_costs`; it does not maintain separate pricing rules.
+
+**Input:**
+
+```jsonc
+{
+  "services": [
+    { "name": "Web", "type": "App Service", "quantity": 2 },
+    { "name": "Gateway", "type": "API Management", "tier": "standard" },
+    { "name": "Monitor", "type": "Azure Monitor" }
+  ],
+  "regions": ["eastus2", "centralus", "westeurope"],
+  "baselineRegion": "eastus2",
+  "term": "payg"
+}
+```
+
+- `regions` requires 2–14 distinct values after normalization.
+- `baselineRegion` must be one of the candidates; it defaults to the first.
+- Services intentionally have no `region` override: each candidate represents
+  the same architecture placed wholly in that region.
+- `term` is `payg` or exact-SKU `reserved1yr`, matching `estimate_costs`.
+
+**Output (`structuredContent`):**
+
+- `comparisons[]`: native region, meter date, low/expected/high band,
+  selected-tier baseline, coverage, exclusions, category totals, and delta from
+  the baseline region.
+- `ranking[]`, `cheapest`, `mostExpensive`, and `potentialMonthlySavings` when
+  every requested candidate is natively priced and comparable. Ranking uses the
+  aggregate selected-tier monthly baseline, not the middle band unconditionally.
+- `unsupportedRegions` and a human-readable `rankingReason` when ranking is
+  withheld.
+- `pricingSource`: bundled snapshot generation time, currency, and all native
+  regions.
+
+Ranking is deliberately withheld if any requested region lacks a native
+snapshot, fewer than two native candidates remain, the baseline is unsupported,
+numeric service coverage differs, currencies differ, a proxy appears, or every
+service is usage-based/catalog-range. Partial fixed-price baselines can be ranked
+only when the same numeric service set is covered everywhere; exclusions remain
+visible per region. The tool never uses heuristic regional multipliers and never
+substitutes proxy pricing.
 
 ---
 
