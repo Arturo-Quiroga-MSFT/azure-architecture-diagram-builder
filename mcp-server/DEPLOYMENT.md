@@ -36,6 +36,17 @@ https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/
   do not prevent calls after a revision replacement or replica change.
 - Resource group: `azure-diagrams-rg` · ACR: `acrazurediagrams1767583743`.
 
+### Current verified revision (2026-08-15)
+
+- Merged source: `ca739ca` (Step 5 deterministic regional cost comparison).
+- Image: `azure-diagram-mcp:mcp-20260815-194349`.
+- ACR digest: `sha256:481798be89b7d3209b23356f3c1d627114fad42c30963c702d1edad727b38a46`.
+- ACA revision: `azure-diagram-mcp--v1786823122`, healthy, one replica, 100% traffic.
+- Live contract: health `200`, unauthenticated MCP `401`, 13 tools discovered.
+- Regional smoke: native East US 2/Central US/West Europe comparison ranked the
+  tested 75%-coverage fixed-price baseline; premium one-year comparison used the
+  selected high-tier band; unsupported `westus3` returned no ranking.
+
 ---
 
 ## 2. Deploy (script-based, no azd)
