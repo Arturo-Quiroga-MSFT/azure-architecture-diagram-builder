@@ -17,14 +17,23 @@ interface RegionalPricingData {
   Items: AzureRetailPrice[];
 }
 
-// Statically bundle every regional pricing JSON so the data is available in the
-// production build. A plain `import(path)` with /* @vite-ignore */ is NOT
-// bundled, so in production it 404s to index.html (text/html) and fails the
-// strict module-script MIME check. `import.meta.glob` lets Vite create lazy
-// chunks for each file that resolve correctly in both dev and production.
-const pricingModules = import.meta.glob<{ default: RegionalPricingData }>(
-  '/src/data/pricing/regions/*/*.json'
+// Emit every regional JSON file as a static URL asset. Importing JSON as parsed
+// modules made Vite parse/minify 1,120 large files and exceeded the ACR build
+// container's memory. URL assets preserve production-safe hashed paths while
+// keeping the pricing corpus out of the JavaScript module graph.
+const pricingAssets = import.meta.glob<string>(
+  '/src/data/pricing/regions/*/*.json',
+  { query: '?url', import: 'default' },
 );
+
+async function loadPricingAsset(path: string): Promise<RegionalPricingData | null> {
+  const loader = pricingAssets[path];
+  if (!loader) return null;
+  const assetUrl = await loader();
+  const response = await fetch(assetUrl);
+  if (!response.ok) throw new Error(`Pricing asset request failed (${response.status}): ${path}`);
+  return await response.json() as RegionalPricingData;
+}
 
 // Cache for loaded regional data
 const regionalDataCache = new Map<AzureRegion, Map<string, RegionalPricingData>>();
@@ -102,12 +111,11 @@ async function getFabricRegionalPricing(
   region: AzureRegion
 ): Promise<ServicePricing | null> {
   const path = `/src/data/pricing/regions/${region}/microsoft_fabric.json`;
-  const loader = pricingModules[path];
-  if (!loader) {
+  const data = await loadPricingAsset(path);
+  if (!data) {
     console.warn(`⚠️ No Fabric pricing data bundled at ${path}`);
     return null;
   }
-  const data = (await loader()).default as RegionalPricingData;
 
   if (isFabricCapacityService(serviceName)) {
     const rates = data.Items
@@ -206,13 +214,11 @@ async function loadServiceData(region: AzureRegion, serviceName: string): Promis
       
       // Load the Foundry file
       const path = `/src/data/pricing/regions/${region}/${aiMapping.file}.json`;
-      const loader = pricingModules[path];
-      if (!loader) {
+      const fullData = await loadPricingAsset(path);
+      if (!fullData) {
         console.warn(`⚠️ No pricing data bundled at ${path}`);
         return null;
       }
-      const module = await loader();
-      const fullData = module.default as RegionalPricingData;
       
       // Filter items by productName
       const filteredItems = fullData.Items.filter(item => 
@@ -239,13 +245,11 @@ async function loadServiceData(region: AzureRegion, serviceName: string): Promis
     const path = `/src/data/pricing/regions/${region}/${filename}.json`;
     
     // Look up the statically bundled module for this file
-    const loader = pricingModules[path];
-    if (!loader) {
+    const data = await loadPricingAsset(path);
+    if (!data) {
       console.warn(`⚠️ No pricing data bundled at ${path}`);
       return null;
     }
-    const module = await loader();
-    const data = module.default as RegionalPricingData;
     
     // Cache the data
     if (!regionalDataCache.has(region)) {
