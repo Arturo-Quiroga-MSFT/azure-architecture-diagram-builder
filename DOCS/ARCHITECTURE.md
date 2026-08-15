@@ -254,11 +254,12 @@ consumable by **Microsoft Scout** and any MCP-compatible client.
 | `render_diagram` | Render a diagram as SVG/HTML with real Azure icons |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app |
 
-> `validate_architecture`, `estimate_costs`, and `get_waf_rules` return typed **`structuredContent`** (validated against a declared `outputSchema`) plus a human summary, and carry read-only/idempotent tool annotations.
+> All 12 MCP tools return typed **`structuredContent`** on successful calls (validated against a declared `outputSchema`) while retaining their existing text payloads, and carry read-only/idempotent tool annotations.
 
 - **Transport** — stdio (local) and Streamable-HTTP (`npm run start:http`); selected via `--http`/`--stdio` or `MCP_TRANSPORT`.
 - **Auth** — `MCP_AUTH_TOKEN` enforces `Authorization: Bearer <token>` (constant-time compare); `/healthz` + a pre-auth `/mcp` liveness probe support connector wizards.
 - **Catalog** — `serviceCatalog.generated.json` is generated from the web app's canonical `SERVICE_ICON_MAP`; build-time validation rejects ambiguous identities and drift tests enforce icon/pricing ownership parity.
+- **Round trips** — manifests and React Flow scenes preserve stable service/connection IDs, canonical service types, group IDs, workflow, author/prompt, IaC tool, and normalized location metadata. Existing IDs survive deterministic hardening; newly cloned resources never reuse a source ID.
 - **Rendering** — `svgRenderer.ts` embeds official Azure icons as data-URIs, smooths edges, and uses a `longest-path` dagre ranker to minimize crossings; `layoutEngine.ts` resolves categories alias-aware via the generated catalog loader in `serviceCatalog.ts`.
 - **Deploy** — `scripts/deploy-mcp-instance.sh` builds and ships an isolated MCP ACA instance; see `SCOUT/README.md` for the Scout registration walkthrough.
 

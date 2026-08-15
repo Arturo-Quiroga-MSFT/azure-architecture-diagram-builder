@@ -156,6 +156,19 @@ server.registerTool(
           'Filter by service category. Valid values: ' + getCategories().join(', '),
         ),
     },
+    outputSchema: {
+      totalServices: z.number(),
+      categories: z.array(z.string()),
+      services: z.array(z.object({
+        key: z.string(),
+        displayName: z.string(),
+        category: z.string(),
+        aliases: z.array(z.string()),
+        hasPricingData: z.boolean(),
+        isUsageBased: z.boolean(),
+        costRange: z.string(),
+      })),
+    },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ category }) => {
@@ -173,21 +186,20 @@ server.registerTool(
       costRange: info.costRange ?? 'N/A',
     }));
 
+    const structured = {
+      totalServices: services.length,
+      categories: category ? [category] : getCategories(),
+      services,
+    };
+
     return {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify(
-            {
-              totalServices: services.length,
-              categories: category ? [category] : getCategories(),
-              services,
-            },
-            null,
-            2,
-          ),
+          text: JSON.stringify(structured, null, 2),
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -623,6 +635,8 @@ server.registerTool(
     inputSchema: {
       projectName: z.string().describe('Project name for the architecture'),
       location: z.string().optional().describe('Azure region (default: eastus2)'),
+      architecturePrompt: z.string().optional().describe('Original natural-language architecture prompt'),
+      author: z.string().optional().describe('Architecture author'),
       iacTool: z
         .string()
         .describe('Output IaC format. Allowed values: bicep, terraform')
@@ -631,6 +645,7 @@ server.registerTool(
       services: z
         .array(
           z.object({
+            id: z.string().optional().describe('Stable service identifier preserved across export/import'),
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type'),
             region: z.string().optional().describe('Azure region for this service.'),
@@ -642,6 +657,7 @@ server.registerTool(
       connections: z
         .array(
           z.object({
+            id: z.string().optional().describe('Stable connection identifier preserved across export/import'),
             from: z.string().describe('Source service name'),
             to: z.string().describe('Target service name'),
             label: z.string().optional().describe(CONN_LABEL_DESC),
@@ -662,17 +678,55 @@ server.registerTool(
         )
         .optional()
         .describe('Logical service groups'),
+      workflow: z.array(z.object({
+        step: z.number(),
+        description: z.string(),
+        services: z.array(z.string()),
+      })).optional().describe('Ordered architecture workflow'),
+    },
+    outputSchema: {
+      schemaVersion: z.literal('1.0'),
+      source: z.literal('azure-diagram-builder'),
+      createdAt: z.string(),
+      project: z.object({ name: z.string(), location: z.string(), iacTool: z.string() }),
+      architecture: z.object({
+        services: z.array(z.object({
+          id: z.string(),
+          name: z.string(),
+          type: z.string(),
+          region: z.string().optional(),
+          category: z.string(),
+          description: z.string(),
+          groupId: z.string().optional(),
+        })),
+        connections: z.array(z.object({
+          id: z.string().optional(),
+          from: z.string(),
+          to: z.string(),
+          label: z.string(),
+          type: z.string(),
+        })),
+        groups: z.array(z.object({ id: z.string(), label: z.string() })),
+        workflow: z.array(z.object({ step: z.number(), description: z.string(), services: z.array(z.string()) })),
+      }),
+      metadata: z.object({
+        generatedBy: z.string(),
+        serviceCount: z.number(),
+        connectionCount: z.number(),
+        author: z.string().optional(),
+        architecturePrompt: z.string().optional(),
+      }),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
-  async ({ projectName, location, iacTool, services, connections, groups }) => {
+  async ({ projectName, location, architecturePrompt, author, iacTool, services, connections, groups, workflow }) => {
     const manifest = {
       schemaVersion: '1.0' as const,
       source: 'azure-diagram-builder' as const,
       createdAt: new Date().toISOString(),
       project: {
         name: projectName,
-        location: location ?? 'eastus2',
+        location: normalizeAzureRegion(location ?? 'eastus2'),
         iacTool: iacTool ?? 'bicep',
       },
       architecture: {
@@ -680,28 +734,31 @@ server.registerTool(
           const resolved = resolveServiceName(s.type);
           const info = resolved ? SERVICE_CATALOG[resolved] : null;
           return {
-            id: `svc-${i + 1}`,
+            id: s.id ?? `svc-${i + 1}`,
             name: s.name,
             type: resolved ?? s.type,
             region: s.region ? normalizeAzureRegion(s.region) : undefined,
             category: info?.category ?? 'other',
             description: s.description ?? `${info?.displayName ?? s.type} instance`,
-            groupId: s.groupId ?? null,
+            ...(s.groupId ? { groupId: s.groupId } : {}),
           };
         }),
         connections: (connections ?? []).map(c => ({
+          ...(c.id ? { id: c.id } : {}),
           from: c.from,
           to: c.to,
           label: c.label ?? '',
           type: c.type ?? ('sync' as const),
         })),
         groups: groups ?? [],
-        workflow: [],
+        workflow: workflow ?? [],
       },
       metadata: {
         generatedBy: 'azure-diagram-builder-mcp',
         serviceCount: services.length,
         connectionCount: (connections ?? []).length,
+        ...(author ? { author } : {}),
+        ...(architecturePrompt ? { architecturePrompt } : {}),
       },
     };
 
@@ -712,6 +769,7 @@ server.registerTool(
           text: JSON.stringify(manifest, null, 2),
         },
       ],
+      structuredContent: manifest,
     };
   },
 );
@@ -752,6 +810,21 @@ server.registerTool(
         .optional()
         .describe('Connections between services'),
     },
+    outputSchema: {
+      iacTool: z.string(),
+      servicesCovered: z.array(z.string()),
+      servicesGeneric: z.array(z.string()),
+      findingsResolved: z.array(z.object({
+        ruleId: z.string(),
+        pillar: z.string(),
+        service: z.string(),
+        setting: z.string(),
+        bicepProperty: z.string(),
+      })),
+      findingsResolvedCount: z.number(),
+      note: z.string(),
+      bicep: z.string(),
+    },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections }) => {
@@ -764,25 +837,24 @@ server.registerTool(
       iacTool,
     });
 
+    const structured = {
+      iacTool: result.iacTool,
+      servicesCovered: result.servicesCovered,
+      servicesGeneric: result.servicesGeneric,
+      findingsResolved: result.findingsResolved,
+      findingsResolvedCount: result.findingsResolved.length,
+      note: result.note + regionalPlacementNote(services, deploymentLocation),
+      bicep: result.bicep,
+    };
+
     return {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify(
-            {
-              iacTool: result.iacTool,
-              servicesCovered: result.servicesCovered,
-              servicesGeneric: result.servicesGeneric,
-              findingsResolved: result.findingsResolved,
-              findingsResolvedCount: result.findingsResolved.length,
-              note: result.note + regionalPlacementNote(services, deploymentLocation),
-              bicep: result.bicep,
-            },
-            null,
-            2,
-          ),
+          text: JSON.stringify(structured, null, 2),
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -819,31 +891,45 @@ server.registerTool(
         .optional()
         .describe('Connections between services'),
     },
+    outputSchema: {
+      iacTool: z.literal('terraform'),
+      servicesCovered: z.array(z.string()),
+      servicesGeneric: z.array(z.string()),
+      findingsResolved: z.array(z.object({
+        ruleId: z.string(),
+        pillar: z.string(),
+        service: z.string(),
+        setting: z.string(),
+        terraformAttribute: z.string(),
+      })),
+      findingsResolvedCount: z.number(),
+      note: z.string(),
+      terraform: z.string(),
+    },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, services, connections }) => {
     const deploymentLocation = location ?? 'eastus2';
     const result = generateTerraform({ services, connections, projectName, location: deploymentLocation });
 
+    const structured = {
+      iacTool: result.iacTool,
+      servicesCovered: result.servicesCovered,
+      servicesGeneric: result.servicesGeneric,
+      findingsResolved: result.findingsResolved,
+      findingsResolvedCount: result.findingsResolved.length,
+      note: result.note + regionalPlacementNote(services, deploymentLocation),
+      terraform: result.terraform,
+    };
+
     return {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify(
-            {
-              iacTool: result.iacTool,
-              servicesCovered: result.servicesCovered,
-              servicesGeneric: result.servicesGeneric,
-              findingsResolved: result.findingsResolved,
-              findingsResolvedCount: result.findingsResolved.length,
-              note: result.note + regionalPlacementNote(services, deploymentLocation),
-              terraform: result.terraform,
-            },
-            null,
-            2,
-          ),
+          text: JSON.stringify(structured, null, 2),
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -883,6 +969,12 @@ server.registerTool(
         .optional()
         .describe('Connections between services'),
     },
+    outputSchema: {
+      iacTool: z.enum(['bicep', 'terraform']),
+      steps: z.number(),
+      checklistItems: z.number(),
+      markdown: z.string(),
+    },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ projectName, location, iacTool, services, connections }) => {
@@ -893,22 +985,21 @@ server.registerTool(
       ? `${result.markdown}\n\n> **Regional placement limitation:**${placementNote}`
       : result.markdown;
 
+    const structured = {
+      iacTool: result.iacTool,
+      steps: result.steps,
+      checklistItems: result.checklistItems,
+      markdown,
+    };
+
     return {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify(
-            {
-              iacTool: result.iacTool,
-              steps: result.steps,
-              checklistItems: result.checklistItems,
-              markdown,
-            },
-            null,
-            2,
-          ),
+          text: JSON.stringify(structured, null, 2),
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -929,6 +1020,7 @@ server.registerTool(
       services: z
         .array(
           z.object({
+            id: z.string().optional().describe('Stable service identifier preserved for unchanged services'),
             name: z.string().describe('Service instance name'),
             type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
             region: z.string().optional().describe('Azure region for this service.'),
@@ -940,6 +1032,7 @@ server.registerTool(
       connections: z
         .array(
           z.object({
+            id: z.string().optional().describe('Stable connection identifier preserved for unchanged connections'),
             from: z.string().describe('Source service name'),
             to: z.string().describe('Target service name'),
             label: z.string().optional().describe('Connection label'),
@@ -957,6 +1050,35 @@ server.registerTool(
         )
         .optional()
         .describe('Existing logical service groups (new groups are appended as needed)'),
+    },
+    outputSchema: {
+      summary: z.string(),
+      before: z.object({ score: z.number(), patternsDetected: z.array(z.string()), totalFindings: z.number() }),
+      after: z.object({ score: z.number(), patternsDetected: z.array(z.string()), totalFindings: z.number() }),
+      changes: z.array(z.object({
+        pattern: z.string(),
+        action: z.string(),
+        addedServices: z.array(z.string()),
+        addedConnections: z.array(z.string()),
+      })),
+      unresolved: z.array(z.string()),
+      note: z.string(),
+      services: z.array(z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        type: z.string(),
+        region: z.string().optional(),
+        description: z.string().optional(),
+        groupId: z.string().optional(),
+      })),
+      connections: z.array(z.object({
+        id: z.string().optional(),
+        from: z.string(),
+        to: z.string(),
+        label: z.string().optional(),
+        type: z.enum(['sync', 'async', 'optional']).optional(),
+      })),
+      groups: z.array(z.object({ id: z.string(), label: z.string() })),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
@@ -980,7 +1102,7 @@ server.registerTool(
     }
     const result = hardenArchitecture(
       services,
-      (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
+      (connections ?? []).map(c => ({ id: c.id, from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
       { secondaryRegion },
     );
@@ -991,27 +1113,26 @@ server.registerTool(
       (result.after.patternsDetected.length ? ` (remaining: ${result.after.patternsDetected.join(', ')})` : ' (all cleared)') +
       `. ${result.changes.length} change(s) applied.`;
 
+    const structured = {
+      summary,
+      before: result.before,
+      after: result.after,
+      changes: result.changes,
+      unresolved: result.unresolved,
+      note: result.note,
+      services: result.services,
+      connections: result.connections,
+      groups: result.groups,
+    };
+
     return {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify(
-            {
-              summary,
-              before: result.before,
-              after: result.after,
-              changes: result.changes,
-              unresolved: result.unresolved,
-              note: result.note,
-              services: result.services,
-              connections: result.connections,
-              groups: result.groups,
-            },
-            null,
-            2,
-          ),
+          text: JSON.stringify(structured, null, 2),
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -1030,6 +1151,33 @@ server.registerTool(
         .enum(['auto', 'manifest', 'reactflow'])
         .optional()
         .describe('Format hint. Allowed values: auto (default), manifest, reactflow. Auto-detected from the document shape when omitted.'),
+    },
+    outputSchema: {
+      summary: z.string(),
+      format: z.enum(['manifest', 'reactflow']),
+      projectName: z.string().optional(),
+      location: z.string().optional(),
+      iacTool: z.string().optional(),
+      author: z.string().optional(),
+      architecturePrompt: z.string().optional(),
+      warnings: z.array(z.string()),
+      services: z.array(z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        type: z.string(),
+        region: z.string().optional(),
+        description: z.string().optional(),
+        groupId: z.string().optional(),
+      })),
+      connections: z.array(z.object({
+        id: z.string().optional(),
+        from: z.string(),
+        to: z.string(),
+        label: z.string().optional(),
+        type: z.string().optional(),
+      })),
+      groups: z.array(z.object({ id: z.string(), label: z.string() })),
+      workflow: z.array(z.object({ step: z.number(), description: z.string(), services: z.array(z.string()) })),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
@@ -1052,26 +1200,29 @@ server.registerTool(
       `${result.connections.length} connection(s), ${result.groups.length} group(s)` +
       (result.warnings.length ? `. ${result.warnings.length} warning(s).` : '.');
 
+    const structured = {
+      summary,
+      format: result.format,
+      projectName: result.projectName,
+      location: result.location,
+      iacTool: result.iacTool,
+      author: result.author,
+      architecturePrompt: result.architecturePrompt,
+      warnings: result.warnings,
+      services: result.services,
+      connections: result.connections,
+      groups: result.groups,
+      workflow: result.workflow,
+    };
+
     return {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify(
-            {
-              summary,
-              format: result.format,
-              projectName: result.projectName,
-              location: result.location,
-              warnings: result.warnings,
-              services: result.services,
-              connections: result.connections,
-              groups: result.groups,
-            },
-            null,
-            2,
-          ),
+          text: JSON.stringify(structured, null, 2),
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -1237,6 +1388,15 @@ server.registerTool(
         .optional()
         .describe('Logical service groups (rendered as dashed containers)'),
     },
+    outputSchema: {
+      format: z.enum(['svg', 'html']),
+      mimeType: z.enum(['image/svg+xml', 'text/html']),
+      title: z.string().optional(),
+      direction: z.enum(['TB', 'LR']),
+      theme: z.enum(['light', 'dark']),
+      profile: z.enum(['presentation', 'technical', 'cost']),
+      content: z.string(),
+    },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   async ({ title, format, direction, services, connections, groups, theme, profile, region, author, generatedBy }) => {
@@ -1290,6 +1450,16 @@ server.registerTool(
           generatedBy,
         });
 
+    const structured = {
+      format: fmt === 'html' ? 'html' as const : 'svg' as const,
+      mimeType: fmt === 'html' ? 'text/html' as const : 'image/svg+xml' as const,
+      title,
+      direction: dir === 'LR' ? 'LR' as const : 'TB' as const,
+      theme: theme === 'dark' ? 'dark' as const : 'light' as const,
+      profile: renderProfile,
+      content: output,
+    };
+
     return {
       content: [
         {
@@ -1297,6 +1467,7 @@ server.registerTool(
           text: output,
         },
       ],
+      structuredContent: structured,
     };
   },
 );
@@ -1315,6 +1486,7 @@ server.registerTool(
       direction: z.string().optional().describe('Layout direction: TB (top-to-bottom), LR (left-to-right), or auto. Default: auto (picks LR for 4+ groups or dense graphs, TB otherwise).'),
       region: z.string().optional().describe('Azure region for best-effort per-node pricing embedded in each node (e.g. eastus2). Default: eastus2. Set to "none" to omit pricing.'),
       services: z.array(z.object({
+        id: z.string().optional().describe('Stable service identifier preserved across export/import'),
         name: z.string().describe('Service instance name (becomes the node label)'),
         type: z.string().describe('Azure service type (e.g. "App Service", "SQL Database")'),
         region: z.string().optional().describe('Azure region for this service. Overrides the export-level region for embedded pricing.'),
@@ -1322,6 +1494,7 @@ server.registerTool(
         groupId: z.string().optional().describe('Optional group ID this service belongs to'),
       })).describe('List of Azure services in the architecture'),
       connections: z.array(z.object({
+        id: z.string().optional().describe('Stable connection identifier preserved across export/import'),
         from: z.string().describe('Source service name'),
         to: z.string().describe('Target service name'),
         label: z.string().optional().describe('Edge label'),
@@ -1336,6 +1509,21 @@ server.registerTool(
         description: z.string().describe('Human-readable description of this step'),
         services: z.array(z.string()).describe('Service names involved in this step'),
       })).optional().describe('Optional ordered workflow narrative shown in the web app'),
+    },
+    outputSchema: {
+      nodes: z.array(z.record(z.unknown())),
+      edges: z.array(z.record(z.unknown())),
+      viewport: z.object({ x: z.number(), y: z.number(), zoom: z.number() }),
+      metadata: z.object({
+        architectureName: z.string(),
+        author: z.string(),
+        version: z.string(),
+        date: z.string(),
+        savedAt: z.string(),
+        location: z.string().optional(),
+      }),
+      workflow: z.array(z.object({ step: z.number(), description: z.string(), services: z.array(z.string()) })),
+      architecturePrompt: z.string().optional(),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
@@ -1357,6 +1545,7 @@ server.registerTool(
           : 'TB';
 
     const conns = (connections ?? []).map(c => ({
+      id: c.id,
       from: c.from,
       to: c.to,
       label: c.label,
@@ -1414,7 +1603,7 @@ server.registerTool(
         id,
         type: 'groupNode',
         position: { x: b.x, y: b.y },
-        data: { label: g.label, stylePreset: 'presentation' },
+        data: { label: g.label, architectureGroupId: g.id, stylePreset: 'presentation' },
         style: { width: b.width, height: b.height },
         width: b.width,
         height: b.height,
@@ -1427,6 +1616,7 @@ server.registerTool(
     const pricingRegion = region && region !== 'none' ? normalizeAzureRegion(region) : (region === 'none' ? null : 'eastus2');
     const serviceNodes = layout.nodes.map(n => {
       const id = nodeIdByName.get(n.name)!;
+      const sourceService = services.find(service => service.name === n.name);
       const { iconPath } = resolveIconPath(n.type);
       const parentBounds = n.groupId ? paddedGroupBounds.get(n.groupId) : undefined;
       const parentNodeId = n.groupId ? groupIdToNodeId.get(n.groupId) : undefined;
@@ -1471,9 +1661,12 @@ server.registerTool(
         position,
         positionAbsolute,
         data: {
+          ...(sourceService?.id ? { architectureId: sourceService.id } : {}),
           label: n.name,
+          azureServiceType: resolveServiceName(n.type) ?? n.type,
           iconPath,
           ...(n.region ? { region: n.region } : {}),
+          ...(n.groupId ? { groupId: n.groupId } : {}),
           stylePreset: 'presentation',
           ...(pricing ? { pricing } : {}),
           ...(n.description ? { description: n.description } : {}),
@@ -1551,7 +1744,7 @@ server.registerTool(
       const { dx, dy } = offsetForMidpoint(mx, my);
 
       return {
-        id: `edge-${idx}`,
+        id: c.id ?? `edge-${idx}`,
         source: sourceId,
         target: targetId,
         sourceHandle,
@@ -1564,6 +1757,7 @@ server.registerTool(
         labelBgStyle: { fill: 'white', fillOpacity: 0.95, stroke: '#000', strokeWidth: 1.5, rx: 6 },
         style: { strokeWidth: 2 },
         data: {
+          ...(c.id ? { architectureId: c.id } : {}),
           connectionType,
           direction: 'forward',
           baseFlowAnimated: connectionType !== 'optional',
@@ -1594,6 +1788,7 @@ server.registerTool(
         version: '1.0',
         date: today,
         savedAt: new Date().toISOString(),
+        ...(pricingRegion ? { location: pricingRegion } : {}),
       },
       workflow: workflow ?? [],
       ...(architecturePrompt ? { architecturePrompt } : {}),
@@ -1603,6 +1798,7 @@ server.registerTool(
       content: [
         { type: 'text' as const, text: JSON.stringify(scene, null, 2) },
       ],
+      structuredContent: scene,
     };
   },
 );
