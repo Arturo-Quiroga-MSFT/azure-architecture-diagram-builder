@@ -199,6 +199,14 @@ async function main() {
     }));
     assert(listedServices.totalServices > 0);
 
+    const fullCatalog = textPayload(await client.callTool({
+      name: 'list_services',
+      arguments: {},
+    }));
+    assert.equal(fullCatalog.totalServices, 94);
+    assert(fullCatalog.services.some(service => service.key === 'Microsoft Foundry'));
+    assert(fullCatalog.services.some(service => service.key === 'Microsoft Fabric Capacity'));
+
     const initialArchitecture = {
       services: [
         { name: 'Web', type: 'App Service' },

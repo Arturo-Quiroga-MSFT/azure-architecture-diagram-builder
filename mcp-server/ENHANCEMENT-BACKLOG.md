@@ -7,7 +7,7 @@
 
 ---
 
-## Current status (updated 2026-08-14)
+## Current status (updated 2026-08-15)
 
 The standalone server exposes **12 tools, 3 resources, and 3 prompts**. P0 is
 implemented. Deterministic topology hardening, manifest/React Flow import,
@@ -38,7 +38,7 @@ defined.
 
 1. Region-aware canonical architecture and honest pricing coverage — deployed
 2. Correct multi-region validation and hardening semantics — deployed
-3. Synchronize the MCP service catalog with the app catalog
+3. Synchronize the MCP service catalog with the app catalog — implemented locally
 4. Improve manifest/import fidelity and structured outputs
 5. Add deterministic regional cost comparison
 6. Add deterministic ARM-template import
@@ -50,6 +50,16 @@ Completed in the August 15 snapshot: `centralus`, `westus2`, `uksouth`,
 contains 14 regions, 1,120 files, and no unresolved continuation links or
 wrong-region items. Step 5 can use this native coverage; do not substitute
 heuristic regional multipliers.
+
+### Canonical service catalog synchronization
+
+Step 3 now generates the MCP runtime catalog from AADB's canonical
+`SERVICE_ICON_MAP`. The measured generated catalog contains 94 services; the
+pre-switch comparison found 25 app-only services and zero MCP-only services.
+Build-time validation rejects ambiguous canonical keys, display names, or
+aliases. `npm run test:catalog` verifies identity resolution, icon-map parity,
+legacy aliases, and ownership of all bundled numeric pricing policies. This
+change is implemented locally and is not marked deployed here.
 
 ---
 

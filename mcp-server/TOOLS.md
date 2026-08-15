@@ -32,11 +32,13 @@ They are design-time only — nothing deploys Azure resources.
 
 ## 1. `list_services`
 
-**Module:** [`src/serviceCatalog.ts`](src/serviceCatalog.ts)
+**Module:** [`src/serviceCatalog.ts`](src/serviceCatalog.ts), generated data in
+[`src/serviceCatalog.generated.json`](src/serviceCatalog.generated.json)
 
-Browse the Azure service catalog the builder understands. Optionally filter by
-`category`. Use it first to resolve human names/aliases to canonical service
-types before calling the other tools.
+Browse the 94-service canonical AADB catalog. The MCP sidecar is generated from
+the web app's `SERVICE_ICON_MAP`; it is not maintained as a second handwritten
+catalog. Optionally filter by `category`. Use it first to resolve human
+names/aliases to canonical service types before calling the other tools.
 
 **Input:** `{ category?: string }` (valid categories are echoed in the response)
 

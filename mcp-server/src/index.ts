@@ -8,7 +8,7 @@
  * Exposes the Diagram Builder's core capabilities as MCP tools so that
  * `az prototype` agents (or any MCP-compatible client) can:
  *
- *   1. Browse the Azure service catalog (68+ services with categories & pricing)
+ *   1. Browse the canonical AADB service catalog (94 services with categories & pricing)
  *   2. Validate architectures against Azure WAF rules (deterministic, no LLM)
  *   3. Estimate monthly costs for a set of Azure services
  *   4. Generate an az prototype interchange manifest from services & connections

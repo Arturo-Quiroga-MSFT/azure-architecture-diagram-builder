@@ -272,7 +272,10 @@ function main() {
         ? distillFabric(resolve(dir, file))
         : distillFile(resolve(dir, file), stem);
       if (distilled) {
-        regionMap[stem] = distilled;
+        const catalogStem = stem === 'microsoft_fabric'
+          ? 'microsoft_fabric_capacity'
+          : stem;
+        regionMap[catalogStem] = distilled;
         totalEntries++;
       }
     }

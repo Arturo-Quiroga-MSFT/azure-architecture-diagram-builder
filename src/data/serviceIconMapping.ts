@@ -237,7 +237,8 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     aliases: ['Azure Cognitive Search', 'Cognitive Search', 'Azure Search', 'AI Search'],
     iconFile: 'azure-cognitive-search',
     category: 'ai + machine learning',
-    hasPricingData: false,
+    hasPricingData: true,
+    pricingServiceName: 'Azure Cognitive Search',
     isUsageBased: false,
     costRange: '$75-2500/mo'
   },
@@ -1041,7 +1042,7 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   },
   'Power BI Report': {
     displayName: 'Power BI Report',
-    aliases: ['Fabric Report', 'Power BI Dashboard', 'Power BI'],
+    aliases: ['Fabric Report', 'Fabric Power BI Report', 'Power BI Report (Fabric)'],
     iconFile: 'fabric-power-bi-report',
     category: 'fabric',
     hasPricingData: false,
