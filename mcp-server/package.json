@@ -10,7 +10,8 @@
   "scripts": {
     "sync:icons": "node scripts/sync-icon-map.mjs",
     "sync:pricing": "node scripts/sync-pricing-data.mjs",
-    "prebuild": "npm run sync:icons && npm run sync:pricing",
+    "sync:arm": "node scripts/sync-arm-extractor.mjs",
+    "prebuild": "npm run sync:icons && npm run sync:pricing && npm run sync:arm",
     "build": "tsc && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json && cp src/serviceCatalog.generated.json dist/serviceCatalog.generated.json && cp src/pricing.generated.json dist/pricing.generated.json",
     "test:catalog": "npm run build --silent && node scripts/test-service-catalog.mjs",
     "test:contracts": "npm run build --silent && node scripts/test-service-catalog.mjs && node scripts/test-tool-contracts.mjs",

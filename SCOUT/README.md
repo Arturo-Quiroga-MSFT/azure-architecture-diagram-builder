@@ -41,7 +41,7 @@ verified; stateless session recovery is covered by `npm run test:contracts`.
 | `generate_terraform` | Emit Terraform for the architecture with secure defaults. Design-time only. |
 | `generate_deployment_guide` | Generate a deployment runbook with prerequisites, IaC commands, hardening checks, smoke tests, and teardown. |
 | `harden_architecture` | Add topology-level safeguards and revalidate. Regional remediation requires an explicit `secondaryRegion`; otherwise regional findings remain unresolved. |
-| `import_architecture` | Normalize a saved AADB or React Flow architecture for use by the other tools. |
+| `import_architecture` | Normalize a saved AADB or React Flow architecture, or an ARM template / `az group export`, for use by the other tools. ARM imports resolve real resource names, per-resource regions, and real `dependsOn` edges, and report mapped/folded/skipped coverage plus resource labels with no canonical catalog equivalent. |
 | `get_waf_rules` | Query WAF rules by pillar or service type. |
 | `render_diagram` | Render an architecture diagram as SVG (static) or interactive HTML. Now supports a **light/dark theme**, **per-node cost badges**, a **total-cost/usage footer**, a **metadata panel** (author/date/provenance), and **filled group headers**. See [Output enhancements](#output-enhancements-july-2026). |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app. Now emits a per-node **`pricing`** object and edge **`pathStyle`** for near-full parity with app-generated scenes. |

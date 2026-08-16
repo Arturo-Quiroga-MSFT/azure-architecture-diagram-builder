@@ -71,4 +71,14 @@ assert(fabricPricing.expected < fabricPricing.high);
 const searchPricing = pricing.regions.eastus2?.azure_cognitive_search;
 assert(searchPricing, 'East US 2 Azure AI Search pricing must be bundled');
 assert.match(searchPricing.sampleSku, /standard s1/i);
-console.log(`[service-catalog] verified ${catalogKeys.length} canonical services and ${pricingStems.size} numeric pricing policies`);
+
+// The ARM extractor is copied from the web app; the committed copy must match.
+const canonicalArmExtractor = readFileSync(new URL('../../src/services/armExtractor.ts', import.meta.url), 'utf8');
+const generatedArmExtractor = readFileSync(new URL('../src/armExtractor.generated.ts', import.meta.url), 'utf8');
+assert(generatedArmExtractor.startsWith('// GENERATED FILE'), 'Generated ARM extractor must carry the generated-file banner');
+assert(
+  generatedArmExtractor.endsWith(canonicalArmExtractor),
+  'Generated ARM extractor has drifted from src/services/armExtractor.ts; run npm run sync:arm',
+);
+
+console.log(`[service-catalog] verified ${catalogKeys.length} canonical services, ${pricingStems.size} numeric pricing policies, and the generated ARM extractor`);

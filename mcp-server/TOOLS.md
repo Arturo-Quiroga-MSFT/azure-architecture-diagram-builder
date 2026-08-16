@@ -25,7 +25,7 @@ They are design-time only — nothing deploys Azure resources.
 | 7 | `get_waf_rules` | Query the WAF rule knowledge base by pillar / service | Discovery |
 | 8 | `render_diagram` | Azure-branded SVG or interactive HTML diagram | Visualize |
 | 9 | `export_reactflow_scene` | React Flow scene JSON importable into the web app | Export |
-| 10 | `import_architecture` | Inverse of the export tools; parse a manifest / React Flow scene back to canonical shape | Import |
+| 10 | `import_architecture` | Inverse of the export tools plus a deterministic ARM-template reader; parse a manifest / React Flow scene / ARM template back to canonical shape | Import |
 | 11 | `generate_terraform` | Deployable Terraform (azurerm) with the same WAF secure defaults as the Bicep tool | IaC |
 | 12 | `generate_deployment_guide` | Step-by-step Markdown deploy runbook (Bicep or Terraform) with a post-deploy hardening checklist | Deploy |
 
@@ -374,10 +374,12 @@ and also stored in `edge.data.architectureId`.
 
 ## 10. `import_architecture`
 
-**Module:** [`src/importer.ts`](src/importer.ts)
+**Module:** [`src/importer.ts`](src/importer.ts), ARM adapter in
+[`src/armImporter.ts`](src/armImporter.ts)
 
 The inverse of `generate_manifest` and `export_reactflow_scene` — closes the
-round-trip so an agent can reload a previously saved design and keep working.
+round-trip so an agent can reload a previously saved design and keep working —
+and a deterministic reader for **ARM deployment templates**.
 
 ### Accepts
 
@@ -385,13 +387,14 @@ round-trip so an agent can reload a previously saved design and keep working.
 |--------|-----------|---------------|
 | az prototype **manifest** | has `architecture` | explicit `services[].type` (lossless) |
 | React Flow **scene** | has `nodes` | `data.azureServiceType` → icon-path reverse-lookup → `data.label` |
+| **ARM template** | `$schema` contains `deploymentTemplate.json`, or `resources` + `contentVersion` | ARM resource type (+ `kind`) → canonical catalog type |
 
 ### Input
 
 ```jsonc
 {
-  "content": "<JSON string — a manifest or a React Flow scene>",
-  "format?": "auto | manifest | reactflow"   // auto-detected when omitted
+  "content": "<JSON string — a manifest, a React Flow scene, or an ARM template>",
+  "format?": "auto | manifest | reactflow | arm"   // auto-detected when omitted
 }
 ```
 
@@ -400,7 +403,7 @@ round-trip so an agent can reload a previously saved design and keep working.
 ```jsonc
 {
   "summary": "Imported reactflow: 3 service(s), 1 connection(s), 1 group(s).",
-  "format": "manifest | reactflow",
+  "format": "manifest | reactflow | arm",
   "projectName?": "...",
   "location?": "...",
   "iacTool?": "bicep | terraform",
@@ -410,12 +413,44 @@ round-trip so an agent can reload a previously saved design and keep working.
   "services": [ ... ],          // canonical shape — feed straight into any tool
   "connections": [ ... ],
   "groups": [ ... ],
-  "workflow": [ ... ]
+  "workflow": [ ... ],
+  "coverage?": {                // ARM imports only
+    "totalResources": 699, "mapped": 5, "folded": 694,
+    "skipped": 0, "skippedTypes": [],
+    "edgeCount": 1,
+    "canonicalServiceCount": 4,
+    "uncanonicalizedTypes": ["Container Apps Environment"]
+  }
 }
 ```
 
 For manifests, `services[].region` is preserved. For React Flow scenes, region
 is recovered from `data.region` or `data.pricing.region`.
+
+### ARM templates
+
+Parsing is delegated to the web app's canonical deterministic extractor
+(`src/services/armExtractor.ts`), copied into the server at build time by
+`npm run sync:arm`, so the web app and this tool read templates identically.
+A real `az group export` is mostly noise, so the adapter reports what happened
+instead of hiding it:
+
+- `name` is the **real Azure resource name**, resolved through
+  `[parameters('x')]` default values and de-duplicated (`shared`, `shared (2)`).
+- `type` is a canonical catalog type when one genuinely matches. A resource
+  label with no honest equivalent (for example `Container Apps Environment`,
+  `App Service Plan`, `SQL Server`) keeps its ARM label, is listed in
+  `coverage.uncanonicalizedTypes`, and is flagged in `warnings` — it is never
+  remapped to a different service, so pricing and WAF rules simply do not apply.
+- `region` comes from a literal `location` or a resolvable `[parameters('x')]`
+  default. Runtime expressions such as `resourceGroup().location` yield no
+  region rather than a guess.
+- `description` carries the raw ARM resource type for provenance.
+- Connections come from real `dependsOn` and `resourceId(...)` references, never
+  inferred; `groups` are the extractor's category zones.
+- Child/config sub-resources are **folded** into their parent (`coverage.folded`)
+  and unmapped resource types are **skipped** and listed in
+  `coverage.skippedTypes`.
 
 ### Typical flow
 

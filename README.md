@@ -440,7 +440,7 @@ The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server
 | `get_waf_rules` | Query WAF rules by pillar or service type |
 | `render_diagram` | Render a diagram as SVG/HTML — with **real Azure icons**, smooth edges, and tiered layout |
 | `export_reactflow_scene` | Produce a React Flow scene for the web app |
-| `import_architecture` | **NEW** — inverse of the export tools: parse a manifest / React Flow scene back to the canonical `{services, connections, groups}` shape |
+| `import_architecture` | **NEW** — inverse of the export tools: parse a manifest / React Flow scene / **ARM template** back to the canonical `{services, connections, groups}` shape, with real resource names, regions, `dependsOn` edges, and a coverage report |
 
 > **Structured outputs:** all 13 tools return typed `structuredContent` on successful calls (validated against declared `outputSchema` contracts) while retaining backward-compatible text payloads and read-only/idempotent annotations.
 

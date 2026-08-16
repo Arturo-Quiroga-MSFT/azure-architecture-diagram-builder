@@ -43,7 +43,7 @@ defined.
 3. Synchronize the MCP service catalog with the app catalog — deployed
 4. Improve manifest/import fidelity and structured outputs — deployed
 5. Add deterministic regional cost comparison — deployed
-6. Add deterministic ARM-template import
+6. Add deterministic ARM-template import — implemented locally
 
 ### Pricing-region expansion
 
@@ -88,6 +88,30 @@ contract covers native ranking, baseline deltas, unsupported-region withholding,
 no-numeric-baseline withholding, and normalized duplicate rejection. The live
 13-tool endpoint verified native ranking, exact premium one-year selection, and
 unsupported-region withholding. This change is deployed and production-verified.
+
+### Deterministic ARM-template import
+
+Step 6 extends `import_architecture` with `format: "arm"` plus auto-detection
+rather than adding a fourteenth tool. Parsing reuses the web app's canonical
+deterministic extractor (`src/services/armExtractor.ts`), copied into the server
+at build time by `npm run sync:arm` and drift-checked by `npm run test:catalog`,
+so both paths read templates identically. The canonical extractor was extended
+additively to emit the resolved resource name and location it already computes;
+its own fixture suite (`npm run test:arm`) still passes.
+
+An MCP adapter (`src/armImporter.ts`) converts extractor output into canonical
+shape: real resource names (de-duplicated), canonical catalog types where one
+genuinely matches, regions from literal or parameter-resolved locations, raw ARM
+types as provenance, and `dependsOn`/`resourceId` edges. Of 53 extractor service
+labels, 41 resolve to canonical catalog types; the remainder (for example
+`App Service Plan`, `SQL Server`, `Container Apps Environment`) keep their ARM
+label, are listed in `coverage.uncanonicalizedTypes`, and are reported in
+warnings instead of being remapped to a different service.
+
+Measured on the tracked `AZURE_DIAGRAM_RG.json` export: 699 resources → 5
+services, 694 folded, 0 skipped, 1 real edge, per-resource regions (`westus2`
+Cosmos DB alongside `eastus2`), and one uncanonicalized label. This change is
+implemented locally and is not marked deployed here.
 
 ---
 
