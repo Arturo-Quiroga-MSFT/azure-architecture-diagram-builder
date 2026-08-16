@@ -36,7 +36,22 @@ https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/
   do not prevent calls after a revision replacement or replica change.
 - Resource group: `azure-diagrams-rg` · ACR: `acrazurediagrams1767583743`.
 
-### Current verified revision (2026-08-15)
+### Current verified revision (2026-08-16)
+
+- Merged source: `87f0d86` (Step 6 deterministic ARM-template import).
+- Image: `azure-diagram-mcp:mcp-20260816-142135`.
+- ACR digest: `sha256:f2f01595f961fcdf3cbe0263272971434518d5b8e88dd9781f0b193ae78eb4c7`.
+- ACA revision: `azure-diagram-mcp--v1786890197`, healthy, one replica, 100% traffic.
+- Live contract: health `200`, unauthenticated MCP `401`, 13 tools discovered,
+  `import_architecture` advertises the `arm` format.
+- ARM smoke: the tracked `AZURE_DIAGRAM_RG.json` export auto-detected as `arm`
+  and returned 699 resources → 5 services, 694 folded, 1 real edge, Cosmos DB in
+  `westus2`; an unresolvable `resourceGroup().location` returned no region; the
+  imported services fed `estimate_costs` across both regions.
+- The build context now also copies `src/services/armExtractor.ts`, the canonical
+  ARM reader synced into the image by `npm run sync:arm`.
+
+### Previous verified revision (2026-08-15)
 
 - Merged source: `ca739ca` (Step 5 deterministic regional cost comparison).
 - Image: `azure-diagram-mcp:mcp-20260815-194349`.

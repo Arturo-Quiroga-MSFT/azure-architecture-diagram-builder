@@ -143,6 +143,13 @@ use the Azure Pricing Calculator.
 
 ## Changelog
 
+- **2026-08-16 — Deterministic ARM-template import (deployed and production-verified).**
+  `import_architecture` now accepts `format: "arm"` and auto-detects ARM
+  deployment templates, reusing the web app's canonical extractor. Imports keep
+  real resource names, per-resource regions, and real `dependsOn` edges, and
+  report mapped/folded/skipped coverage plus labels with no canonical catalog
+  equivalent. Verified live on a 699-resource `az group export`.
+
 - **2026-08-15 — Regional cost comparison (deployed and production-verified).**
   Added `compare_region_costs` as tool 13. It compares identical service lists
   across native bundled pricing regions, ranks selected-tier fixed-price
