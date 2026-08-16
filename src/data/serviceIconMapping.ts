@@ -869,7 +869,11 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   
   'Azure DNS': {
     displayName: 'Azure DNS',
-    aliases: ['DNS', 'DNS Zone', 'DNS Zones', 'Private DNS'],
+    aliases: [
+      'DNS', 'DNS Zone', 'DNS Zones', 'Private DNS',
+      'Private DNS Zone', 'Private DNS Zones',
+      'Azure Private DNS', 'Azure Private DNS Zone', 'Azure Private DNS Zones',
+    ],
     iconFile: '10064-icon-service-DNS-Zones',
     category: 'networking',
     hasPricingData: false,
@@ -1125,6 +1129,14 @@ export function isCapacityConsumed(serviceName: string): boolean {
     && m.category === 'fabric'
     && !m.hasPricingData
     && /consumes Fabric capacity/i.test(m.costRange || '');
+}
+
+/**
+ * The catalog's documented cost range for a service, used when no metered
+ * price could be derived so the node shows a stated range rather than nothing.
+ */
+export function getServiceCostRange(serviceName: string): string | null {
+  return getServiceIconMapping(serviceName)?.costRange || null;
 }
 
 /**

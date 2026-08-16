@@ -49,15 +49,36 @@ function readItems(region: string, serviceName: string): { items: RawItem[]; ai:
   }
 }
 
-function monthly(rate: number, unit: string): number {
+// Mirrors regionalPricingService.parsePricingTiers. Kept in step deliberately:
+// an audit running different rules than the app reports on code nobody ships.
+function monthly(rate: number, unit: string): number | null {
   if (unit.includes('/Month') || unit.includes('1/Month')) return rate;
+  if (unit.trim() === '1 Month') return rate;
   if (unit.includes('/Day') || unit.includes('1/Day')) return rate * 30;
   if (unit === '1K' || unit.includes('1000')) return rate * 100;
-  return rate * 730;
+  if (/hour/i.test(unit)) return rate * 730;
+  return null;
+}
+
+const BASE_RESOURCE_METER = /\b(base fees?|deployment|instance|fixed cost|units?)\b/i;
+const USAGE_ADDER_METER = /capacity unit|data (processed|stored|transfer)|\b\d+ device\b|captcha|overage|edge actions/i;
+const SERVICES_WITHOUT_RESOURCE_METER = new Set<string>([
+  'Virtual Network',
+  'Key Vault',
+  'Azure Monitor',
+  'Log Analytics',
+  'Network Watcher',
+]);
+
+function meterRank(meterName: string): number {
+  if (USAGE_ADDER_METER.test(meterName)) return 2;
+  if (BASE_RESOURCE_METER.test(meterName)) return 0;
+  return 1;
 }
 
 function parseTiers(items: RawItem[], serviceName: string, ai: boolean): Tier[] {
-  const tierMap = new Map<string, Tier>();
+  if (SERVICES_WITHOUT_RESOURCE_METER.has(serviceName)) return [];
+  const tierMap = new Map<string, Tier & { rank: number }>();
   const consumption = items.filter((item) => item.type === 'Consumption' && (ai || item.serviceName?.toLowerCase() === serviceName.toLowerCase()));
   for (const item of consumption) {
     const name = item.skuName || item.armSkuName;
@@ -67,10 +88,13 @@ function parseTiers(items: RawItem[], serviceName: string, ai: boolean): Tier[] 
     const unit = item.unitOfMeasure || '1 Hour';
     const rate = item.retailPrice || item.unitPrice || 0;
     const payg = monthly(rate, unit);
+    if (payg === null) continue;
     const plan = item.savingsPlan?.find((candidate) => /1\s*year/i.test(candidate.term || ''));
     const planRate = plan ? (plan.retailPrice || plan.unitPrice || 0) : 0;
-    const tier = { name, monthlyPrice: payg, meterName: item.meterName || '', oneYear: planRate > 0 ? monthly(planRate, unit) : undefined, unit };
-    if (!tierMap.has(name) || (tierMap.get(name)?.monthlyPrice ?? Infinity) > payg) tierMap.set(name, tier);
+    const rank = meterRank(item.meterName || '');
+    const tier = { name, monthlyPrice: payg, meterName: item.meterName || '', oneYear: planRate > 0 ? (monthly(planRate, unit) ?? undefined) : undefined, unit, rank };
+    const existing = tierMap.get(name);
+    if (!existing || rank < existing.rank || (rank === existing.rank && existing.monthlyPrice > payg)) tierMap.set(name, tier);
   }
   return [...tierMap.values()].sort((left, right) => left.monthlyPrice - right.monthlyPrice);
 }

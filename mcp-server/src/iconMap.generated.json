@@ -664,7 +664,12 @@
       "DNS",
       "DNS Zone",
       "DNS Zones",
-      "Private DNS"
+      "Private DNS",
+      "Private DNS Zone",
+      "Private DNS Zones",
+      "Azure Private DNS",
+      "Azure Private DNS Zone",
+      "Azure Private DNS Zones"
     ]
   },
   "Azure Health Data Services FHIR service": {

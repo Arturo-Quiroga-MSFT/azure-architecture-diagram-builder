@@ -67,6 +67,14 @@
   opacity: 0.92;
 }
 
+/* Documented range shown when no meter prices the resource itself */
+.cost-badge--range {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  font-weight: 600;
+  cursor: default;
+  opacity: 0.9;
+}
+
 .cost-quantity {
   font-size: 0.55rem;
   opacity: 0.9;

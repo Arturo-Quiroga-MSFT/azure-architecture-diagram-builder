@@ -2087,7 +2087,14 @@ function App() {
       const incomingName: string | undefined = (architecture?.architectureName && String(architecture.architectureName).trim())
         || deriveTitleFromPrompt(prompt);
       if (incomingName && incomingName !== 'Untitled Architecture') {
-        setTitleBlockData((prev) => ({ ...prev, architectureName: incomingName }));
+        // A refinement describes a tweak, not the architecture, so it must not
+        // rename a title already established by the original ask or by hand.
+        setTitleBlockData((prev) => {
+          const hasEstablishedName = Boolean(prev.architectureName)
+            && prev.architectureName !== 'Untitled Architecture';
+          if (isRefinement && hasEstablishedName) return prev;
+          return { ...prev, architectureName: incomingName };
+        });
       }
 
       if (workflowSteps && workflowSteps.length > 0) {
