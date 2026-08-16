@@ -5,6 +5,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
+import { readFileSync } from 'node:fs';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -1024,6 +1025,118 @@ async function main() {
     }));
     assert.equal(importedCustomScene.services[0].type, 'Partner Appliance');
     assert.match(importedCustomScene.warnings[0], /using its label as the service type/i);
+
+    // ── ARM template import ──────────────────────────────────────────────
+    const armTemplate = {
+      $schema: 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#',
+      contentVersion: '1.0.0.0',
+      parameters: {
+        sites_web_name: { type: 'String', defaultValue: 'contoso-web' },
+        location: { type: 'String', defaultValue: 'West Europe' },
+      },
+      resources: [
+        {
+          type: 'Microsoft.Web/sites',
+          name: "[parameters('sites_web_name')]",
+          location: "[parameters('location')]",
+          dependsOn: ["[resourceId('Microsoft.Sql/servers/databases', 'sqlsrv', 'appdb')]"],
+          properties: {},
+          resources: [{ type: 'Microsoft.Web/sites/config', name: 'web/appsettings', properties: {} }],
+        },
+        { type: 'Microsoft.Sql/servers/databases', name: 'sqlsrv/appdb', location: 'eastus2', properties: {} },
+        { type: 'Microsoft.KeyVault/vaults', name: 'shared', location: 'eastus2', properties: {} },
+        { type: 'Microsoft.Storage/storageAccounts', name: 'shared', location: 'eastus2', properties: {} },
+        { type: 'Microsoft.Fabrikam/widgets', name: 'unmapped-thing', location: 'eastus2' },
+      ],
+    };
+
+    const armResult = await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(armTemplate), format: 'arm' },
+    });
+    const armImport = textPayload(armResult);
+    assert.deepEqual(armResult.structuredContent, armImport);
+    assert.equal(armImport.format, 'arm');
+    assert.deepEqual(armImport.services, [
+      { name: 'contoso-web', type: 'App Service', region: 'westeurope', description: 'Microsoft.Web/sites', groupId: 'zone-application' },
+      { name: 'sqlsrv', type: 'SQL Database', region: 'eastus2', description: 'Microsoft.Sql/servers/databases', groupId: 'zone-data' },
+      { name: 'shared', type: 'Key Vault', region: 'eastus2', description: 'Microsoft.KeyVault/vaults', groupId: 'zone-identity-security' },
+      { name: 'shared (2)', type: 'Storage Account', region: 'eastus2', description: 'Microsoft.Storage/storageAccounts', groupId: 'zone-data' },
+    ]);
+    assert.deepEqual(armImport.connections, [{ from: 'contoso-web', to: 'sqlsrv', label: 'depends on', type: 'sync' }]);
+    assert.equal(armImport.coverage.totalResources, 6);
+    assert.equal(armImport.coverage.mapped, 4);
+    assert.equal(armImport.coverage.folded, 1);
+    assert.deepEqual(armImport.coverage.skippedTypes, ['Microsoft.Fabrikam/widgets']);
+    assert.equal(armImport.coverage.canonicalServiceCount, 4);
+    assert.deepEqual(armImport.coverage.uncanonicalizedTypes, []);
+    assert.match(armImport.warnings[0], /not in the extractor's mapping and were skipped/i);
+
+    // Auto-detection must reach the same result without a format hint.
+    const armAutoDetected = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(armTemplate) },
+    }));
+    assert.equal(armAutoDetected.format, 'arm');
+    assert.deepEqual(armAutoDetected.services, armImport.services);
+
+    // The imported ARM architecture must be directly consumable downstream.
+    const armValidation = await client.callTool({
+      name: 'validate_architecture',
+      arguments: { services: armImport.services, connections: armImport.connections },
+    });
+    assert.equal(typeof armValidation.structuredContent?.score, 'number');
+    const armEstimate = await client.callTool({
+      name: 'estimate_costs',
+      arguments: { services: armImport.services },
+    });
+    assert.equal(armEstimate.structuredContent?.serviceCount, 4);
+    assert.deepEqual(armEstimate.structuredContent?.requestedRegions, ['eastus2', 'westeurope']);
+
+    // A real `az group export` resource group: mostly noise that must be folded.
+    const realExport = JSON.parse(readFileSync(
+      new URL('../../tests/fixtures/arm/AZURE_DIAGRAM_RG.json', import.meta.url),
+      'utf8',
+    ));
+    const realArmImport = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(realExport), format: 'arm' },
+    }));
+    assert.equal(realArmImport.coverage.totalResources, 699);
+    assert.equal(realArmImport.coverage.mapped, 5);
+    assert.equal(realArmImport.coverage.folded, 694);
+    assert.equal(realArmImport.coverage.edgeCount, 1);
+    assert.equal(realArmImport.services.length, 5);
+    assert.equal(realArmImport.services.find(service => service.name === 'aqcosmosdb007')?.type, 'Azure Cosmos DB');
+    assert.equal(realArmImport.services.find(service => service.name === 'aqcosmosdb007')?.region, 'westus2');
+    assert.equal(realArmImport.services.find(service => service.name === 'azure-diagram-builder')?.region, 'eastus2');
+    assert.deepEqual(realArmImport.coverage.uncanonicalizedTypes, ['Container Apps Environment']);
+    assert.match(realArmImport.warnings.join(' '), /no canonical AADB catalog equivalent/i);
+
+    const armFormatMismatch = await client.callTool({
+      name: 'import_architecture',
+      arguments: { content: JSON.stringify(roundTripScene), format: 'arm' },
+    });
+    assert.equal(armFormatMismatch.isError, true);
+    assert.match(armFormatMismatch.content.find(item => item.type === 'text')?.text ?? '', /expected a "resources" array/i);
+
+    // Runtime location expressions are not resolvable, so no region is claimed.
+    const armRuntimeLocation = textPayload(await client.callTool({
+      name: 'import_architecture',
+      arguments: {
+        format: 'arm',
+        content: JSON.stringify({
+          $schema: 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#',
+          contentVersion: '1.0.0.0',
+          resources: [
+            { type: 'Microsoft.Storage/storageAccounts', name: 'runtimeloc', location: '[resourceGroup().location]', properties: {} },
+          ],
+        }),
+      },
+    }));
+    assert.equal(armRuntimeLocation.services.length, 1);
+    assert.equal(armRuntimeLocation.services[0].name, 'runtimeloc');
+    assert.equal('region' in armRuntimeLocation.services[0], false);
 
     for (const iacTool of ['bicep', 'terraform']) {
       const guideResult = await client.callTool({

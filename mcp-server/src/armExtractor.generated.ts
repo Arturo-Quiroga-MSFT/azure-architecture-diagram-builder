@@ -1,3 +1,6 @@
+// GENERATED FILE — DO NOT EDIT.
+// Source of truth: src/services/armExtractor.ts (web app).
+// Regenerate with: npm run sync:arm  (runs automatically in prebuild).
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 

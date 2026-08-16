@@ -10,10 +10,14 @@
  *   - `generate_manifest`  → az prototype interchange manifest (clean, lossless)
  *   - `export_reactflow_scene` → React Flow scene (nodes/edges); service type is
  *     reversed from data.azureServiceType when present, else from the icon path.
+ *   - ARM deployment templates → parsed by the canonical deterministic extractor
+ *     and adapted in armImporter.ts (resource names, regions, dependsOn edges).
  *
  * Tolerant by design: it accepts web-app-native scenes and manifests too, and
  * collects warnings rather than throwing on partially-recognized input.
  */
+
+import { importArmTemplate, isArmTemplate, type ArmImportResult } from './armImporter.js';
 
 export interface ImportedService {
   id?: string;
@@ -40,7 +44,7 @@ export interface ImportedWorkflowStep {
   services: string[];
 }
 export interface ImportResult {
-  format: 'manifest' | 'reactflow';
+  format: 'manifest' | 'reactflow' | 'arm';
   projectName?: string;
   location?: string;
   iacTool?: string;
@@ -51,9 +55,10 @@ export interface ImportResult {
   groups: ImportedGroup[];
   workflow: ImportedWorkflowStep[];
   warnings: string[];
+  coverage?: ArmImportResult['coverage'];
 }
 
-export type ImportFormat = 'auto' | 'manifest' | 'reactflow';
+export type ImportFormat = 'auto' | 'manifest' | 'reactflow' | 'arm';
 
 export interface ImportOptions {
   iconFileToType?: Record<string, string>;
@@ -117,6 +122,23 @@ export function importArchitecture(
   const obj = asObject(input);
   const warnings: string[] = [];
   const format = opts.format ?? 'auto';
+
+  // ── ARM deployment template ───────────────────────────────────────────
+  if (format === 'arm' || (format === 'auto' && isArmTemplate(obj))) {
+    if (!Array.isArray(obj.resources)) {
+      throw new Error('Input does not match the requested arm format (expected a "resources" array).');
+    }
+    const armResult = importArmTemplate(obj);
+    return {
+      format: 'arm',
+      services: armResult.services,
+      connections: armResult.connections,
+      groups: armResult.groups,
+      workflow: [],
+      warnings: armResult.warnings,
+      coverage: armResult.coverage,
+    };
+  }
 
   // ── Manifest format ───────────────────────────────────────────────────
   if (format !== 'reactflow' && obj.architecture && typeof obj.architecture === 'object') {
@@ -266,6 +288,6 @@ export function importArchitecture(
   }
 
   throw new Error(
-    'Unrecognized architecture format. Expected an az prototype manifest (has "architecture") or a React Flow scene (has "nodes").',
+    'Unrecognized architecture format. Expected an az prototype manifest (has "architecture"), a React Flow scene (has "nodes"), or an ARM deployment template (has "resources").',
   );
 }

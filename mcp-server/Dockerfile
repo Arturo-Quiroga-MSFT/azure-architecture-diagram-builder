@@ -4,6 +4,7 @@
 # build's sync scripts read the web app's data as the single source of truth:
 #   - src/data/serviceIconMapping.ts        (icon map + categories)
 #   - src/data/pricing/regions/**           (distilled to a pricing sidecar)
+#   - src/services/armExtractor.ts          (deterministic ARM template reader)
 #   - Azure_Public_Service_Icons/Icons/**   (official glyphs, embedded as data URIs)
 #
 # Build locally:
@@ -30,6 +31,7 @@ COPY mcp-server/scripts ./scripts
 # Web-app data the prebuild sync scripts read (resolved as <repoRoot>/src/data
 # and <repoRoot>/Azure_Public_Service_Icons — i.e. /app/... here).
 COPY src/data /app/src/data
+COPY src/services/armExtractor.ts /app/src/services/armExtractor.ts
 COPY Azure_Public_Service_Icons /app/Azure_Public_Service_Icons
 
 # Runs prebuild (sync:icons + sync:pricing) then tsc, and copies the generated

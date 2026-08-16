@@ -1062,19 +1062,19 @@ server.registerTool(
   {
     title: 'Import Architecture',
     description:
-      'Import an existing architecture back into the canonical { services, connections, groups } shape — the inverse of generate_manifest and export_reactflow_scene. Accepts an az prototype interchange manifest (clean round-trip) OR a React Flow scene JSON (from this server or the web app; service types are recovered from data.azureServiceType, or reversed from the icon path). Returns the normalized architecture ready to feed straight into validate_architecture, harden_architecture, estimate_costs, render_diagram, or generate_bicep. Tolerant: collects warnings instead of failing on partially-recognized input.',
+      'Import an existing architecture back into the canonical { services, connections, groups } shape — the inverse of generate_manifest and export_reactflow_scene, and a deterministic reader for ARM deployment templates. Accepts an az prototype interchange manifest (clean round-trip), a React Flow scene JSON (from this server or the web app; service types are recovered from data.azureServiceType, or reversed from the icon path), or an ARM template / `az group export` output (resources, real dependsOn and resourceId edges, resolved names and regions, with a coverage report). Returns the normalized architecture ready to feed straight into validate_architecture, harden_architecture, estimate_costs, render_diagram, or generate_bicep. Tolerant: collects warnings instead of failing on partially-recognized input.',
     inputSchema: {
       content: z
         .string()
-        .describe('The architecture document as a JSON string — either an az prototype manifest or a React Flow scene.'),
+        .describe('The architecture document as a JSON string — an az prototype manifest, a React Flow scene, or an ARM deployment template.'),
       format: z
-        .enum(['auto', 'manifest', 'reactflow'])
+        .enum(['auto', 'manifest', 'reactflow', 'arm'])
         .optional()
-        .describe('Format hint. Allowed values: auto (default), manifest, reactflow. Auto-detected from the document shape when omitted.'),
+        .describe('Format hint. Allowed values: auto (default), manifest, reactflow, arm. Auto-detected from the document shape when omitted.'),
     },
     outputSchema: {
       summary: z.string(),
-      format: z.enum(['manifest', 'reactflow']),
+      format: z.enum(['manifest', 'reactflow', 'arm']),
       projectName: z.string().optional(),
       location: z.string().optional(),
       iacTool: z.string().optional(),
@@ -1098,6 +1098,16 @@ server.registerTool(
       })),
       groups: z.array(z.object({ id: z.string(), label: z.string() })),
       workflow: z.array(z.object({ step: z.number(), description: z.string(), services: z.array(z.string()) })),
+      coverage: z.object({
+        totalResources: z.number(),
+        mapped: z.number(),
+        folded: z.number(),
+        skipped: z.number(),
+        skippedTypes: z.array(z.string()),
+        edgeCount: z.number(),
+        canonicalServiceCount: z.number(),
+        uncanonicalizedTypes: z.array(z.string()),
+      }).optional(),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
@@ -1118,6 +1128,9 @@ server.registerTool(
     const summary =
       `Imported ${result.format}: ${result.services.length} service(s), ` +
       `${result.connections.length} connection(s), ${result.groups.length} group(s)` +
+      (result.coverage
+        ? `. Coverage: ${result.coverage.mapped} mapped, ${result.coverage.folded} child resource(s) folded, ${result.coverage.skipped} unmapped type(s) skipped`
+        : '') +
       (result.warnings.length ? `. ${result.warnings.length} warning(s).` : '.');
 
     const structured = {
@@ -1133,6 +1146,7 @@ server.registerTool(
       connections: result.connections,
       groups: result.groups,
       workflow: result.workflow,
+      ...(result.coverage ? { coverage: result.coverage } : {}),
     };
 
     return {
