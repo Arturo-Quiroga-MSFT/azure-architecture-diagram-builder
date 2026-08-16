@@ -15,9 +15,13 @@ assert.match(prompt, /Microsoft Entra ID/);
 assert.match(prompt, /Microsoft Fabric Capacity/);
 assert.match(prompt, /SINGLE edge from Azure Monitor to Log Analytics/);
 assert.match(prompt, /No floating services/);
+assert.match(prompt, /Hub-and-spoke networks/);
+// "Hub-and-spoke" must name the network topology rule only; the monitoring rule
+// used the same phrase for an unrelated instruction.
+assert.doesNotMatch(prompt, /Hub-and-spoke for monitoring/);
 assert.doesNotMatch(prompt, /"position"\s*:/);
-assert.equal(prompt.length, 7_873);
-assert.equal(contractSha256, '6a72f6ec1b86524b826f4cb32978109784678acc8a780e9f5bb9add089f890bf');
+assert.equal(prompt.length, 8_586);
+assert.equal(contractSha256, '08f3e89c054f27ca4a8dd644c8ce7c2115d59967d404a856ce6ad7f38ed53b39');
 
 const warnings: string[] = [];
 const processed = postProcessArchitecture({
