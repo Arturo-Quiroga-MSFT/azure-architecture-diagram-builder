@@ -20,7 +20,7 @@ import { captureDiagramAsPng, captureDiagramAsSvg, type ExportBackground } from 
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -94,6 +94,7 @@ import { classifyValidationTopics } from './services/validationConsensus';
 import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
+import ImpactModal from './components/ImpactModal';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
@@ -236,6 +237,7 @@ function App() {
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(() => localStorage.getItem(HEADER_COLLAPSED_STORAGE_KEY) === '1');
   const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isImpactModalOpen, setIsImpactModalOpen] = useState(false);
   const [isFeedbackToastOpen, setIsFeedbackToastOpen] = useState(false);
   const [feedbackPreselectedRating, setFeedbackPreselectedRating] = useState<number | undefined>(undefined);
   const [feedbackFabPulse, setFeedbackFabPulse] = useState(false);
@@ -4366,6 +4368,14 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
       />
 
       <button
+        className="impact-launcher"
+        onClick={() => setIsImpactModalOpen(true)}
+        title="Share adoption context or an outcome"
+      >
+        <BarChart3 size={18} />
+        <span>Adoption &amp; Impact</span>
+      </button>
+      <button
         className={`feedback-fab${feedbackFabPulse ? ' pulse-once' : ''}`}
         onClick={() => setIsFeedbackModalOpen(true)}
         title="Share feedback"
@@ -4414,6 +4424,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           model: generatedWithModel?.name,
         }}
       />
+      <ImpactModal isOpen={isImpactModalOpen} onClose={() => setIsImpactModalOpen(false)} />
       {isDeliverChooserOpen && (
         <DeliverChooser
           isBuilding={isGeneratingGuide}

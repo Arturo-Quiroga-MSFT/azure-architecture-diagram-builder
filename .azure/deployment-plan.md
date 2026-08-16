@@ -98,6 +98,11 @@ This change reuses the existing Container Apps managed environment, ACR, Log Ana
 - [x] Invoke Azure validation workflow
 - [x] Validate Bicep and deployment prerequisites
 - [x] Record validation proof
+- [x] All validation checks pass for the August analytics revision
+  - [x] Core validation: Azure CLI authentication, Bicep build, ARM validation, and what-if
+  - [x] Production container image build
+  - [x] Azure Policy validation
+  - [x] Application tests, lint, build, and live KQL compatibility
 
 ### Phase 4: Deployment
 
@@ -126,6 +131,23 @@ This change reuses the existing Container Apps managed environment, ACR, Log Ana
 | AADB telemetry source | In-container `GET /api/analytics/overview?range=90d` | Pass, 1,152 users / 1,601 sessions / 10,892 events | 2026-07-20 |
 | Decision intelligence | In-container `GET /api/analytics/insights?range=90d` | Pass, funnel/models/findings/reliability/cohorts/actions populated | 2026-07-20 |
 | Cosmos feedback | Authenticated Feedback view using `diagrams-db/feedback` | Pass | 2026-07-20 |
+| August app checks | `npm test && npm run lint && npm run build` | Pass, 6 tests; zero lint warnings; production build succeeded | 2026-08-13 |
+| August live KQL | Consolidated 7-day `Guided_Journey` and model-intelligence queries via Azure Monitor | Pass; 748 journey interactions / 148 anonymous browser IDs / 204 sessions; model usage and validation quality populated | 2026-08-13 |
+| August core Azure validation | `validate-deployment.sh --scope group ...` | Pass; Azure CLI auth, Bicep build, ARM validate, and what-if succeeded. Full Bicep what-if showed 3 creates / 18 modifies / 9 deletes, so this code-only revision must use image-only deployment rather than reprovisioning. | 2026-08-13 |
+| August policy review | Effective assignments at `azure-diagrams-rg` scope | Pass; 8 enforced inherited/subscription assignments reviewed, including deploy/modify, deny, audit, and MFA-on-write | 2026-08-13 |
+| August production image | `docker build -t aadb-product-analytics:validation NEW-WEB-APP` | Pass | 2026-08-13 |
+| August container runtime | Local production container `/api/health` and `/api/analytics/insights?range=7d` | Pass; healthy and expanded Journey/Models contract returned | 2026-08-13 |
+| August production deployment | `NEW-WEB-APP/scripts/02-deploy.sh` | Pass; ACR image `20260813195443`, digest `sha256:1c1ed935f04102f0668ae7ec9b948d02893966aec4c8a44e0f90f1496f8ac90f` | 2026-08-13 |
+| August revision health | ACA revision/image/traffic/auth checks | Pass; revision `aadb-usage-analytics--20260813195443` ready and running, 100% latest-revision traffic, external unauthenticated health returned 401 | 2026-08-13 |
+| August production data path | In-container `GET /api/analytics/insights?range=7d` on revision `20260813195443` | Pass; source `azure-monitor`, Journey and model-quality data populated, release rates corrected to 0.91 exports/session and 30.3% validation adoption | 2026-08-13 |
+
+## Role Assignment Verification
+
+- **Status:** Verified for the August analytics revision
+- **Identity checked:** `id-aadb-usage-analytics`
+- **Roles confirmed in code:** `AcrPull` scoped to `acrazurediagrams1767583743`; `Log Analytics Reader` scoped to the source telemetry workspace; Cosmos DB Built-in Data Reader scoped to the feedback account
+- **Code operations checked:** pull the analytics image, query aggregate AADB telemetry, and read durable feedback
+- **Issues:** None. The new Journey and model-quality queries use the existing Log Analytics read path and require no additional permissions.
 
 ## 9. Files to Generate
 

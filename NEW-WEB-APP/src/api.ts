@@ -1,5 +1,5 @@
 
-import type { FeedbackResponse, InsightsResponse, OverviewResponse, Recommendation, TimeRange } from '../shared/contracts';
+import type { FeedbackResponse, ImpactResponse, InsightsResponse, OverviewResponse, Recommendation, TimeRange } from '../shared/contracts';
 
 export async function fetchOverview(range: TimeRange, signal?: AbortSignal): Promise<OverviewResponse> {
   const response = await fetch(`/api/analytics/overview?range=${range}`, { signal });
@@ -11,6 +11,12 @@ export async function fetchInsights(range: TimeRange, signal?: AbortSignal): Pro
   const response = await fetch(`/api/analytics/insights?range=${range}`, { signal });
   if (!response.ok) throw new Error(`Insights request failed (${response.status})`);
   return response.json() as Promise<InsightsResponse>;
+}
+
+export async function fetchImpact(range: TimeRange, signal?: AbortSignal): Promise<ImpactResponse> {
+  const response = await fetch(`/api/analytics/impact?range=${range}`, { signal });
+  if (!response.ok) throw new Error(`Impact request failed (${response.status})`);
+  return response.json() as Promise<ImpactResponse>;
 }
 
 export async function fetchFeedback(signal?: AbortSignal): Promise<FeedbackResponse> {

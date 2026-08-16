@@ -52,12 +52,31 @@ export interface ValidationHandoffInsight {
   startRate: number;
 }
 
+export interface GuidedJourneyChoice {
+  action: string;
+  step: string;
+  path: string;
+  source: string;
+  hasDiagram: boolean;
+  events: number;
+  users: number;
+  sessions: number;
+}
+
+export interface GuidedJourneyInsight {
+  interactions: number;
+  users: number;
+  sessions: number;
+  choices: GuidedJourneyChoice[];
+}
+
 export interface ModelInsight {
   model: string;
   calls: number;
   totalTokens: number;
   averageLatencyMs: number;
   p95LatencyMs: number;
+  validationCalls: number;
   validationScore: number;
   critiqueWins: number;
 }
@@ -113,6 +132,7 @@ export interface InsightsResponse {
   source: 'azure-monitor' | 'demo';
   funnel: FunnelStep[];
   validationHandoff: ValidationHandoffInsight;
+  guidedJourney: GuidedJourneyInsight;
   models: ModelInsight[];
   findings: FindingInsight[];
   reliability: ReliabilityInsight[];
@@ -135,4 +155,32 @@ export interface FeedbackResponse {
   source: 'cosmos' | 'unavailable';
   items: FeedbackItem[];
   message?: string;
+}
+
+export interface ImpactMetric {
+  label: string;
+  detail?: string;
+  count: number;
+  users: number;
+  sessions: number;
+}
+
+export interface DurableImpactSummary {
+  source: 'cosmos' | 'unavailable';
+  stories: number;
+  registrations: number;
+  verifiedOutcomes: number;
+  message?: string;
+}
+
+export interface ImpactResponse {
+  generatedAt: string;
+  source: 'azure-monitor' | 'demo';
+  measured: ImpactMetric[];
+  profiles: ImpactMetric[];
+  stories: ImpactMetric[];
+  registrations: ImpactMetric[];
+  attribution: ImpactMetric[];
+  durable: DurableImpactSummary;
+  notices: string[];
 }

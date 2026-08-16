@@ -25,6 +25,35 @@ Two stores, on purpose:
   consented follow-up address. This is the source of truth for reading what
   users actually wrote and whether they invited contact.
 
+## Adoption and impact measurement
+
+The separate **Adoption & Impact** modal adds three optional paths:
+
+- **Your context** stores categorical organization type, role, scenario, and
+  deployment mode in the browser and emits `Adoption_Profile_Saved`.
+- **Share an outcome** emits a categorical `Impact_Story_Submitted` summary and
+  stores the optional narrative, organization/customer name, and contact email
+  in Cosmos only when the corresponding consent is enabled.
+- **Register deployment** generates a random browser-local installation UUID,
+  emits `Deployment_Registered`, and upserts a durable
+  `deployment-registration` record. The UUID is not derived from a tenant,
+  subscription, resource, or user identity.
+
+Campaign links may use `source`/`campaign` or `utm_source`/`utm_campaign`.
+Only normalized categorical values are retained for the session and emitted in
+`Attribution_Observed`; referral source does not prove a person's role.
+
+Privacy boundaries:
+
+- Application Insights receives categorical summaries only.
+- Cosmos stores consented narrative/name/contact fields.
+- The browser cannot mark a story or deployment as verified; the server always
+  initializes verification as `self-reported`.
+- Do not submit tenant IDs, subscription IDs, resource IDs, prompts, diagrams,
+  tokens, or secrets.
+- The private analytics app reports measured, self-reported, registered, and
+  operator-verified populations separately.
+
 ## Where the data lives
 
 | Store | Resource | Scope |

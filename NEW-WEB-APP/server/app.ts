@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { RANGE_VALUES } from '../shared/contracts.js';
 import { getInsights, getOverview } from './analytics/queryService.js';
+import { getImpact } from './analytics/impactService.js';
 import { getFeedback } from './feedbackService.js';
 import { enhanceRecommendations } from './recommendationService.js';
 
@@ -38,6 +39,16 @@ export function createApp() {
     if (!parsed.success) return response.status(400).json({ error: 'Invalid analytics query', details: parsed.error.flatten() });
     try {
       return response.json(await getInsights(parsed.data.range));
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  app.get('/api/analytics/impact', async (request, response, next) => {
+    const parsed = querySchema.safeParse(request.query);
+    if (!parsed.success) return response.status(400).json({ error: 'Invalid impact query', details: parsed.error.flatten() });
+    try {
+      return response.json(await getImpact(parsed.data.range));
     } catch (error) {
       return next(error);
     }

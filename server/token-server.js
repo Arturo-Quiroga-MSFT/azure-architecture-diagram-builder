@@ -13,6 +13,7 @@ const express = require('express');
 const { DefaultAzureCredential } = require('@azure/identity');
 const { CosmosClient } = require('@azure/cosmos');
 const crypto = require('crypto');
+const { createImpactStoryRecord, createDeploymentRegistrationRecord } = require('./impact-records');
 
 const app = express();
 // The Azure OpenAI proxy forwards vision requests that embed base64 images, so
@@ -408,6 +409,34 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
+app.post('/api/impact-story', async (req, res) => {
+  const container = getFeedbackContainer();
+  if (!container) return res.status(503).json({ error: 'Impact storage is not configured' });
+  try {
+    const item = createImpactStoryRecord(req.body || {});
+    await container.items.create(item);
+    res.status(201).json({ ok: true, id: item.id, verificationStatus: item.verification.status });
+  } catch (err) {
+    if (/invalid|required|artifact|email/i.test(err.message)) return res.status(400).json({ error: err.message });
+    console.error('[impact-story] error:', err.message);
+    res.status(500).json({ error: 'Failed to store impact story' });
+  }
+});
+
+app.post('/api/deployment-registration', async (req, res) => {
+  const container = getFeedbackContainer();
+  if (!container) return res.status(503).json({ error: 'Impact storage is not configured' });
+  try {
+    const item = createDeploymentRegistrationRecord(req.body || {});
+    await container.items.upsert(item);
+    res.status(201).json({ ok: true, id: item.id, verificationStatus: item.verification.status });
+  } catch (err) {
+    if (/invalid|required|installationId|email/i.test(err.message)) return res.status(400).json({ error: err.message });
+    console.error('[deployment-registration] error:', err.message);
+    res.status(500).json({ error: 'Failed to store deployment registration' });
+  }
+});
+
 // ── Admin: read persisted feedback (protected) ──────────────────────────────
 // Lets an operator read verbatim comments from Cosmos server-side — the app
 // reaches Cosmos via the private endpoint, so this works even though the
@@ -438,7 +467,7 @@ app.get('/api/feedback/list', async (req, res) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 1000);
   try {
     const { resources } = await container.items
-      .query('SELECT c.id, c.rating, c.category, c.comment, c.contact, c.context, c.createdAt FROM c ORDER BY c.createdAt DESC')
+      .query('SELECT c.id, c.rating, c.category, c.comment, c.contact, c.context, c.createdAt FROM c WHERE c.type = "feedback" ORDER BY c.createdAt DESC')
       .fetchAll();
     res.json({ count: Math.min(resources.length, limit), items: resources.slice(0, limit) });
   } catch (err) {
