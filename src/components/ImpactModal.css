@@ -1,0 +1,23 @@
+.impact-modal { width: min(760px, calc(100vw - 32px)); max-width: 760px; }
+.impact-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid #dbe4ee; }
+.impact-tabs button { min-height: 44px; border: 0; border-bottom: 3px solid transparent; color: #64748b; background: transparent; cursor: pointer; font-weight: 600; }
+.impact-tabs button.active { color: #0f766e; border-bottom-color: #0f766e; }
+.impact-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.impact-grid .form-group { margin: 0; }
+.impact-grid .full-width { grid-column: 1 / -1; }
+.impact-modal select, .impact-modal input[type='text'], .impact-modal input[type='email'], .impact-modal textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; color: #0f172a; background: #fff; font: inherit; }
+.impact-modal textarea { resize: vertical; }
+.impact-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.impact-checks label, .impact-consent { display: flex !important; align-items: flex-start; gap: 8px; margin: 0 !important; font-weight: 500 !important; }
+.impact-checks input, .impact-consent input { margin-top: 3px; accent-color: #0f766e; }
+.impact-note { margin: 14px 0 0; padding: 11px 12px; border-left: 3px solid #0f766e; color: #475569; background: #f0fdfa; font-size: 12px; line-height: 1.5; }
+.impact-status { padding: 28px; text-align: center; }
+.impact-status svg { color: #0f766e; }
+.impact-status h3 { margin: 12px 0 8px; }
+.impact-status p { color: #64748b; }
+.impact-launcher { position: fixed; right: 20px; bottom: 72px; z-index: 1100; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid #0f766e; border-radius: 999px; color: #0f766e; background: #fff; box-shadow: 0 5px 16px rgba(15, 118, 110, .2); cursor: pointer; font-weight: 600; }
+.impact-launcher:hover { color: #fff; background: #0f766e; }
+body.dark-mode .impact-modal select, body.dark-mode .impact-modal input, body.dark-mode .impact-modal textarea { color: #f8fafc; background: #111827; border-color: #475569; }
+body.dark-mode .impact-note { color: #ccfbf1; background: #163b3a; }
+body.dark-mode .impact-launcher { color: #99f6e4; background: #172b2b; border-color: #2dd4bf; }
+@media (max-width: 680px) { .impact-grid, .impact-checks { grid-template-columns: 1fr; } .impact-tabs button { font-size: 12px; } .impact-launcher { right: 18px; bottom: 72px; padding: 9px; } .impact-launcher span { display: none; } }
