@@ -120,6 +120,53 @@ With Step 6 complete, the six-step follow-up sequence agreed on 2026-08-14 is
 finished. Remaining candidates (Entra/OAuth, telemetry and evaluation, dependency
 advisories) are separate backlog items, not part of that sequence.
 
+### Candidate: extend `import_architecture` to Terraform and Bicep (assessed 2026-08-16, not scheduled)
+
+Assessment only — no implementation. Measured repository facts behind it:
+
+- The web app already classifies four IaC formats (`arm | bicep | terraform-hcl |
+  terraform-state`, `src/services/azureOpenAI.ts`), but only ARM has a
+  deterministic extractor; the others go through the LLM path, which the MCP
+  server deliberately cannot use.
+- Neither `package.json` declares an HCL or Bicep parser dependency.
+- `mcp-server/src/terraformGenerator.ts` emits 21 distinct `azurerm_*` resource
+  types, so a canonical-to-Terraform mapping exists but is generator-shaped and
+  only covers services that generator emits.
+
+**Terraform state / plan JSON (`terraform show -json`) — moderate, best value.**
+Already JSON with resolved `type`, `values.name`, `values.location`, and
+`depends_on`, so it mirrors the ARM shape. The Step 6 adapter, coverage
+semantics, and warning discipline carry over. The long pole is data, not logic:
+a `azurerm_*` type mapping. Preferred design is to map `azurerm_*` to the ARM
+type string (for example `azurerm_linux_web_app` → `microsoft.web/sites`) and
+reuse the existing `ARM_TYPE_MAP` and `lookupServiceMeta`, keeping one service
+mapping instead of a parallel one. Inverting `terraformGenerator.ts` yields ~21
+entries; expect to hand-curate toward 60-100. Requires recursing
+`root_module.child_modules`.
+
+**Bicep — low effort only if the server does not parse it.** Bicep compiles to
+ARM JSON, which this tool already imports, so `az bicep build --stdout` plus
+documentation and a detection branch that returns an actionable error for raw
+Bicep text is roughly an hour. Writing a Bicep parser is the opposite: modules,
+loops, expressions, and a type system, with the official compiler in .NET and no
+maintained JS port. Bundling the CLI would turn a deterministic pure-Node service
+into one that shells out to an external toolchain. One fidelity caveat to measure
+rather than assume: Bicep-compiled ARM emits `[format(...)]` / `[concat(...)]`
+name expressions instead of `parameters()` defaults, so `cleanName` will fall
+back to humanized tokens more often than with `az group export` output.
+
+**Terraform HCL (`.tf`) — high effort, weakest fidelity, defer.** Needs an HCL2
+parser plus resolution of variables, locals, modules, `count`, `for_each`, and
+dynamic blocks. Worse, `.tf` source frequently has no resolved values
+(`location = var.location`), so regions and names would be materially less
+faithful than ARM or state — conflicting with the established rule that regions
+come only from resolvable values. The better user answer is `terraform show
+-json`.
+
+Suggested order if this is ever scheduled: Terraform state/plan JSON, then
+Bicep-via-precompile, then HCL only on real demand. None of these require a new
+tool; the `format` enum and auto-detection extend naturally.
+
 ---
 
 ## ✅ Update (2026-07-08)
