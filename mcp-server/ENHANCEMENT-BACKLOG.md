@@ -43,7 +43,7 @@ defined.
 3. Synchronize the MCP service catalog with the app catalog — deployed
 4. Improve manifest/import fidelity and structured outputs — deployed
 5. Add deterministic regional cost comparison — deployed
-6. Add deterministic ARM-template import — implemented locally
+6. Add deterministic ARM-template import — deployed
 
 ### Pricing-region expansion
 
@@ -110,8 +110,15 @@ warnings instead of being remapped to a different service.
 
 Measured on the tracked `AZURE_DIAGRAM_RG.json` export: 699 resources → 5
 services, 694 folded, 0 skipped, 1 real edge, per-resource regions (`westus2`
-Cosmos DB alongside `eastus2`), and one uncanonicalized label. This change is
-implemented locally and is not marked deployed here.
+Cosmos DB alongside `eastus2`), and one uncanonicalized label. The live endpoint
+reproduced that result through auto-detection, advertised `arm` in the
+`import_architecture` format enum, omitted the region for an unresolvable
+`resourceGroup().location`, and fed both regions into `estimate_costs`. This
+change is deployed and production-verified.
+
+With Step 6 complete, the six-step follow-up sequence agreed on 2026-08-14 is
+finished. Remaining candidates (Entra/OAuth, telemetry and evaluation, dependency
+advisories) are separate backlog items, not part of that sequence.
 
 ---
 
