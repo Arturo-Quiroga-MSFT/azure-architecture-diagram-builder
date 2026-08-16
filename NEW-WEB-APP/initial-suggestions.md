@@ -48,6 +48,10 @@ Use a restrained operator-dashboard layout, not a marketing-style site:
 - **Feedback:** sentiment, categories, verbatim Cosmos comments, related model and feature context
 - **Retention:** weekly cohorts, return rate, power-user behavior, dormant users
 - **Release impact:** compare metrics before and after an AADB version or feature release
+- **Impact:** keep anonymous workflow activity, self-reported context/outcomes,
+  voluntary deployment registrations, and operator-confirmed outcomes in
+  separate evidence bands. Referral links are channel attribution, not role
+  verification.
 
 Every page should share filters for time range, previous-period comparison, model, operation, country, app version, environment, and user/session segment.
 

@@ -13,11 +13,22 @@ export function createDemoInsights(): InsightsResponse {
       { name: 'Deployment guide', sessions: 74, conversion: 17.7 },
     ],
     validationHandoff: { shown: 0, started: 0, dismissed: 0, startRate: 0 },
+    guidedJourney: {
+      interactions: 899,
+      users: 179,
+      sessions: 249,
+      choices: [
+        { action: 'path-selected', step: 'create', path: 'brief-image', source: 'first-start', hasDiagram: false, events: 160, users: 77, sessions: 92 },
+        { action: 'path-selected', step: 'create', path: 'guided-chat', source: 'first-start', hasDiagram: false, events: 157, users: 87, sessions: 108 },
+        { action: 'step-selected', step: 'refine', path: 'guided-chat', source: 'journey-strip', hasDiagram: true, events: 99, users: 37, sessions: 45 },
+        { action: 'step-selected', step: 'validate', path: 'unknown', source: 'journey-strip', hasDiagram: true, events: 40, users: 27, sessions: 30 },
+      ],
+    },
     models: [
-      { model: 'gpt-5.4', calls: 614, totalTokens: 4281000, averageLatencyMs: 12800, p95LatencyMs: 28100, validationScore: 86, critiqueWins: 42 },
-      { model: 'gpt-5.4-mini', calls: 487, totalTokens: 2195000, averageLatencyMs: 6900, p95LatencyMs: 14400, validationScore: 78, critiqueWins: 19 },
-      { model: 'gpt-5.2', calls: 322, totalTokens: 3042000, averageLatencyMs: 10300, p95LatencyMs: 22700, validationScore: 82, critiqueWins: 31 },
-      { model: 'deepseek-v4', calls: 208, totalTokens: 1711000, averageLatencyMs: 9200, p95LatencyMs: 19400, validationScore: 75, critiqueWins: 11 },
+      { model: 'gpt-5.4', calls: 614, totalTokens: 4281000, averageLatencyMs: 12800, p95LatencyMs: 28100, validationCalls: 156, validationScore: 86, critiqueWins: 42 },
+      { model: 'gpt-5.4-mini', calls: 487, totalTokens: 2195000, averageLatencyMs: 6900, p95LatencyMs: 14400, validationCalls: 97, validationScore: 78, critiqueWins: 19 },
+      { model: 'gpt-5.2', calls: 322, totalTokens: 3042000, averageLatencyMs: 10300, p95LatencyMs: 22700, validationCalls: 64, validationScore: 82, critiqueWins: 31 },
+      { model: 'deepseek-v4', calls: 208, totalTokens: 1711000, averageLatencyMs: 9200, p95LatencyMs: 19400, validationCalls: 38, validationScore: 75, critiqueWins: 11 },
     ],
     findings: [
       { id: 'no-private-endpoints', label: 'Public service endpoints', pillar: 'Security', severity: 'high', occurrences: 142 },

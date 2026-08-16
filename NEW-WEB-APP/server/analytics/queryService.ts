@@ -63,9 +63,10 @@ export async function getInsights(range: TimeRange): Promise<InsightsResponse> {
 
   const client = new LogsQueryClient(new DefaultAzureCredential());
   const timespan = { duration: durationByRange[range] };
-  const [funnel, handoff, models, findings, reliability, cohorts, releases, cities] = await Promise.all([
+  const [funnel, handoff, guidedJourney, models, findings, reliability, cohorts, releases, cities] = await Promise.all([
     client.queryWorkspace(workspaceId, queries.journeyFunnel, timespan),
     client.queryWorkspace(workspaceId, queries.validationHandoff, timespan),
+    client.queryWorkspace(workspaceId, queries.guidedJourney, timespan),
     client.queryWorkspace(workspaceId, queries.modelEfficiency, timespan),
     client.queryWorkspace(workspaceId, queries.validationFindings, timespan),
     client.queryWorkspace(workspaceId, queries.reliability, timespan),
@@ -81,6 +82,8 @@ export async function getInsights(range: TimeRange): Promise<InsightsResponse> {
   const baseSessions = funnelCounts.get('Architecture_Generated') || 1;
   const handoffShown = handoffCounts.get('shown') || 0;
   const handoffStarted = handoffCounts.get('started') || 0;
+  const guidedRows = tableRows(guidedJourney);
+  const guidedTotals = guidedRows.find((row) => String(row[0]) === 'summary') ?? ['', '', '', '', '', false, 0, 0, 0];
   const result: InsightsResponse = {
     generatedAt: new Date().toISOString(),
     source: 'azure-monitor',
@@ -94,9 +97,18 @@ export async function getInsights(range: TimeRange): Promise<InsightsResponse> {
       dismissed: handoffCounts.get('dismissed') || 0,
       startRate: handoffShown > 0 ? Number((handoffStarted * 100 / handoffShown).toFixed(1)) : 0,
     },
+    guidedJourney: {
+      interactions: Number(guidedTotals[6]),
+      users: Number(guidedTotals[7]),
+      sessions: Number(guidedTotals[8]),
+      choices: guidedRows.filter((row) => String(row[0]) === 'choice').map((row) => ({
+        action: String(row[1]), step: String(row[2]), path: String(row[3]), source: String(row[4]), hasDiagram: Boolean(row[5]),
+        events: Number(row[6]), users: Number(row[7]), sessions: Number(row[8]),
+      })),
+    },
     models: tableRows(models).map((row) => ({
-      model: String(row[0]), calls: Number(row[1]), totalTokens: Number(row[2]), averageLatencyMs: Number(row[3]),
-      p95LatencyMs: Number(row[4]), validationScore: 0, critiqueWins: 0,
+      model: String(row[0]), calls: Number(row[1]), totalTokens: Number(row[2]), averageLatencyMs: Number(row[3]), p95LatencyMs: Number(row[4]),
+      validationCalls: Number(row[5]), validationScore: Number(row[6] || 0), critiqueWins: Number(row[7]),
     })),
     findings: tableRows(findings).map((row) => ({
       id: String(row[0]), label: String(row[1] || row[0]), pillar: String(row[2]), severity: String(row[3]), occurrences: Number(row[4]),
