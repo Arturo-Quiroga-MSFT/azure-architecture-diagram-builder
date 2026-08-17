@@ -160,6 +160,22 @@ const EditableEdge: React.FC<EdgeProps> = ({
         }}
       />
       <EdgeLabelRenderer>
+        {(offsetX !== 0 || offsetY !== 0) && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: labelX,
+              top: labelY,
+              width: Math.hypot(offsetX, offsetY),
+              borderTop: '1.5px solid rgba(0, 120, 212, 0.8)',
+              transform: `rotate(${Math.atan2(offsetY, offsetX)}rad)`,
+              transformOrigin: '0 0',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+        )}
         <div
           style={{
             position: 'absolute',
@@ -167,6 +183,7 @@ const EditableEdge: React.FC<EdgeProps> = ({
             fontSize: 14,
             fontWeight: 'bold',
             pointerEvents: 'all',
+            zIndex: 1,
           }}
           className="nodrag nopan"
         >

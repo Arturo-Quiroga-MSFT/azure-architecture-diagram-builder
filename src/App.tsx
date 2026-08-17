@@ -85,6 +85,7 @@ import {
   type LayoutEdgeStyle,
   type LayoutEngineType,
 } from './utils/layoutPresets';
+import { deconflictEdgeLabels } from './utils/edgeLabelLayout';
 import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
 import { fitAllGroupsToContent } from './utils/groupUtils';
 import { preserveManualLayout } from './utils/preserveManualLayout';
@@ -619,6 +620,7 @@ function App() {
               ...edge.data, 
               labelOffsetX: offsetX, 
               labelOffsetY: offsetY,
+              labelOffsetSource: 'manual',
               onLabelChange: handleEdgeLabelChange,
               onLabelOffsetChange: handleEdgeLabelOffsetChange,
             },
@@ -802,7 +804,7 @@ function App() {
     });
 
     setNodes(result.nodes as any);
-    setEdges(result.edges as any);
+    setEdges(deconflictEdgeLabels(result.nodes as any, result.edges as any) as any);
 
     requestAnimationFrame(() => {
       reactFlowInstance?.fitView?.({ padding: 0.2, duration: 250 });
@@ -2457,7 +2459,7 @@ function App() {
     // Add the new nodes and edges
     console.log(`Setting ${finalNodes.length} nodes and ${newEdges.length} edges`);
     setNodes(finalNodes);
-    setEdges(newEdges);
+    setEdges(deconflictEdgeLabels(newNodes, newEdges));
 
     // Set the model badge from metrics
     if (architecture.metrics) {

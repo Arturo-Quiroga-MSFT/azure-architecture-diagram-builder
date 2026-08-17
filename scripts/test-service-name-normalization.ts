@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 import { getAzureServiceName } from '../src/data/azurePricing';
 import {
+  getServiceCostRange,
   getServiceIconMapping,
   SERVICE_ICON_MAP,
 } from '../src/data/serviceIconMapping';
@@ -92,6 +93,7 @@ assert.equal(getAzureServiceName('Azure AI Document Intelligence'), 'Document In
 assert.equal(getAzureServiceName('Form Recognizer'), 'Document Intelligence');
 assert.equal(getAzureServiceName('Azure AI Search'), 'Azure Cognitive Search');
 assert.equal(getAzureServiceName('Azure Health Data Services FHIR service'), 'Azure API for FHIR');
+assert.equal(getServiceCostRange('Azure Bastion'), '$138-876/mo');
 
 assert.equal(
   getCurrentIconDisplayName('document-intelligence', 'Document Intelligence'),

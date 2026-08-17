@@ -15,13 +15,13 @@ assert.match(prompt, /Microsoft Entra ID/);
 assert.match(prompt, /Microsoft Fabric Capacity/);
 assert.match(prompt, /SINGLE edge from Azure Monitor to Log Analytics/);
 assert.match(prompt, /No floating services/);
-assert.match(prompt, /Hub-and-spoke networks/);
-// "Hub-and-spoke" must name the network topology rule only; the monitoring rule
-// used the same phrase for an unrelated instruction.
+// Landing-zone topologies are out of scope; the generic layout path handled
+// them with fewer edge crossings than the hub-and-spoke special case did.
+assert.doesNotMatch(prompt, /Hub-and-spoke networks/);
 assert.doesNotMatch(prompt, /Hub-and-spoke for monitoring/);
 assert.doesNotMatch(prompt, /"position"\s*:/);
-assert.equal(prompt.length, 8_586);
-assert.equal(contractSha256, '08f3e89c054f27ca4a8dd644c8ce7c2115d59967d404a856ce6ad7f38ed53b39');
+assert.equal(prompt.length, 7_883);
+assert.equal(contractSha256, '2286c516cb4be2c59cab162b06a9c1cb94579374a5681113bb1f368ce8ed63c8');
 
 const warnings: string[] = [];
 const processed = postProcessArchitecture({
@@ -82,6 +82,24 @@ assert.deepEqual(processed.integrity, {
   orphanServices: ['Key Vault'],
 });
 assert.ok(warnings.length >= 5);
+
+// Group labels are passed through untouched now that landing-zone spokes are
+// no longer a recognised shape.
+const untouchedSpokes = postProcessArchitecture({
+  groups: [
+    { id: 'app-spoke', label: 'Application Spoke' },
+    { id: 'data-spoke', label: 'Data Spoke' },
+  ],
+  services: [
+    { id: 'app-vnet', name: 'Virtual Network', type: 'Virtual Network', groupId: 'app-spoke' },
+    { id: 'data-vnet', name: 'Virtual Network', type: 'Virtual Network', groupId: 'data-spoke' },
+  ],
+  connections: [{ from: 'app-vnet', to: 'data-vnet', label: 'Peer spokes', type: 'sync' }],
+  workflow: [],
+}, { log: () => undefined, warn: () => undefined });
+
+assert.equal(untouchedSpokes.services.length, 2, 'post-processing should not invent spoke workloads');
+assert.equal(untouchedSpokes.connections.length, 1, 'post-processing should not invent spoke connections');
 
 console.log(JSON.stringify({
   contractVersion: TOPOLOGY_CONTRACT_VERSION,

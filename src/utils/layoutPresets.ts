@@ -21,13 +21,13 @@ export interface ApplyLayoutOptions {
 }
 
 const NODE_WIDTH = 180;
-const NODE_HEIGHT = 100;
+const NODE_HEIGHT = 136;
 
 function getSpacing(spacing: LayoutSpacing) {
   if (spacing === 'compact') {
     return {
-      nodeSpacing: 110,
-      rankSpacing: 140,
+      nodeSpacing: 160,
+      rankSpacing: 220,
       groupPadding: 60,
       laneGap: 80,
       radialBaseRadius: 170,
@@ -36,8 +36,8 @@ function getSpacing(spacing: LayoutSpacing) {
   }
 
   return {
-    nodeSpacing: 150,
-    rankSpacing: 200,
+    nodeSpacing: 220,
+    rankSpacing: 280,
     groupPadding: 80,
     laneGap: 120,
     radialBaseRadius: 220,

@@ -45,15 +45,214 @@ interface PositionedGroup extends LayoutGroup {
 }
 
 const DEFAULT_OPTIONS: LayoutOptions = {
-  direction: 'LR',      // Left-to-right (typical data flow)
-  nodeSpacing: 180,     // Space between nodes horizontally
-  rankSpacing: 250,     // Space between layers vertically
-  groupPadding: 100     // Padding inside groups
+  direction: 'LR',
+  nodeSpacing: 220,
+  rankSpacing: 280,
+  groupPadding: 80
 };
 
 const NODE_WIDTH = 180;   // Standard node width
-const NODE_HEIGHT = 100;  // Standard node height
+// Rendered nodes measure 111-134px tall across captured diagrams; the old 100
+// under-reserved every vertical gap and every group height.
+const NODE_HEIGHT = 136;
 const GROUP_GAP = 40;     // Minimum gap between groups after overlap resolution
+const GROUP_HEADER_HEIGHT = 50;
+
+// Dagre only reserves rank space for an edge when that edge declares a label
+// box, so labelled connections get a corridor instead of sharing the node gap.
+const EDGE_LABEL_WIDTH = 190;
+const EDGE_LABEL_HEIGHT = 70;
+
+function edgeLabelBox(connection: LayoutConnection): Record<string, unknown> {
+  return String(connection.label ?? '').trim()
+    ? { width: EDGE_LABEL_WIDTH, height: EDGE_LABEL_HEIGHT, labelpos: 'c' }
+    : {};
+}
+
+interface GroupSubLayout {
+  positions: Map<string, { x: number; y: number }>;
+  width: number;
+  height: number;
+}
+
+function layoutGroupMembers(
+  members: LayoutService[],
+  connections: LayoutConnection[],
+  direction: LayoutOptions['direction'],
+  options: LayoutOptions
+): GroupSubLayout {
+  const memberIds = new Set(members.map(member => member.id));
+  const graph = new dagre.graphlib.Graph();
+  graph.setGraph({
+    rankdir: direction,
+    nodesep: Math.max(90, Math.round(options.nodeSpacing * 0.45)),
+    ranksep: Math.max(180, Math.round(options.rankSpacing * 0.75)),
+    marginx: 0,
+    marginy: 0,
+    ranker: 'network-simplex',
+  });
+  graph.setDefaultEdgeLabel(() => ({}));
+
+  members.forEach(member => graph.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT }));
+  connections.forEach(connection => {
+    if (connection.from !== connection.to && memberIds.has(connection.from) && memberIds.has(connection.to)) {
+      graph.setEdge(connection.from, connection.to, edgeLabelBox(connection));
+    }
+  });
+  dagre.layout(graph);
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  const absolutePositions = new Map<string, { x: number; y: number }>();
+
+  members.forEach(member => {
+    const node = graph.node(member.id);
+    const x = node.x - NODE_WIDTH / 2;
+    const y = node.y - NODE_HEIGHT / 2;
+    absolutePositions.set(member.id, { x, y });
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + NODE_WIDTH);
+    maxY = Math.max(maxY, y + NODE_HEIGHT);
+  });
+
+  const positions = new Map<string, { x: number; y: number }>();
+  absolutePositions.forEach((position, id) => {
+    positions.set(id, { x: position.x - minX, y: position.y - minY });
+  });
+
+  return { positions, width: maxX - minX, height: maxY - minY };
+}
+
+// Dagre centres every node of a rank on one axis line, so a narrow group beside
+// a wide one starts hundreds of pixels further along and the column reads ragged.
+function alignGroupsWithinRanks(
+  groups: Array<PositionedGroup & { rankCentre: number }>,
+  direction: LayoutOptions['direction']
+): PositionedGroup[] {
+  const vertical = direction === 'TB' || direction === 'BT';
+  const ranks = new Map<number, Array<PositionedGroup & { rankCentre: number }>>();
+  groups.forEach(group => {
+    const key = Math.round(group.rankCentre);
+    const rank = ranks.get(key);
+    if (rank) rank.push(group); else ranks.set(key, [group]);
+  });
+
+  ranks.forEach(rank => {
+    if (rank.length < 2) return;
+    const leading = Math.min(...rank.map(group => (vertical ? group.position.y : group.position.x)));
+    rank.forEach(group => {
+      if (vertical) group.position.y = leading;
+      else group.position.x = leading;
+    });
+  });
+
+  return groups.map(({ rankCentre: _rankCentre, ...group }) => group);
+}
+
+function layoutGroupedArchitecture(
+  services: LayoutService[],
+  connections: LayoutConnection[],
+  groups: LayoutGroup[],
+  options: LayoutOptions
+): { services: PositionedService[]; groups: PositionedGroup[] } | null {
+  const groupMap = new Map(groups.map(group => [group.id, group]));
+  const populatedGroups = groups.filter(group => services.some(service => service.groupId === group.id));
+  if (populatedGroups.length === 0) return null;
+
+  const subLayouts = new Map<string, GroupSubLayout>();
+  populatedGroups.forEach(group => {
+    const members = services.filter(service => service.groupId === group.id);
+    subLayouts.set(group.id, layoutGroupMembers(members, connections, options.direction, options));
+  });
+
+  const ungrouped = services.filter(service => !service.groupId || !groupMap.has(service.groupId));
+  const metaGraph = new dagre.graphlib.Graph();
+  metaGraph.setGraph({
+    rankdir: options.direction,
+    nodesep: Math.max(140, Math.round(options.nodeSpacing * 0.7)),
+    ranksep: Math.max(220, Math.round(options.rankSpacing * 0.85)),
+    marginx: 80,
+    marginy: 80,
+    edgesep: 40,
+    ranker: 'network-simplex',
+  });
+  metaGraph.setDefaultEdgeLabel(() => ({}));
+
+  const groupWidths = new Map<string, number>();
+  populatedGroups.forEach(group => {
+    const subLayout = subLayouts.get(group.id)!;
+    const headerWidth = group.label.length * 8 + options.groupPadding * 2;
+    const width = Math.max(subLayout.width + options.groupPadding * 2, headerWidth);
+    const height = subLayout.height + options.groupPadding * 2 + GROUP_HEADER_HEIGHT;
+    groupWidths.set(group.id, width);
+    metaGraph.setNode(`group:${group.id}`, { width, height });
+  });
+  ungrouped.forEach(service => {
+    metaGraph.setNode(`service:${service.id}`, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  });
+
+  const serviceById = new Map(services.map(service => [service.id, service]));
+  const metaId = (serviceId: string): string | null => {
+    const service = serviceById.get(serviceId);
+    if (!service) return null;
+    return service.groupId && groupMap.has(service.groupId)
+      ? `group:${service.groupId}`
+      : `service:${service.id}`;
+  };
+  const seenMetaEdges = new Set<string>();
+  connections.forEach(connection => {
+    const source = metaId(connection.from);
+    const target = metaId(connection.to);
+    if (!source || !target || source === target || !metaGraph.hasNode(source) || !metaGraph.hasNode(target)) return;
+    const key = `${source}\u0000${target}`;
+    if (seenMetaEdges.has(key)) return;
+    seenMetaEdges.add(key);
+    metaGraph.setEdge(source, target, edgeLabelBox(connection));
+  });
+  dagre.layout(metaGraph);
+
+  let positionedGroups: PositionedGroup[] = populatedGroups.map(group => {
+    const node = metaGraph.node(`group:${group.id}`);
+    const width = groupWidths.get(group.id)!;
+    const subLayout = subLayouts.get(group.id)!;
+    return {
+      ...group,
+      position: { x: node.x - width / 2, y: node.y - node.height / 2 },
+      width,
+      height: subLayout.height + options.groupPadding * 2 + GROUP_HEADER_HEIGHT,
+      rankCentre: options.direction === 'TB' || options.direction === 'BT' ? node.y : node.x,
+    } as PositionedGroup & { rankCentre: number };
+  });
+  positionedGroups = alignGroupsWithinRanks(
+    positionedGroups as Array<PositionedGroup & { rankCentre: number }>,
+    options.direction,
+  );
+
+  const positionedServices: PositionedService[] = services.map(service => {
+    if (service.groupId && subLayouts.has(service.groupId)) {
+      const position = subLayouts.get(service.groupId)!.positions.get(service.id) ?? { x: 0, y: 0 };
+      return {
+        ...service,
+        position: {
+          x: position.x + options.groupPadding,
+          y: position.y + options.groupPadding + GROUP_HEADER_HEIGHT,
+        },
+      };
+    }
+    const node = metaGraph.node(`service:${service.id}`);
+    return {
+      ...service,
+      position: node
+        ? { x: node.x - NODE_WIDTH / 2, y: node.y - NODE_HEIGHT / 2 }
+        : { x: 0, y: 0 },
+    };
+  });
+
+  return { services: positionedServices, groups: positionedGroups };
+}
 
 /**
  * Detect and resolve overlapping groups by pushing them apart.
@@ -152,6 +351,12 @@ export function layoutArchitecture(
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   console.log('📐 Calculating layout for', services.length, 'services and', groups.length, 'groups');
+
+  const groupedLayout = layoutGroupedArchitecture(services, connections, groups, opts);
+  if (groupedLayout) {
+    console.log('  ✅ Groups and members positioned in two layout phases');
+    return groupedLayout;
+  }
   
   // Create directed graph with compound nodes support
   const g = new dagre.graphlib.Graph({ compound: true });
@@ -325,7 +530,8 @@ export function relayoutDiagram(
   
   const connections = edges.map(e => ({
     from: e.source,
-    to: e.target
+    to: e.target,
+    label: e.label,
   }));
   
   const groups = nodes
