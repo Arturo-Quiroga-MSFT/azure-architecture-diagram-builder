@@ -166,6 +166,23 @@ function assignGroupColors(labels: string[]): { bg: string; border: string }[] {
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 const PADDING = 40;
+const EDGE_LABEL_MAX_CHARS = 22;
+const EDGE_LABEL_FONT = 10;
+const EDGE_LABEL_HORIZONTAL_PAD = 14;
+const EDGE_LABEL_CORRIDOR_PAD = 16;
+
+function labelAwareRankSep(
+  connections: DiagramConnection[],
+  base: number,
+  direction: 'TB' | 'LR',
+): number {
+  if (direction !== 'LR') return base;
+  const widest = connections.reduce((max, connection) => {
+    const chars = Math.min(EDGE_LABEL_MAX_CHARS, (connection.label ?? '').trim().length);
+    return Math.max(max, chars * EDGE_LABEL_FONT * 0.62 + EDGE_LABEL_HORIZONTAL_PAD);
+  }, 0);
+  return Math.max(base, Math.ceil(widest + EDGE_LABEL_CORRIDOR_PAD));
+}
 
 function computeFlatLayout(
   services: DiagramService[],
@@ -341,15 +358,26 @@ function subLayoutGroup(
   members: DiagramService[],
   connections: DiagramConnection[],
   direction: 'TB' | 'LR',
+  reserveEdgeLabelCorridors: boolean,
 ): { pos: Map<string, { x: number; y: number }>; width: number; height: number } {
   const memberSet = new Set(members.map(m => m.name));
+  const internalConnections = connections.filter(
+    connection => memberSet.has(connection.from) && memberSet.has(connection.to) && connection.from !== connection.to,
+  );
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: direction, nodesep: 45, ranksep: 65, marginx: 0, marginy: 0, ranker: 'network-simplex' });
+  g.setGraph({
+    rankdir: direction,
+    nodesep: 45,
+    ranksep: reserveEdgeLabelCorridors
+      ? labelAwareRankSep(internalConnections, 65, direction)
+      : 65,
+    marginx: 0,
+    marginy: 0,
+    ranker: 'network-simplex',
+  });
   g.setDefaultEdgeLabel(() => ({}));
   for (const m of members) g.setNode(m.name, { width: NODE_WIDTH, height: NODE_HEIGHT });
-  for (const c of connections) {
-    if (memberSet.has(c.from) && memberSet.has(c.to) && c.from !== c.to) g.setEdge(c.from, c.to, {});
-  }
+  for (const c of internalConnections) g.setEdge(c.from, c.to, {});
   dagre.layout(g);
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   const raw = new Map<string, { x: number; y: number }>();
@@ -370,6 +398,7 @@ function computeGroupedLayout(
   connections: DiagramConnection[],
   groups: DiagramGroup[],
   direction: 'TB' | 'LR',
+  reserveEdgeLabelCorridors: boolean,
 ): LayoutResult | null {
   const groupMap = new Map(groups.map(g => [g.id, g]));
   const validGroups = groups.filter(g => services.some(s => s.groupId === g.id));
@@ -379,7 +408,7 @@ function computeGroupedLayout(
   const sub = new Map<string, { pos: Map<string, { x: number; y: number }>; width: number; height: number }>();
   for (const grp of validGroups) {
     const members = services.filter(s => s.groupId === grp.id);
-    sub.set(grp.id, subLayoutGroup(members, connections, direction));
+    sub.set(grp.id, subLayoutGroup(members, connections, direction, reserveEdgeLabelCorridors));
   }
   const ungrouped = services.filter(s => !s.groupId || !groupMap.has(s.groupId));
 
@@ -390,10 +419,13 @@ function computeGroupedLayout(
   };
   const mg = new dagre.graphlib.Graph();
   const sizeBoost = services.length >= 16 ? 1.2 : 1.0;
+  const crossGroupConnections = connections.filter(connection => metaKey(connection.from) !== metaKey(connection.to));
   mg.setGraph({
     rankdir: direction,
     nodesep: Math.round(70 * sizeBoost),
-    ranksep: Math.round(110 * sizeBoost),
+    ranksep: reserveEdgeLabelCorridors
+      ? labelAwareRankSep(crossGroupConnections, Math.round(110 * sizeBoost), direction)
+      : Math.round(110 * sizeBoost),
     marginx: PADDING,
     marginy: PADDING,
     ranker: 'network-simplex',
@@ -549,10 +581,17 @@ export function computeLayout(
   connections: DiagramConnection[],
   groups: DiagramGroup[],
   direction: 'TB' | 'LR' = 'TB',
+  options: { reserveEdgeLabelCorridors?: boolean } = {},
 ): LayoutResult {
   if (groups && groups.length > 0) {
     try {
-      const grouped = computeGroupedLayout(services, connections, groups, direction);
+      const grouped = computeGroupedLayout(
+        services,
+        connections,
+        groups,
+        direction,
+        options.reserveEdgeLabelCorridors ?? false,
+      );
       if (grouped) return grouped;
     } catch {
       // Fall back to the flat compound layout on any grouping error.
@@ -563,7 +602,7 @@ export function computeLayout(
 
 function presentationGroupRank(label: string): number {
   const value = label.toLowerCase();
-  if (/edge|ingress|front|perimeter|cdn|waf/.test(value)) return 0;
+  if (/edge|ingress|front|perimeter|dmz|cdn|waf/.test(value)) return 0;
   if (/app|compute|api|integration|service|processing/.test(value)) return 1;
   if (/data|database|storage|cache|sql|cosmos/.test(value)) return 2;
   if (/network|private|connectivity|dns/.test(value)) return 3;
@@ -826,7 +865,10 @@ function reanchorPresentationEdges(nodes: PositionedNode[], edges: PositionedEdg
  * The primary request path occupies the first row; supporting network,
  * identity/security, and observability groups occupy the second row.
  */
-export function reflowLayoutForPresentation(layout: LayoutResult): LayoutResult {
+export function reflowLayoutForPresentation(
+  layout: LayoutResult,
+  options: { columnGap?: number } = {},
+): LayoutResult {
   const multiRegion = reflowMultiRegionPresentation(layout);
   if (multiRegion) return multiRegion;
   if (layout.groups.length < 4 || layout.nodes.some(node => !node.groupId)) return layout;
@@ -841,7 +883,7 @@ export function reflowLayoutForPresentation(layout: LayoutResult): LayoutResult 
     });
   const columns = Math.min(3, Math.ceil(groups.length / 2));
   const rows = Math.ceil(groups.length / columns);
-  const columnGap = 72;
+  const columnGap = options.columnGap ?? 72;
   const rowGap = 88;
   const outerWidth = (group: PositionedGroup) => group.width + 24;
   const outerHeight = (group: PositionedGroup) => group.height + 48;

@@ -104,7 +104,7 @@ function viewBoxRatio(svg) {
 function svgBoxes(svg, kind) {
   const pattern = kind === 'node'
     ? /<g class="node" data-service="([^"]+)"[\s\S]*?<!-- Card -->\s*<rect x="([0-9.]+)" y="([0-9.]+)" width="([0-9.]+)" height="([0-9.]+)"/g
-    : /<g class="edge-label">\s*<rect x="([0-9.]+)" y="([0-9.]+)" width="([0-9.]+)" height="([0-9.]+)"/g;
+    : /<g class="edge-label"[^>]*>\s*<rect x="([0-9.]+)" y="([0-9.]+)" width="([0-9.]+)" height="([0-9.]+)"/g;
   return [...svg.matchAll(pattern)].map(match => kind === 'node'
     ? { name: match[1], x: Number(match[2]), y: Number(match[3]), width: Number(match[4]), height: Number(match[5]) }
     : { x: Number(match[1]), y: Number(match[2]), width: Number(match[3]), height: Number(match[4]) });
@@ -140,11 +140,11 @@ assert(viewBoxRatio(presentation) >= 1.4 && viewBoxRatio(presentation) <= 2.4, '
 assert.match(presentation, /class="edge edge-primary"/);
 assert.match(presentation, /class="edge edge-supporting" opacity="0.58"/);
 assert(
-  (presentation.match(/<g class="edge-label">/g) ?? []).length <
-    (technical.match(/<g class="edge-label">/g) ?? []).length,
+  (presentation.match(/<g class="edge-label"/g) ?? []).length <
+    (technical.match(/<g class="edge-label"/g) ?? []).length,
   'Presentation should show fewer edge labels than technical output.',
 );
-assert((presentation.match(/<g class="edge-label">/g) ?? []).length <= 12, 'Presentation should cap visible edge labels.');
+assert((presentation.match(/<g class="edge-label"/g) ?? []).length <= 12, 'Presentation should cap visible edge labels.');
 
 const overlaps = (left, right) => !(
   left.x + left.width <= right.x || right.x + right.width <= left.x ||
@@ -272,18 +272,18 @@ assert.doesNotMatch(
 assert.match(regionalPresentation, /class="edge edge-policy-association"/);
 assert.match(regionalPresentation, /WAF policy association/);
 assert.equal((regionalPresentation.match(/class="edge edge-primary"/g) ?? []).length, 4);
-assert.equal((regionalTechnical.match(/<g class="edge-label">/g) ?? []).length, 46);
+assert.equal((regionalTechnical.match(/<g class="edge-label"/g) ?? []).length, 46);
 assert.equal(presentationSemantics.primary.size, 4);
 assert.equal(presentationSemantics.labeled.size, 12);
 assert.equal(technicalSemantics.labeled.size, 46);
 assert.equal(costSemantics.primary.size, 4);
 assert.equal(costSemantics.labeled.size, 12);
 assert(
-  (regionalCost.match(/<g class="edge-label">/g) ?? []).length <
-    (regionalTechnical.match(/<g class="edge-label">/g) ?? []).length,
+  (regionalCost.match(/<g class="edge-label"/g) ?? []).length <
+    (regionalTechnical.match(/<g class="edge-label"/g) ?? []).length,
   'Cost mode should suppress supporting edge labels so pricing remains the visual priority.',
 );
-assert((regionalCost.match(/<g class="edge-label">/g) ?? []).length <= 12);
+assert((regionalCost.match(/<g class="edge-label"/g) ?? []).length <= 12);
 assert.equal((regionalCost.match(/class="node-cost/g) ?? []).length, 29);
 assert.match(regionalCost, /Fixed priced baseline:/);
 assert.match(regionalCost, /Excludes 23 usage-based or ranged items shown on nodes\./);

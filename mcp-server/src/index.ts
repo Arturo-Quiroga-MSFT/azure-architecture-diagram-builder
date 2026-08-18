@@ -1343,10 +1343,12 @@ server.registerTool(
       (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
       dir as any,
+      { reserveEdgeLabelCorridors: renderProfile === 'technical' },
     );
-    const layout = renderProfile === 'presentation' || renderProfile === 'cost'
-      ? reflowLayoutForPresentation(computedLayout)
-      : computedLayout;
+    const layout = reflowLayoutForPresentation(
+      computedLayout,
+      renderProfile === 'technical' ? { columnGap: 166 } : {},
+    );
 
     // Best-effort per-node cost enrichment (SVG cost badges + total footer).
     // Uses the same service→pricing resolution as the estimate_costs tool.

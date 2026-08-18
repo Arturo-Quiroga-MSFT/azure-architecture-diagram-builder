@@ -16,6 +16,7 @@
     "test:catalog": "npm run build --silent && node scripts/test-service-catalog.mjs",
     "test:contracts": "npm run build --silent && node scripts/test-service-catalog.mjs && node scripts/test-tool-contracts.mjs",
     "test:render-profiles": "npm run build --silent && node scripts/test-render-profiles.mjs",
+    "test:render-zero-trust": "npm run build --silent && node scripts/test-render-zero-trust.mjs",
     "start": "node dist/index.js",
     "start:http": "node dist/index.js --http",
     "dev": "tsc --watch"
