@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated
+> **Status:** Deployed
 
 Generated: 2026-08-18
 
@@ -66,9 +66,9 @@ Production must satisfy all of the following:
 Before deployment:
 
 - [x] All validation checks pass
-	- [x] Core validation: Azure CLI installed/authenticated, exact subscription selected, live target inventory captured, deployment script syntax passes. Bicep build/ARM validate/what-if are not applicable because this is an image-only update with no IaC execution.
-	- [x] Container build: ACR remote build succeeds with both Adoption & Impact flags forced false; local Docker is unavailable.
-	- [x] Azure Policy validation: effective assignments at `azure-diagrams-rg` are reviewed for impact on the image-only ACA revision update.
+  - [x] Core validation: Azure CLI installed/authenticated, exact subscription selected, live target inventory captured, deployment script syntax passes. Bicep build/ARM validate/what-if are not applicable because this is an image-only update with no IaC execution.
+  - [x] Container build: ACR remote build succeeds with both Adoption & Impact flags forced false; local Docker is unavailable.
+  - [x] Azure Policy validation: effective assignments at `azure-diagrams-rg` are reviewed for impact on the image-only ACA revision update.
 
 1. Confirm Azure authentication and exact subscription context.
 2. Query the live ACA, environment, registry, current revision, image digest, traffic, ingress target port, and health.
@@ -130,4 +130,24 @@ Approved by user on 2026-08-18 for subscription `7a28b21e-0d3e-4435-a686-d92889d
 - **Cosmos DB Built-in Data Contributor:** Scoped to the specific `aqcosmosdb007` account. Matches feedback read/write operations through the Cosmos data-plane SDK.
 - **Azure OpenAI:** Uses the existing runtime key fallback; no new role assignment is required by this deployment.
 - **Azure Resource Graph import:** Disabled by default on shared/public deployments; no management-plane Reader role is introduced by this update.
-- **Issues:** None. No subscription- or resource-group-wide role is created.
+- **Post-deploy issue found:** Live verification found 18 identical Cosmos DB Built-in Data Contributor assignments for the same principal/account scope, accumulated by the non-idempotent deployment script.
+- **Resolution:** User approved deletion of 17 duplicates. Assignment `ee7cdb1c-8c90-4cfe-944c-c74c546171ce` was retained and verified as the sole remaining assignment. The deployment script now checks for the exact principal/role/scope before creating an assignment.
+
+## 12. Deployment Proof
+
+Deployed on 2026-08-18 from merged `main` commit `a24aa4d`.
+
+| Check | Result |
+| --- | --- |
+| PR and CI | PR #20 squash-merged; Vite app and MCP server CI jobs both passed |
+| ACR production build | Run `ch68` succeeded; `azure-diagram-builder:vnet` digest `sha256:a5f241b11a6383057ab90cf8a9b9af9d04267b4dcd605d5cb44ec8c527114da5` |
+| Target revision | `azure-diagram-builder-vnet--0000002`, healthy/running, target port 80, 100% traffic |
+| Runtime gate | `ENABLE_ADOPTION_IMPACT=false` on the active ACA template |
+| Exact image inspection | ACR run `ch69`: `DEPLOYED_IMAGE_EXCLUSION_PASS`; impact route/record modules absent and prohibited client markers absent |
+| Public endpoint | `https://azure-diagram-builder-vnet.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io/` returned `200` |
+| Excluded endpoints | POST `/api/impact-story` and `/api/deployment-registration` both returned `404` |
+| Browser verification | Adoption & Impact launcher/modal absent; Generate Diagram and Feedback remain available |
+| Generation smoke | GPT-5.6 Sol/low generated 8 services and 7 edges; one Container Apps node and one Service Bus node; launcher remained absent |
+| Rollback | Previous revision `azure-diagram-builder-vnet--v20260815122621` remains healthy/inactive; previous digest `sha256:57319c32449144d327c6a4b5d012d1306ed79e49b9827f5b7cb27bd59d03f593` remains in ACR |
+| Scope check | Legacy web, standalone MCP, and analytics ACA revisions/images unchanged |
+| Live RBAC | One Cognitive Services Speech User assignment at the Speech account; one Cosmos DB Built-in Data Contributor assignment at the Cosmos account after approved cleanup |

@@ -165,10 +165,18 @@ az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal
   && echo "  ✓ Speech User on $SPEECH_ACCOUNT" || echo "  • Speech role already present"
 
 COSMOS_ID="$(az cosmosdb show -n "$COSMOS_ACCOUNT" -g "$RG" --query id -o tsv)"
-az cosmosdb sql role assignment create -a "$COSMOS_ACCOUNT" -g "$RG" \
-  --role-definition-id "$COSMOS_DATA_CONTRIBUTOR" \
-  --principal-id "$PRINCIPAL" --scope "$COSMOS_ID" -o none 2>/dev/null \
-  && echo "  ✓ Cosmos Data Contributor on $COSMOS_ACCOUNT" || echo "  • Cosmos role already present"
+COSMOS_ROLE_DEFINITION_ID="$COSMOS_ID/sqlRoleDefinitions/$COSMOS_DATA_CONTRIBUTOR"
+EXISTING_COSMOS_ROLE="$(az cosmosdb sql role assignment list -a "$COSMOS_ACCOUNT" -g "$RG" \
+  --query "[?principalId=='$PRINCIPAL' && roleDefinitionId=='$COSMOS_ROLE_DEFINITION_ID' && scope=='$COSMOS_ID'] | [0].id" \
+  -o tsv)"
+if [[ -n "$EXISTING_COSMOS_ROLE" ]]; then
+  echo "  • Cosmos Data Contributor already present on $COSMOS_ACCOUNT"
+else
+  az cosmosdb sql role assignment create -a "$COSMOS_ACCOUNT" -g "$RG" \
+    --role-definition-id "$COSMOS_DATA_CONTRIBUTOR" \
+    --principal-id "$PRINCIPAL" --scope "$COSMOS_ID" -o none
+  echo "  ✓ Cosmos Data Contributor on $COSMOS_ACCOUNT"
+fi
 
 echo ""
 echo "✅ New web app deployed (blue/green — old app untouched):"
