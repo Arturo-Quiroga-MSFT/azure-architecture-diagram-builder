@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated
+> **Status:** Deployed
 
 Generated: 2026-08-18
 
@@ -117,3 +117,19 @@ Approved by user on 2026-08-18 for subscription `7a28b21e-0d3e-4435-a686-d92889d
 - **Authentication:** MCP bearer token stored as an ACA secret; no token value is written to source or logs.
 - **Registry:** Existing ACR credential configuration remains unchanged; no role assignment is created by this image-only update.
 - **Issues:** None.
+
+## 12. Deployment Proof
+
+Deployed on 2026-08-18 from feature-branch commit `7711810`.
+
+| Check | Result |
+| --- | --- |
+| ACR production build | Run `ch6c` succeeded; tag `mcp-20260818-181452`; digest `sha256:8c145b62e5a41f701c2602ac88636d73e8f641a55f5238711cd8912939e021a0`; runtime install reported 0 vulnerabilities |
+| Target revision | `azure-diagram-mcp--v1787076992`, healthy/running, target port 3030, 100% traffic |
+| Public health | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/healthz` returned `200` |
+| Authentication | Unauthenticated initialize returned `401`; existing bearer token was reused without display or rotation |
+| Authenticated discovery | 13 tools, 3 resources, 3 prompts; `render_diagram` present |
+| Live render call | Exact zero-trust fixture through deployed `render_diagram`: 11 nodes, 15 edges, 12 labels, 0 detached labels, viewBox `1818×790` (ratio 2.30), consolidated `Monitor security posture · 4 targets` label present |
+| Live artifact | `DONOTTRACK/AQ-REFINEMENTS-18-aug-2026/zero-trust-network-live-mcp.svg` |
+| Scope check | Legacy web `v1783874319`, VNet web `0000002`, and analytics `20260813195443` revisions/images unchanged |
+| Rollback | Prior MCP revision `azure-diagram-mcp--v1786890197` is healthy/stopped; prior image `mcp-20260816-142135` retained |
