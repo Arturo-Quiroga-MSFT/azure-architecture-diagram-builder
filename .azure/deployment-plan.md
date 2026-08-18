@@ -6,130 +6,121 @@ Generated: 2026-08-18
 
 ## 1. Project Overview
 
-**Goal:** Deploy the Scout MCP diagram-quality improvements from commit `42e0b75` to the existing standalone Azure Architecture Diagram Builder MCP Container App for Microsoft Scout testing.
+**Goal:** Redeploy the primary VNet web app and standalone MCP server from merged `main` commit `3ba152f`, delivering `@dagrejs/dagre@3.1.1` to both and the current Scout diagram-readability fixes to MCP.
 
-**Mode:** Image-only update to an existing standalone MCP deployment. No infrastructure provisioning, deletion, web-app deployment, analytics deployment, or token rotation.
+**Mode:** Two independent image-only updates to existing Azure Container Apps. No infrastructure provisioning, deletion, token rotation, RBAC changes, legacy-web deployment, or analytics deployment.
 
-## 2. Deployment Boundary
+## 2. Approved Deployment Boundary
 
-| Attribute | Value |
+User approved this boundary on 2026-08-18.
+
+| Target | Value |
 | --- | --- |
-| Application | `azure-diagram-mcp` |
+| Subscription | `7a28b21e-0d3e-4435-a686-d92889d4ee96` |
+| Location | East US 2 |
 | Resource group | `azure-diagrams-rg` |
-| Subscription | `7a28b21e-0d3e-4435-a686-d92889d4ee96` (confirmation required) |
-| Location | East US 2 (confirmation required) |
-| Container Apps environment | Existing environment resolved by deployment script |
 | Registry | `acrazurediagrams1767583743` |
-| Image repository | `azure-diagram-mcp` |
-| Ingress target port | `3030` |
-| MCP endpoint | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/mcp` |
-| Health endpoint | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/healthz` |
-| Deployment method | Existing `scripts/deploy-mcp.sh` |
-| Authentication | Reuse existing bearer token from gitignored `.env.mcp`; do not display or rotate it |
-| Rollback | Preserve prior healthy revision `azure-diagram-mcp--v1786890197` and prior image tag `mcp-20260816-142135` |
+| Web ACA | `azure-diagram-builder-vnet` |
+| Web image | `azure-diagram-builder:vnet` |
+| Web target port | `80` |
+| Web script | `scripts/vnet-migration/03-deploy-webapp.sh` |
+| MCP ACA | `azure-diagram-mcp` |
+| MCP image repository | `azure-diagram-mcp` |
+| MCP target port | `3030` |
+| MCP script | `scripts/deploy-mcp.sh` |
+| Authentication | Reuse existing web secrets and existing MCP bearer token; never display or rotate token |
 
-Out of scope: `azure-diagram-builder-vnet`, legacy `azure-diagram-builder`, `aadb-usage-analytics`, all infrastructure, RBAC, and the MCP bearer token value.
+Out of scope: legacy `azure-diagram-builder`, `aadb-usage-analytics`, infrastructure, policy assignments, role assignments, and prior revision/image deletion.
 
-## 3. Change Being Deployed
+## 3. Source Being Deployed
 
-- Reserve label-sized corridors for technical LR grouped diagrams.
-- Reflow grouped technical diagrams into DMZ/Application/Data primary row plus Identity/Security supporting row.
-- Consolidate repeated same-source labels while preserving all edges.
-- Keep labels on sampled points of their owning orthogonal path.
-- Add edge ownership/placement metadata to SVG labels.
-- Add the reported zero-trust Scout graph as a permanent regression fixture.
+Merged `main` commit `3ba152f` includes:
 
-## 4. Recipe Selection
+- `@dagrejs/dagre@3.1.1` and `@dagrejs/graphlib@4.0.5` in web and MCP.
+- Built-in Dagre TypeScript declarations; legacy `dagre@0.8.5` and `@types/dagre` removed.
+- Scout technical-layout corridors and semantic primary/supporting composition.
+- Same-source repeated-label consolidation.
+- On-route label placement and ownership metadata.
+- Zero-trust Scout regression fixture.
+- MCP transitive dependency remediation with zero production advisories.
+- Web Adoption & Impact production exclusion remains enabled from prior deployment.
 
-**Selected:** Existing script-driven ACR build plus image-only Azure Container Apps update.
+## 4. Rollback Baseline
 
-**Rationale:** The standalone MCP app already exists and is healthy. `scripts/deploy-mcp.sh` builds a unique image tag, updates only `azure-diagram-mcp`, preserves prior revisions, reuses the existing bearer token, and forces a new ACA revision. Full provisioning or `azd up` would expand scope unnecessarily.
+| Target | Current revision/image before deployment |
+| --- | --- |
+| Web | `azure-diagram-builder-vnet--0000002`; digest `sha256:a5f241b11a6383057ab90cf8a9b9af9d04267b4dcd605d5cb44ec8c527114da5` |
+| MCP | `azure-diagram-mcp--v1787076992`; tag `mcp-20260818-181452`; digest `sha256:8c145b62e5a41f701c2602ac88636d73e8f641a55f5238711cd8912939e021a0` |
 
-## 5. Preparation Checklist
+Both prior revisions and image digests must remain available after deployment.
 
-- [x] Current branch is `feature/scout-mcp-diagram-quality` at commit `42e0b75`.
-- [x] Worktree was clean before deployment-plan preparation.
-- [x] `.env.mcp` exists with mode `0600`.
-- [x] Local Docker is unavailable; use ACR build-only validation.
-- [x] Exact zero-trust regression passes.
-- [x] Render-profile regression passes.
-- [x] Service-catalog and all 13 MCP tool contracts pass.
-- [x] TypeScript diagnostics and diff checks pass.
-- [x] Confirm subscription/location with user.
-- [x] Confirm image-only deployment approval.
-- [ ] Complete Azure validation workflow.
-
-## 6. Validation Plan
+## 5. Validation Plan
 
 - [x] All validation checks pass
-  - [x] Core validation: exact Azure context, live target inventory, target port 3030, source commit, script syntax, secret-file permissions, and pre-deploy health/auth behavior.
-  - [x] Container build: build unique validation image in ACR; do not update ACA during validation.
+  - [x] Core validation: exact Azure context, target inventory, current revisions/images/traffic, script syntax, secret-file permissions, and ports 80/3030.
+  - [x] Web container build-only ACR validation from `3ba152f`; verify Adoption & Impact exclusion in exact image.
+  - [x] MCP container build-only ACR validation from `3ba152f`; verify health/auth runtime in exact image.
   - [x] Azure Policy review at `azure-diagrams-rg` scope.
-- [x] Run MCP build, zero-trust fixture, render profiles, service catalog, and all tool contracts.
-- [x] Verify validation image starts on port 3030 and `/healthz` succeeds using ACR Tasks.
-- [x] Verify unauthenticated MCP requests are rejected and authenticated initialization/tool discovery succeeds against the current live endpoint before deployment.
-- [x] Record exact validation image tag/digest and proof in Section 7.
+- [x] Root clean install, Dagre migration contract, grouped layout, edge labels, layout preservation, production build.
+- [x] MCP clean install, production audit, build, zero-trust fixture, render profiles, service catalog, all 13 tool contracts.
+- [x] Confirm committed lockfiles contain no internal Microsoft feed URLs.
+- [x] Record validation proof below and complete official azure-validate workflow.
 
 ## 7. Validation Proof
 
-Validated at `2026-08-18T18:12:10Z` against subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`.
-
-| Check | Command / subject | Result |
-| --- | --- | --- |
-| Azure context | `az account show` | `ARTURO-MngEnvMCAP094150`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, user `admin@MngEnvMCAP094150.onmicrosoft.com` |
-| Source | Git branch and status | Renderer commit `42e0b75`; dependency lock remediation pending commit on same feature branch; `.env.mcp` present with mode `0600` |
-| Pre-deploy ACA | `az containerapp show` and revision list | `azure-diagram-mcp--v1786890197`, healthy/running, target port 3030, image `mcp-20260816-142135`, 100% traffic; prior revisions retained |
-| Pre-deploy HTTP/auth | Health plus unauthenticated initialize | `/healthz` `200`; unauthenticated initialize `401` |
-| Authenticated discovery | MCP SDK using existing token without printing it | 13 tools, 3 resources, 3 prompts; `render_diagram` present |
-| Source contracts | Build, zero-trust fixture, render profiles, service catalog, tool contracts | All pass; zero-trust render 11 nodes / 15 edges / 12 labels / no detached labels / document-friendly composition |
-| Dependency audit | `npm audit --omit=dev` | Initial validation found 5 high and 3 moderate production advisories. Non-breaking transitive updates were applied within declared ranges; `npm ci`, build, and all contracts pass; final audit reports 0 vulnerabilities. Lockfile contains 0 internal feed URLs. |
-| Effective policy | Azure Policy MCP at `azure-diagrams-rg` scope | 8 enforced assignments reviewed (deploy/modify, deny, audit, MFA write/delete, Defender); no scope expansion required for image-only revision update |
-| Validation image | ACR run `ch6a` | Tag `mcp-validation-diagram-quality-20260818-181004`; digest `sha256:a9ddf229bba6fd88fa6220934d73512e8b1220bdf5ee7c5a4ec2cce76931655c`; build and push succeeded |
-| Validation image runtime | ACR run `ch6b` | Exact image started on port 3030; health `200`; unauthenticated initialize `401`; authenticated initialize `200` |
-| Validation-only mutation check | `az containerapp show` after ACR runs | Live ACA remained on `v1786890197`, image `mcp-20260816-142135`, 100% traffic |
-
-## 8. Deployment Plan
-
-1. Execute `scripts/deploy-mcp.sh` from the validated source commit.
-2. Confirm a unique image tag and digest are pushed to ACR.
-3. Confirm a new healthy/running ACA revision becomes latest ready.
-4. Confirm 100% traffic targets the latest revision.
-5. Verify target port remains 3030 and health endpoint returns 200.
-6. Verify unauthenticated `/mcp` session operations return 401.
-7. Using the existing token without displaying it, initialize an MCP session and confirm 13 tools, 3 resources, and 3 prompts.
-8. Call `render_diagram` with the zero-trust regression graph and verify technical SVG includes 11 nodes, 15 edges, 12 consolidated labels, no detached labels, and a viewBox ratio no greater than 2.4.
-9. Verify web, legacy web, and analytics ACA revisions/images are unchanged.
-10. Verify previous MCP revision remains available for rollback.
-
-## 9. Rollback
-
-If verification fails, reactivate or route traffic to `azure-diagram-mcp--v1786890197`, which uses image `azure-diagram-mcp:mcp-20260816-142135`. Do not delete prior revisions or tags.
-
-## 10. Approval
-
-Approved by user on 2026-08-18 for subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, East US 2, with the image-only standalone MCP boundary described above.
-
-## 11. Role Assignment Verification
-
-- **Status:** Verified; no Azure data-plane RBAC is required by this application.
-- **Live identity:** `azure-diagram-mcp` reports identity type `None`.
-- **Runtime operations:** The MCP server is deterministic and reads bundled icon, pricing, catalog, and ARM parsing data. It does not call Azure APIs or data-plane services.
-- **Authentication:** MCP bearer token stored as an ACA secret; no token value is written to source or logs.
-- **Registry:** Existing ACR credential configuration remains unchanged; no role assignment is created by this image-only update.
-- **Issues:** None.
-
-## 12. Deployment Proof
-
-Deployed on 2026-08-18 from feature-branch commit `7711810`.
+Validated at `2026-08-18T19:04:08Z` against subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`.
 
 | Check | Result |
 | --- | --- |
-| ACR production build | Run `ch6c` succeeded; tag `mcp-20260818-181452`; digest `sha256:8c145b62e5a41f701c2602ac88636d73e8f641a55f5238711cd8912939e021a0`; runtime install reported 0 vulnerabilities |
-| Target revision | `azure-diagram-mcp--v1787076992`, healthy/running, target port 3030, 100% traffic |
-| Public health | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/healthz` returned `200` |
-| Authentication | Unauthenticated initialize returned `401`; existing bearer token was reused without display or rotation |
-| Authenticated discovery | 13 tools, 3 resources, 3 prompts; `render_diagram` present |
-| Live render call | Exact zero-trust fixture through deployed `render_diagram`: 11 nodes, 15 edges, 12 labels, 0 detached labels, viewBox `1818×790` (ratio 2.30), consolidated `Monitor security posture · 4 targets` label present |
-| Live artifact | `DONOTTRACK/AQ-REFINEMENTS-18-aug-2026/zero-trust-network-live-mcp.svg` |
-| Scope check | Legacy web `v1783874319`, VNet web `0000002`, and analytics `20260813195443` revisions/images unchanged |
-| Rollback | Prior MCP revision `azure-diagram-mcp--v1786890197` is healthy/stopped; prior image `mcp-20260816-142135` retained |
+| Source | Merged `main` commit `3ba152f`; web and MCP resolve only `@dagrejs/dagre@3.1.1` and `@dagrejs/graphlib@4.0.5` |
+| Root contracts | Clean install, Dagre migration, grouped layout, edge-label layout, layout preservation, service names, pricing mode, ARM import, AADB v2 contract, and production build pass |
+| MCP contracts | Clean install, production audit (0 vulnerabilities), build, zero-trust fixture, render profiles, service catalog, and all 13 tool contracts pass |
+| Lockfile hygiene | Root and MCP lockfiles contain 0 Microsoft internal-feed URLs |
+| Azure context | `ARTURO-MngEnvMCAP094150`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, user `admin@MngEnvMCAP094150.onmicrosoft.com` |
+| Effective policy | 8 enforced assignments reviewed at `azure-diagrams-rg`: deploy/modify, deny, audit, MFA write/delete, and Defender assignments; no scope expansion required |
+| Web pre-state | Revision `azure-diagram-builder-vnet--0000002`, digest `sha256:a5f241b11a6383057ab90cf8a9b9af9d04267b4dcd605d5cb44ec8c527114da5`, 100% traffic, target port 80 |
+| MCP pre-state | Revision `azure-diagram-mcp--v1787076992`, digest `sha256:8c145b62e5a41f701c2602ac88636d73e8f641a55f5238711cd8912939e021a0`, 100% traffic, target port 3030 |
+| Web validation image | Tag `validation-dagre3-web-20260818185457`, digest `sha256:407ece76eb5bb6f06b10cf998c7d0fd5e61beaa2ae4845b7d3b9e90ae622d53b`; ACR run `ch6g` verified root 200 and excluded impact route 404 after upstream readiness |
+| MCP validation image | Tag `mcp-validation-dagre3-scout-20260818-190148`, digest `sha256:3557a499ab9b1d794574d4d381ead5ca9960c01b442fd02635dc1f44a16aee0c`; ACR run `ch6h` verified health 200, unauthenticated initialize 401, authenticated initialize 200 |
+| Validation-only mutation check | Web remained on `0000002`; MCP remained on `v1787076992`; both remained at 100% traffic |
+| Resolved validation issue | Initial web runtime probe observed transient 502 while token-server upstream started; readiness-gated rerun passed with final expected 404. No application change was required. |
+
+## 8. Deployment Sequence
+
+1. Deploy VNet web app from validated `main` using its existing image-only script.
+2. Verify healthy ready revision, 100% traffic, HTTPS 200, Adoption & Impact absent, excluded impact endpoints 404, and representative grouped generation under Dagre 3.1.1.
+3. Deploy standalone MCP using its existing image-only script.
+4. Verify healthy ready revision, 100% traffic, health 200, unauthenticated initialize 401, authenticated discovery 13 tools/3 resources/3 prompts.
+5. Call live `render_diagram` using the zero-trust fixture and require 11 nodes, 15 edges, 12 labels, no detached labels, and SVG ratio ≤2.4.
+6. Confirm legacy web and analytics revisions/images are unchanged.
+7. Confirm prior web and MCP revisions remain healthy/inactive for rollback.
+
+## 9. Rollback
+
+If web verification fails, reactivate/route to `azure-diagram-builder-vnet--0000002`. If MCP verification fails, reactivate/route to `azure-diagram-mcp--v1787076992`. Do not delete prior revisions or image manifests.
+
+## 10. Role Assignment Verification
+
+- Web: existing scoped Speech and Cosmos roles remain unchanged; deployment script's Cosmos role check is idempotent.
+- MCP: identity type `None`; deterministic bundled-data server requires no Azure data-plane RBAC.
+- No new role assignment is in scope.
+
+## 11. Deployment Proof
+
+Deployed on 2026-08-18 from merged `main` commit `3ba152f`.
+
+| Check | Result |
+| --- | --- |
+| Web production image | ACR run `ch6j`; tag `azure-diagram-builder:vnet`; digest `sha256:194fb7b56093327d361b8fc9fe522a6ca4335b5d23d21560feb137aca10ce43a` |
+| Web revision | `azure-diagram-builder-vnet--v20260818151122`, healthy/running, target port 80, 100% traffic |
+| Web HTTP/exclusion | HTTPS 200; `/api/impact-story` and `/api/deployment-registration` both 404; `ENABLE_ADOPTION_IMPACT=false` |
+| Web Dagre smoke | GPT-5.6 Sol/low zero-trust generation: 12 nodes, 5 groups, 12 edges; zero node, group, label, or label-node overlaps; Adoption launcher absent |
+| Web rollback | Prior `azure-diagram-builder-vnet--0000002` remains healthy/stopped; prior digest retained in ACR |
+| MCP production image | ACR run `ch6k`; tag `mcp-20260818-191355`; digest `sha256:2eb0296f97d37216bf7f81ffca9c61dfef43fb30c67f7990164df7598c76d79e`; runtime audit 0 vulnerabilities |
+| MCP revision | `azure-diagram-mcp--v1787080538`, healthy/running, target port 3030, 100% traffic |
+| MCP HTTP/auth | Health 200; unauthenticated initialize 401; existing bearer token reused without display/rotation |
+| MCP discovery/render | 13 tools, 3 resources, 3 prompts; live zero-trust SVG: 11 nodes, 15 edges, 12 labels, 0 detached labels, ratio 2.30, consolidated 4-target monitor label |
+| MCP live artifact | `DONOTTRACK/AQ-REFINEMENTS-18-aug-2026/zero-trust-network-live-dagre3-scout.svg` |
+| MCP rollback | Prior `azure-diagram-mcp--v1787076992` remains healthy/stopped; prior image `mcp-20260818-181452` retained |
+| Scope check | Legacy web remains `v1783874319`; analytics remains `20260813195443` |
+| Final RBAC | Web Cosmos role count 1; MCP identity `None`; no assignments added |
