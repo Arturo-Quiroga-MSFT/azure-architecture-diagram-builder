@@ -21,6 +21,7 @@
     "test:validation-freshness": "tsx scripts/test-validation-freshness.ts",
     "test:impact": "tsx scripts/test-impact-measurement.ts",
     "test:impact-records": "node scripts/test-impact-records.cjs",
+    "test:production-exclusions": "node scripts/test-production-exclusions.mjs",
     "test:service-names": "tsx scripts/test-service-name-normalization.ts",
     "test:pricing-mode": "tsx scripts/test-pricing-mode-calculator.ts",
     "eval:aadb:build": "node scripts/evaluations/build-aadb-seed.mjs",

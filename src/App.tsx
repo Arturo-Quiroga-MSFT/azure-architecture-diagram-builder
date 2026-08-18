@@ -95,10 +95,13 @@ import { classifyValidationTopics } from './services/validationConsensus';
 import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
-import ImpactModal from './components/ImpactModal';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
+
+const ImpactModal = __ENABLE_ADOPTION_IMPACT__
+  ? React.lazy(() => import('./components/ImpactModal'))
+  : null;
 
 const nodeTypes = {
   azureNode: AzureNode,
@@ -4376,14 +4379,16 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         architectureDescription={architecturePrompt || titleBlockData.architectureName}
       />
 
-      <button
-        className="impact-launcher"
-        onClick={() => setIsImpactModalOpen(true)}
-        title="Share adoption context or an outcome"
-      >
-        <BarChart3 size={18} />
-        <span>Adoption &amp; Impact</span>
-      </button>
+      {ImpactModal && (
+        <button
+          className="impact-launcher"
+          onClick={() => setIsImpactModalOpen(true)}
+          title="Share adoption context or an outcome"
+        >
+          <BarChart3 size={18} />
+          <span>Adoption &amp; Impact</span>
+        </button>
+      )}
       <button
         className={`feedback-fab${feedbackFabPulse ? ' pulse-once' : ''}`}
         onClick={() => setIsFeedbackModalOpen(true)}
@@ -4433,7 +4438,11 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           model: generatedWithModel?.name,
         }}
       />
-      <ImpactModal isOpen={isImpactModalOpen} onClose={() => setIsImpactModalOpen(false)} />
+      {ImpactModal && (
+        <React.Suspense fallback={null}>
+          <ImpactModal isOpen={isImpactModalOpen} onClose={() => setIsImpactModalOpen(false)} />
+        </React.Suspense>
+      )}
       {isDeliverChooserOpen && (
         <DeliverChooser
           isBuilding={isGeneratingGuide}

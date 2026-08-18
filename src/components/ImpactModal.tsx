@@ -35,7 +35,7 @@ import {
   type UsageScenario,
   type DeploymentMode,
 } from '../services/impactService';
-import { trackAdoptionProfileSaved, trackDeploymentRegistered, trackImpactStorySubmitted } from '../services/telemetryService';
+import { trackAdoptionProfileSaved, trackDeploymentRegistered, trackImpactStorySubmitted } from '../services/impactTelemetryService';
 import './ImpactModal.css';
 
 interface ImpactModalProps { isOpen: boolean; onClose: () => void; }

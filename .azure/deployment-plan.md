@@ -1,168 +1,133 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed
+> **Status:** Validated
 
-Generated: 2026-07-20
+Generated: 2026-08-18
 
 ## 1. Project Overview
 
-**Goal:** Build and prepare a private AADB Product Analytics web application that turns Application Insights telemetry and Cosmos DB feedback into actionable product-maintenance insights.
+**Goal:** Deploy the current Azure Architecture Diagram Builder web application to its existing VNet-integrated Azure Container App while excluding the unreviewed Adoption & Impact feature from the production client, telemetry enrichment path, and server API surface.
 
-**Path:** Add Components
+**Mode:** Modify an existing deployment; image-only update. No infrastructure provisioning or deletion.
 
-## 2. Requirements
+## 2. Approved Deployment Boundary
 
 | Attribute | Value |
 | --- | --- |
-| Classification | Production internal application |
-| Scale | Small |
-| Budget | Balanced |
-| Subscription | Existing AADB subscription |
-| Location | East US 2 |
-| Availability | `minReplicas: 1`, `maxReplicas: 3` |
+| Application | `azure-diagram-builder-vnet` |
+| Resource group | `azure-diagrams-rg` |
+| Subscription | `7a28b21e-0d3e-4435-a686-d92889d4ee96` (confirmation required) |
+| Location | East US 2 (confirmation required) |
+| Container Apps environment | `aca-env-azure-diagrams-vnet` |
+| Registry | `acrazurediagrams1767583743` |
+| Image | `azure-diagram-builder:vnet` |
+| Ingress target port | `80` |
+| Deployment method | Existing `scripts/vnet-migration/03-deploy-webapp.sh` |
+| Rollback boundary | Existing healthy ACA revision remains available; legacy non-VNet app is untouched |
 
-The application must use Microsoft Entra ID authentication, assignment-required access, managed identity, least-privilege Azure RBAC, HTTPS-only ingress, and server-side access to Azure Monitor Logs. Raw KQL, Azure credentials, prompts, architecture content, and access tokens must not be exposed to the browser.
+The standalone MCP Container App and the private `aadb-usage-analytics` Container App are out of scope and must not be changed.
 
-## 3. Components Detected
+## 3. Feature Exclusion
 
-| Component | Type | Technology | Path |
-| --- | --- | --- | --- |
-| Analytics dashboard | Frontend | React, TypeScript, Vite | `NEW-WEB-APP/src` |
-| Analytics API | API | Node.js, Express, TypeScript | `NEW-WEB-APP/server` |
-| Query registry | Data access | Azure Monitor Query Logs SDK, KQL | `NEW-WEB-APP/server/analytics` |
-| Product telemetry | Shared contract | Application Insights custom events | `src/services/telemetryService.ts` |
-| Existing analytics | Query reference | Azure Workbook JSON | `scripts/workbook-content.json` |
+Production must satisfy all of the following:
+
+- `VITE_ENABLE_ADOPTION_IMPACT=false` during the Vite build.
+- `ENABLE_ADOPTION_IMPACT=false` in the server image and ACA runtime environment.
+- No Adoption & Impact launcher or modal in the production client.
+- No impact profile/attribution enrichment in production telemetry.
+- `/api/impact-story` and `/api/deployment-registration` are not registered and return `404`.
+- Disabled image omits `impact-routes.js` and `impact-records.js`.
+- Local development retains the feature for CELA/LT review; explicit production enablement requires `VITE_ENABLE_ADOPTION_IMPACT=true` and `ENABLE_ADOPTION_IMPACT=true`.
 
 ## 4. Recipe Selection
 
-**Selected:** Script-driven Bicep and Azure CLI
+**Selected:** Existing script-driven ACR build plus image-only Azure Container Apps update.
 
-**Rationale:** The analytics application must not use azd or project templates. Explicit shell scripts will build the image with ACR Tasks, provision resources with resource-group-scoped Bicep, update the Container App, and verify health. The existing root `azure.yaml` remains unchanged. The application reuses the existing Container Apps environment, ACR, and source Log Analytics workspace.
+**Rationale:** The app and infrastructure already exist. Full provisioning or `azd up` would expand blast radius and is unnecessary. The existing script builds remotely in ACR, forces a unique ACA revision suffix, preserves the existing stable tag, and updates only the primary VNet-integrated app.
 
-## 5. Architecture
+## 5. Preparation Checklist
 
-**Stack:** Single Azure Container App hosting a static React dashboard and Node.js API.
+- [x] Confirm target application from repository deployment memory and script.
+- [x] Add compile-time client feature gate, default off for production.
+- [x] Isolate impact telemetry from core telemetry.
+- [x] Add runtime server route gate.
+- [x] Force both deployment flags false in the VNet deployment script.
+- [x] Add repeatable production exclusion contract.
+- [x] Production TypeScript/Vite build succeeds.
+- [x] Disabled client artifact contains none of the prohibited markers.
+- [x] Disabled local server returns `404` for both impact POST routes.
+- [x] Enabled test state remains reversible.
+- [x] Confirm Azure subscription and location with user.
+- [x] Confirm plan approval with user.
+- [x] Set status to `Ready for Validation` after approval.
 
-| Component | Azure Service | SKU |
+## 6. Validation Plan
+
+Before deployment:
+
+- [x] All validation checks pass
+	- [x] Core validation: Azure CLI installed/authenticated, exact subscription selected, live target inventory captured, deployment script syntax passes. Bicep build/ARM validate/what-if are not applicable because this is an image-only update with no IaC execution.
+	- [x] Container build: ACR remote build succeeds with both Adoption & Impact flags forced false; local Docker is unavailable.
+	- [x] Azure Policy validation: effective assignments at `azure-diagrams-rg` are reviewed for impact on the image-only ACA revision update.
+
+1. Confirm Azure authentication and exact subscription context.
+2. Query the live ACA, environment, registry, current revision, image digest, traffic, ingress target port, and health.
+3. Review effective Azure Policy at the target scope.
+4. Validate deployment script syntax and exclusion flags.
+5. Run typecheck, production build, production exclusion contract, focused regression tests, and existing impact contracts.
+6. Run ACR remote image build as the container-build validation because local Docker is unavailable.
+7. Confirm the new image build succeeds before changing the ACA revision.
+8. Record validation proof and mark status `Validated` only through the azure-validate workflow.
+
+## 7. Validation Proof
+
+Validated at `2026-08-18T16:16:37Z` against subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`.
+
+| Check | Command / subject | Result |
 | --- | --- | --- |
-| Analytics web/API container | Azure Container Apps | Consumption, 0.5 vCPU / 1 GiB, min 1, max 3 |
-| Container image | Existing Azure Container Registry | Existing Basic registry |
-| Runtime identity | User-assigned managed identity | Dedicated analytics identity |
-| Source telemetry | Existing workspace-based Application Insights | Existing |
-| Query plane | Existing Log Analytics workspace | Existing PerGB2018 |
-| Analytics observability | Application Insights | Workspace-based, existing workspace |
-| Authentication | Container Apps built-in auth with Microsoft Entra ID | Single tenant, assignment required |
+| Azure context | `az account show` | `ARTURO-MngEnvMCAP094150`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, user `admin@MngEnvMCAP094150.onmicrosoft.com` |
+| Resource inventory | Azure Container Apps MCP and ACR MCP scoped explicitly to the subscription/RG | Target `azure-diagram-builder-vnet` is `Succeeded` in East US 2/VNet environment; MCP, legacy web, and analytics apps are separate; ACR `acrazurediagrams1767583743` is present |
+| Pre-deployment ACA | `az containerapp show` + revision list | Revision `azure-diagram-builder-vnet--v20260815122621`, healthy/running, target port 80, 100% traffic, image tag `:vnet` |
+| Pre-deployment HTTPS | `GET https://azure-diagram-builder-vnet.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io/` | `200` |
+| Pre-deployment excluded routes | POST both impact endpoints | Both returned `404`; post-deploy requirement is that they remain `404` |
+| TypeScript and Vite | `npx tsc --noEmit -p tsconfig.json`; `npm run build` | Pass; only existing Vite large-chunk warning |
+| Production exclusion contract | `npm run test:production-exclusions` | Pass; no launcher text, impact API paths, impact storage keys, or impact event names in `dist/` |
+| Server gate | Isolated token server with `ENABLE_ADOPTION_IMPACT=false/true` | Disabled: both routes `404`; enabled: both handlers reached (`503` without test Cosmos config), proving reversible registration |
+| Impact data contracts | `npm run test:impact`; `npm run test:impact-records` | Pass |
+| Functional regressions | grouped layout, edge labels, layout preservation, service names, pricing mode, ARM import, AADB v2 contract | 7/7 pass |
+| Changed-file lint | ESLint on changed modules; `git diff --check` | Pass. Whole-file `App.tsx` lint still reports pre-existing `_ungroupNode` from commit `d70f4765` (2026-01-30); unrelated to this deployment change. |
+| Effective policy | Azure Policy MCP at `azure-diagrams-rg` scope | 8 enforced assignments reviewed: management-group deploy/modify, deny, audit, MFA write/delete, and subscription Defender assignments; no scope expansion is required for the image-only revision update |
+| ACR validation image | `BUILD_ONLY=true TAG=validation-no-impact-fixed-20260818123225 ./scripts/vnet-migration/03-deploy-webapp.sh` | ACR run `ch66` succeeded; digest `sha256:92d644007c53e3a2f9752e29ca88e727d3ad1e20be92dce9da13b959c30e6147` |
+| Image filesystem inspection | ACR run `ch67` against the exact validation image | `IMAGE_EXCLUSION_PASS`: impact route/record files absent and no prohibited client markers |
+| Server dependency audit | `npm audit --omit=dev` after non-breaking lock update | 0 vulnerabilities. An intermediate ACR build (`ch65`) failed because npm rewrote resolved URLs to the managed feed; URLs were normalized to public npm coordinates, integrity hashes retained, and `npm ci` plus ACR build then passed. |
+| Validation-only mutation check | `az containerapp show` after ACR build | Live ACA remained on revision `v20260815122621`, 100% traffic; no ACA mutation occurred during validation |
 
-The API uses `DefaultAzureCredential` and `LogsQueryClient`. Its managed identity receives Log Analytics Reader on the source workspace. KQL is stored in a named, typed server-side query registry. API routes validate filters, cap time ranges and rows, batch compatible queries, and cache aggregates briefly. Optional AI recommendations consume only pre-aggregated analytics summaries and are disabled unless an Azure OpenAI endpoint and deployment are configured.
+## 8. Deployment Plan
 
-## 6. Provisioning Limit Checklist
+1. Execute the existing VNet image-only deployment script.
+2. Confirm a new ACA revision is created and becomes ready/running.
+3. Confirm 100% traffic targets the intended latest revision.
+4. Confirm image digest differs from the prior deployed digest.
+5. Verify the public HTTPS URL returns `200`.
+6. Verify the Adoption & Impact launcher is absent in the browser.
+7. Verify both excluded POST endpoints return `404`.
+8. Verify representative diagram generation still works.
+9. Verify no changes occurred to the MCP or analytics Container Apps.
 
-This change reuses the existing Container Apps managed environment, ACR, Log Analytics workspace, and network. It creates one Container App, one user-assigned identity, one Application Insights component, and three role assignments. These resource types do not consume regional compute-family quota. The existing Container Apps environment supports additional apps, and the requested steady-state replica count is one.
+## 9. Rollback
 
-| Resource Type | Number to Deploy | Total After Deployment | Limit/Quota | Notes |
-| --- | --- | --- | --- | --- |
-| `Microsoft.App/containerApps` | 1 | Existing count + 1 | Environment/platform limit, not vCPU family quota | Reuses existing East US 2 environment; 1 minimum replica |
-| `Microsoft.ManagedIdentity/userAssignedIdentities` | 1 | Existing count + 1 | Subscription resource limit | Dedicated least-privilege identity |
-| `Microsoft.Insights/components` | 1 | Existing count + 1 | Subscription resource limit | Uses existing workspace |
-| `Microsoft.Authorization/roleAssignments` | 3 | Existing count + 3 | 4,000 per subscription | ACR pull, Log Analytics Reader, optional Cosmos read |
+If verification fails, route traffic back to the previously healthy revision or reactivate it. Do not delete prior revisions during this deployment.
 
-**Status:** All planned resources are within documented platform limits; no scarce SKU or regional vCPU quota is requested. Live subscription preflight remains required before deployment.
+## 10. Approval
 
-## 7. Execution Checklist
+Approved by user on 2026-08-18 for subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, East US 2, with the image-only deployment boundary described above.
 
-### Phase 1: Planning
+## 11. Role Assignment Verification
 
-- [x] Analyze workspace
-- [x] Gather requirements
-- [x] Confirm existing deployment location from repository deployment configuration
-- [x] Prepare resource inventory
-- [x] Scan codebase and existing workbook
-- [x] Select recipe
-- [x] Plan architecture
-- [x] User approved the architecture and requested full implementation
-
-### Phase 2: Execution
-
-- [x] Generate application scaffold and dependencies
-- [x] Implement telemetry contract and typed query registry
-- [x] Implement secured analytics API, caching, and health endpoints
-- [x] Implement dashboard, filters, drilldowns, and recommendation views
-- [x] Add telemetry schema and API tests
-- [x] Generate Docker and Bicep deployment artifacts
-- [x] Add script-driven provision, deploy, and verification commands
-- [x] Run local build, lint, tests, and container validation
-- [x] Set status to `Ready for Validation`
-
-### Phase 3: Validation
-
-- [x] Invoke Azure validation workflow
-- [x] Validate Bicep and deployment prerequisites
-- [x] Record validation proof
-- [x] All validation checks pass for the August analytics revision
-  - [x] Core validation: Azure CLI authentication, Bicep build, ARM validation, and what-if
-  - [x] Production container image build
-  - [x] Azure Policy validation
-  - [x] Application tests, lint, build, and live KQL compatibility
-
-### Phase 4: Deployment
-
-- [x] Confirm live Azure subscription and Entra application parameters
-- [x] Deploy with Azure deployment workflow
-- [x] Verify authenticated endpoint and telemetry queries
-- [x] Set status to `Deployed`
-
-## 8. Validation Proof
-
-| Check | Command Run | Result | Timestamp |
-| --- | --- | --- | --- |
-| Lint | `npm run lint` | Pass, zero warnings | 2026-07-20 |
-| TypeScript and Vite | `npm run build` | Pass | 2026-07-20 |
-| API contracts | `npm test` | Pass, 4 tests | 2026-07-20 |
-| Shell syntax | `bash -n scripts/*.sh` | Pass | 2026-07-20 |
-| Bicep compilation | `az bicep build --file infra/main.bicep` | Pass | 2026-07-20 |
-| Production image | `docker build -t aadb-product-analytics:local .` | Pass | 2026-07-20 |
-| Runtime health | `GET /api/health` in production container | Pass, healthy | 2026-07-20 |
-| Browser workflow | Playwright navigation and responsive checks | Pass, 8 views and named controls | 2026-07-20 |
-| Azure context | `az account show` and read-only resource resolution | Pass, ARTURO-MngEnvMCAP094150 / East US 2 | 2026-07-20 |
-| ARM group validation | `az deployment group validate -g azure-diagrams-rg -f infra/main.bicep ...` | Pass, provisioning state Succeeded | 2026-07-20 |
-| ARM what-if | `az deployment group what-if -g azure-diagrams-rg -f infra/main.bicep ...` | Pass, 6 creates / 15 ignores / 0 modifies / 0 deletes | 2026-07-20 |
-| Production deployment | `scripts/01-provision.sh` and `scripts/02-deploy.sh` | Pass, authenticated Container App deployed | 2026-07-20 |
-| Authentication callback | Entra browser login with ID token issuance enabled | Pass | 2026-07-20 |
-| AADB telemetry source | In-container `GET /api/analytics/overview?range=90d` | Pass, 1,152 users / 1,601 sessions / 10,892 events | 2026-07-20 |
-| Decision intelligence | In-container `GET /api/analytics/insights?range=90d` | Pass, funnel/models/findings/reliability/cohorts/actions populated | 2026-07-20 |
-| Cosmos feedback | Authenticated Feedback view using `diagrams-db/feedback` | Pass | 2026-07-20 |
-| August app checks | `npm test && npm run lint && npm run build` | Pass, 6 tests; zero lint warnings; production build succeeded | 2026-08-13 |
-| August live KQL | Consolidated 7-day `Guided_Journey` and model-intelligence queries via Azure Monitor | Pass; 748 journey interactions / 148 anonymous browser IDs / 204 sessions; model usage and validation quality populated | 2026-08-13 |
-| August core Azure validation | `validate-deployment.sh --scope group ...` | Pass; Azure CLI auth, Bicep build, ARM validate, and what-if succeeded. Full Bicep what-if showed 3 creates / 18 modifies / 9 deletes, so this code-only revision must use image-only deployment rather than reprovisioning. | 2026-08-13 |
-| August policy review | Effective assignments at `azure-diagrams-rg` scope | Pass; 8 enforced inherited/subscription assignments reviewed, including deploy/modify, deny, audit, and MFA-on-write | 2026-08-13 |
-| August production image | `docker build -t aadb-product-analytics:validation NEW-WEB-APP` | Pass | 2026-08-13 |
-| August container runtime | Local production container `/api/health` and `/api/analytics/insights?range=7d` | Pass; healthy and expanded Journey/Models contract returned | 2026-08-13 |
-| August production deployment | `NEW-WEB-APP/scripts/02-deploy.sh` | Pass; ACR image `20260813195443`, digest `sha256:1c1ed935f04102f0668ae7ec9b948d02893966aec4c8a44e0f90f1496f8ac90f` | 2026-08-13 |
-| August revision health | ACA revision/image/traffic/auth checks | Pass; revision `aadb-usage-analytics--20260813195443` ready and running, 100% latest-revision traffic, external unauthenticated health returned 401 | 2026-08-13 |
-| August production data path | In-container `GET /api/analytics/insights?range=7d` on revision `20260813195443` | Pass; source `azure-monitor`, Journey and model-quality data populated, release rates corrected to 0.91 exports/session and 30.3% validation adoption | 2026-08-13 |
-
-## Role Assignment Verification
-
-- **Status:** Verified for the August analytics revision
-- **Identity checked:** `id-aadb-usage-analytics`
-- **Roles confirmed in code:** `AcrPull` scoped to `acrazurediagrams1767583743`; `Log Analytics Reader` scoped to the source telemetry workspace; Cosmos DB Built-in Data Reader scoped to the feedback account
-- **Code operations checked:** pull the analytics image, query aggregate AADB telemetry, and read durable feedback
-- **Issues:** None. The new Journey and model-quality queries use the existing Log Analytics read path and require no additional permissions.
-
-## 9. Files to Generate
-
-| File | Purpose | Status |
-| --- | --- | --- |
-| `.azure/deployment-plan.md` | Deployment source of truth | Complete |
-| `NEW-WEB-APP/package.json` | Application scripts and dependencies | Complete |
-| `NEW-WEB-APP/src/` | Product analytics dashboard | Complete |
-| `NEW-WEB-APP/server/` | Analytics API and KQL registry | Complete |
-| `NEW-WEB-APP/Dockerfile` | Production image | Complete |
-| `NEW-WEB-APP/infra/` | Resource-group-scoped Bicep | Complete |
-| `NEW-WEB-APP/scripts/` | Azure CLI setup, deployment, and verification | Complete |
-
-## 10. Next Steps
-
-1. Use the deployed application at `https://aadb-usage-analytics.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io`.
-2. Grant additional maintainers with `scripts/04-grant-access.sh <user-upn>`.
-3. Deploy future application revisions with `scripts/02-deploy.sh`.
+- **Status:** Verified by static review.
+- **Identity:** System-assigned managed identity of `azure-diagram-builder-vnet`.
+- **Cognitive Services Speech User:** Scoped to the specific `aq-speech-008` Speech account. Matches Speech/AAD token operations in `server/token-server.js`.
+- **Cosmos DB Built-in Data Contributor:** Scoped to the specific `aqcosmosdb007` account. Matches feedback read/write operations through the Cosmos data-plane SDK.
+- **Azure OpenAI:** Uses the existing runtime key fallback; no new role assignment is required by this deployment.
+- **Azure Resource Graph import:** Disabled by default on shared/public deployments; no management-plane Reader role is introduced by this update.
+- **Issues:** None. No subscription- or resource-group-wide role is created.
