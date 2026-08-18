@@ -21,9 +21,8 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
+    "@dagrejs/dagre": "3.1.1",
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "@types/dagre": "^0.7.54",
-    "dagre": "^0.8.5",
     "zod": "^3.24.0"
   },
   "devDependencies": {

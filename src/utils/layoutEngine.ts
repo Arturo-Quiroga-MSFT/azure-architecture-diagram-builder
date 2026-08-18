@@ -6,7 +6,7 @@
  * Replaces LLM-based positioning with deterministic algorithms
  */
 
-import dagre from 'dagre';
+import dagre from '@dagrejs/dagre';
 
 export interface LayoutOptions {
   direction: 'LR' | 'TB' | 'RL' | 'BT'; // Left-Right, Top-Bottom, etc.
