@@ -9,7 +9,7 @@
  * HTML rendering.
  */
 
-import dagre from 'dagre';
+import dagre from '@dagrejs/dagre';
 import { resolveServiceName, SERVICE_CATALOG } from './serviceCatalog.js';
 
 // ── Types ──────────────────────────────────────────────────────────────
