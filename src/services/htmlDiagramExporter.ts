@@ -10,7 +10,7 @@
  * the render_diagram MCP tool.
  */
 
-import dagre from 'dagre';
+import dagre from '@dagrejs/dagre';
 import type { Node, Edge } from 'reactflow';
 
 // ── Types ──────────────────────────────────────────────────────────────
