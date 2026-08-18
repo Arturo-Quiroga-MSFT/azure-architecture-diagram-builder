@@ -587,6 +587,42 @@ function edgeLabelAnchor(route: Pt[]): Pt {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
+function routeIntersectsRect(route: Pt[], rect: LRect, pad = 0): boolean {
+  for (let index = 0; index < route.length - 1; index++) {
+    const from = route[index];
+    const to = route[index + 1];
+    const segment = {
+      x: Math.min(from.x, to.x),
+      y: Math.min(from.y, to.y),
+      w: Math.abs(from.x - to.x),
+      h: Math.abs(from.y - to.y),
+    };
+    if (rectsOverlap(segment, rect, pad)) return true;
+  }
+  return false;
+}
+
+function routeLabelCandidates(route: Pt[], anchor: Pt): Pt[] {
+  const points: Pt[] = [anchor];
+  for (let index = 0; index < route.length - 1; index++) {
+    const from = route[index];
+    const to = route[index + 1];
+    const length = Math.hypot(to.x - from.x, to.y - from.y);
+    const steps = Math.max(1, Math.ceil(length / 32));
+    for (let step = 1; step < steps; step++) {
+      const ratio = step / steps;
+      points.push({
+        x: from.x + (to.x - from.x) * ratio,
+        y: from.y + (to.y - from.y) * ratio,
+      });
+    }
+  }
+  const unique = new Map(points.map(point => [`${point.x.toFixed(2)}\u0000${point.y.toFixed(2)}`, point]));
+  return [...unique.values()].sort(
+    (left, right) => Math.hypot(left.x - anchor.x, left.y - anchor.y) - Math.hypot(right.x - anchor.x, right.y - anchor.y),
+  );
+}
+
 // Render only the edge path + arrowhead. Labels are rendered separately (and
 // last) so that no later edge line paints over an earlier edge's label chip.
 interface EdgeVisualStyle {
@@ -748,7 +784,14 @@ function edgeLabelBox(edge: PositionedEdge, direction: 'TB' | 'LR', metrics: Ren
 
 // Render an edge label as an opaque, up-to-two-line chip centered at (cx, cy).
 // Drawn after all paths and nodes so the text is never overpainted.
-function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: Theme, metrics: RenderMetrics): string {
+function renderEdgeLabelChip(
+  box: EdgeLabelBox,
+  cx: number,
+  cy: number,
+  theme: Theme,
+  metrics: RenderMetrics,
+  placement: 'route' | 'detached',
+): string {
   const style = EDGE_STYLES[box.edge.type] ?? EDGE_STYLES.sync;
   const boxX = cx - box.boxW / 2;
   const boxY = cy - box.boxH / 2;
@@ -758,7 +801,7 @@ function renderEdgeLabelChip(box: EdgeLabelBox, cx: number, cy: number, theme: T
     .join('');
 
   return `
-    <g class="edge-label">
+    <g class="edge-label" data-from="${escapeXml(box.edge.from)}" data-to="${escapeXml(box.edge.to)}" data-placement="${placement}">
       <rect x="${boxX}" y="${boxY}" width="${box.boxW}" height="${box.boxH}" rx="4"
             fill="${theme.edgeLabelFill}" stroke="${style.color}" stroke-width="0.75" />
       <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
@@ -782,24 +825,70 @@ function placeEdgeLabels(layout: LayoutResult, direction: 'TB' | 'LR', theme: Th
     .flatMap(dy => dxs.map(dx => ({ dx, dy })))
     .sort((a, b) => (Math.abs(a.dx) + Math.abs(a.dy)) - (Math.abs(b.dx) + Math.abs(b.dy)));
 
+  const labelClusters = new Map<string, PositionedEdge[]>();
+  for (const edge of layout.edges) {
+    if (!includedEdges.has(edge) || !edge.label.trim()) continue;
+    const key = `${edge.from}\u0000${edge.label.trim().toLowerCase().replace(/\s+/g, ' ')}`;
+    const cluster = labelClusters.get(key);
+    if (cluster) cluster.push(edge);
+    else labelClusters.set(key, [edge]);
+  }
+  const representativeLabels = new Map<PositionedEdge, string>();
+  for (const cluster of labelClusters.values()) {
+    const representative = cluster[0];
+    representativeLabels.set(
+      representative,
+      cluster.length > 1 ? `${representative.label} · ${cluster.length} targets` : representative.label,
+    );
+  }
+
+  const edgeRoutes = new Map(
+    layout.edges.map(edge => [edge, orthogonalRoute(edge, direction, routeObstacles, canvas)]),
+  );
+
   const placed: LRect[] = [];
   return layout.edges
     .map(edge => {
       if (!includedEdges.has(edge)) return '';
-      const box = edgeLabelBox(edge, direction, metrics, routeObstacles, canvas);
+      const displayLabel = representativeLabels.get(edge);
+      if (!displayLabel) return '';
+      const box = edgeLabelBox({ ...edge, label: displayLabel }, direction, metrics, routeObstacles, canvas);
       if (!box) return '';
-      let chosen = candidates[0];
-      for (const off of candidates) {
-        const cx = box.anchor.x + off.dx, cy = box.anchor.y + off.dy;
-        const r: LRect = { x: cx - box.boxW / 2, y: cy - box.boxH / 2, w: box.boxW, h: box.boxH };
-        const hit =
-          obstacles.some(o => rectsOverlap(r, o, 2)) ||
-          placed.some(o => rectsOverlap(r, o, 4));
-        if (!hit) { chosen = off; break; }
+      const ownRoute = edgeRoutes.get(edge)!;
+      const onRoute = routeLabelCandidates(ownRoute, box.anchor);
+      const detached = candidates.map(offset => ({
+        x: box.anchor.x + offset.dx,
+        y: box.anchor.y + offset.dy,
+      }));
+      let chosen = box.anchor;
+      let placement: 'route' | 'detached' = 'route';
+      let found = false;
+      for (const phase of [
+        { centers: onRoute, avoidForeignRoutes: true },
+        { centers: onRoute, avoidForeignRoutes: false },
+        { centers: detached, avoidForeignRoutes: true },
+        { centers: detached, avoidForeignRoutes: false },
+      ]) {
+        for (const center of phase.centers) {
+          const r: LRect = { x: center.x - box.boxW / 2, y: center.y - box.boxH / 2, w: box.boxW, h: box.boxH };
+          const hitsBox =
+            obstacles.some(o => rectsOverlap(r, o, 2)) ||
+            placed.some(o => rectsOverlap(r, o, 4));
+          const hitsForeignRoute = phase.avoidForeignRoutes && layout.edges.some(
+            other => other !== edge && routeIntersectsRect(edgeRoutes.get(other)!, r, 2),
+          );
+          if (!hitsBox && !hitsForeignRoute) {
+            chosen = center;
+            placement = phase.centers === onRoute ? 'route' : 'detached';
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
       }
-      const cx = box.anchor.x + chosen.dx, cy = box.anchor.y + chosen.dy;
+      const cx = chosen.x, cy = chosen.y;
       placed.push({ x: cx - box.boxW / 2, y: cy - box.boxH / 2, w: box.boxW, h: box.boxH });
-      return renderEdgeLabelChip(box, cx, cy, theme, metrics);
+      return renderEdgeLabelChip(box, cx, cy, theme, metrics, placement);
     })
     .join('\n');
 }
