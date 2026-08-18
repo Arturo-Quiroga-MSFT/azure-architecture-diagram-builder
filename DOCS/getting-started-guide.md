@@ -179,16 +179,22 @@ A usage-based pricing indicator (⚡) appears on consumption services like Azure
 
 ### Change the Pricing Region
 
-Use the **Region Selector** dropdown in the toolbar to switch between eight Azure regions:
+Use the **Region Selector** dropdown in the toolbar to switch between 14 Azure regions:
 
 - 🇺🇸 East US 2 (Virginia)
+- 🇺🇸 Central US (Iowa)
+- 🇺🇸 West US 2 (Washington)
 - 🇨🇦 Canada Central (Toronto)
 - 🇧🇷 Brazil South (São Paulo)
 - 🇲🇽 Mexico Central (Querétaro)
 - 🇳🇱 West Europe (Netherlands)
+- 🇮🇪 North Europe (Ireland)
+- 🇬🇧 UK South (London)
 - 🇸🇪 Sweden Central (Gävle)
 - 🇦🇺 Australia East (Sydney)
 - 🇸🇬 Southeast Asia (Singapore)
+- 🇯🇵 Japan East (Tokyo)
+- 🇮🇳 Central India (Pune)
 
 Changing the region recalculates all pricing in real time. The total estimated monthly cost is shown in the toolbar as a 💰 badge.
 

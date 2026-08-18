@@ -409,7 +409,7 @@ stageSlide(8, 'Layout — where every pixel actually comes from',
 stageSlide(9, 'Costing — grounded in Azure Retail Prices, per region',
   [
     { text: 'Each normalized service maps to a pricing meter from Azure Retail Prices snapshots.', options: { bullet: true, breakLine: true } },
-    { text: 'Pricing data ships per region (8 regions) as local JSON — fast, offline, deterministic.', options: { bullet: true, breakLine: true } },
+    { text: 'Pricing data ships per region (14 regions) as local JSON — fast, offline, deterministic.', options: { bullet: true, breakLine: true } },
     { text: 'calculateMonthlyCost sums PAYG estimates; 1-year Reserved is shown side-by-side.', options: { bullet: true, breakLine: true } },
     { text: 'Microsoft Fabric bills at the shared F-SKU capacity; OneLake storage is separate.', options: { bullet: true, breakLine: true } },
     { text: 'Cost updates live as you change region or edit the diagram.', options: { bullet: true } },
@@ -422,7 +422,7 @@ stageSlide(9, 'Costing — grounded in Azure Retail Prices, per region',
     { text: '  "unitOfMeasure": "1 Hour",', options: { color: MUTE, breakLine: true } },
     { text: '  "armRegionName": "eastus2" }', options: { color: MUTE, breakLine: true } },
     { text: '', options: { breakLine: true } },
-    { text: '8 regions · PAYG + 1-yr reserved', options: { color: GOLD } },
+    { text: '14 regions · PAYG + 1-yr reserved', options: { color: GOLD } },
   ], { page: 13, codeColor: DET });
 
 // ═══════════════════════════════════════════════════════════════════════════
