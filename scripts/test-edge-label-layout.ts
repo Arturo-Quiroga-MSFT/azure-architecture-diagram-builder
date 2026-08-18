@@ -58,4 +58,25 @@ const nearHorizontal = deconflictEdgeLabels([
 assert.notEqual((nearHorizontal[0].data as any).labelOffsetX, 0, 'a tiny midpoint jog should move labels along the horizontal path');
 assert.ok(Math.abs((nearHorizontal[0].data as any).labelOffsetY) <= 90, 'a tiny midpoint jog should keep labels within leader-line range');
 
+// A request and its response resolve to the same handles, so without a path
+// offset they render as one line carrying two labels.
+const sharedPair = deconflictEdgeLabels([
+  { id: 'left', type: 'azureNode', position: { x: 0, y: 600 }, data: {} },
+  { id: 'right', type: 'azureNode', position: { x: 800, y: 600 }, data: {} },
+], [
+  { id: 'forward', source: 'left', target: 'right', label: 'Persist chat history', data: { pathStyle: 'orthogonal' } },
+  { id: 'reverse', source: 'right', target: 'left', label: 'Retrieve prior turns', data: { pathStyle: 'orthogonal' } },
+]);
+
+const forwardOffset = (sharedPair[0].data as any).pathOffset;
+const reverseOffset = (sharedPair[1].data as any).pathOffset;
+assert.notEqual(forwardOffset, reverseOffset, 'anti-parallel edges must not share a path');
+assert.equal(forwardOffset + reverseOffset, 0, 'a pair should straddle the original path evenly');
+
+const soloOffset = deconflictEdgeLabels([
+  { id: 'a', type: 'azureNode', position: { x: 0, y: 0 }, data: {} },
+  { id: 'b', type: 'azureNode', position: { x: 800, y: 0 }, data: {} },
+], [{ id: 'only', source: 'a', target: 'b', label: 'Single link', data: { pathStyle: 'orthogonal' } }]);
+assert.equal((soloOffset[0].data as any).pathOffset, 0, 'an unpaired edge should keep its direct path');
+
 console.log('Edge-label layout tests passed.');

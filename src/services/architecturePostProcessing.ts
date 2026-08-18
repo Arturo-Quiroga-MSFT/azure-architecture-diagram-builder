@@ -128,6 +128,33 @@ export function postProcessArchitecture(
     return true;
   });
 
+  // Parallel connections resolve to the same two handles, so they stack into
+  // overlapping lines whose labels collide. The full text stays on the chip's
+  // tooltip even when the merged label clamps.
+  let mergedEdges = 0;
+  const byPair = new Map<string, any>();
+  architecture.connections.forEach((connection: any) => {
+    const key = [String(connection.from), String(connection.to)].sort().join('\u0000');
+    const existing = byPair.get(key);
+    if (!existing) {
+      byPair.set(key, connection);
+      return;
+    }
+    const labels = new Set(
+      [...String(existing.label ?? '').split(' · '), String(connection.label ?? '')]
+        .map((value: string) => value.trim())
+        .filter(Boolean),
+    );
+    existing.label = [...labels].join(' · ');
+    mergedEdges++;
+  });
+  if (mergedEdges > 0) {
+    logger.warn(
+      `Merged ${mergedEdges} duplicate connection(s) between service pairs that were already linked`,
+    );
+    architecture.connections = [...byPair.values()];
+  }
+
   const connectedIds = new Set<string>();
   architecture.connections.forEach((connection: any) => {
     connectedIds.add(String(connection.from));
@@ -147,6 +174,7 @@ export function postProcessArchitecture(
   architecture.integrity = {
     repairedEdges,
     droppedEdges,
+    mergedEdges,
     orphanCount: orphans.length,
     orphanServices: orphans.map((service: any) => String(service.name || service.id)),
   };
