@@ -1,153 +1,119 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed
+> **Status:** Validated
 
 Generated: 2026-08-18
 
 ## 1. Project Overview
 
-**Goal:** Deploy the current Azure Architecture Diagram Builder web application to its existing VNet-integrated Azure Container App while excluding the unreviewed Adoption & Impact feature from the production client, telemetry enrichment path, and server API surface.
+**Goal:** Deploy the Scout MCP diagram-quality improvements from commit `42e0b75` to the existing standalone Azure Architecture Diagram Builder MCP Container App for Microsoft Scout testing.
 
-**Mode:** Modify an existing deployment; image-only update. No infrastructure provisioning or deletion.
+**Mode:** Image-only update to an existing standalone MCP deployment. No infrastructure provisioning, deletion, web-app deployment, analytics deployment, or token rotation.
 
-## 2. Approved Deployment Boundary
+## 2. Deployment Boundary
 
 | Attribute | Value |
 | --- | --- |
-| Application | `azure-diagram-builder-vnet` |
+| Application | `azure-diagram-mcp` |
 | Resource group | `azure-diagrams-rg` |
 | Subscription | `7a28b21e-0d3e-4435-a686-d92889d4ee96` (confirmation required) |
 | Location | East US 2 (confirmation required) |
-| Container Apps environment | `aca-env-azure-diagrams-vnet` |
+| Container Apps environment | Existing environment resolved by deployment script |
 | Registry | `acrazurediagrams1767583743` |
-| Image | `azure-diagram-builder:vnet` |
-| Ingress target port | `80` |
-| Deployment method | Existing `scripts/vnet-migration/03-deploy-webapp.sh` |
-| Rollback boundary | Existing healthy ACA revision remains available; legacy non-VNet app is untouched |
+| Image repository | `azure-diagram-mcp` |
+| Ingress target port | `3030` |
+| MCP endpoint | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/mcp` |
+| Health endpoint | `https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/healthz` |
+| Deployment method | Existing `scripts/deploy-mcp.sh` |
+| Authentication | Reuse existing bearer token from gitignored `.env.mcp`; do not display or rotate it |
+| Rollback | Preserve prior healthy revision `azure-diagram-mcp--v1786890197` and prior image tag `mcp-20260816-142135` |
 
-The standalone MCP Container App and the private `aadb-usage-analytics` Container App are out of scope and must not be changed.
+Out of scope: `azure-diagram-builder-vnet`, legacy `azure-diagram-builder`, `aadb-usage-analytics`, all infrastructure, RBAC, and the MCP bearer token value.
 
-## 3. Feature Exclusion
+## 3. Change Being Deployed
 
-Production must satisfy all of the following:
-
-- `VITE_ENABLE_ADOPTION_IMPACT=false` during the Vite build.
-- `ENABLE_ADOPTION_IMPACT=false` in the server image and ACA runtime environment.
-- No Adoption & Impact launcher or modal in the production client.
-- No impact profile/attribution enrichment in production telemetry.
-- `/api/impact-story` and `/api/deployment-registration` are not registered and return `404`.
-- Disabled image omits `impact-routes.js` and `impact-records.js`.
-- Local development retains the feature for CELA/LT review; explicit production enablement requires `VITE_ENABLE_ADOPTION_IMPACT=true` and `ENABLE_ADOPTION_IMPACT=true`.
+- Reserve label-sized corridors for technical LR grouped diagrams.
+- Reflow grouped technical diagrams into DMZ/Application/Data primary row plus Identity/Security supporting row.
+- Consolidate repeated same-source labels while preserving all edges.
+- Keep labels on sampled points of their owning orthogonal path.
+- Add edge ownership/placement metadata to SVG labels.
+- Add the reported zero-trust Scout graph as a permanent regression fixture.
 
 ## 4. Recipe Selection
 
 **Selected:** Existing script-driven ACR build plus image-only Azure Container Apps update.
 
-**Rationale:** The app and infrastructure already exist. Full provisioning or `azd up` would expand blast radius and is unnecessary. The existing script builds remotely in ACR, forces a unique ACA revision suffix, preserves the existing stable tag, and updates only the primary VNet-integrated app.
+**Rationale:** The standalone MCP app already exists and is healthy. `scripts/deploy-mcp.sh` builds a unique image tag, updates only `azure-diagram-mcp`, preserves prior revisions, reuses the existing bearer token, and forces a new ACA revision. Full provisioning or `azd up` would expand scope unnecessarily.
 
 ## 5. Preparation Checklist
 
-- [x] Confirm target application from repository deployment memory and script.
-- [x] Add compile-time client feature gate, default off for production.
-- [x] Isolate impact telemetry from core telemetry.
-- [x] Add runtime server route gate.
-- [x] Force both deployment flags false in the VNet deployment script.
-- [x] Add repeatable production exclusion contract.
-- [x] Production TypeScript/Vite build succeeds.
-- [x] Disabled client artifact contains none of the prohibited markers.
-- [x] Disabled local server returns `404` for both impact POST routes.
-- [x] Enabled test state remains reversible.
-- [x] Confirm Azure subscription and location with user.
-- [x] Confirm plan approval with user.
-- [x] Set status to `Ready for Validation` after approval.
+- [x] Current branch is `feature/scout-mcp-diagram-quality` at commit `42e0b75`.
+- [x] Worktree was clean before deployment-plan preparation.
+- [x] `.env.mcp` exists with mode `0600`.
+- [x] Local Docker is unavailable; use ACR build-only validation.
+- [x] Exact zero-trust regression passes.
+- [x] Render-profile regression passes.
+- [x] Service-catalog and all 13 MCP tool contracts pass.
+- [x] TypeScript diagnostics and diff checks pass.
+- [x] Confirm subscription/location with user.
+- [x] Confirm image-only deployment approval.
+- [ ] Complete Azure validation workflow.
 
 ## 6. Validation Plan
 
-Before deployment:
-
 - [x] All validation checks pass
-  - [x] Core validation: Azure CLI installed/authenticated, exact subscription selected, live target inventory captured, deployment script syntax passes. Bicep build/ARM validate/what-if are not applicable because this is an image-only update with no IaC execution.
-  - [x] Container build: ACR remote build succeeds with both Adoption & Impact flags forced false; local Docker is unavailable.
-  - [x] Azure Policy validation: effective assignments at `azure-diagrams-rg` are reviewed for impact on the image-only ACA revision update.
-
-1. Confirm Azure authentication and exact subscription context.
-2. Query the live ACA, environment, registry, current revision, image digest, traffic, ingress target port, and health.
-3. Review effective Azure Policy at the target scope.
-4. Validate deployment script syntax and exclusion flags.
-5. Run typecheck, production build, production exclusion contract, focused regression tests, and existing impact contracts.
-6. Run ACR remote image build as the container-build validation because local Docker is unavailable.
-7. Confirm the new image build succeeds before changing the ACA revision.
-8. Record validation proof and mark status `Validated` only through the azure-validate workflow.
+  - [x] Core validation: exact Azure context, live target inventory, target port 3030, source commit, script syntax, secret-file permissions, and pre-deploy health/auth behavior.
+  - [x] Container build: build unique validation image in ACR; do not update ACA during validation.
+  - [x] Azure Policy review at `azure-diagrams-rg` scope.
+- [x] Run MCP build, zero-trust fixture, render profiles, service catalog, and all tool contracts.
+- [x] Verify validation image starts on port 3030 and `/healthz` succeeds using ACR Tasks.
+- [x] Verify unauthenticated MCP requests are rejected and authenticated initialization/tool discovery succeeds against the current live endpoint before deployment.
+- [x] Record exact validation image tag/digest and proof in Section 7.
 
 ## 7. Validation Proof
 
-Validated at `2026-08-18T16:16:37Z` against subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`.
+Validated at `2026-08-18T18:12:10Z` against subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`.
 
 | Check | Command / subject | Result |
 | --- | --- | --- |
 | Azure context | `az account show` | `ARTURO-MngEnvMCAP094150`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, user `admin@MngEnvMCAP094150.onmicrosoft.com` |
-| Resource inventory | Azure Container Apps MCP and ACR MCP scoped explicitly to the subscription/RG | Target `azure-diagram-builder-vnet` is `Succeeded` in East US 2/VNet environment; MCP, legacy web, and analytics apps are separate; ACR `acrazurediagrams1767583743` is present |
-| Pre-deployment ACA | `az containerapp show` + revision list | Revision `azure-diagram-builder-vnet--v20260815122621`, healthy/running, target port 80, 100% traffic, image tag `:vnet` |
-| Pre-deployment HTTPS | `GET https://azure-diagram-builder-vnet.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io/` | `200` |
-| Pre-deployment excluded routes | POST both impact endpoints | Both returned `404`; post-deploy requirement is that they remain `404` |
-| TypeScript and Vite | `npx tsc --noEmit -p tsconfig.json`; `npm run build` | Pass; only existing Vite large-chunk warning |
-| Production exclusion contract | `npm run test:production-exclusions` | Pass; no launcher text, impact API paths, impact storage keys, or impact event names in `dist/` |
-| Server gate | Isolated token server with `ENABLE_ADOPTION_IMPACT=false/true` | Disabled: both routes `404`; enabled: both handlers reached (`503` without test Cosmos config), proving reversible registration |
-| Impact data contracts | `npm run test:impact`; `npm run test:impact-records` | Pass |
-| Functional regressions | grouped layout, edge labels, layout preservation, service names, pricing mode, ARM import, AADB v2 contract | 7/7 pass |
-| Changed-file lint | ESLint on changed modules; `git diff --check` | Pass. Whole-file `App.tsx` lint still reports pre-existing `_ungroupNode` from commit `d70f4765` (2026-01-30); unrelated to this deployment change. |
-| Effective policy | Azure Policy MCP at `azure-diagrams-rg` scope | 8 enforced assignments reviewed: management-group deploy/modify, deny, audit, MFA write/delete, and subscription Defender assignments; no scope expansion is required for the image-only revision update |
-| ACR validation image | `BUILD_ONLY=true TAG=validation-no-impact-fixed-20260818123225 ./scripts/vnet-migration/03-deploy-webapp.sh` | ACR run `ch66` succeeded; digest `sha256:92d644007c53e3a2f9752e29ca88e727d3ad1e20be92dce9da13b959c30e6147` |
-| Image filesystem inspection | ACR run `ch67` against the exact validation image | `IMAGE_EXCLUSION_PASS`: impact route/record files absent and no prohibited client markers |
-| Server dependency audit | `npm audit --omit=dev` after non-breaking lock update | 0 vulnerabilities. An intermediate ACR build (`ch65`) failed because npm rewrote resolved URLs to the managed feed; URLs were normalized to public npm coordinates, integrity hashes retained, and `npm ci` plus ACR build then passed. |
-| Validation-only mutation check | `az containerapp show` after ACR build | Live ACA remained on revision `v20260815122621`, 100% traffic; no ACA mutation occurred during validation |
+| Source | Git branch and status | Renderer commit `42e0b75`; dependency lock remediation pending commit on same feature branch; `.env.mcp` present with mode `0600` |
+| Pre-deploy ACA | `az containerapp show` and revision list | `azure-diagram-mcp--v1786890197`, healthy/running, target port 3030, image `mcp-20260816-142135`, 100% traffic; prior revisions retained |
+| Pre-deploy HTTP/auth | Health plus unauthenticated initialize | `/healthz` `200`; unauthenticated initialize `401` |
+| Authenticated discovery | MCP SDK using existing token without printing it | 13 tools, 3 resources, 3 prompts; `render_diagram` present |
+| Source contracts | Build, zero-trust fixture, render profiles, service catalog, tool contracts | All pass; zero-trust render 11 nodes / 15 edges / 12 labels / no detached labels / document-friendly composition |
+| Dependency audit | `npm audit --omit=dev` | Initial validation found 5 high and 3 moderate production advisories. Non-breaking transitive updates were applied within declared ranges; `npm ci`, build, and all contracts pass; final audit reports 0 vulnerabilities. Lockfile contains 0 internal feed URLs. |
+| Effective policy | Azure Policy MCP at `azure-diagrams-rg` scope | 8 enforced assignments reviewed (deploy/modify, deny, audit, MFA write/delete, Defender); no scope expansion required for image-only revision update |
+| Validation image | ACR run `ch6a` | Tag `mcp-validation-diagram-quality-20260818-181004`; digest `sha256:a9ddf229bba6fd88fa6220934d73512e8b1220bdf5ee7c5a4ec2cce76931655c`; build and push succeeded |
+| Validation image runtime | ACR run `ch6b` | Exact image started on port 3030; health `200`; unauthenticated initialize `401`; authenticated initialize `200` |
+| Validation-only mutation check | `az containerapp show` after ACR runs | Live ACA remained on `v1786890197`, image `mcp-20260816-142135`, 100% traffic |
 
 ## 8. Deployment Plan
 
-1. Execute the existing VNet image-only deployment script.
-2. Confirm a new ACA revision is created and becomes ready/running.
-3. Confirm 100% traffic targets the intended latest revision.
-4. Confirm image digest differs from the prior deployed digest.
-5. Verify the public HTTPS URL returns `200`.
-6. Verify the Adoption & Impact launcher is absent in the browser.
-7. Verify both excluded POST endpoints return `404`.
-8. Verify representative diagram generation still works.
-9. Verify no changes occurred to the MCP or analytics Container Apps.
+1. Execute `scripts/deploy-mcp.sh` from the validated source commit.
+2. Confirm a unique image tag and digest are pushed to ACR.
+3. Confirm a new healthy/running ACA revision becomes latest ready.
+4. Confirm 100% traffic targets the latest revision.
+5. Verify target port remains 3030 and health endpoint returns 200.
+6. Verify unauthenticated `/mcp` session operations return 401.
+7. Using the existing token without displaying it, initialize an MCP session and confirm 13 tools, 3 resources, and 3 prompts.
+8. Call `render_diagram` with the zero-trust regression graph and verify technical SVG includes 11 nodes, 15 edges, 12 consolidated labels, no detached labels, and a viewBox ratio no greater than 2.4.
+9. Verify web, legacy web, and analytics ACA revisions/images are unchanged.
+10. Verify previous MCP revision remains available for rollback.
 
 ## 9. Rollback
 
-If verification fails, route traffic back to the previously healthy revision or reactivate it. Do not delete prior revisions during this deployment.
+If verification fails, reactivate or route traffic to `azure-diagram-mcp--v1786890197`, which uses image `azure-diagram-mcp:mcp-20260816-142135`. Do not delete prior revisions or tags.
 
 ## 10. Approval
 
-Approved by user on 2026-08-18 for subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, East US 2, with the image-only deployment boundary described above.
+Approved by user on 2026-08-18 for subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, East US 2, with the image-only standalone MCP boundary described above.
 
 ## 11. Role Assignment Verification
 
-- **Status:** Verified by static review.
-- **Identity:** System-assigned managed identity of `azure-diagram-builder-vnet`.
-- **Cognitive Services Speech User:** Scoped to the specific `aq-speech-008` Speech account. Matches Speech/AAD token operations in `server/token-server.js`.
-- **Cosmos DB Built-in Data Contributor:** Scoped to the specific `aqcosmosdb007` account. Matches feedback read/write operations through the Cosmos data-plane SDK.
-- **Azure OpenAI:** Uses the existing runtime key fallback; no new role assignment is required by this deployment.
-- **Azure Resource Graph import:** Disabled by default on shared/public deployments; no management-plane Reader role is introduced by this update.
-- **Post-deploy issue found:** Live verification found 18 identical Cosmos DB Built-in Data Contributor assignments for the same principal/account scope, accumulated by the non-idempotent deployment script.
-- **Resolution:** User approved deletion of 17 duplicates. Assignment `ee7cdb1c-8c90-4cfe-944c-c74c546171ce` was retained and verified as the sole remaining assignment. The deployment script now checks for the exact principal/role/scope before creating an assignment.
-
-## 12. Deployment Proof
-
-Deployed on 2026-08-18 from merged `main` commit `a24aa4d`.
-
-| Check | Result |
-| --- | --- |
-| PR and CI | PR #20 squash-merged; Vite app and MCP server CI jobs both passed |
-| ACR production build | Run `ch68` succeeded; `azure-diagram-builder:vnet` digest `sha256:a5f241b11a6383057ab90cf8a9b9af9d04267b4dcd605d5cb44ec8c527114da5` |
-| Target revision | `azure-diagram-builder-vnet--0000002`, healthy/running, target port 80, 100% traffic |
-| Runtime gate | `ENABLE_ADOPTION_IMPACT=false` on the active ACA template |
-| Exact image inspection | ACR run `ch69`: `DEPLOYED_IMAGE_EXCLUSION_PASS`; impact route/record modules absent and prohibited client markers absent |
-| Public endpoint | `https://azure-diagram-builder-vnet.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io/` returned `200` |
-| Excluded endpoints | POST `/api/impact-story` and `/api/deployment-registration` both returned `404` |
-| Browser verification | Adoption & Impact launcher/modal absent; Generate Diagram and Feedback remain available |
-| Generation smoke | GPT-5.6 Sol/low generated 8 services and 7 edges; one Container Apps node and one Service Bus node; launcher remained absent |
-| Rollback | Previous revision `azure-diagram-builder-vnet--v20260815122621` remains healthy/inactive; previous digest `sha256:57319c32449144d327c6a4b5d012d1306ed79e49b9827f5b7cb27bd59d03f593` remains in ACR |
-| Scope check | Legacy web, standalone MCP, and analytics ACA revisions/images unchanged |
-| Live RBAC | One Cognitive Services Speech User assignment at the Speech account; one Cosmos DB Built-in Data Contributor assignment at the Cosmos account after approved cleanup |
+- **Status:** Verified; no Azure data-plane RBAC is required by this application.
+- **Live identity:** `azure-diagram-mcp` reports identity type `None`.
+- **Runtime operations:** The MCP server is deterministic and reads bundled icon, pricing, catalog, and ARM parsing data. It does not call Azure APIs or data-plane services.
+- **Authentication:** MCP bearer token stored as an ACA secret; no token value is written to source or logs.
+- **Registry:** Existing ACR credential configuration remains unchanged; no role assignment is created by this image-only update.
+- **Issues:** None.
