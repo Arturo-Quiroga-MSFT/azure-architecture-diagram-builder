@@ -47,6 +47,7 @@ ARG VITE_SPEECH_REGION
 ARG VITE_AZURE_AD_CLIENT_ID
 ARG VITE_AZURE_AD_AUTHORITY
 ARG VITE_ARM_SCOPE
+ARG VITE_ENABLE_ADOPTION_IMPACT=false
 # Set environment variables for build
 ENV VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT
 ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT51
@@ -68,6 +69,7 @@ ENV VITE_SPEECH_REGION=$VITE_SPEECH_REGION
 ENV VITE_AZURE_AD_CLIENT_ID=$VITE_AZURE_AD_CLIENT_ID
 ENV VITE_AZURE_AD_AUTHORITY=$VITE_AZURE_AD_AUTHORITY
 ENV VITE_ARM_SCOPE=$VITE_ARM_SCOPE
+ENV VITE_ENABLE_ADOPTION_IMPACT=$VITE_ENABLE_ADOPTION_IMPACT
 
 # App Insights connection string workaround:
 # The connection string contains semicolons (e.g. "InstrumentationKey=...;IngestionEndpoint=...")
@@ -95,8 +97,10 @@ RUN if [ -f .env.build ]; then \
 FROM nginx:alpine
 
 ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
+ARG ENABLE_ADOPTION_IMPACT=false
 ENV NPM_CONFIG_REGISTRY=$NPM_REGISTRY
 ENV NPM_CONFIG_REPLACE_REGISTRY_HOST=always
+ENV ENABLE_ADOPTION_IMPACT=$ENABLE_ADOPTION_IMPACT
 
 # Install Node.js for the speech/OpenAI token server.
 RUN apk add --no-cache nodejs npm
@@ -106,6 +110,8 @@ WORKDIR /srv/token-server
 COPY server/package*.json ./
 RUN npm ci --omit=dev
 COPY server/token-server.js ./
+COPY server/impact-routes.js server/impact-records.js ./
+RUN if [ "$ENABLE_ADOPTION_IMPACT" != "true" ]; then rm -f impact-routes.js impact-records.js; fi
 
 # Copy static build output
 COPY --from=build /app/dist /usr/share/nginx/html

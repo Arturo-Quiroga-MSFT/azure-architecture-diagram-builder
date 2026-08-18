@@ -3,8 +3,11 @@
 
 /// <reference types="vite/client" />
 
+declare const __ENABLE_ADOPTION_IMPACT__: boolean
+
 interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string
+  readonly VITE_ENABLE_ADOPTION_IMPACT?: string
   // add more env variables here
 }
 

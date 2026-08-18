@@ -25,7 +25,8 @@ NEW_ENV="aca-env-azure-diagrams-vnet"
 NEW_APP="azure-diagram-builder-vnet"
 ACR="acrazurediagrams1767583743"
 IMAGE="azure-diagram-builder"
-TAG="vnet"
+TAG="${TAG:-vnet}"
+BUILD_ONLY="${BUILD_ONLY:-false}"
 ACR_IMAGE="$ACR.azurecr.io/$IMAGE:$TAG"
 NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
 
@@ -78,13 +79,24 @@ while IFS='=' read -r key value; do
     if [[ "$key" == "VITE_APPINSIGHTS_CONNECTION_STRING" ]]; then
       echo "$key=$value" > "$APPINSIGHTS_FILE"; continue
     fi
+    if [[ "$key" == "VITE_ENABLE_ADOPTION_IMPACT" ]]; then
+      continue
+    fi
     BUILD_ARGS+=(--build-arg "$key=$value")
   fi
 done < <(grep -v '^#' "$ENV_FILE" | grep -v '^[[:space:]]*$')
 
 az acr build --registry "$ACR" --image "$IMAGE:$TAG" \
   --build-arg "NPM_REGISTRY=$NPM_REGISTRY" \
-  "${BUILD_ARGS[@]}" "$SOURCE_DIR"
+  "${BUILD_ARGS[@]}" \
+  --build-arg "VITE_ENABLE_ADOPTION_IMPACT=false" \
+  --build-arg "ENABLE_ADOPTION_IMPACT=false" \
+  "$SOURCE_DIR"
+
+if [[ "$BUILD_ONLY" == "true" ]]; then
+  echo "✅ Build-only validation completed: $ACR_IMAGE"
+  exit 0
+fi
 
 # ── ACR admin creds (old app used admin-cred pull) ──────────────────────────
 ACR_USER="$(az acr credential show -n "$ACR" --query username -o tsv)"
@@ -138,7 +150,10 @@ fi
 
 # ── PUBLIC_URL = own FQDN ───────────────────────────────────────────────────
 FQDN="$(az containerapp show -n "$NEW_APP" -g "$RG" --query 'properties.configuration.ingress.fqdn' -o tsv)"
-az containerapp update -n "$NEW_APP" -g "$RG" --set-env-vars "PUBLIC_URL=https://$FQDN" -o none
+az containerapp update -n "$NEW_APP" -g "$RG" --set-env-vars \
+  "PUBLIC_URL=https://$FQDN" \
+  "ENABLE_ADOPTION_IMPACT=false" \
+  -o none
 
 # ── Grant data-plane RBAC to the new managed identity ───────────────────────
 PRINCIPAL="$(az containerapp show -n "$NEW_APP" -g "$RG" --query identity.principalId -o tsv)"
