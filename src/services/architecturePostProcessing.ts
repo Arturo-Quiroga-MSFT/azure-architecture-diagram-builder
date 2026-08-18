@@ -13,6 +13,11 @@ const defaultLogger: ArchitectureProcessingLogger = {
   warn: (...args) => console.warn(...args),
 };
 
+const SHARED_SERVICE_PRODUCTS = new Set([
+  'Azure Container Apps',
+  'Service Bus',
+]);
+
 export function postProcessArchitecture(
   architecture: any,
   logger: ArchitectureProcessingLogger = defaultLogger,
@@ -43,6 +48,36 @@ export function postProcessArchitecture(
 
   if (!architecture.groups || !Array.isArray(architecture.groups)) {
     architecture.groups = [];
+  }
+
+  const canonicalServiceIds = new Map<string, string>();
+  let mergedServices = 0;
+  architecture.services = architecture.services.filter((service: any) => {
+    const product = String(service.name ?? service.type ?? '');
+    if (!SHARED_SERVICE_PRODUCTS.has(product)) return true;
+    const key = `${String(service.groupId ?? '')}\u0000${product}`;
+    const canonicalId = canonicalServiceIds.get(key);
+    if (!canonicalId) {
+      canonicalServiceIds.set(key, String(service.id));
+      return true;
+    }
+    canonicalServiceIds.set(String(service.id), canonicalId);
+    mergedServices++;
+    return false;
+  });
+  if (mergedServices > 0) {
+    const canonicalId = (value: unknown) => canonicalServiceIds.get(String(value)) ?? String(value);
+    architecture.connections.forEach((connection: any) => {
+      connection.from = canonicalId(connection.from);
+      connection.to = canonicalId(connection.to);
+    });
+    if (Array.isArray(architecture.workflow)) {
+      architecture.workflow.forEach((step: any) => {
+        if (!Array.isArray(step.services)) return;
+        step.services = [...new Set(step.services.map(canonicalId))];
+      });
+    }
+    logger.warn(`Merged ${mergedServices} duplicate shared-service node(s)`);
   }
 
   architecture.groups = architecture.groups.map((group: any) => {
@@ -128,6 +163,33 @@ export function postProcessArchitecture(
     return true;
   });
 
+  // Parallel connections resolve to the same two handles, so they stack into
+  // overlapping lines whose labels collide. The full text stays on the chip's
+  // tooltip even when the merged label clamps.
+  let mergedEdges = 0;
+  const byPair = new Map<string, any>();
+  architecture.connections.forEach((connection: any) => {
+    const key = [String(connection.from), String(connection.to)].sort().join('\u0000');
+    const existing = byPair.get(key);
+    if (!existing) {
+      byPair.set(key, connection);
+      return;
+    }
+    const labels = new Set(
+      [...String(existing.label ?? '').split(' · '), String(connection.label ?? '')]
+        .map((value: string) => value.trim())
+        .filter(Boolean),
+    );
+    existing.label = [...labels].join(' · ');
+    mergedEdges++;
+  });
+  if (mergedEdges > 0) {
+    logger.warn(
+      `Merged ${mergedEdges} duplicate connection(s) between service pairs that were already linked`,
+    );
+    architecture.connections = [...byPair.values()];
+  }
+
   const connectedIds = new Set<string>();
   architecture.connections.forEach((connection: any) => {
     connectedIds.add(String(connection.from));
@@ -147,6 +209,8 @@ export function postProcessArchitecture(
   architecture.integrity = {
     repairedEdges,
     droppedEdges,
+    mergedServices,
+    mergedEdges,
     orphanCount: orphans.length,
     orphanServices: orphans.map((service: any) => String(service.name || service.id)),
   };

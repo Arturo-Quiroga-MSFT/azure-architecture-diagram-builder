@@ -16,6 +16,8 @@
     "pricing:audit-semantics": "tsx scripts/audit-pricing-semantics.ts",
     "test:arm": "node scripts/test-arm-extractor.mjs",
     "test:layout-preservation": "tsx scripts/test-layout-preservation.ts",
+    "test:grouped-layout": "tsx scripts/test-grouped-layout.ts",
+    "test:edge-label-layout": "tsx scripts/test-edge-label-layout.ts",
     "test:validation-freshness": "tsx scripts/test-validation-freshness.ts",
     "test:impact": "tsx scripts/test-impact-measurement.ts",
     "test:impact-records": "node scripts/test-impact-records.cjs",

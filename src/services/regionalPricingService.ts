@@ -307,18 +307,49 @@ function filterPricingItems(
   return filtered;
 }
 
+// The Retail API does not mark which of a SKU's meters prices the resource
+// itself, and it is rarely the cheapest one, so "cheapest wins" picked add-ons:
+// Azure Firewall Standard billed $0.016/GB data processed rather than its
+// $1.25/hr deployment. Meters are ranked by what their name says they bill.
+const BASE_RESOURCE_METER = /\b(base fees?|deployment|instance|fixed cost|units?)\b/i;
+const USAGE_ADDER_METER = /capacity unit|data (processed|stored|transfer)|\b\d+ device\b|captcha|overage|edge actions/i;
+
+function meterRank(meterName: string): number {
+  if (USAGE_ADDER_METER.test(meterName)) return 2;
+  if (BASE_RESOURCE_METER.test(meterName)) return 0;
+  return 1;
+}
+
+// Services whose Retail API file prices adjacent resources only, never the
+// resource the node represents. Their catalog cost ranges state a rate rather
+// than a monthly amount ($0.03 per 10K operations, $2.30 per GB ingested), so
+// the only hourly meters in these files belong to other products entirely --
+// Key Vault's are Dedicated HSM, Virtual Network's are Public IP addresses.
+const SERVICES_WITHOUT_RESOURCE_METER = new Set<string>([
+  'Virtual Network',
+  'Key Vault',
+  'Azure Monitor',
+  'Log Analytics',
+  'Network Watcher',
+]);
+
 /**
  * Parse pricing items into tiers
  */
 function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
-  const tierMap = new Map<string, PricingTier>();
+  const tierMap = new Map<string, PricingTier & { rank: number }>();
 
   // Convert a per-unit rate into a monthly cost given the meter's unit-of-measure.
-  const toMonthly = (rate: number, unitOfMeasure: string): number => {
+  // Returns null for units that measure consumption rather than elapsed time: a
+  // per-GB or per-transaction rate has no monthly value for a deployed resource,
+  // and assuming one produces a confidently wrong number.
+  const toMonthly = (rate: number, unitOfMeasure: string): number | null => {
     if (unitOfMeasure.includes('/Month') || unitOfMeasure.includes('1/Month')) return rate;
+    if (unitOfMeasure.trim() === '1 Month') return rate;
     if (unitOfMeasure.includes('/Day') || unitOfMeasure.includes('1/Day')) return rate * 30;
     if (unitOfMeasure === '1K' || unitOfMeasure.includes('1000')) return rate * 100;
-    return rate * 730; // default: hourly × 730 hours/month
+    if (/hour/i.test(unitOfMeasure)) return rate * 730;
+    return null;
   };
 
   items.forEach(item => {
@@ -331,6 +362,7 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
     const unitOfMeasure = (item as any).unitOfMeasure || '1 Hour';
     const hourlyPrice = item.retailPrice || item.unitPrice;
     const monthlyPrice = toMonthly(hourlyPrice, unitOfMeasure);
+    if (monthlyPrice === null) return;
 
     // Real 1-year Savings Plan monthly, when the meter carries a savings-plan rate.
     let reserved1yrMonthly: number | undefined;
@@ -339,11 +371,17 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
       : undefined;
     if (oneYear) {
       const spRate = oneYear.retailPrice || oneYear.unitPrice;
-      if (spRate > 0) reserved1yrMonthly = toMonthly(spRate, unitOfMeasure);
+      if (spRate > 0) reserved1yrMonthly = toMonthly(spRate, unitOfMeasure) ?? undefined;
     }
 
-    // Only add if we don't have this SKU yet, or if this is cheaper
-    if (!tierMap.has(skuName) || tierMap.get(skuName)!.monthlyPrice > monthlyPrice) {
+    const rank = meterRank(item.meterName || '');
+    const existing = tierMap.get(skuName);
+    // A resource meter always outranks an add-on; between peers, cheapest wins.
+    const isBetter = !existing
+      || rank < existing.rank
+      || (rank === existing.rank && existing.monthlyPrice > monthlyPrice);
+
+    if (isBetter) {
       tierMap.set(skuName, {
         name: skuName,
         skuName: skuName,
@@ -351,12 +389,15 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
         hourlyPrice: hourlyPrice,
         unit: item.unitOfMeasure,
         description: item.meterName,
-        reserved1yrMonthly
+        reserved1yrMonthly,
+        rank,
       });
     }
   });
   
-  const tiers = Array.from(tierMap.values()).sort((a, b) => a.monthlyPrice - b.monthlyPrice);
+  const tiers = Array.from(tierMap.values())
+    .map(({ rank: _rank, ...tier }) => tier)
+    .sort((a, b) => a.monthlyPrice - b.monthlyPrice);
   console.log(`📊 Parsed ${tiers.length} pricing tiers. First few:`, tiers.slice(0, 3).map(t => ({ name: t.name, monthly: t.monthlyPrice })));
   return tiers;
 }
@@ -370,6 +411,16 @@ export async function getRegionalServicePricing(
 ): Promise<ServicePricing | null> {
   const targetRegion = region || currentRegion;
   const cacheKey = `${serviceName}-${targetRegion}`;
+
+  // The Retail API groups meters under a service even when none of them price
+  // the resource itself: "Virtual Network" carries only Public IP and
+  // inter-region transfer meters, because a VNet is free. Any tier built from
+  // them describes a different resource, so these fall through to the catalog
+  // range instead.
+  if (SERVICES_WITHOUT_RESOURCE_METER.has(serviceName)) {
+    console.log(`ℹ️ ${serviceName} has no meter for the resource itself; deferring to catalog range`);
+    return null;
+  }
   
   // Check cache
   if (parsedPricingCache.has(cacheKey)) {

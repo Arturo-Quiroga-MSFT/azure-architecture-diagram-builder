@@ -7,7 +7,7 @@ import { Zap, Unlink, Layers } from 'lucide-react';
 import { loadIcon } from '../utils/iconLoader';
 import { NodePricingConfig } from '../types/pricing';
 import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
-import { isCapacityConsumed } from '../data/serviceIconMapping';
+import { isCapacityConsumed, getServiceCostRange } from '../data/serviceIconMapping';
 import { usePricingDisplayPrefs } from '../stores/pricingDisplayStore';
 import { openNodePricingEditor } from '../stores/nodePricingEditorStore';
 import { usePricingMode } from '../stores/pricingModeStore';
@@ -59,6 +59,10 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
   // Capacity rather than billing separately — show an "incl. capacity" badge.
   const serviceKey = (data.serviceName as string) || (data.label as string) || '';
   const capacityConsumed = !hasPricing && isCapacityConsumed(serviceKey);
+
+  // Services with no meter for the resource itself would otherwise render no
+  // badge at all, hiding real spend (Azure Bastion is $138-876/mo).
+  const catalogRange = !hasPricing && !capacityConsumed ? getServiceCostRange(serviceKey) : null;
   
   // Extract style preset
   const stylePreset = (data as any).stylePreset || 'detailed';
@@ -207,6 +211,14 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
           >
             <Layers size={12} style={{ marginRight: '2px', display: 'inline-block', verticalAlign: 'middle' }} />
             incl. capacity
+          </div>
+        )}
+        {catalogRange && showPricing && (
+          <div
+            className="cost-badge cost-badge--range"
+            title={`No metered price is published for this service, so it has no calculated figure.\nTypical range: ${catalogRange}\n\nNot included in the architecture total.`}
+          >
+            {catalogRange}
           </div>
         )}
         {iconUrl ? (

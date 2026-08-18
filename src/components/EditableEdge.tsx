@@ -39,14 +39,33 @@ const EditableEdge: React.FC<EdgeProps> = ({
         ? getSmoothStepPath
         : getBezierPath;
 
-  const [edgePath, labelX, labelY] = pathFn({
-    sourceX,
-    sourceY,
+  // React Flow's centerX/centerY only reposition the label, never the drawn
+  // path, so edges sharing a node pair are separated by routing the whole run
+  // through shifted endpoints and fanning short stubs back to the real handles.
+  const pathOffset = (data as any)?.pathOffset ?? 0;
+  const horizontalRun = Math.abs(targetX - sourceX) >= Math.abs(targetY - sourceY);
+  const stub = pathOffset ? Math.max(20, Math.abs(pathOffset) * 0.6) : 0;
+  const towardTarget = horizontalRun
+    ? Math.sign(targetX - sourceX) || 1
+    : Math.sign(targetY - sourceY) || 1;
+
+  const fanSourceX = horizontalRun ? sourceX + towardTarget * stub : sourceX + pathOffset;
+  const fanSourceY = horizontalRun ? sourceY + pathOffset : sourceY + towardTarget * stub;
+  const fanTargetX = horizontalRun ? targetX - towardTarget * stub : targetX + pathOffset;
+  const fanTargetY = horizontalRun ? targetY + pathOffset : targetY - towardTarget * stub;
+
+  const [corePath, labelX, labelY] = pathFn({
+    sourceX: pathOffset ? fanSourceX : sourceX,
+    sourceY: pathOffset ? fanSourceY : sourceY,
     sourcePosition,
-    targetX,
-    targetY,
+    targetX: pathOffset ? fanTargetX : targetX,
+    targetY: pathOffset ? fanTargetY : targetY,
     targetPosition,
   } as any);
+
+  const edgePath = pathOffset
+    ? `M${sourceX},${sourceY}L${fanSourceX},${fanSourceY}${corePath}L${targetX},${targetY}`
+    : corePath;
 
   // Get stored offset from edge data
   const offsetX = (data as any)?.labelOffsetX ?? 0;
@@ -160,6 +179,22 @@ const EditableEdge: React.FC<EdgeProps> = ({
         }}
       />
       <EdgeLabelRenderer>
+        {(offsetX !== 0 || offsetY !== 0) && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: labelX,
+              top: labelY,
+              width: Math.hypot(offsetX, offsetY),
+              borderTop: '1.5px solid rgba(0, 120, 212, 0.8)',
+              transform: `rotate(${Math.atan2(offsetY, offsetX)}rad)`,
+              transformOrigin: '0 0',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+        )}
         <div
           style={{
             position: 'absolute',
@@ -167,6 +202,7 @@ const EditableEdge: React.FC<EdgeProps> = ({
             fontSize: 14,
             fontWeight: 'bold',
             pointerEvents: 'all',
+            zIndex: 1,
           }}
           className="nodrag nopan"
         >

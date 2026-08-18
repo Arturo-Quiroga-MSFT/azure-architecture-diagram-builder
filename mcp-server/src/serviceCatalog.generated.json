@@ -999,7 +999,12 @@
       "DNS",
       "DNS Zone",
       "DNS Zones",
-      "Private DNS"
+      "Private DNS",
+      "Private DNS Zone",
+      "Private DNS Zones",
+      "Azure Private DNS",
+      "Azure Private DNS Zone",
+      "Azure Private DNS Zones"
     ],
     "iconFile": "10064-icon-service-DNS-Zones",
     "category": "networking",
