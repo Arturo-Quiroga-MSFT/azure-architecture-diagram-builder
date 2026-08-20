@@ -3,6 +3,11 @@
 This guide connects the local AADB MCP server to Claude Desktop over stdio and
 enables `render_diagram` to display an interactive diagram inline as an MCP App.
 
+Azure Foundry resource and model-deployment tooling is documented separately in
+[`CLAUDE-DESKTOP-AZURE-FOUNDRY.md`](CLAUDE-DESKTOP-AZURE-FOUNDRY.md). That MCP
+server adds tools to Claude Desktop; it does not replace Claude as the host
+model.
+
 ## Verified result
 
 Local verification on macOS on 2026-08-20 used Claude Desktop `1.32885.1` and
