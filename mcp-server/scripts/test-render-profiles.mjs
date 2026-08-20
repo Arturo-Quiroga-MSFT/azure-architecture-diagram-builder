@@ -184,8 +184,39 @@ const costHtml = renderHtml(layout, 'Secure Web Application', {
 });
 assert.match(presentationHtml, /data-render-profile="presentation"/);
 assert.match(presentationHtml, /const showCosts = false;/);
+assert.match(presentationHtml, /classList\.add\('edge-label-bg'\)/);
+assert.match(presentationHtml, /window\.addEventListener\('resize', fitView\)/);
 assert.match(costHtml, /data-render-profile="cost"/);
 assert.match(costHtml, /const showCosts = true;/);
+
+const compactConnections = [
+  { from: 'Front Door', to: 'App Service', label: 'Route HTTPS requests' },
+  { from: 'App Service', to: 'Key Vault', label: 'Retrieve application secrets' },
+  { from: 'App Service', to: 'Cosmos DB', label: 'Read and write application data' },
+];
+const compactLayout = computeLayout(
+  [
+    { name: 'Front Door', type: 'Front Door' },
+    { name: 'App Service', type: 'App Service' },
+    { name: 'Key Vault', type: 'Key Vault' },
+    { name: 'Cosmos DB', type: 'Cosmos DB' },
+  ],
+  compactConnections,
+  [],
+  'LR',
+  { reserveEdgeLabelCorridors: true },
+);
+const compactNodes = new Map(compactLayout.nodes.map(node => [node.name, node]));
+for (const connection of compactConnections) {
+  const source = compactNodes.get(connection.from);
+  const target = compactNodes.get(connection.to);
+  const longestLineChars = Math.min(28, connection.label.length);
+  const requiredWidth = longestLineChars * 10 * 0.62 + 14;
+  assert(
+    target.x - (source.x + source.width) >= requiredWidth,
+    `${connection.from} -> ${connection.to} must reserve enough horizontal room for its label chip.`,
+  );
+}
 
 const regionalLayout = computeLayout(regionalServices, regionalConnections, regionalGroups, 'LR');
 const fixedCosts = new Map([

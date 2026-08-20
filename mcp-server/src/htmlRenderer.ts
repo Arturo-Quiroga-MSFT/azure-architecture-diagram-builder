@@ -91,7 +91,7 @@ export function renderHtml(layout: LayoutResult, title?: string, options: Render
   body.dark .node .cost { color: #4EC9A6; }
   body.dark .node .cost-range { color: #9A9A9A; }
   body.dark .legend { background: #252526; color: #C8C8C8; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
-  body.dark .edge-label { stroke: #1E1E1E; }
+  body.dark .edge-label-bg { fill: #252526; }
 
   /* Header */
   .header {
@@ -137,8 +137,8 @@ export function renderHtml(layout: LayoutResult, title?: string, options: Render
   .edge-path { fill: none; stroke-width: 1.5; }
   .edge-label {
     font-family: 'Segoe UI', system-ui, sans-serif; font-size: 10px;
-    paint-order: stroke; stroke: white; stroke-width: 3px;
   }
+  .edge-label-bg { fill: white; stroke-width: 0.75; }
 
   /* Groups */
   .group {
@@ -394,6 +394,26 @@ function edgeLabelAnchor(route) {
   const a = route[0], b = route[route.length - 1];
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
+function wrapEdgeLabel(label) {
+  const words = label.trim().split(/\\s+/);
+  const lines = [];
+  let current = '';
+  words.forEach(function (word) {
+    const next = current ? current + ' ' + word : word;
+    if (current && next.length > 28 && lines.length === 0) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+  if (current) lines.push(current);
+  if (lines.length > 2) {
+    lines[1] = lines.slice(1).join(' ').slice(0, 27) + '…';
+    lines.length = 2;
+  }
+  return lines;
+}
 
 // ── Render ──
 function render() {
@@ -445,11 +465,12 @@ function render() {
   const edgeDir = layout.direction || 'TB';
   const routeObstacles = buildRouteObstacles();
   const routeCanvas = { w: layout.width, h: layout.height };
+  const labelGroups = [];
   layout.edges.forEach(e => {
     if (e.points.length < 2) return;
     const eType = e.type || 'sync';
     const color = EDGE_COLORS[eType] || EDGE_COLORS.sync;
-    const edgeKey = e.from + '\u0000' + e.to;
+    const edgeKey = e.from + '\\u0000' + e.to;
     const isPrimary = primaryEdgeKeys.has(edgeKey);
     const isPolicyAssociation = policyAssociationKeys.has(edgeKey);
     const route = orthogonalRoute(e, edgeDir, routeObstacles, routeCanvas);
@@ -475,16 +496,39 @@ function render() {
 
     if (e.label && labeledEdgeKeys.has(edgeKey)) {
       const anchor = edgeLabelAnchor(route);
+      const displayLabel = isPolicyAssociation ? 'WAF policy association' : e.label;
+      const lines = wrapEdgeLabel(displayLabel);
+      const boxWidth = Math.max(72, Math.max.apply(null, lines.map(function (line) { return line.length; })) * 6.2 + 16);
+      const boxHeight = lines.length * 13 + 8;
+      const group = document.createElementNS(svgNs, 'g');
+      group.classList.add('edge-label');
+      group.setAttribute('data-from', e.from);
+      group.setAttribute('data-to', e.to);
+      const background = document.createElementNS(svgNs, 'rect');
+      background.setAttribute('x', anchor.x - boxWidth / 2);
+      background.setAttribute('y', anchor.y - boxHeight / 2);
+      background.setAttribute('width', boxWidth);
+      background.setAttribute('height', boxHeight);
+      background.setAttribute('rx', '4');
+      background.setAttribute('stroke', color);
+      background.classList.add('edge-label-bg');
+      group.appendChild(background);
       const text = document.createElementNS(svgNs, 'text');
       text.setAttribute('x', anchor.x);
-      text.setAttribute('y', anchor.y - 4);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('fill', color);
-      text.classList.add('edge-label');
-      text.textContent = isPolicyAssociation ? 'WAF policy association' : e.label;
-      svg.appendChild(text);
+      lines.forEach(function (line, index) {
+        const span = document.createElementNS(svgNs, 'tspan');
+        span.setAttribute('x', anchor.x);
+        span.setAttribute('y', anchor.y - ((lines.length - 1) * 13) / 2 + index * 13 + 3.5);
+        span.textContent = index === 0 ? line : ' ' + line;
+        text.appendChild(span);
+      });
+      group.appendChild(text);
+      labelGroups.push(group);
     }
   });
+  labelGroups.forEach(function (group) { svg.appendChild(group); });
   canvas.appendChild(svg);
 
   // Nodes
@@ -574,7 +618,7 @@ function resetView() { scale = 1; offsetX = 0; offsetY = 0; applyTransform(); }
 function fitView() {
   const cw = container.clientWidth;
   const ch = container.clientHeight;
-  scale = Math.min(cw / layout.width, ch / layout.height) * 0.9;
+  scale = Math.min(1.25, cw / layout.width, ch / layout.height) * 0.9;
   offsetX = (cw - layout.width * scale) / 2;
   offsetY = (ch - layout.height * scale) / 2;
   applyTransform();
@@ -592,6 +636,7 @@ function fmtCost(n) {
 // ── Init ──
 render();
 fitView();
+window.addEventListener('resize', fitView);
 </script>
 </body>
 </html>`;

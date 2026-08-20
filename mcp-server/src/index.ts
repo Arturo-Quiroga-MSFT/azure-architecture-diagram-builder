@@ -33,6 +33,11 @@ import { dirname, resolve as resolvePath } from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import {
+  registerAppResource,
+  registerAppTool,
+  RESOURCE_MIME_TYPE,
+} from '@modelcontextprotocol/ext-apps/server';
 import { z } from 'zod';
 
 import {
@@ -66,6 +71,7 @@ import { importArchitecture, type ImportFormat } from './importer.js';
 // paths that match what the React Flow web app expects.
 // Loaded at runtime via fs to avoid Node ESM JSON-import-attribute issues.
 const __thisDir = dirname(fileURLToPath(import.meta.url));
+const DIAGRAM_APP_URI = 'ui://azure-diagram-builder/diagram.html';
 const iconMap: Record<string, { iconFile: string; category: string }> = JSON.parse(
   readFileSync(resolvePath(__thisDir, 'iconMap.generated.json'), 'utf8'),
 );
@@ -1247,7 +1253,8 @@ server.registerTool(
 
 // ── Tool 6: render_diagram ──────────────────────────────────────────────
 
-server.registerTool(
+registerAppTool(
+  server,
   'render_diagram',
   {
     title: 'Render Azure Architecture Diagram',
@@ -1303,7 +1310,7 @@ server.registerTool(
         z.object({
           from: z.string().describe('Source service name'),
           to: z.string().describe('Target service name'),
-          label: z.string().optional().describe(CONN_LABEL_DESC),
+          label: z.string().min(3).describe(CONN_LABEL_DESC),
           type: z
             .string()
             .optional()
@@ -1332,6 +1339,12 @@ server.registerTool(
       content: z.string(),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+    _meta: {
+      ui: {
+        resourceUri: DIAGRAM_APP_URI,
+        visibility: ['model', 'app'],
+      },
+    },
   },
   async ({ title, format, direction, services, connections, groups, theme, profile, region, author, generatedBy }) => {
     const fmt = format ?? 'svg';
@@ -1343,7 +1356,7 @@ server.registerTool(
       (connections ?? []).map(c => ({ from: c.from, to: c.to, label: c.label, type: c.type as any })),
       groups ?? [],
       dir as any,
-      { reserveEdgeLabelCorridors: renderProfile === 'technical' },
+      { reserveEdgeLabelCorridors: fmt === 'html' || renderProfile === 'technical' },
     );
     const layout = reflowLayoutForPresentation(
       computedLayout,
@@ -1742,6 +1755,23 @@ server.registerTool(
 // ── Resources ──────────────────────────────────────────────────────────
 // Expose the catalog / rules / pricing as browsable, cacheable MCP resources
 // so clients can read them without a tool round-trip.
+
+registerAppResource(
+  server,
+  'Azure architecture diagram viewer',
+  DIAGRAM_APP_URI,
+  {
+    description: 'Interactive viewer for diagrams returned by render_diagram.',
+  },
+  async uri => ({
+    contents: [{
+      uri: uri.href,
+      mimeType: RESOURCE_MIME_TYPE,
+      text: readFileSync(resolvePath(__thisDir, 'diagramApp.html'), 'utf8'),
+      _meta: { ui: { prefersBorder: false } },
+    }],
+  }),
+);
 
 server.registerResource(
   'service-catalog',

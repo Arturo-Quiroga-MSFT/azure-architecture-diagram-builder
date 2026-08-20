@@ -12,7 +12,8 @@
     "sync:pricing": "node scripts/sync-pricing-data.mjs",
     "sync:arm": "node scripts/sync-arm-extractor.mjs",
     "prebuild": "npm run sync:icons && npm run sync:pricing && npm run sync:arm",
-    "build": "tsc && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json && cp src/serviceCatalog.generated.json dist/serviceCatalog.generated.json && cp src/pricing.generated.json dist/pricing.generated.json",
+    "build:app": "node scripts/build-diagram-app.mjs",
+    "build": "tsc && npm run build:app && cp src/iconMap.generated.json dist/iconMap.generated.json && cp src/iconSvgs.generated.json dist/iconSvgs.generated.json && cp src/serviceCatalog.generated.json dist/serviceCatalog.generated.json && cp src/pricing.generated.json dist/pricing.generated.json",
     "test:catalog": "npm run build --silent && node scripts/test-service-catalog.mjs",
     "test:contracts": "npm run build --silent && node scripts/test-service-catalog.mjs && node scripts/test-tool-contracts.mjs",
     "test:render-profiles": "npm run build --silent && node scripts/test-render-profiles.mjs",
@@ -23,11 +24,13 @@
   },
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "esbuild": "^0.28.2",
     "typescript": "^5.7.0"
   }
 }

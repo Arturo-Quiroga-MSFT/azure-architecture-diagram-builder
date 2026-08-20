@@ -32,6 +32,9 @@ Health probe: `GET /healthz` returns `{ "status": "ok", ... }`.
 | `claude-desktop-stdio.json` | Claude Desktop | stdio |
 | `m365-copilot-declarative-agent.json` | Microsoft 365 Copilot | streamable HTTP (HTTPS in production) |
 
+For the complete Claude Desktop setup, MCP Apps contract, smoke test, and
+troubleshooting notes, see [`../CLAUDE-DESKTOP.md`](../CLAUDE-DESKTOP.md).
+
 ## Quick test (HTTP)
 
 ```bash

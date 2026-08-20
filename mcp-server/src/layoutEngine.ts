@@ -166,7 +166,7 @@ function assignGroupColors(labels: string[]): { bg: string; border: string }[] {
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 const PADDING = 40;
-const EDGE_LABEL_MAX_CHARS = 22;
+const EDGE_LABEL_MAX_CHARS = 28;
 const EDGE_LABEL_FONT = 10;
 const EDGE_LABEL_HORIZONTAL_PAD = 14;
 const EDGE_LABEL_CORRIDOR_PAD = 16;
@@ -189,6 +189,7 @@ function computeFlatLayout(
   connections: DiagramConnection[],
   groups: DiagramGroup[],
   direction: 'TB' | 'LR' = 'TB',
+  reserveEdgeLabelCorridors = false,
 ): LayoutResult {
   const g = new dagre.graphlib.Graph({ compound: true });
 
@@ -202,7 +203,10 @@ function computeFlatLayout(
   const sizeBoost = svcCount >= 16 ? 1.25 : svcCount >= 10 ? 1.1 : 1.0;
   const labelBoost = maxLabelLen >= 40 ? 1.2 : maxLabelLen >= 25 ? 1.1 : 1.0;
   const nodesep = Math.round(60 * sizeBoost * labelBoost);
-  const ranksep = Math.round(85 * sizeBoost * labelBoost);
+  const baseRanksep = Math.round(85 * sizeBoost * labelBoost);
+  const ranksep = reserveEdgeLabelCorridors
+    ? labelAwareRankSep(connections, baseRanksep, direction)
+    : baseRanksep;
   const edgesep = Math.round(30 * labelBoost);
 
   g.setGraph({
@@ -597,7 +601,13 @@ export function computeLayout(
       // Fall back to the flat compound layout on any grouping error.
     }
   }
-  return computeFlatLayout(services, connections, groups, direction);
+  return computeFlatLayout(
+    services,
+    connections,
+    groups,
+    direction,
+    options.reserveEdgeLabelCorridors ?? false,
+  );
 }
 
 function presentationGroupRank(label: string): number {

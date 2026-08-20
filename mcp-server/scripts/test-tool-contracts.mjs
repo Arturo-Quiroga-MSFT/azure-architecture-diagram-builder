@@ -30,7 +30,11 @@ const EXPECTED_RESOURCES = [
   'azure://catalog/services',
   'azure://pricing/meta',
   'azure://waf/rules',
+  'ui://azure-diagram-builder/diagram.html',
 ];
+
+const DIAGRAM_APP_URI = 'ui://azure-diagram-builder/diagram.html';
+const DIAGRAM_APP_MIME_TYPE = 'text/html;profile=mcp-app';
 
 const EXPECTED_PROMPTS = [
   'design-event-driven-platform',
@@ -189,8 +193,19 @@ async function main() {
         openWorldHint: false,
       }, `${tool.name} must expose the standard deterministic annotations`);
     }
+    const renderTool = tools.find(tool => tool.name === 'render_diagram');
+    assert.deepEqual(renderTool?._meta?.ui, {
+      resourceUri: DIAGRAM_APP_URI,
+      visibility: ['model', 'app'],
+    });
+
     const { resources } = await client.listResources();
     assert.deepEqual(resources.map(resource => resource.uri).sort(), EXPECTED_RESOURCES);
+    const diagramApp = resources.find(resource => resource.uri === DIAGRAM_APP_URI);
+    assert.equal(diagramApp?.mimeType, DIAGRAM_APP_MIME_TYPE);
+    const diagramAppContent = await client.readResource({ uri: DIAGRAM_APP_URI });
+    assert.equal(diagramAppContent.contents[0]?.mimeType, DIAGRAM_APP_MIME_TYPE);
+    assert(diagramAppContent.contents[0]?.text?.includes('Azure Architecture Diagram Viewer'));
 
     const { prompts } = await client.listPrompts();
     assert.deepEqual(prompts.map(prompt => prompt.name).sort(), EXPECTED_PROMPTS);
@@ -847,6 +862,16 @@ async function main() {
     assert.equal(rendered.structuredContent?.mimeType, 'image/svg+xml');
     assert.equal(rendered.structuredContent?.content, renderedItem.text);
 
+    const unlabeledRender = await client.callTool({
+      name: 'render_diagram',
+      arguments: {
+        title: 'Unlabeled Contract Test',
+        services: initialArchitecture.services,
+        connections: [{ from: 'Web', to: 'Data' }],
+      },
+    });
+    assert.equal(unlabeledRender.isError, true, 'render_diagram must require descriptive connection labels.');
+
     const sceneResult = await client.callTool({
       name: 'export_reactflow_scene',
       arguments: {
@@ -1167,7 +1192,7 @@ async function main() {
     assert(regionalGuide.markdown.includes('Regional placement limitation'));
     assert(regionalGuide.markdown.includes('is not yet emitted as multi-region IaC'));
 
-    console.log('MCP contract test passed: stateless missing/stale-session recovery, all 13 handlers, 3 resources, 3 prompts, auth, metadata, pricing, regional comparison, hardening idempotency, and deployment guides.');
+    console.log('MCP contract test passed: stateless missing/stale-session recovery, all 13 handlers, 4 resources, 3 prompts, auth, metadata, pricing, regional comparison, hardening idempotency, and deployment guides.');
   } finally {
     if (client) await client.close().catch(() => {});
     if (child.exitCode === null) child.kill('SIGTERM');

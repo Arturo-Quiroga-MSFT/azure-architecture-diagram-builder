@@ -347,6 +347,14 @@ badges come from the same pricing resolution as `estimate_costs`.
 `structuredContent.content`. New clients should read the structured result;
 the duplicate text payload remains for backward compatibility.
 
+MCP Apps-capable hosts such as Claude Desktop discover
+`ui://azure-diagram-builder/diagram.html` through the tool's
+`_meta.ui.resourceUri` and mount the result as an interactive inline view. The
+resource uses `text/html;profile=mcp-app`; hosts without MCP Apps support keep
+receiving the existing text and structured payloads.
+See [`CLAUDE-DESKTOP.md`](CLAUDE-DESKTOP.md) for the verified local setup,
+smoke test, and troubleshooting guide.
+
 - `presentation` (default): semantic reflow for ultra-wide capability groups and global/primary/secondary regional architectures, graph-derived request paths, WAF policy associations, quieter supporting edges, representative labels, larger text, and no pricing.
 - `technical`: natural layout with every connection label and no pricing.
 - `cost`: presentation composition and edge hierarchy plus per-node cost badges/ranges and a fixed-priced-baseline footer. Variable and ranged items are explicitly excluded from that baseline. `region` applies only to this profile; set it to `none` to suppress pricing enrichment.
