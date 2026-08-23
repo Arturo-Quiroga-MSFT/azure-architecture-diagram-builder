@@ -38,6 +38,7 @@ SPEECH_ACCOUNT="aq-speech-008"
 SOURCE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 ENV_FILE="$SOURCE_DIR/.env"
 [[ -f "$ENV_FILE" ]] || { echo "❌ .env not found at $ENV_FILE"; exit 1; }
+APP_VERSION="$(node -p "require('$SOURCE_DIR/package.json').version")"
 
 get_file_val() {
   { grep -E "^$1=" "$2" | head -1 | cut -d= -f2- \
@@ -49,6 +50,11 @@ get_val() {
 }
 
 echo "Subscription: $(az account show --query name -o tsv)"
+
+if [[ "$BUILD_ONLY" != "true" ]] && az containerapp show -n "$NEW_APP" -g "$RG" -o none 2>/dev/null; then
+  DEPLOYED_FQDN="$(az containerapp show -n "$NEW_APP" -g "$RG" --query 'properties.configuration.ingress.fqdn' -o tsv)"
+  "$SOURCE_DIR/scripts/require-version-bump.sh" "https://$DEPLOYED_FQDN"
+fi
 
 # ── Runtime secret/env values sourced from .env ─────────────────────────────
 # azd-prepackage.sh maps VITE_AZURE_OPENAI_API_KEY <- AZURE_OPENAI_API_KEY (same value).
@@ -141,6 +147,7 @@ else
         AZURE_SPEECH_RESOURCE_ID="/subscriptions/$SUB/resourceGroups/$SPEECH_RG/providers/Microsoft.CognitiveServices/accounts/$SPEECH_ACCOUNT" \
         AZURE_OPENAI_ENDPOINT="https://r2d2-foundry-001.openai.azure.com/" \
         AZURE_OPENAI_API_KEY="$OPENAI_KEY" \
+        APP_VERSION="$APP_VERSION" \
         VITE_AZURE_OPENAI_ENDPOINT=secretref:vite-azure-openai-endpoint \
         VITE_AZURE_OPENAI_API_KEY=secretref:vite-azure-openai-api-key \
         VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=secretref:vite-azure-openai-deployment-gpt52 \
@@ -153,6 +160,7 @@ fi
 FQDN="$(az containerapp show -n "$NEW_APP" -g "$RG" --query 'properties.configuration.ingress.fqdn' -o tsv)"
 az containerapp update -n "$NEW_APP" -g "$RG" --set-env-vars \
   "PUBLIC_URL=https://$FQDN" \
+  "APP_VERSION=$APP_VERSION" \
   "ENABLE_ADOPTION_IMPACT=false" \
   -o none
 

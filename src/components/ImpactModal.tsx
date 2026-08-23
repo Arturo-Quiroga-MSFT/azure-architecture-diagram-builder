@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { BarChart3, CheckCircle2, Send, X } from 'lucide-react';
+import { APP_VERSION } from '../appVersion';
 import {
   ARTIFACT_TYPES,
   DEPLOYMENT_MODES,
@@ -118,7 +119,7 @@ export default function ImpactModal({ isOpen, onClose }: ImpactModalProps) {
     setBusy(true); setError('');
     const input: DeploymentRegistrationInput = {
       installationId: getInstallationId(), environmentType, hosting, region: region.trim(),
-      appVersion: import.meta.env.VITE_APP_VERSION || 'development', customerDeployment,
+      appVersion: APP_VERSION, customerDeployment,
       nameConsent: registrationNameConsent, organizationName: registrationOrganization.trim(),
       contactConsent: registrationContactConsent, contactEmail: registrationEmail.trim(),
     };

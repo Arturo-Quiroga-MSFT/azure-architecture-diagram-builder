@@ -34,6 +34,19 @@
   flex-shrink: 0;
 }
 
+.header-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.app-version {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
 .microsoft-logo {
   height: 80px;
   width: auto;

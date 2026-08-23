@@ -63,6 +63,11 @@
 
 set -euo pipefail
 
+SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+APP_VERSION="$(node -p "require('$SOURCE_DIR/package.json').version")"
+DEPLOYED_FQDN="$(az containerapp show --name azure-diagram-builder --resource-group azure-diagrams-rg --query 'properties.configuration.ingress.fqdn' -o tsv)"
+"$SOURCE_DIR/scripts/require-version-bump.sh" "https://$DEPLOYED_FQDN"
+
 # Load environment variables (handles semicolons and special chars in values)
 set -a && source .env && set +a
 
@@ -74,6 +79,7 @@ echo "📎 App Insights env file: $(cat .env.appinsights 2>/dev/null || echo 'no
 echo "🚀 Building image in ACR..."
 az acr build --registry acrazurediagrams1767583743 \
     --image azure-diagram-builder:latest \
+    --build-arg "LOAD_ENV_BUILD=false" \
     --build-arg "VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT51" \
     --build-arg "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT52" \
@@ -109,6 +115,7 @@ az containerapp update --name azure-diagram-builder \
         "AZURE_SPEECH_RESOURCE_ID=$AZURE_SPEECH_RESOURCE_ID" \
         "AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT" \
         "AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-${VITE_AZURE_OPENAI_API_KEY:-}}" \
+        "APP_VERSION=$APP_VERSION" \
     --revision-suffix "v$(date +%s)"
 
 echo "✅ Deployment complete!"

@@ -96,6 +96,7 @@ import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
+import { APP_VERSION } from './appVersion';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
@@ -3004,7 +3005,10 @@ function App() {
         <div className="header-content">
           <div className="header-brand">
             <img src={microsoftLogoWhite} alt="Microsoft" className="microsoft-logo" />
-            <h1>Azure Architecture Diagram Builder</h1>
+            <div className="header-brand-text">
+              <h1>Azure Architecture Diagram Builder</h1>
+              <span className="app-version">v{APP_VERSION}</span>
+            </div>
           </div>
           <div className="header-actions-wrapper">
             {/* Row 1: Project-level actions */}

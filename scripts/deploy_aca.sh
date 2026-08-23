@@ -89,6 +89,15 @@ fi
 SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APPINSIGHTS_FILE="$SOURCE_DIR/.env.appinsights"
 : > "$APPINSIGHTS_FILE"
+APP_VERSION="$(node -p "require('$SOURCE_DIR/package.json').version")"
+
+FQDN=$(az containerapp show \
+    -g "$RESOURCE_GROUP" \
+    -n "$ACA_APP_NAME" \
+    --query 'properties.configuration.ingress.fqdn' -o tsv 2>/dev/null || echo "")
+if [[ -n "$FQDN" ]]; then
+    "$SOURCE_DIR/scripts/require-version-bump.sh" "https://$FQDN"
+fi
 
 BUILD_ARGS=()
 while IFS='=' read -r key value; do
@@ -101,6 +110,9 @@ while IFS='=' read -r key value; do
         # Route App Insights conn string through file workaround
         if [[ "$key" == "VITE_APPINSIGHTS_CONNECTION_STRING" ]]; then
             echo "$key=$value" > "$APPINSIGHTS_FILE"
+            continue
+        fi
+        if [[ "$key" == "VITE_AZURE_OPENAI_API_KEY" || "$key" == "VITE_ENABLE_ADOPTION_IMPACT" ]]; then
             continue
         fi
         BUILD_ARGS+=(--build-arg "$key=$value")
@@ -123,20 +135,15 @@ echo ""
 az acr build \
     --registry "$ACR_NAME" \
     --image "$IMAGE_NAME:latest" \
+    --build-arg "LOAD_ENV_BUILD=false" \
     "${BUILD_ARGS[@]}" \
     "$SOURCE_DIR"
-
-# ─── Get ACA FQDN ───────────────────────────────────────────────────
-FQDN=$(az containerapp show \
-    -g "$RESOURCE_GROUP" \
-    -n "$ACA_APP_NAME" \
-    --query 'properties.configuration.ingress.fqdn' -o tsv 2>/dev/null || echo "")
 
 # ─── Update Container App ───────────────────────────────────────────
 echo ""
 echo "🚀 Updating Container App: $ACA_APP_NAME"
 
-SET_ENV_VARS="PUBLIC_URL=https://$FQDN"
+SET_ENV_VARS="PUBLIC_URL=https://$FQDN APP_VERSION=$APP_VERSION"
 
 az containerapp update \
     --name "$ACA_APP_NAME" \

@@ -1,5 +1,10 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+
+const { version: appVersion } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string }
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -10,8 +15,21 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       __ENABLE_ADOPTION_IMPACT__: JSON.stringify(enableAdoptionImpact),
+      __APP_VERSION__: JSON.stringify(appVersion),
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: 'aadb-version-manifest',
+        generateBundle() {
+          this.emitFile({
+            type: 'asset',
+            fileName: 'version.json',
+            source: `${JSON.stringify({ version: appVersion })}\n`,
+          })
+        },
+      },
+    ],
     server: {
       port: 3000,
       // Allow the MSAL sign-in popup to communicate back to the opener window.

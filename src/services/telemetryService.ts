@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 import { ApplicationInsights, ICustomProperties } from '@microsoft/applicationinsights-web';
+import { APP_VERSION } from '../appVersion';
 
 /**
  * Application Insights Telemetry Service
@@ -99,7 +100,7 @@ export function trackEvent(
   if (!appInsights) return;
   const context = {
     schemaVersion: TELEMETRY_SCHEMA_VERSION,
-    appVersion: import.meta.env.VITE_APP_VERSION || 'development',
+    appVersion: APP_VERSION,
     environment: import.meta.env.MODE,
     featureVersion: properties?.featureVersion || '1',
     workflowId: getWorkflowId(),

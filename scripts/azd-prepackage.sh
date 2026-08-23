@@ -50,6 +50,11 @@ get_val() {
   fi
 }
 
+DEPLOYED_APP_URL="$(get_val SERVICE_APP_URL)"
+if [ -n "$DEPLOYED_APP_URL" ]; then
+  "$REPO_ROOT/scripts/require-version-bump.sh" "$DEPLOYED_APP_URL"
+fi
+
 # ── Write .env.build ───────────────────────────────────────────────────────────
 cat > .env.build << EOF
 VITE_AZURE_OPENAI_ENDPOINT=$(get_val AZURE_OPENAI_ENDPOINT)
