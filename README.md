@@ -258,7 +258,7 @@ flowchart TD
         G[Image Upload] --> H[Vision Analyzer]
     end
 
-    subgraph AI["🤖 AI Services (15 Models)"]
+    subgraph AI["🤖 AI Services (configured subset of 15 supported models)"]
         B --> I[Architecture Generation]
         D --> I
         H --> I
@@ -306,7 +306,7 @@ sequenceDiagram
     participant UI as React UI
     participant MS as Model Settings Store
     participant TS as Token Server (/api)
-    participant AI as Azure OpenAI
+    participant AI as Foundry / Azure OpenAI Model Endpoint
     participant L as Microsoft Learn MCP
     participant P as Azure Retail Prices API
     participant DB as Cosmos DB
@@ -315,7 +315,7 @@ sequenceDiagram
     UI->>MS: Get model selection
     MS-->>UI: Selected model + settings
     UI->>TS: POST /api/openai (no key in browser)
-    TS->>AI: Generate request (managed identity / key fallback)
+    TS->>AI: Generate request (managed identity, BYO key fallback)
     AI-->>TS: Diagram specification (JSON)
     TS-->>UI: Diagram specification (JSON)
     UI->>UI: Render nodes & auto-layout (Dagre + overlap resolution)
@@ -383,11 +383,12 @@ graph TB
         TokenServer["token-server.js<br/>/api/openai · /api/docs-search<br/>/api/feedback · /api/speech-token"]
     end
 
-    subgraph External["External APIs"]
-        OpenAI[Azure OpenAI<br/>15 supported models]
+    subgraph Azure["Azure Dependencies"]
+      Foundry[Microsoft Foundry AIServices<br/>configured model deployments]
+      Identity[User-assigned managed identity]
         LearnMCP[Microsoft Learn MCP]
         PricingAPI[Azure Retail Prices API]
-        Cosmos[(Azure Cosmos DB)]
+      Cosmos[(Azure Cosmos DB - optional)]
         AppInsights[Application Insights]
         SpeechAPI[Azure Speech]
     end
@@ -407,7 +408,10 @@ graph TB
     pricing --> PricingAPI
     telemetry --> AppInsights
 
-    TokenServer --> OpenAI
+    TokenServer --> Foundry
+    Identity -. Cognitive Services OpenAI User .-> Foundry
+    Identity -. Cognitive Services Speech User .-> SpeechAPI
+    Identity -. Cosmos Data Contributor .-> Cosmos
     TokenServer --> LearnMCP
     TokenServer --> Cosmos
     TokenServer --> SpeechAPI
@@ -415,7 +419,7 @@ graph TB
     style Frontend fill:#61DAFB,color:#000
     style Services fill:#3178C6,color:#fff
     style Server fill:#412991,color:#fff
-    style External fill:#0078D4,color:#fff
+    style Azure fill:#0078D4,color:#fff
 ```
 
 ---
@@ -479,6 +483,52 @@ Reload the MCP servers (**MCP: List Servers**), paste your token when prompted (
 ## ⚡ Deploy with Azure Developer CLI (azd)
 
 The supported way to install the app in a greenfield subscription is [`azd`](https://aka.ms/azd). It provisions a destination-owned Microsoft Foundry resource with GPT-5.6 Luna, plus the web app and separate MCP service.
+
+```mermaid
+flowchart TB
+  subgraph Subscription["Destination Azure Subscription"]
+    subgraph RG["rg-environment-name"]
+      direction TB
+
+      subgraph Platform["Hosting and identity"]
+        direction TB
+        Hosting[Container Apps Environment<br/>+ Azure Container Registry]
+        Identity[User-assigned managed identity<br/>AcrPull · OpenAI User · Speech User]
+      end
+
+      subgraph Apps["Applications"]
+        direction TB
+        Web[Web Container App<br/>public test endpoint<br/>add Entra auth for shared use]
+        MCP[MCP Container App<br/>internal by default<br/>Bearer-protected when external]
+      end
+
+      subgraph Dependencies["AI and operations"]
+        direction TB
+        Foundry[Microsoft Foundry<br/>AIServices account]
+        Luna[GPT-5.6 Luna<br/>GlobalStandard capacity 10]
+        Speech[Azure Speech]
+        Monitor[Log Analytics<br/>+ Application Insights]
+        Cosmos[(Cosmos DB<br/>optional)]
+        Foundry --> Luna
+      end
+
+      Hosting -->|hosts + image pull| Web
+      Hosting -->|hosts + image pull| MCP
+      Identity -. attached .-> Web
+      Identity -. attached .-> MCP
+      Web -->|Responses API| Luna
+      Web -->|token via identity| Speech
+      Web -. optional persistence .-> Cosmos
+      Web -->|telemetry| Monitor
+      MCP -->|telemetry| Monitor
+    end
+  end
+
+  style Foundry fill:#412991,color:#fff
+  style Luna fill:#6B4EFF,color:#fff
+  style Web fill:#0078D4,color:#fff
+  style MCP fill:#00A36C,color:#fff
+```
 
 ```bash
 git clone https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder.git
