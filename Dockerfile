@@ -48,6 +48,7 @@ ARG VITE_AZURE_AD_CLIENT_ID
 ARG VITE_AZURE_AD_AUTHORITY
 ARG VITE_ARM_SCOPE
 ARG VITE_ENABLE_ADOPTION_IMPACT=false
+ARG LOAD_ENV_BUILD=true
 # Set environment variables for build
 ENV VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT
 ENV VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=$VITE_AZURE_OPENAI_DEPLOYMENT_GPT51
@@ -86,7 +87,7 @@ COPY .env.build* .env.appinsights* ./
 
 # Build the app — source the optional env files first so their values are
 # available to Vite, then fall back to the ARG/ENV values set above.
-RUN if [ -f .env.build ]; then \
+RUN if [ "$LOAD_ENV_BUILD" = "true" ] && [ -f .env.build ]; then \
       export $(grep -v '^#' .env.build | grep -v '^\s*$' | xargs); \
     fi && \
     if [ -f .env.appinsights ]; then \

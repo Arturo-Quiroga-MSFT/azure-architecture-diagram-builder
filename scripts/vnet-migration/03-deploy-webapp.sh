@@ -79,7 +79,7 @@ while IFS='=' read -r key value; do
     if [[ "$key" == "VITE_APPINSIGHTS_CONNECTION_STRING" ]]; then
       echo "$key=$value" > "$APPINSIGHTS_FILE"; continue
     fi
-    if [[ "$key" == "VITE_ENABLE_ADOPTION_IMPACT" ]]; then
+    if [[ "$key" == "VITE_AZURE_OPENAI_API_KEY" || "$key" == "VITE_ENABLE_ADOPTION_IMPACT" ]]; then
       continue
     fi
     BUILD_ARGS+=(--build-arg "$key=$value")
@@ -89,6 +89,7 @@ done < <(grep -v '^#' "$ENV_FILE" | grep -v '^[[:space:]]*$')
 az acr build --registry "$ACR" --image "$IMAGE:$TAG" \
   --build-arg "NPM_REGISTRY=$NPM_REGISTRY" \
   "${BUILD_ARGS[@]}" \
+  --build-arg "LOAD_ENV_BUILD=false" \
   --build-arg "VITE_ENABLE_ADOPTION_IMPACT=false" \
   --build-arg "ENABLE_ADOPTION_IMPACT=false" \
   "$SOURCE_DIR"
