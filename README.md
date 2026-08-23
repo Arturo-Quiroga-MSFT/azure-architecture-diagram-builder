@@ -932,6 +932,12 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### August 23, 2026 — AADB v1.2.0 Production Foundation
+
+- **Health-aware hosting** — the web container exposes shallow liveness and readiness endpoints, and reusable Container Apps infrastructure defines explicit startup, readiness, and liveness probes for both web and MCP services.
+- **Safer VNet releases** — production images use immutable version-and-commit tags, ACR pulls use managed identity, and traffic remains on the previous revision until the candidate passes direct health and version checks.
+- **Rollback boundary** — the prior healthy revision remains active at 0% traffic and each deployment prints the exact rollback command.
+
 ### August 23, 2026 — AADB v1.1.0
 
 - **Visible product version** — the header shows the running AADB release, and `/version.json` exposes the same value for deployment verification.

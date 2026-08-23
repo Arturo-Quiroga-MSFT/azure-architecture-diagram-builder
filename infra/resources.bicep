@@ -284,6 +284,35 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
           // Placeholder image replaced by 'azd deploy'
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: { cpu: json('0.5'), memory: '1.0Gi' }
+          probes: [
+            {
+              type: 'Startup'
+              httpGet: { path: '/api/ready', port: 80, scheme: 'HTTP' }
+              initialDelaySeconds: 0
+              periodSeconds: 1
+              timeoutSeconds: 1
+              failureThreshold: 60
+              successThreshold: 1
+            }
+            {
+              type: 'Readiness'
+              httpGet: { path: '/api/ready', port: 80, scheme: 'HTTP' }
+              initialDelaySeconds: 5
+              periodSeconds: 1
+              timeoutSeconds: 1
+              failureThreshold: 60
+              successThreshold: 1
+            }
+            {
+              type: 'Liveness'
+              httpGet: { path: '/api/health', port: 80, scheme: 'HTTP' }
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+              successThreshold: 1
+            }
+          ]
           env: concat([
             // Identity — lets DefaultAzureCredential pick up the managed identity
             { name: 'AZURE_CLIENT_ID', value: appIdentity.properties.clientId }
@@ -361,6 +390,35 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
           // Placeholder image replaced by 'azd deploy mcp'.
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: { cpu: json('0.5'), memory: '1.0Gi' }
+          probes: [
+            {
+              type: 'Startup'
+              httpGet: { path: '/healthz', port: 3030, scheme: 'HTTP' }
+              initialDelaySeconds: 0
+              periodSeconds: 1
+              timeoutSeconds: 1
+              failureThreshold: 60
+              successThreshold: 1
+            }
+            {
+              type: 'Readiness'
+              httpGet: { path: '/healthz', port: 3030, scheme: 'HTTP' }
+              initialDelaySeconds: 5
+              periodSeconds: 1
+              timeoutSeconds: 1
+              failureThreshold: 60
+              successThreshold: 1
+            }
+            {
+              type: 'Liveness'
+              httpGet: { path: '/healthz', port: 3030, scheme: 'HTTP' }
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+              successThreshold: 1
+            }
+          ]
           env: concat(mcpBaseEnv, mcpAuthEnv)
         }
       ]

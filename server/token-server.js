@@ -25,6 +25,19 @@ const credential = new DefaultAzureCredential();
 const REGION = process.env.AZURE_SPEECH_REGION;
 const RESOURCE_NAME = process.env.AZURE_SPEECH_RESOURCE_NAME;
 const RESOURCE_ID = process.env.AZURE_SPEECH_RESOURCE_ID;
+const APP_VERSION = process.env.APP_VERSION || 'development';
+
+app.get('/api/health', (_req, res) => {
+  res.set('Cache-Control', 'no-store').json({ status: 'ok', version: APP_VERSION });
+});
+
+app.get('/api/ready', (_req, res) => {
+  const ready = Boolean(process.env.AZURE_OPENAI_ENDPOINT);
+  res
+    .status(ready ? 200 : 503)
+    .set('Cache-Control', 'no-store')
+    .json({ status: ready ? 'ready' : 'not-ready', version: APP_VERSION });
+});
 
 // ── Azure OpenAI proxy ─────────────────────────────────────────────────────
 // Keeps Azure OpenAI credentials server-side so they are never shipped to the

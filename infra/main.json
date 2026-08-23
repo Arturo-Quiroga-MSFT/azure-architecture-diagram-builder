@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.45.15.27210",
-      "templateHash": "7516816068718187468"
+      "templateHash": "13931590692065721038"
     }
   },
   "parameters": {
@@ -389,7 +389,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.45.15.27210",
-              "templateHash": "8808908245365306949"
+              "templateHash": "3776273776469660508"
             }
           },
           "parameters": {
@@ -759,6 +759,47 @@
                         "cpu": "[json('0.5')]",
                         "memory": "1.0Gi"
                       },
+                      "probes": [
+                        {
+                          "type": "Startup",
+                          "httpGet": {
+                            "path": "/api/ready",
+                            "port": 80,
+                            "scheme": "HTTP"
+                          },
+                          "initialDelaySeconds": 0,
+                          "periodSeconds": 1,
+                          "timeoutSeconds": 1,
+                          "failureThreshold": 60,
+                          "successThreshold": 1
+                        },
+                        {
+                          "type": "Readiness",
+                          "httpGet": {
+                            "path": "/api/ready",
+                            "port": 80,
+                            "scheme": "HTTP"
+                          },
+                          "initialDelaySeconds": 5,
+                          "periodSeconds": 1,
+                          "timeoutSeconds": 1,
+                          "failureThreshold": 60,
+                          "successThreshold": 1
+                        },
+                        {
+                          "type": "Liveness",
+                          "httpGet": {
+                            "path": "/api/health",
+                            "port": 80,
+                            "scheme": "HTTP"
+                          },
+                          "initialDelaySeconds": 10,
+                          "periodSeconds": 10,
+                          "timeoutSeconds": 5,
+                          "failureThreshold": 3,
+                          "successThreshold": 1
+                        }
+                      ],
                       "env": "[concat(createArray(createObject('name', 'AZURE_CLIENT_ID', 'value', reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').clientId), createObject('name', 'AZURE_SPEECH_REGION', 'value', if(parameters('deploySpeech'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '2023-05-01', 'full').location, '')), createObject('name', 'AZURE_SPEECH_RESOURCE_ID', 'value', if(parameters('deploySpeech'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '')), createObject('name', 'AZURE_COSMOS_ENDPOINT', 'value', if(parameters('deployCosmos'), reference(resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken'))), '2024-02-15-preview').documentEndpoint, '')), createObject('name', 'COSMOS_DATABASE_ID', 'value', if(parameters('deployCosmos'), variables('cosmosDatabaseId'), '')), createObject('name', 'COSMOS_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosContainerId'), '')), createObject('name', 'COSMOS_FEEDBACK_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosFeedbackContainerId'), '')), createObject('name', 'PUBLIC_URL', 'value', format('https://{0}diagram-builder-{1}.{2}', parameters('abbrs').appContainerApps, parameters('resourceToken'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken'))), '2024-03-01').defaultDomain))), concat(createArray(createObject('name', 'AZURE_OPENAI_ENDPOINT', 'value', if(parameters('deployFoundry'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), '2025-06-01').endpoint, parameters('azureOpenAiEndpoint')))), if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(), createArray(createObject('name', 'AZURE_OPENAI_API_KEY', 'secretRef', 'azure-openai-api-key')))))]"
                     }
                   ],
@@ -814,6 +855,47 @@
                         "cpu": "[json('0.5')]",
                         "memory": "1.0Gi"
                       },
+                      "probes": [
+                        {
+                          "type": "Startup",
+                          "httpGet": {
+                            "path": "/healthz",
+                            "port": 3030,
+                            "scheme": "HTTP"
+                          },
+                          "initialDelaySeconds": 0,
+                          "periodSeconds": 1,
+                          "timeoutSeconds": 1,
+                          "failureThreshold": 60,
+                          "successThreshold": 1
+                        },
+                        {
+                          "type": "Readiness",
+                          "httpGet": {
+                            "path": "/healthz",
+                            "port": 3030,
+                            "scheme": "HTTP"
+                          },
+                          "initialDelaySeconds": 5,
+                          "periodSeconds": 1,
+                          "timeoutSeconds": 1,
+                          "failureThreshold": 60,
+                          "successThreshold": 1
+                        },
+                        {
+                          "type": "Liveness",
+                          "httpGet": {
+                            "path": "/healthz",
+                            "port": 3030,
+                            "scheme": "HTTP"
+                          },
+                          "initialDelaySeconds": 10,
+                          "periodSeconds": 10,
+                          "timeoutSeconds": 5,
+                          "failureThreshold": 3,
+                          "successThreshold": 1
+                        }
+                      ],
                       "env": "[concat(createArray(createObject('name', 'AZURE_CLIENT_ID', 'value', reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').clientId), createObject('name', 'MCP_HTTP_HOST', 'value', '0.0.0.0'), createObject('name', 'MCP_HTTP_PORT', 'value', '3030'), createObject('name', 'MCP_HTTP_PATH', 'value', '/mcp')), variables('mcpAuthEnv'))]"
                     }
                   ],

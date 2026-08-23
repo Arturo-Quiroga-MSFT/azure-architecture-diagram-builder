@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 #
-# 03-deploy-webapp.sh — Blue/green: build + deploy the web app into the new
-# VNet-integrated ACA environment so it reaches Cosmos over the private endpoint.
+# 03-deploy-webapp.sh — Build and safely roll out the web app in the
+# VNet-integrated ACA environment.
 # ============================================================================
-# - Rebuilds the image under a distinct tag (:vnet) so the OLD app's :latest is
-#   untouched (clean blue/green). The rebuild bakes the client VITE_* values and
-#   picks up the new server-side GET /api/feedback/list admin endpoint.
-# - Creates a NEW app (azure-diagram-builder-vnet) in the VNet env, cloning the
-#   old app's ingress/scale/identity/secrets/env, plus FEEDBACK_ADMIN_TOKEN.
-# - Grants the new managed identity the same data-plane RBAC (Speech + Cosmos).
+# - Builds an immutable image tag from the app version and Git commit.
+# - Uses managed identity with AcrPull instead of stored ACR admin credentials.
+# - Creates a probe-bearing candidate revision while traffic remains on the
+#   current healthy revision, then switches traffic only after direct smoke tests.
+# - Keeps the previous revision active at 0% traffic for an explicit rollback.
 #
 # The OLD app keeps running untouched. Cutover (repoint redirect + delete old)
 # is a separate manual step after verification.
@@ -25,9 +24,7 @@ NEW_ENV="aca-env-azure-diagrams-vnet"
 NEW_APP="azure-diagram-builder-vnet"
 ACR="acrazurediagrams1767583743"
 IMAGE="azure-diagram-builder"
-TAG="${TAG:-vnet}"
 BUILD_ONLY="${BUILD_ONLY:-false}"
-ACR_IMAGE="$ACR.azurecr.io/$IMAGE:$TAG"
 NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
 
 COSMOS_ACCOUNT="aqcosmosdb007"
@@ -39,6 +36,15 @@ SOURCE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 ENV_FILE="$SOURCE_DIR/.env"
 [[ -f "$ENV_FILE" ]] || { echo "❌ .env not found at $ENV_FILE"; exit 1; }
 APP_VERSION="$(node -p "require('$SOURCE_DIR/package.json').version")"
+GIT_SHA="$(git -C "$SOURCE_DIR" rev-parse --short=12 HEAD)"
+TAG="v${APP_VERSION}-${GIT_SHA}"
+REV_SUFFIX="v${APP_VERSION//./-}-${GIT_SHA}"
+ACR_IMAGE="$ACR.azurecr.io/$IMAGE:$TAG"
+
+if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain)" ]]; then
+  echo "❌ Refusing to build an uncommitted worktree; commit the exact source first." >&2
+  exit 1
+fi
 
 get_file_val() {
   { grep -E "^$1=" "$2" | head -1 | cut -d= -f2- \
@@ -74,8 +80,8 @@ if [[ -z "$FEEDBACK_TOKEN" ]]; then
   echo "🔑 Generated FEEDBACK_ADMIN_TOKEN and appended to .env"
 fi
 
-# ── Rebuild image (:vnet) — bakes VITE_* and includes new server endpoint ───
-echo "🔨 Building $ACR_IMAGE in ACR (bakes VITE_* + new /api/feedback/list) ..."
+# ── Build immutable image — bakes VITE_* and includes the token server ───────
+echo "🔨 Preparing immutable image $ACR_IMAGE in ACR ..."
 APPINSIGHTS_FILE="$SOURCE_DIR/.env.appinsights"
 : > "$APPINSIGHTS_FILE"
 BUILD_ARGS=()
@@ -92,36 +98,31 @@ while IFS='=' read -r key value; do
   fi
 done < <(grep -v '^#' "$ENV_FILE" | grep -v '^[[:space:]]*$')
 
-az acr build --registry "$ACR" --image "$IMAGE:$TAG" \
-  --build-arg "NPM_REGISTRY=$NPM_REGISTRY" \
-  "${BUILD_ARGS[@]}" \
-  --build-arg "LOAD_ENV_BUILD=false" \
-  --build-arg "VITE_ENABLE_ADOPTION_IMPACT=false" \
-  --build-arg "ENABLE_ADOPTION_IMPACT=false" \
-  "$SOURCE_DIR"
+EXISTING_TAG="$(az acr repository show-tags --name "$ACR" --repository "$IMAGE" \
+  --query "[?@=='$TAG'] | [0]" -o tsv)"
+if [[ -n "$EXISTING_TAG" ]]; then
+  echo "✓ Reusing existing immutable image $ACR_IMAGE"
+else
+  az acr build --registry "$ACR" --image "$IMAGE:$TAG" \
+    --build-arg "NPM_REGISTRY=$NPM_REGISTRY" \
+    "${BUILD_ARGS[@]}" \
+    --build-arg "LOAD_ENV_BUILD=false" \
+    --build-arg "VITE_ENABLE_ADOPTION_IMPACT=false" \
+    --build-arg "ENABLE_ADOPTION_IMPACT=false" \
+    "$SOURCE_DIR"
+fi
 
 if [[ "$BUILD_ONLY" == "true" ]]; then
   echo "✅ Build-only validation completed: $ACR_IMAGE"
   exit 0
 fi
 
-# ── ACR admin creds (old app used admin-cred pull) ──────────────────────────
-ACR_USER="$(az acr credential show -n "$ACR" --query username -o tsv)"
-ACR_PW="$(az acr credential show -n "$ACR" --query 'passwords[0].value' -o tsv)"
-
-# ── Create the new app in the VNet env ──────────────────────────────────────
+# ── Create the app when absent; existing releases use revision rollout ──────
 if az containerapp show -n "$NEW_APP" -g "$RG" -o none 2>/dev/null; then
-  echo "✓ App $NEW_APP already exists — updating image to $ACR_IMAGE"
-  az containerapp registry set -n "$NEW_APP" -g "$RG" \
-    --server "$ACR.azurecr.io" --username "$ACR_USER" --password "$ACR_PW" -o none
-  # The :vnet tag string is unchanged between deploys, so ACA would NOT create a
-  # new revision (it only diffs the template, not the resolved digest). Force a
-  # unique revision suffix so the new image digest is actually pulled and served.
-  REV_SUFFIX="v$(date +%Y%m%d%H%M%S)"
-  echo "  ↻ forcing new revision: $REV_SUFFIX"
-  az containerapp update -n "$NEW_APP" -g "$RG" --image "$ACR_IMAGE" \
-    --revision-suffix "$REV_SUFFIX" -o none
+  echo "✓ App $NEW_APP already exists"
 else
+  ACR_USER="$(az acr credential show -n "$ACR" --query username -o tsv)"
+  ACR_PW="$(az acr credential show -n "$ACR" --query 'passwords[0].value' -o tsv)"
   echo "🚀 Creating $NEW_APP in $NEW_ENV ..."
   az containerapp create -n "$NEW_APP" -g "$RG" \
     --environment "$NEW_ENV" \
@@ -134,9 +135,7 @@ else
     --min-replicas 1 --max-replicas 1 \
     --cpu 0.5 --memory 1Gi \
     --secrets \
-        vite-azure-openai-api-key="$OPENAI_KEY" \
-        vite-azure-openai-endpoint="$VITE_ENDPOINT" \
-        vite-azure-openai-deployment-gpt52="$VITE_DEPLOY52" \
+        azure-openai-api-key="$OPENAI_KEY" \
         feedback-admin-token="$FEEDBACK_TOKEN" \
     --env-vars \
         AZURE_COSMOS_ENDPOINT="https://aqcosmosdb007.documents.azure.com:443/" \
@@ -146,27 +145,33 @@ else
         AZURE_SPEECH_REGION="westus2" \
         AZURE_SPEECH_RESOURCE_ID="/subscriptions/$SUB/resourceGroups/$SPEECH_RG/providers/Microsoft.CognitiveServices/accounts/$SPEECH_ACCOUNT" \
         AZURE_OPENAI_ENDPOINT="https://r2d2-foundry-001.openai.azure.com/" \
-        AZURE_OPENAI_API_KEY="$OPENAI_KEY" \
+        AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key \
         APP_VERSION="$APP_VERSION" \
-        VITE_AZURE_OPENAI_ENDPOINT=secretref:vite-azure-openai-endpoint \
-        VITE_AZURE_OPENAI_API_KEY=secretref:vite-azure-openai-api-key \
-        VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=secretref:vite-azure-openai-deployment-gpt52 \
         FEEDBACK_ADMIN_TOKEN=secretref:feedback-admin-token \
         PUBLIC_URL="https://pending.invalid" \
     -o none
 fi
 
-# ── PUBLIC_URL = own FQDN ───────────────────────────────────────────────────
+# ── Configure identity, roles, and stable traffic boundary ──────────────────
 FQDN="$(az containerapp show -n "$NEW_APP" -g "$RG" --query 'properties.configuration.ingress.fqdn' -o tsv)"
-az containerapp update -n "$NEW_APP" -g "$RG" --set-env-vars \
-  "PUBLIC_URL=https://$FQDN" \
-  "APP_VERSION=$APP_VERSION" \
-  "ENABLE_ADOPTION_IMPACT=false" \
-  -o none
-
-# ── Grant data-plane RBAC to the new managed identity ───────────────────────
 PRINCIPAL="$(az containerapp show -n "$NEW_APP" -g "$RG" --query identity.principalId -o tsv)"
 echo "🔐 Granting RBAC to MI $PRINCIPAL ..."
+
+ACR_ID="$(az acr show -n "$ACR" --query id -o tsv)"
+EXISTING_ACR_ROLE="$(az role assignment list --assignee-object-id "$PRINCIPAL" --scope "$ACR_ID" \
+  --query "[?roleDefinitionName=='AcrPull'] | [0].id" -o tsv)"
+if [[ -z "$EXISTING_ACR_ROLE" ]]; then
+  az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal-type ServicePrincipal \
+    --role AcrPull --scope "$ACR_ID" -o none
+  echo "  ✓ AcrPull on $ACR"
+else
+  echo "  • AcrPull already present on $ACR"
+fi
+
+az containerapp secret set -n "$NEW_APP" -g "$RG" \
+  --secrets azure-openai-api-key="$OPENAI_KEY" -o none
+az containerapp registry set -n "$NEW_APP" -g "$RG" \
+  --server "$ACR.azurecr.io" --identity system -o none
 
 SPEECH_ID="$(az cognitiveservices account show -n "$SPEECH_ACCOUNT" -g "$SPEECH_RG" --query id -o tsv)"
 az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal-type ServicePrincipal \
@@ -187,9 +192,77 @@ else
   echo "  ✓ Cosmos Data Contributor on $COSMOS_ACCOUNT"
 fi
 
+PREVIOUS_REVISION="$(az containerapp show -n "$NEW_APP" -g "$RG" --query properties.latestReadyRevisionName -o tsv)"
+[[ -n "$PREVIOUS_REVISION" ]] || { echo "❌ No healthy revision is available for rollback." >&2; exit 1; }
+
+az containerapp revision set-mode -n "$NEW_APP" -g "$RG" --mode multiple -o none
+az containerapp ingress traffic set -n "$NEW_APP" -g "$RG" \
+  --revision-weight "$PREVIOUS_REVISION=100" -o none
+
+# ── Create and verify candidate revision before moving production traffic ───
+CANDIDATE_FILE="$(mktemp)"
+trap 'rm -f "$CANDIDATE_FILE"' EXIT
+az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$PREVIOUS_REVISION" \
+  --query properties.template -o json \
+  | node "$SOURCE_DIR/scripts/vnet-migration/render-webapp-revision.mjs" \
+      "$ACR_IMAGE" "$REV_SUFFIX" "$APP_VERSION" "https://$FQDN" \
+  > "$CANDIDATE_FILE"
+
+echo "🚀 Creating candidate revision $REV_SUFFIX with production traffic pinned to $PREVIOUS_REVISION ..."
+CANDIDATE_REVISION="$NEW_APP--$REV_SUFFIX"
+if az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$CANDIDATE_REVISION" -o none 2>/dev/null; then
+  echo "✓ Reusing existing candidate revision $CANDIDATE_REVISION"
+else
+  CANDIDATE_REVISION="$(az containerapp update -n "$NEW_APP" -g "$RG" \
+    --yaml "$CANDIDATE_FILE" --query properties.latestRevisionName -o tsv)"
+fi
+[[ -n "$CANDIDATE_REVISION" && "$CANDIDATE_REVISION" != "$PREVIOUS_REVISION" ]] \
+  || { echo "❌ Candidate revision was not created." >&2; exit 1; }
+
+CANDIDATE_FQDN="$(az containerapp revision show -n "$NEW_APP" -g "$RG" \
+  --revision "$CANDIDATE_REVISION" --query properties.fqdn -o tsv)"
+[[ -n "$CANDIDATE_FQDN" ]] || { echo "❌ Candidate revision has no FQDN; traffic remains on $PREVIOUS_REVISION." >&2; exit 1; }
+
+curl --fail --silent --show-error --retry 12 --retry-delay 5 --retry-all-errors \
+  "https://$CANDIDATE_FQDN/api/ready" -o /dev/null
+CANDIDATE_HEALTH="$(az containerapp revision show -n "$NEW_APP" -g "$RG" \
+  --revision "$CANDIDATE_REVISION" --query properties.healthState -o tsv)"
+[[ "$CANDIDATE_HEALTH" == "Healthy" ]] \
+  || { echo "❌ Candidate revision is $CANDIDATE_HEALTH; traffic remains on $PREVIOUS_REVISION." >&2; exit 1; }
+CANDIDATE_VERSION="$(curl --fail --silent --show-error --retry 3 --retry-all-errors \
+  "https://$CANDIDATE_FQDN/version.json" \
+  | node -e "let body='';process.stdin.on('data',chunk=>body+=chunk).on('end',()=>process.stdout.write(JSON.parse(body).version))")"
+[[ "$CANDIDATE_VERSION" == "$APP_VERSION" ]] \
+  || { echo "❌ Candidate reports v$CANDIDATE_VERSION; expected v$APP_VERSION." >&2; exit 1; }
+
+echo "🔀 Candidate is healthy; moving production traffic to $CANDIDATE_REVISION ..."
+az containerapp ingress traffic set -n "$NEW_APP" -g "$RG" \
+  --revision-weight "$PREVIOUS_REVISION=0" "$CANDIDATE_REVISION=100" -o none
+
+if ! curl --fail --silent --show-error --retry 6 --retry-delay 5 --retry-all-errors \
+  "https://$FQDN/api/ready" -o /dev/null; then
+  echo "❌ Production smoke test failed; rolling traffic back to $PREVIOUS_REVISION." >&2
+  az containerapp ingress traffic set -n "$NEW_APP" -g "$RG" \
+    --revision-weight "$PREVIOUS_REVISION=100" "$CANDIDATE_REVISION=0" -o none
+  exit 1
+fi
+LIVE_VERSION="$(curl --fail --silent --show-error --retry 3 --retry-all-errors \
+  "https://$FQDN/version.json" \
+  | node -e "let body='';process.stdin.on('data',chunk=>body+=chunk).on('end',()=>process.stdout.write(JSON.parse(body).version))")"
+if [[ "$LIVE_VERSION" != "$APP_VERSION" ]]; then
+  echo "❌ Production reports v$LIVE_VERSION; rolling traffic back to $PREVIOUS_REVISION." >&2
+  az containerapp ingress traffic set -n "$NEW_APP" -g "$RG" \
+    --revision-weight "$PREVIOUS_REVISION=100" "$CANDIDATE_REVISION=0" -o none
+  exit 1
+fi
+
 echo ""
-echo "✅ New web app deployed (blue/green — old app untouched):"
+echo "✅ Web app deployed:"
 echo "   https://$FQDN"
+echo "   Version: v$APP_VERSION ($GIT_SHA)"
+echo "   Active revision: $CANDIDATE_REVISION"
+echo "   Rollback revision: $PREVIOUS_REVISION"
+echo "   Rollback command: az containerapp ingress traffic set -n $NEW_APP -g $RG --revision-weight $PREVIOUS_REVISION=100 $CANDIDATE_REVISION=0"
 echo ""
 echo "Next: verify a feedback WRITE lands in Cosmos over the PE, read it back via"
 echo "  curl -H \"Authorization: Bearer \$FEEDBACK_ADMIN_TOKEN\" https://$FQDN/api/feedback/list"

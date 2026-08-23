@@ -16,10 +16,16 @@ This project runs **two** Azure Container Apps. Deploy to the correct one.
   ./scripts/vnet-migration/03-deploy-webapp.sh
   ```
 
-  Builds image tag `:vnet` in ACR `acrazurediagrams1767583743`, auto-passes every
-  `VITE_*` from the repo-root `.env` as a build arg, and forces a fresh revision
-  suffix each run (the `:vnet` tag string is stable, so ACA would otherwise skip
-  creating a revision). Commit and push the version change before deployment.
+  Builds an immutable `v<version>-<git-sha>` image in ACR
+  `acrazurediagrams1767583743` and auto-passes every non-secret `VITE_*` value
+  from the repo-root `.env`. Commit and push the version change before deployment.
+
+  The script grants the app identity resource-scoped `AcrPull`, replaces stored
+  ACR credentials with managed-identity pull, and creates a probe-bearing candidate
+  revision in multiple-revision mode. Production traffic stays on the previous
+  healthy revision until the candidate's direct URL passes readiness and version
+  checks. The prior revision remains active at 0% and the script prints its rollback
+  command.
 
 ## OLD app — legacy, non-VNet (rollback only)
 
