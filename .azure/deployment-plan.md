@@ -132,6 +132,7 @@ Revalidation completed after the correction:
 - Browser verification confirmed the UI, `/version.json`, `/api/health`, and `/api/ready` all report `1.2.0`.
 - Live registry authentication uses the system identity with resource-scoped `AcrPull`; `AZURE_OPENAI_API_KEY` is a secret reference rather than a plaintext environment value.
 - Probe requests were functionally healthy but generated high-volume access logs. Exact health/readiness nginx locations now disable access logging for probe traffic only; this recovery refinement requires the final same-version rollout before tagging.
+- Recovery ACR run `ch6r` built image `v1.2.0-fdced3a932db`, but two consecutive app-scope writes collided before candidate creation. Production remained on the healthy `1dbdba1…` revision at 100%. The deployment script now skips already-present secret and managed-identity registry configuration; secret rotation requires explicit `ROTATE_OPENAI_SECRET=true`.
 
 ## 8. Role Assignment Verification
 

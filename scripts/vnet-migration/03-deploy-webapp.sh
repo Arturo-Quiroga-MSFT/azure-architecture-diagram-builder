@@ -25,6 +25,7 @@ NEW_APP="azure-diagram-builder-vnet"
 ACR="acrazurediagrams1767583743"
 IMAGE="azure-diagram-builder"
 BUILD_ONLY="${BUILD_ONLY:-false}"
+ROTATE_OPENAI_SECRET="${ROTATE_OPENAI_SECRET:-false}"
 NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
 
 COSMOS_ACCOUNT="aqcosmosdb007"
@@ -168,10 +169,23 @@ else
   echo "  • AcrPull already present on $ACR"
 fi
 
-az containerapp secret set -n "$NEW_APP" -g "$RG" \
-  --secrets azure-openai-api-key="$OPENAI_KEY" -o none
-az containerapp registry set -n "$NEW_APP" -g "$RG" \
-  --server "$ACR.azurecr.io" --identity system -o none
+EXISTING_OPENAI_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
+  --query "[?name=='azure-openai-api-key'] | [0].name" -o tsv)"
+if [[ -z "$EXISTING_OPENAI_SECRET" || "$ROTATE_OPENAI_SECRET" == "true" ]]; then
+  az containerapp secret set -n "$NEW_APP" -g "$RG" \
+    --secrets azure-openai-api-key="$OPENAI_KEY" -o none
+else
+  echo "  • OpenAI runtime secret already present"
+fi
+
+REGISTRY_IDENTITY="$(az containerapp show -n "$NEW_APP" -g "$RG" \
+  --query "properties.configuration.registries[?server=='$ACR.azurecr.io'] | [0].identity" -o tsv)"
+if [[ "$REGISTRY_IDENTITY" != "system" ]]; then
+  az containerapp registry set -n "$NEW_APP" -g "$RG" \
+    --server "$ACR.azurecr.io" --identity system -o none
+else
+  echo "  • Managed-identity ACR pull already configured"
+fi
 
 SPEECH_ID="$(az cognitiveservices account show -n "$SPEECH_ACCOUNT" -g "$SPEECH_RG" --query id -o tsv)"
 az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal-type ServicePrincipal \

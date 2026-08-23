@@ -25,7 +25,8 @@ This project runs **two** Azure Container Apps. Deploy to the correct one.
   revision in multiple-revision mode. Production traffic stays on the previous
   healthy revision until the candidate's direct URL passes readiness and version
   checks. The prior revision remains active at 0% and the script prints its rollback
-  command.
+  command. To rotate the existing runtime OpenAI secret during a release, set
+  `ROTATE_OPENAI_SECRET=true`; normal retries do not rewrite an unchanged secret.
 
 ## OLD app — legacy, non-VNet (rollback only)
 
