@@ -101,7 +101,7 @@ Validate your architecture against all five WAF pillars:
 Select specific recommendations and automatically regenerate an improved architecture. During analysis, a dismiss hint lets you close the panel and return later via the **Validation Score** button in the toolbar.
 
 ### 🔀 Multi-Model Comparison
-Compare AI output side-by-side across all 14 models:
+Compare AI output side-by-side across all 15 supported models when their deployments are configured:
 
 - **Architecture Comparison** — Run the same prompt through multiple models and compare service counts, connection counts, groups, workflow steps, token usage, and latency
 - **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins. An inline WAF info box explains the five pillars being assessed
@@ -258,7 +258,7 @@ flowchart TD
         G[Image Upload] --> H[Vision Analyzer]
     end
 
-    subgraph AI["🤖 AI Services (14 Models)"]
+    subgraph AI["🤖 AI Services (15 Models)"]
         B --> I[Architecture Generation]
         D --> I
         H --> I
@@ -384,7 +384,7 @@ graph TB
     end
 
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI<br/>14 models]
+        OpenAI[Azure OpenAI<br/>15 supported models]
         LearnMCP[Microsoft Learn MCP]
         PricingAPI[Azure Retail Prices API]
         Cosmos[(Azure Cosmos DB)]
@@ -476,66 +476,37 @@ Reload the MCP servers (**MCP: List Servers**), paste your token when prompted (
 
 ---
 
-## ⚡ One-command deploy with Azure Developer CLI (azd)
+## ⚡ Deploy with Azure Developer CLI (azd)
 
-The fastest way to provision all Azure resources and deploy the app is with [`azd`](https://aka.ms/azd):
+The supported way to install the app in a greenfield subscription is [`azd`](https://aka.ms/azd). It provisions a destination-owned Microsoft Foundry resource with GPT-5.6 Luna, plus the web app and separate MCP service.
 
 ```bash
-# 1. Install azd (once)
-winget install microsoft.azd   # Windows
-brew tap azure/azd && brew install azd   # macOS
-
-# 2. Clone and enter the repo
-git clone https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder
+git clone https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder.git
 cd azure-architecture-diagram-builder
 
-# 3. Log in
 azd auth login
-
-# 4. Set your Azure OpenAI details (bring-your-own resource)
-azd env set AZURE_OPENAI_ENDPOINT       "https://your-resource.openai.azure.com/"
-azd env set AZURE_OPENAI_API_KEY        "your-key"
-azd env set AZURE_OPENAI_DEPLOYMENT_NAME "gpt-5.1"         # adjust to your deployments
-azd env set AZURE_SPEECH_REGION        "westus2"
-
-# 5. Provision infrastructure + build + deploy  (≈ 8 min first run)
-azd up
+azd env new <environment-name> --subscription <subscription-id> --location eastus2
+azd env set AZURE_SPEECH_REGION "eastus2"
+azd provision
+# Verify AcrPull and OpenAI User propagation as shown in the PSA quickstart, then:
+azd deploy
 ```
 
-`azd up` provisions (via Bicep in `infra/`):
+For prerequisites, permissions, verification, MCP access, updates, teardown, and troubleshooting, use the **[PSA Self-Deployment Quickstart](DOCS/PSA-SELF-DEPLOYMENT.md)**. It is the canonical installation path for a new subscription.
 
-| Resource | Purpose |
-|---|---|
-| Azure Container Registry | Stores the Docker image |
-| Azure Container Apps | Runs the app (nginx + token server) |
-| Log Analytics + App Insights | Monitoring and telemetry |
-| Azure Speech (S0) | Avatar Presenter feature (keyless auth via managed identity) |
-| Cosmos DB *(optional)* | Diagram persistence — set `deployCosmos=true` in `infra/main.parameters.json` |
-
-After `azd up` completes, the app URL is printed and captured in `SERVICE_APP_URL`.
-
-> **Keyless Azure OpenAI (optional).** `azd up` passes your OpenAI key to the
-> container as a runtime value used by the `/api/openai` proxy, so it works out
-> of the box. To drop the key entirely, grant the app's managed identity the
-> **Cognitive Services OpenAI User** role on your Azure OpenAI resource and clear
-> `AZURE_OPENAI_API_KEY` from the Container App. (The Bicep already assigns the
-> *Cognitive Services Speech User* and *Cosmos DB Data Contributor* roles, but
-> not OpenAI, because the OpenAI resource is bring-your-own / external.)
+The quickstart provisions GPT-5.6 Luna with medium reasoning and keyless managed-identity access. To deploy and enable more supported models, follow **[Model Configuration](DOCS/MODEL-CONFIGURATION.md)**.
 
 ### GitHub Actions CI/CD
 
-[`.github/workflows/azure-dev.yml`](.github/workflows/azure-dev.yml) re-deploys on every push to `main`.
-Required GitHub secrets/variables:
+The [Azure deployment workflow](.github/workflows/azure-dev.yml) is currently **manual-only** (`workflow_dispatch`); it does not deploy on pushes to `main`. Before running it, configure OIDC federation and these GitHub settings:
 
 | Secret | Value |
 |---|---|
 | `AZURE_CLIENT_ID` | Service principal / federated credential client ID |
 | `AZURE_TENANT_ID` | Entra ID tenant ID |
 | `AZURE_SUBSCRIPTION_ID` | Subscription ID |
-| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint |
-| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key |
 
-Set `AZURE_ENV_NAME` and `AZURE_LOCATION` as **variables** (not secrets).
+Set `AZURE_ENV_NAME`, `AZURE_LOCATION`, and `AZURE_SPEECH_REGION` as **variables** (not secrets). Additional `AZURE_OPENAI_DEPLOYMENT_*` variables are optional; the greenfield Bicep creates and exports GPT-5.6 Luna automatically.
 
 ---
 
@@ -551,8 +522,8 @@ Set `AZURE_ENV_NAME` and `AZURE_LOCATION` as **variables** (not secrets).
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-org/azure-diagrams.git
-cd azure-diagrams
+git clone https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder.git
+cd azure-architecture-diagram-builder
 ```
 
 2. **Install dependencies**
@@ -577,9 +548,8 @@ Create a `.env` file in the project root:
 # VITE_ values to the server-side names (AZURE_OPENAI_ENDPOINT / _API_KEY).
 VITE_AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key-here   # optional fallback; bridged to the server only, never bundled
-VITE_AZURE_OPENAI_DEPLOYMENT=your-default-deployment
 
-# Multi-model deployments (14 models)
+# Multi-model deployments (configure only the models you use)
 # OpenAI GPT-5.x family
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=your-gpt51-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
@@ -588,6 +558,8 @@ VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI=your-gpt54-mini-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL=your-gpt56-sol-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA=your-gpt56-terra-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA=your-gpt56-luna-deployment
+# Microsoft model (Chat Completions API)
+VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1=your-mai-thinking-1-deployment
 # Partner models (Chat Completions API)
 VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=your-deepseek-v32-speciale-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO=your-deepseek-v4-pro-deployment
@@ -747,7 +719,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 1. Click **"Generate with AI"** in the toolbar
 2. Describe your architecture in natural language, or pick from **13 curated example prompts**
 3. Choose a **diagram mode** — Topology, Blueprint (BETA), or Both (BETA)
-4. Select your AI model (any of the 12 options) and reasoning level
+4. Select any model configured by the app owner and choose its reasoning level when supported
 5. Click **Generate** — the architecture is created with auto-layout and workflow animation
 
 #### Method 2: Image Import
@@ -865,7 +837,7 @@ azure-diagrams/
 │   │   ├── avatarPresenter.ts   # Talking avatar: Speech SDK, ICE relay, word-boundary captions
 │   │   └── telemetryService.ts  # Application Insights telemetry
 │   ├── stores/               # State management
-│   │   └── modelSettingsStore.ts  # Multi-model settings (14 models)
+│   │   └── modelSettingsStore.ts  # Multi-model settings (15 supported models)
 │   ├── hooks/                # Shared React hooks
 │   │   └── useDraggableResizable.ts  # Pointer-capture drag-to-move + drag-to-resize hook
 │   ├── data/                 # Static data

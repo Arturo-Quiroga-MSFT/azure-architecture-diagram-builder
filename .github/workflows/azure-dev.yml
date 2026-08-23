@@ -2,9 +2,10 @@ name: Azure Diagram Builder — provision & deploy (azd)
 
 # Manual-only. This workflow deploys via `azd` using OIDC federated login and
 # requires the following to be configured in the repo before it will run:
-#   Secrets:   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
-#              AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY
-#   Variables: AZURE_ENV_NAME, AZURE_LOCATION, AZURE_OPENAI_DEPLOYMENT_* , AZURE_SPEECH_REGION
+#   Secrets:   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#   Variables: AZURE_ENV_NAME, AZURE_LOCATION, AZURE_SPEECH_REGION
+# Optional additional model deployments can be supplied as AZURE_OPENAI_DEPLOYMENT_*
+# variables. The default GPT-5.6 Luna endpoint/deployment is created by Bicep.
 # Until those exist, run deployments locally with scripts/update_aca.sh.
 # To re-enable automatic deploys on push, restore the `push:` trigger below.
 on:
@@ -39,18 +40,25 @@ jobs:
 
       - name: Set up azd environment
         run: |
-          azd env new "$AZURE_ENV_NAME" --no-prompt
-          # Azure OpenAI (bring-your-own resource)
-          azd env set AZURE_OPENAI_ENDPOINT         "${{ secrets.AZURE_OPENAI_ENDPOINT }}"
-          azd env set AZURE_OPENAI_API_KEY          "${{ secrets.AZURE_OPENAI_API_KEY }}"
+          azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZURE_LOCATION" --no-prompt
+          # Optional additional deployments in the generated Foundry account.
           azd env set AZURE_OPENAI_DEPLOYMENT_NAME  "${{ vars.AZURE_OPENAI_DEPLOYMENT_NAME }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_GPT52        "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT52 }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_GPT52CODEX   "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT52CODEX }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_GPT53CODEX   "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT53CODEX }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_GPT54        "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT54 }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_GPT54MINI    "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT54MINI }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT56SOL     "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT56SOL }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT56TERRA   "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT56TERRA }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT56LUNA    "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT56LUNA }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1 "${{ vars.AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1 }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_DEEPSEEK     "${{ vars.AZURE_OPENAI_DEPLOYMENT_DEEPSEEK }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO "${{ vars.AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO }}"
           azd env set AZURE_OPENAI_DEPLOYMENT_GROK4FAST    "${{ vars.AZURE_OPENAI_DEPLOYMENT_GROK4FAST }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GROK43       "${{ vars.AZURE_OPENAI_DEPLOYMENT_GROK43 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3 "${{ vars.AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_KIMIK25      "${{ vars.AZURE_OPENAI_DEPLOYMENT_KIMIK25 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE  "${{ vars.AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE }}"
           # Speech region (for avatar presenter)
           azd env set AZURE_SPEECH_REGION "${{ vars.AZURE_SPEECH_REGION }}"
 

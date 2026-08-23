@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { getModelSettingsForFeature, getModelSettings, getDeploymentName, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
+import { getModelSettingsForFeature, getModelSettings, getDeploymentName, getAvailableModels, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { trackAIModelUsage } from './telemetryService';
 import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
 import { buildArchitectureGenerationSystemPrompt } from './architectureGenerationContract';
@@ -353,22 +353,7 @@ Verify findings independently.*`;
 }
 
 export function isAzureOpenAIConfigured(): boolean {
-  // Check if at least one model is available
-  const hasEndpoint = !!endpoint;
-  
-  // Check for specific model deployments (no longer using legacy default)
-  const hasGpt51 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51;
-  const hasGpt52 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52;
-  const hasGpt54Mini = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI;
-  const hasMaiThinking1 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1;
-  const hasDeepSeek = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK;
-  const hasDeepSeekV4Pro = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO;
-  const hasGrok = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST;
-  const hasGrok43 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43;
-  const hasMistralL3 = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3;
-  const hasKimi = !!import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25;
-  
-  return hasEndpoint && (hasGpt51 || hasGpt52 || hasGpt54Mini || hasMaiThinking1 || hasDeepSeek || hasDeepSeekV4Pro || hasGrok || hasGrok43 || hasMistralL3 || hasKimi);
+  return !!endpoint && getAvailableModels().length > 0;
 }
 
 /**

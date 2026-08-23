@@ -47,7 +47,7 @@ graph TB
     end
 
     subgraph "External APIs"
-        OpenAI[Azure OpenAI API<br/>12 Models via Azure AI Foundry]
+        OpenAI[Azure OpenAI API<br/>15 supported models via Azure AI Foundry]
         LearnMCP[Microsoft Learn MCP]
         AzureAPI[Azure Retail Prices API]
         Cosmos[(Azure Cosmos DB)]
@@ -165,7 +165,7 @@ graph LR
     TS --> Cosmos
 
     subgraph External["External APIs"]
-        OpenAI[Azure OpenAI API<br/>12 Models]
+        OpenAI[Azure OpenAI API<br/>15 supported models]
         LearnMCP[Microsoft Learn MCP]
         PricingAPI[Azure Retail Prices API]
         Cosmos[(Azure Cosmos DB)]
@@ -413,8 +413,10 @@ azure-diagrams/
 ### Deployment
 - **Azure Container Apps** - Production hosting (min 1, max 3 replicas)
 - **Azure Container Registry** - Image storage; built by azd or `az acr build`
-- **Azure Developer CLI (azd)** - One-command provision + deploy via `infra/` Bicep
-- **GitHub Actions** - CI/CD pipeline (`.github/workflows/azure-dev.yml`) on push to `main`
+- **Azure Developer CLI (azd)** - Two-phase provision and deploy via `infra/` Bicep, with ACR and Foundry role-propagation gates
+- **Microsoft Foundry** - Greenfield `AIServices` account with a parameterized GPT-5.6 Luna deployment; account-level inference only, no Foundry project
+- **Managed identity** - Keyless model inference through resource-scoped `Cognitive Services OpenAI User`
+- **GitHub Actions** - Manual OIDC deployment workflow (`.github/workflows/azure-dev.yml`)
 - **nginx** - Static file serving in production container
 - **Dockerfile** - Multi-stage build (Node 20 Alpine + nginx)
 
@@ -422,7 +424,7 @@ azure-diagrams/
 
 ### 1. AI-Powered Diagram Generation
 - **Input**: Natural language architecture description, or uploaded image, or IaC template (ARM/Bicep/Terraform)
-- **Model Selection**: Choose from 12 models (GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5) with optional reasoning effort
+- **Model Selection**: Choose among the configured subset of 15 supported models, with optional reasoning effort where supported; see [Model Configuration](MODEL-CONFIGURATION.md)
 - **Processing**: Azure OpenAI analyzes requirements and generates structured JSON
 - **Post-processing**: Service names normalized against `serviceIconMapping`, categories corrected, icons resolved
 - **Output**: Services, connections (sync/async/optional/bidirectional), groups, and workflow steps
@@ -488,7 +490,7 @@ azure-diagrams/
 - **Restore**: Roll back to any previous version
 
 ### 9. Model Selection & Comparison
-- **12 models**: GPT-5.1, GPT-5.2, GPT-5.2 Codex, GPT-5.3 Codex, GPT-5.4, GPT-5.4 Mini, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5
+- **15 supported models**: the selector shows only deployments configured at web-image build time; see [Model Configuration](MODEL-CONFIGURATION.md)
 - **Reasoning effort**: Configurable (none/low/medium/high) for reasoning-capable models
 - **Per-feature overrides**: Different models for generation vs. validation vs. deployment guides
 - **Architecture comparison**: Run the same prompt through multiple models in parallel; compare service counts, tokens, latency; apply the best result
@@ -606,13 +608,9 @@ scripts/fetch-multi-region-pricing.sh
 # Build-time variables (embedded by Vite via import.meta.env) — NON-SECRET.
 # Deployment NAMES and the endpoint are safe to embed. The API key is NOT.
 VITE_AZURE_OPENAI_ENDPOINT=<Azure OpenAI endpoint URL — non-secret flag>
-VITE_AZURE_OPENAI_DEPLOYMENT=<Default deployment name>
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=<GPT-5.1 deployment>
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=<GPT-5.2 deployment>
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX=<GPT-5.2 Codex deployment>
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX=<GPT-5.3 Codex deployment>
-VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=<DeepSeek V3.2 Speciale deployment>
-VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST=<Grok 4.1 Fast deployment>
+# See MODEL-CONFIGURATION.md for all supported deployment variables.
 VITE_APPINSIGHTS_CONNECTION_STRING=<Application Insights connection string (optional)>
 VITE_REASONING_EFFORT=<medium|low|high|none>
 

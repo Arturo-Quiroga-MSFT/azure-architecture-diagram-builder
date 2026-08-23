@@ -13,12 +13,35 @@ param environmentName string
 @description('Primary Azure region for all resources.')
 param location string
 
-// ── Azure OpenAI (bring-your-own) ─────────────────────────────────────────────
-@description('Your Azure OpenAI endpoint URL.')
+// ── Microsoft Foundry / Azure OpenAI ──────────────────────────────────────────
+@description('Provision a destination-owned Microsoft Foundry resource and model deployment. Set false to use an existing endpoint.')
+param deployFoundry bool = true
+
+@description('Model name provisioned by the greenfield Foundry path.')
+param foundryModelName string = 'gpt-5.6-luna'
+
+@description('Model version provisioned by the greenfield Foundry path.')
+param foundryModelVersion string = '2026-07-09'
+
+@description('Deployment name exposed to the AADB web application.')
+param foundryDeploymentName string = 'gpt-5.6-luna'
+
+@allowed([
+  'GlobalStandard'
+  'DataZoneStandard'
+])
+@description('Model deployment SKU. Confirm regional availability and quota before provisioning.')
+param foundryModelSkuName string = 'GlobalStandard'
+
+@minValue(1)
+@description('Model deployment capacity in thousands of tokens per minute.')
+param foundryModelCapacity int = 10
+
+@description('Existing Azure OpenAI endpoint URL used only when deployFoundry is false.')
 param azureOpenAiEndpoint string = ''
 
 @secure()
-@description('Your Azure OpenAI API key.')
+@description('Existing Azure OpenAI API key used only when deployFoundry is false. Prefer managed identity.')
 param azureOpenAiApiKey string = ''
 
 @description('GPT-5.1 deployment name.')
@@ -38,6 +61,9 @@ param openAiDeploymentGpt54 string = ''
 
 @description('GPT-5.4 Mini deployment name.')
 param openAiDeploymentGpt54Mini string = ''
+
+@description('GPT-5.6 Luna deployment name used only when deployFoundry is false.')
+param openAiDeploymentGpt56Luna string = ''
 
 @description('DeepSeek deployment name.')
 param openAiDeploymentDeepSeek string = ''
@@ -86,16 +112,14 @@ module resources './resources.bicep' = {
     speechRegion: speechRegion
     deployCosmos: deployCosmos
     mcpAuthToken: mcpAuthToken
+    deployFoundry: deployFoundry
+    foundryModelName: foundryModelName
+    foundryModelVersion: foundryModelVersion
+    foundryDeploymentName: foundryDeploymentName
+    foundryModelSkuName: foundryModelSkuName
+    foundryModelCapacity: foundryModelCapacity
     azureOpenAiEndpoint: azureOpenAiEndpoint
     azureOpenAiApiKey: azureOpenAiApiKey
-    openAiDeploymentGpt51: openAiDeploymentGpt51
-    openAiDeploymentGpt52: openAiDeploymentGpt52
-    openAiDeploymentGpt52Codex: openAiDeploymentGpt52Codex
-    openAiDeploymentGpt53Codex: openAiDeploymentGpt53Codex
-    openAiDeploymentGpt54: openAiDeploymentGpt54
-    openAiDeploymentGpt54Mini: openAiDeploymentGpt54Mini
-    openAiDeploymentDeepSeek: openAiDeploymentDeepSeek
-    openAiDeploymentGrokFast: openAiDeploymentGrokFast
   }
 }
 
@@ -121,15 +145,18 @@ output SERVICE_MCP_NAME string = resources.outputs.mcpAppName
 output SERVICE_MCP_URL string = 'https://${resources.outputs.mcpAppFqdn}'
 output MCP_ENDPOINT string = 'https://${resources.outputs.mcpAppFqdn}/mcp'
 
-// Azure OpenAI — passed through to build-time Vite variables by the pre-package hook
-output AZURE_OPENAI_ENDPOINT string = azureOpenAiEndpoint
-output AZURE_OPENAI_API_KEY string = azureOpenAiApiKey
+// Microsoft Foundry / Azure OpenAI — captured by azd and consumed by the
+// pre-package hook and the web app's runtime proxy.
+output AZURE_AI_ACCOUNT_NAME string = resources.outputs.foundryAccountName
+output AZURE_AI_ACCOUNT_ID string = resources.outputs.foundryAccountId
+output AZURE_OPENAI_ENDPOINT string = resources.outputs.azureOpenAiEndpoint
 output AZURE_OPENAI_DEPLOYMENT_NAME string = openAiDeploymentGpt51
 output AZURE_OPENAI_DEPLOYMENT_GPT52 string = openAiDeploymentGpt52
 output AZURE_OPENAI_DEPLOYMENT_GPT52CODEX string = openAiDeploymentGpt52Codex
 output AZURE_OPENAI_DEPLOYMENT_GPT53CODEX string = openAiDeploymentGpt53Codex
 output AZURE_OPENAI_DEPLOYMENT_GPT54 string = openAiDeploymentGpt54
 output AZURE_OPENAI_DEPLOYMENT_GPT54MINI string = openAiDeploymentGpt54Mini
+output AZURE_OPENAI_DEPLOYMENT_GPT56LUNA string = deployFoundry ? foundryDeploymentName : openAiDeploymentGpt56Luna
 output AZURE_OPENAI_DEPLOYMENT_DEEPSEEK string = openAiDeploymentDeepSeek
 output AZURE_OPENAI_DEPLOYMENT_GROK4FAST string = openAiDeploymentGrokFast
 

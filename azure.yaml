@@ -9,11 +9,16 @@ metadata:
 # (App Insights connection string — semicolons prevent --build-arg use).
 # The Dockerfile sources these files in the same RUN layer as 'npm run build'.
 hooks:
+  preprovision:
+    shell: sh
+    run: scripts/validate-foundry-capacity.sh
+    interactive: false
+    continueOnError: false
   prepackage:
     shell: sh
     run: scripts/azd-prepackage.sh
     interactive: false
-    continueOnError: true
+    continueOnError: false
 
 services:
   app:

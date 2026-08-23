@@ -2,125 +2,133 @@
 
 > **Status:** Deployed
 
-Generated: 2026-08-18
+Generated: 2026-08-21
 
-## 1. Project Overview
+## 1. Goal
 
-**Goal:** Redeploy the primary VNet web app and standalone MCP server from merged `main` commit `3ba152f`, delivering `@dagrejs/dagre@3.1.1` to both and the current Scout diagram-readability fixes to MCP.
+Add a self-contained greenfield deployment mode so another PSA can clone the repository and provision both AADB applications plus their required Azure AI model capability in a new subscription. The default path must not depend on Arturo's subscription, endpoint, API key, or pre-existing model deployments.
 
-**Mode:** Two independent image-only updates to existing Azure Container Apps. No infrastructure provisioning, deletion, token rotation, RBAC changes, legacy-web deployment, or analytics deployment.
+## 2. Proposed Ownership Boundary
 
-## 2. Approved Deployment Boundary
+The destination subscription will own:
 
-User approved this boundary on 2026-08-18.
+- Resource group and all naming derived from the `azd` environment
+- Microsoft Foundry `AIServices` account
+- One default GPT model deployment suitable for AADB
+- Managed-identity data-plane access from the web Container App to the Foundry resource
+- Azure Container Registry
+- Container Apps environment
+- Public web Container App
+- Internal MCP Container App by default
+- User-assigned managed identity
+- Azure Speech and Speech data-plane role
+- Log Analytics and Application Insights
+- Optional Cosmos DB when explicitly enabled
 
-| Target | Value |
-| --- | --- |
-| Subscription | `7a28b21e-0d3e-4435-a686-d92889d4ee96` |
-| Location | East US 2 |
-| Resource group | `azure-diagrams-rg` |
-| Registry | `acrazurediagrams1767583743` |
-| Web ACA | `azure-diagram-builder-vnet` |
-| Web image | `azure-diagram-builder:vnet` |
-| Web target port | `80` |
-| Web script | `scripts/vnet-migration/03-deploy-webapp.sh` |
-| MCP ACA | `azure-diagram-mcp` |
-| MCP image repository | `azure-diagram-mcp` |
-| MCP target port | `3030` |
-| MCP script | `scripts/deploy-mcp.sh` |
-| Authentication | Reuse existing web secrets and existing MCP bearer token; never display or rotate token |
+A Foundry project is not proposed because AADB uses model inference directly and does not use Foundry agents, project connections, evaluations, or project-scoped capability hosts.
 
-Out of scope: legacy `azure-diagram-builder`, `aadb-usage-analytics`, infrastructure, policy assignments, role assignments, and prior revision/image deletion.
+## 3. Deployment Modes
 
-## 3. Source Being Deployed
+- **Greenfield (default):** Provision the Foundry resource and default model; use managed identity with no OpenAI API key.
+- **Bring your own AI (advanced):** Preserve the existing external endpoint/key or external endpoint/managed-identity option for subscriptions that already have approved model infrastructure.
 
-Merged `main` commit `3ba152f` includes:
+## 4. Planned Artifacts
 
-- `@dagrejs/dagre@3.1.1` and `@dagrejs/graphlib@4.0.5` in web and MCP.
-- Built-in Dagre TypeScript declarations; legacy `dagre@0.8.5` and `@types/dagre` removed.
-- Scout technical-layout corridors and semantic primary/supporting composition.
-- Same-source repeated-label consolidation.
-- On-route label placement and ownership metadata.
-- Zero-trust Scout regression fixture.
-- MCP transitive dependency remediation with zero production advisories.
-- Web Adoption & Impact production exclusion remains enabled from prior deployment.
+- Bicep resources and parameters for the Foundry account, model deployment, and resource-scoped OpenAI User role
+- `azd` outputs that automatically feed the generated endpoint and deployment name into the web build/runtime
+- Greenfield-first PSA deployment guide with model/quota preflight, exact resources, verification, security boundary, and cleanup
+- BYO migration/override section
+- Model configuration guide aligned with provisioned and optional models
+- Validation checks for Bicep, generated ARM, packaging, role scope, secretless runtime, and a fresh-subscription preview
 
-## 4. Rollback Baseline
+## 5. Approved Defaults
 
-| Target | Current revision/image before deployment |
-| --- | --- |
-| Web | `azure-diagram-builder-vnet--0000002`; digest `sha256:a5f241b11a6383057ab90cf8a9b9af9d04267b4dcd605d5cb44ec8c527114da5` |
-| MCP | `azure-diagram-mcp--v1787076992`; tag `mcp-20260818-181452`; digest `sha256:8c145b62e5a41f701c2602ac88636d73e8f641a55f5238711cd8912939e021a0` |
+- Default model: `gpt-5.6-luna`
+- Model version: `2026-07-09`
+- SKU: `GlobalStandard`
+- Capacity: 10 (10K TPM)
+- Reasoning effort: medium (existing AADB default)
+- Authentication: managed identity with resource-scoped `Cognitive Services OpenAI User`; local authentication disabled on the provisioned Foundry account
+- Availability behavior: validation must fail before provisioning when the destination region lacks the model/SKU or the subscription has less available quota than the requested capacity; no silent fallback model
+- Scope: provision one default model. Additional supported models remain opt-in through the model-configuration procedure
+- Web authentication: public test endpoint remains explicitly test-only; Entra authentication is required before team or production use
 
-Both prior revisions and image digests must remain available after deployment.
+Live discovery on 2026-08-21 confirmed GPT-5.6 Luna is GA in East US 2, supports the Responses API, and has version `2026-07-09`. `SUB-2` reported 1,000 unused `GlobalStandard` capacity units.
 
-## 5. Validation Plan
+## 6. Validation Plan
 
 - [x] All validation checks pass
-  - [x] Core validation: exact Azure context, target inventory, current revisions/images/traffic, script syntax, secret-file permissions, and ports 80/3030.
-  - [x] Web container build-only ACR validation from `3ba152f`; verify Adoption & Impact exclusion in exact image.
-  - [x] MCP container build-only ACR validation from `3ba152f`; verify health/auth runtime in exact image.
-  - [x] Azure Policy review at `azure-diagrams-rg` scope.
-- [x] Root clean install, Dagre migration contract, grouped layout, edge labels, layout preservation, production build.
-- [x] MCP clean install, production audit, build, zero-trust fixture, render profiles, service catalog, all 13 tool contracts.
-- [x] Confirm committed lockfiles contain no internal Microsoft feed URLs.
-- [x] Record validation proof below and complete official azure-validate workflow.
+  - [x] 1. AZD Installation
+  - [x] 2. Schema Validation
+  - [x] 3. Environment Setup
+  - [x] 4. Authentication Check
+  - [x] 5. Subscription/Location Check
+  - [x] 6. Aspire Pre-Provisioning Checks (not applicable; this is not a .NET Aspire project)
+  - [x] 7. Provision Preview, including Foundry catalog/quota preflight
+  - [x] 8. Build Verification
+  - [x] 9. Docker Build Context Validation
+  - [x] 10. Package Validation
+  - [x] 11. Azure Policy Validation
+  - [x] 12. Aspire Post-Provisioning Checks (not applicable; this is not a .NET Aspire project)
+- [x] Bicep compiles without errors or warnings from the new resources
+- [x] Generated ARM contains one conditional `AIServices` account, one Luna deployment, and one account-scoped OpenAI User assignment
+- [x] Greenfield outputs populate endpoint and `AZURE_OPENAI_DEPLOYMENT_GPT56LUNA` without an API key output
+- [x] BYO mode retains its external endpoint/optional-key branch when `deployFoundry=false`
+- [x] Model/quota preflight passes capacity 10 and rejects capacity 1001 in `SUB-2` East US 2
+- [x] Production frontend build passes with Luna/medium defaults
+- [x] No-change preview contains the Foundry account and Luna deployment in a clean environment with no BYO values
 
 ## 7. Validation Proof
 
-Validated at `2026-08-18T19:04:08Z` against subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`.
+Validated on 2026-08-21 against `SUB-2` without creating greenfield resources.
 
 | Check | Result |
 | --- | --- |
-| Source | Merged `main` commit `3ba152f`; web and MCP resolve only `@dagrejs/dagre@3.1.1` and `@dagrejs/graphlib@4.0.5` |
-| Root contracts | Clean install, Dagre migration, grouped layout, edge-label layout, layout preservation, service names, pricing mode, ARM import, AADB v2 contract, and production build pass |
-| MCP contracts | Clean install, production audit (0 vulnerabilities), build, zero-trust fixture, render profiles, service catalog, and all 13 tool contracts pass |
-| Lockfile hygiene | Root and MCP lockfiles contain 0 Microsoft internal-feed URLs |
-| Azure context | `ARTURO-MngEnvMCAP094150`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, user `admin@MngEnvMCAP094150.onmicrosoft.com` |
-| Effective policy | 8 enforced assignments reviewed at `azure-diagrams-rg`: deploy/modify, deny, audit, MFA write/delete, and Defender assignments; no scope expansion required |
-| Web pre-state | Revision `azure-diagram-builder-vnet--0000002`, digest `sha256:a5f241b11a6383057ab90cf8a9b9af9d04267b4dcd605d5cb44ec8c527114da5`, 100% traffic, target port 80 |
-| MCP pre-state | Revision `azure-diagram-mcp--v1787076992`, digest `sha256:8c145b62e5a41f701c2602ac88636d73e8f641a55f5238711cd8912939e021a0`, 100% traffic, target port 3030 |
-| Web validation image | Tag `validation-dagre3-web-20260818185457`, digest `sha256:407ece76eb5bb6f06b10cf998c7d0fd5e61beaa2ae4845b7d3b9e90ae622d53b`; ACR run `ch6g` verified root 200 and excluded impact route 404 after upstream readiness |
-| MCP validation image | Tag `mcp-validation-dagre3-scout-20260818-190148`, digest `sha256:3557a499ab9b1d794574d4d381ead5ca9960c01b442fd02635dc1f44a16aee0c`; ACR run `ch6h` verified health 200, unauthenticated initialize 401, authenticated initialize 200 |
-| Validation-only mutation check | Web remained on `0000002`; MCP remained on `v1787076992`; both remained at 100% traffic |
-| Resolved validation issue | Initial web runtime probe observed transient 502 while token-server upstream started; readiness-gated rerun passed with final expected 404. No application change was required. |
+| Azure context | `SUB-2` (`f17e9bc0-a52e-4940-9b77-15ca4d4912b3`), tenant `42b0b4e2-f74e-4cca-a655-e50e383fa040`, East US 2 |
+| Clean AZD environment | `aadb-greenfield-preview`; no `AZURE_OPENAI_ENDPOINT` or `AZURE_OPENAI_API_KEY` values |
+| Foundry dependencies | `azd` and `microsoft.foundry` extension ready |
+| Catalog | `gpt-5.6-luna` GA, Responses API, version `2026-07-09`, `GlobalStandard` and `DataZoneStandard` in East US 2 |
+| Quota | `OpenAI.GlobalStandard.gpt-5.6-luna`: 0 used / 1,000 limit in `SUB-2`; capacity 10 passed; capacity 1001 rejected with the exact insufficient-quota error |
+| Schema | `azure.yaml` valid against stable schema; Bicep API version `2025-06-01` grounded in Microsoft Learn |
+| IaC | Bicep exit 0, zero code warnings; tracked ARM regenerated |
+| ARM contract | Conditional `AIServices`, Luna model/version/SKU/capacity, OpenAI User role, generated endpoint/Luna outputs, no API-key output |
+| Preview | Success in 21 seconds; proposed resource group, two Container Apps, environment, Foundry account, Luna deployment, Speech, ACR, App Insights, and Log Analytics |
+| Frontend | Production build passed in 11.43 seconds; Luna/medium defaults asserted |
+| Packaging | Web and MCP services packaged successfully in 1 minute 20 seconds |
+| Policy | Existing Defender policy assignments reviewed; none deny the proposed resource types or East US 2 |
+| BYO branch | `deployFoundry=false` skips Foundry catalog/quota preflight and retains external endpoint/optional-key inputs |
 
-## 8. Deployment Sequence
+## 8. Role Assignment Verification
 
-1. Deploy VNet web app from validated `main` using its existing image-only script.
-2. Verify healthy ready revision, 100% traffic, HTTPS 200, Adoption & Impact absent, excluded impact endpoints 404, and representative grouped generation under Dagre 3.1.1.
-3. Deploy standalone MCP using its existing image-only script.
-4. Verify healthy ready revision, 100% traffic, health 200, unauthenticated initialize 401, authenticated discovery 13 tools/3 resources/3 prompts.
-5. Call live `render_diagram` using the zero-trust fixture and require 11 nodes, 15 edges, 12 labels, no detached labels, and SVG ratio ≤2.4.
-6. Confirm legacy web and analytics revisions/images are unchanged.
-7. Confirm prior web and MCP revisions remain healthy/inactive for rollback.
+- **Identity:** One user-assigned managed identity is attached to both Container Apps.
+- **ACR:** `AcrPull` is scoped to the generated registry.
+- **Foundry:** `Cognitive Services OpenAI User` (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) is scoped to the generated `AIServices` account.
+- **Speech:** `Cognitive Services Speech User` is scoped to the generated Speech account.
+- **Cosmos DB:** Data Contributor remains conditional and is absent by default.
+- **Secrets:** Greenfield mode forces the effective API key to empty, emits no key output, and configures `disableLocalAuth=true` on Foundry.
+- **Issues:** None. Live role propagation and keyless Luna inference passed.
 
-## 9. Rollback
+## 9. Deployment Proof
 
-If web verification fails, reactivate/route to `azure-diagram-builder-vnet--0000002`. If MCP verification fails, reactivate/route to `azure-diagram-mcp--v1787076992`. Do not delete prior revisions or image manifests.
-
-## 10. Role Assignment Verification
-
-- Web: existing scoped Speech and Cosmos roles remain unchanged; deployment script's Cosmos role check is idempotent.
-- MCP: identity type `None`; deterministic bundled-data server requires no Azure data-plane RBAC.
-- No new role assignment is in scope.
-
-## 11. Deployment Proof
-
-Deployed on 2026-08-18 from merged `main` commit `3ba152f`.
+Deployed and verified on 2026-08-21 in `SUB-2`, East US 2, environment `aadb-greenfield-test`.
 
 | Check | Result |
 | --- | --- |
-| Web production image | ACR run `ch6j`; tag `azure-diagram-builder:vnet`; digest `sha256:194fb7b56093327d361b8fc9fe522a6ca4335b5d23d21560feb137aca10ce43a` |
-| Web revision | `azure-diagram-builder-vnet--v20260818151122`, healthy/running, target port 80, 100% traffic |
-| Web HTTP/exclusion | HTTPS 200; `/api/impact-story` and `/api/deployment-registration` both 404; `ENABLE_ADOPTION_IMPACT=false` |
-| Web Dagre smoke | GPT-5.6 Sol/low zero-trust generation: 12 nodes, 5 groups, 12 edges; zero node, group, label, or label-node overlaps; Adoption launcher absent |
-| Web rollback | Prior `azure-diagram-builder-vnet--0000002` remains healthy/stopped; prior digest retained in ACR |
-| MCP production image | ACR run `ch6k`; tag `mcp-20260818-191355`; digest `sha256:2eb0296f97d37216bf7f81ffca9c61dfef43fb30c67f7990164df7598c76d79e`; runtime audit 0 vulnerabilities |
-| MCP revision | `azure-diagram-mcp--v1787080538`, healthy/running, target port 3030, 100% traffic |
-| MCP HTTP/auth | Health 200; unauthenticated initialize 401; existing bearer token reused without display/rotation |
-| MCP discovery/render | 13 tools, 3 resources, 3 prompts; live zero-trust SVG: 11 nodes, 15 edges, 12 labels, 0 detached labels, ratio 2.30, consolidated 4-target monitor label |
-| MCP live artifact | `DONOTTRACK/AQ-REFINEMENTS-18-aug-2026/zero-trust-network-live-dagre3-scout.svg` |
-| MCP rollback | Prior `azure-diagram-mcp--v1787076992` remains healthy/stopped; prior image `mcp-20260818-181452` retained |
-| Scope check | Legacy web remains `v1783874319`; analytics remains `20260813195443` |
-| Final RBAC | Web Cosmos role count 1; MCP identity `None`; no assignments added |
+| Resource group | `rg-aadb-greenfield-test`; created from a previously absent target |
+| Provisioning | Completed in 2 minutes 6 seconds |
+| Foundry | `cog-aadb-jheuyqzrqofi4`, kind `AIServices`, public network enabled, local authentication disabled |
+| Model | `gpt-5.6-luna`, version `2026-07-09`, `GlobalStandard`, capacity 10, provisioning state `Succeeded` |
+| Generated endpoint | `https://cog-aadb-jheuyqzrqofi4.cognitiveservices.azure.com/` |
+| Live RBAC | Exactly one ACR-scoped `AcrPull` and one Foundry-scoped `Cognitive Services OpenAI User` assignment |
+| Web app | `https://ca-diagram-builder-jheuyqzrqofi4.greenforest-43436f56.eastus2.azurecontainerapps.io/`; revision healthy/provisioned with one replica |
+| MCP app | Internal-only endpoint; revision healthy/provisioned with one replica |
+| Keyless boundary | Web runtime contains `AZURE_OPENAI_ENDPOINT` only; no `AZURE_OPENAI_API_KEY` variable or secret reference |
+| Luna inference | Deployed `/api/openai` returned HTTP 200; medium reasoning returned a valid structured architecture with App Service, Azure SQL Database, and Application Insights |
+| Speech | Deployed `/api/speech-token` returned HTTP 200 with a valid East US 2 token through managed identity |
+| Default resource boundary | Nine top-level resources; Cosmos DB count 0 |
+| Cleanup | Not performed; `rg-aadb-greenfield-test` remains deployed for user verification |
+| Frontend regression | Initial image had working runtime proxy but empty build-time endpoint/model values, so Generate and Guided Chat reported Azure OpenAI unconfigured |
+| Root cause | `azd-prepackage.sh` accepted missing nested `azd` values and `continueOnError=true` allowed an AI-disabled image |
+| Remediation | Hook now reads injected/selected-environment values, rejects malformed lines, requires endpoint plus at least one model, and fails packaging on error |
+| Fixed revision | `ca-diagram-builder-jheuyqzrqofi4--azd-1787341221`; healthy, one replica, 100% latest-revision traffic |
+| Browser verification | No configuration warning; selector contains only GPT-5.6 Luna; reasoning defaults to medium; prompt enables Generate; UI-originated generation completed in 10.6 seconds and created six React Flow nodes |

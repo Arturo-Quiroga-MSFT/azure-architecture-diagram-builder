@@ -8,6 +8,24 @@
     "location": {
       "value": "${AZURE_LOCATION}"
     },
+    "deployFoundry": {
+      "value": true
+    },
+    "foundryModelName": {
+      "value": "gpt-5.6-luna"
+    },
+    "foundryModelVersion": {
+      "value": "2026-07-09"
+    },
+    "foundryDeploymentName": {
+      "value": "gpt-5.6-luna"
+    },
+    "foundryModelSkuName": {
+      "value": "GlobalStandard"
+    },
+    "foundryModelCapacity": {
+      "value": 10
+    },
     "azureOpenAiEndpoint": {
       "value": "${AZURE_OPENAI_ENDPOINT}"
     },

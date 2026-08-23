@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.44.1.10279",
-      "templateHash": "9813758444474701756"
+      "version": "0.45.15.27210",
+      "templateHash": "7516816068718187468"
     }
   },
   "parameters": {
@@ -24,18 +24,65 @@
         "description": "Primary Azure region for all resources."
       }
     },
+    "deployFoundry": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Provision a destination-owned Microsoft Foundry resource and model deployment. Set false to use an existing endpoint."
+      }
+    },
+    "foundryModelName": {
+      "type": "string",
+      "defaultValue": "gpt-5.6-luna",
+      "metadata": {
+        "description": "Model name provisioned by the greenfield Foundry path."
+      }
+    },
+    "foundryModelVersion": {
+      "type": "string",
+      "defaultValue": "2026-07-09",
+      "metadata": {
+        "description": "Model version provisioned by the greenfield Foundry path."
+      }
+    },
+    "foundryDeploymentName": {
+      "type": "string",
+      "defaultValue": "gpt-5.6-luna",
+      "metadata": {
+        "description": "Deployment name exposed to the AADB web application."
+      }
+    },
+    "foundryModelSkuName": {
+      "type": "string",
+      "defaultValue": "GlobalStandard",
+      "allowedValues": [
+        "GlobalStandard",
+        "DataZoneStandard"
+      ],
+      "metadata": {
+        "description": "Model deployment SKU. Confirm regional availability and quota before provisioning."
+      }
+    },
+    "foundryModelCapacity": {
+      "type": "int",
+      "defaultValue": 10,
+      "minValue": 1,
+      "metadata": {
+        "description": "Model deployment capacity in thousands of tokens per minute."
+      }
+    },
     "azureOpenAiEndpoint": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Your Azure OpenAI endpoint URL."
+        "description": "Existing Azure OpenAI endpoint URL used only when deployFoundry is false."
       }
     },
     "azureOpenAiApiKey": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "Your Azure OpenAI API key."
+        "description": "Existing Azure OpenAI API key used only when deployFoundry is false. Prefer managed identity."
       }
     },
     "openAiDeploymentGpt51": {
@@ -78,6 +125,13 @@
       "defaultValue": "",
       "metadata": {
         "description": "GPT-5.4 Mini deployment name."
+      }
+    },
+    "openAiDeploymentGpt56Luna": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "GPT-5.6 Luna deployment name used only when deployFoundry is false."
       }
     },
     "openAiDeploymentDeepSeek": {
@@ -303,35 +357,29 @@
           "mcpAuthToken": {
             "value": "[parameters('mcpAuthToken')]"
           },
+          "deployFoundry": {
+            "value": "[parameters('deployFoundry')]"
+          },
+          "foundryModelName": {
+            "value": "[parameters('foundryModelName')]"
+          },
+          "foundryModelVersion": {
+            "value": "[parameters('foundryModelVersion')]"
+          },
+          "foundryDeploymentName": {
+            "value": "[parameters('foundryDeploymentName')]"
+          },
+          "foundryModelSkuName": {
+            "value": "[parameters('foundryModelSkuName')]"
+          },
+          "foundryModelCapacity": {
+            "value": "[parameters('foundryModelCapacity')]"
+          },
           "azureOpenAiEndpoint": {
             "value": "[parameters('azureOpenAiEndpoint')]"
           },
           "azureOpenAiApiKey": {
             "value": "[parameters('azureOpenAiApiKey')]"
-          },
-          "openAiDeploymentGpt51": {
-            "value": "[parameters('openAiDeploymentGpt51')]"
-          },
-          "openAiDeploymentGpt52": {
-            "value": "[parameters('openAiDeploymentGpt52')]"
-          },
-          "openAiDeploymentGpt52Codex": {
-            "value": "[parameters('openAiDeploymentGpt52Codex')]"
-          },
-          "openAiDeploymentGpt53Codex": {
-            "value": "[parameters('openAiDeploymentGpt53Codex')]"
-          },
-          "openAiDeploymentGpt54": {
-            "value": "[parameters('openAiDeploymentGpt54')]"
-          },
-          "openAiDeploymentGpt54Mini": {
-            "value": "[parameters('openAiDeploymentGpt54Mini')]"
-          },
-          "openAiDeploymentDeepSeek": {
-            "value": "[parameters('openAiDeploymentDeepSeek')]"
-          },
-          "openAiDeploymentGrokFast": {
-            "value": "[parameters('openAiDeploymentGrokFast')]"
           }
         },
         "template": {
@@ -340,8 +388,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.44.1.10279",
-              "templateHash": "1924564695722813535"
+              "version": "0.45.15.27210",
+              "templateHash": "8808908245365306949"
             }
           },
           "parameters": {
@@ -373,41 +421,37 @@
                 "description": "Optional bearer token required on the decoupled MCP server /mcp endpoint. Empty = open (not recommended for public ingress)."
               }
             },
+            "deployFoundry": {
+              "type": "bool"
+            },
+            "foundryModelName": {
+              "type": "string"
+            },
+            "foundryModelVersion": {
+              "type": "string"
+            },
+            "foundryDeploymentName": {
+              "type": "string"
+            },
+            "foundryModelSkuName": {
+              "type": "string"
+            },
+            "foundryModelCapacity": {
+              "type": "int"
+            },
             "azureOpenAiEndpoint": {
               "type": "string"
             },
             "azureOpenAiApiKey": {
               "type": "securestring"
-            },
-            "openAiDeploymentGpt51": {
-              "type": "string"
-            },
-            "openAiDeploymentGpt52": {
-              "type": "string"
-            },
-            "openAiDeploymentGpt52Codex": {
-              "type": "string"
-            },
-            "openAiDeploymentGpt53Codex": {
-              "type": "string"
-            },
-            "openAiDeploymentGpt54": {
-              "type": "string"
-            },
-            "openAiDeploymentGpt54Mini": {
-              "type": "string"
-            },
-            "openAiDeploymentDeepSeek": {
-              "type": "string"
-            },
-            "openAiDeploymentGrokFast": {
-              "type": "string"
             }
           },
           "variables": {
             "cosmosDatabaseId": "diagrams",
             "cosmosContainerId": "diagrams",
             "cosmosFeedbackContainerId": "feedback",
+            "effectiveAzureOpenAiApiKey": "[if(parameters('deployFoundry'), '', parameters('azureOpenAiApiKey'))]",
+            "appSecrets": "[if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(), createArray(createObject('name', 'azure-openai-api-key', 'value', variables('effectiveAzureOpenAiApiKey'))))]",
             "mcpAuthEnv": "[if(empty(parameters('mcpAuthToken')), createArray(), createArray(createObject('name', 'MCP_AUTH_TOKEN', 'secretRef', 'mcp-auth-token')))]",
             "mcpSecrets": "[if(empty(parameters('mcpAuthToken')), createArray(), createArray(createObject('name', 'mcp-auth-token', 'value', parameters('mcpAuthToken'))))]"
           },
@@ -459,6 +503,66 @@
               "name": "[format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]"
+            },
+            {
+              "condition": "[parameters('deployFoundry')]",
+              "type": "Microsoft.CognitiveServices/accounts",
+              "apiVersion": "2025-06-01",
+              "name": "[format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "AIServices",
+              "sku": {
+                "name": "S0"
+              },
+              "identity": {
+                "type": "None"
+              },
+              "properties": {
+                "allowProjectManagement": false,
+                "customSubDomainName": "[format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))]",
+                "disableLocalAuth": true,
+                "dynamicThrottlingEnabled": true,
+                "publicNetworkAccess": "Enabled",
+                "restrictOutboundNetworkAccess": false
+              }
+            },
+            {
+              "condition": "[parameters('deployFoundry')]",
+              "type": "Microsoft.CognitiveServices/accounts/deployments",
+              "apiVersion": "2025-06-01",
+              "name": "[format('{0}/{1}', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')), parameters('foundryDeploymentName'))]",
+              "sku": {
+                "name": "[parameters('foundryModelSkuName')]",
+                "capacity": "[parameters('foundryModelCapacity')]"
+              },
+              "properties": {
+                "model": {
+                  "format": "OpenAI",
+                  "name": "[parameters('foundryModelName')]",
+                  "version": "[parameters('foundryModelVersion')]"
+                },
+                "versionUpgradeOption": "NoAutoUpgrade"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployFoundry')]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')))]",
+              "name": "[guid(if(parameters('deployFoundry'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), parameters('resourceToken')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), 'openai-user')]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken')))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')))]"
+              ]
             },
             {
               "type": "Microsoft.Authorization/roleAssignments",
@@ -633,6 +737,7 @@
               "properties": {
                 "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken')))]",
                 "configuration": {
+                  "secrets": "[variables('appSecrets')]",
                   "ingress": {
                     "external": true,
                     "targetPort": 80,
@@ -654,40 +759,7 @@
                         "cpu": "[json('0.5')]",
                         "memory": "1.0Gi"
                       },
-                      "env": [
-                        {
-                          "name": "AZURE_CLIENT_ID",
-                          "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').clientId]"
-                        },
-                        {
-                          "name": "AZURE_SPEECH_REGION",
-                          "value": "[if(parameters('deploySpeech'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '2023-05-01', 'full').location, '')]"
-                        },
-                        {
-                          "name": "AZURE_SPEECH_RESOURCE_ID",
-                          "value": "[if(parameters('deploySpeech'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '')]"
-                        },
-                        {
-                          "name": "AZURE_COSMOS_ENDPOINT",
-                          "value": "[if(parameters('deployCosmos'), reference(resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken'))), '2024-02-15-preview').documentEndpoint, '')]"
-                        },
-                        {
-                          "name": "COSMOS_DATABASE_ID",
-                          "value": "[if(parameters('deployCosmos'), variables('cosmosDatabaseId'), '')]"
-                        },
-                        {
-                          "name": "COSMOS_CONTAINER_ID",
-                          "value": "[if(parameters('deployCosmos'), variables('cosmosContainerId'), '')]"
-                        },
-                        {
-                          "name": "COSMOS_FEEDBACK_CONTAINER_ID",
-                          "value": "[if(parameters('deployCosmos'), variables('cosmosFeedbackContainerId'), '')]"
-                        },
-                        {
-                          "name": "PUBLIC_URL",
-                          "value": "[format('https://{0}diagram-builder-{1}.{2}', parameters('abbrs').appContainerApps, parameters('resourceToken'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken'))), '2024-03-01').defaultDomain)]"
-                        }
-                      ]
+                      "env": "[concat(createArray(createObject('name', 'AZURE_CLIENT_ID', 'value', reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').clientId), createObject('name', 'AZURE_SPEECH_REGION', 'value', if(parameters('deploySpeech'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '2023-05-01', 'full').location, '')), createObject('name', 'AZURE_SPEECH_RESOURCE_ID', 'value', if(parameters('deploySpeech'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '')), createObject('name', 'AZURE_COSMOS_ENDPOINT', 'value', if(parameters('deployCosmos'), reference(resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken'))), '2024-02-15-preview').documentEndpoint, '')), createObject('name', 'COSMOS_DATABASE_ID', 'value', if(parameters('deployCosmos'), variables('cosmosDatabaseId'), '')), createObject('name', 'COSMOS_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosContainerId'), '')), createObject('name', 'COSMOS_FEEDBACK_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosFeedbackContainerId'), '')), createObject('name', 'PUBLIC_URL', 'value', format('https://{0}diagram-builder-{1}.{2}', parameters('abbrs').appContainerApps, parameters('resourceToken'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken'))), '2024-03-01').defaultDomain))), concat(createArray(createObject('name', 'AZURE_OPENAI_ENDPOINT', 'value', if(parameters('deployFoundry'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), '2025-06-01').endpoint, parameters('azureOpenAiEndpoint')))), if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(), createArray(createObject('name', 'AZURE_OPENAI_API_KEY', 'secretRef', 'azure-openai-api-key')))))]"
                     }
                   ],
                   "scale": {
@@ -701,6 +773,7 @@
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken')))]",
+                "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken')))]"
               ]
             },
@@ -721,7 +794,7 @@
                 "configuration": {
                   "secrets": "[variables('mcpSecrets')]",
                   "ingress": {
-                    "external": true,
+                    "external": "[not(empty(parameters('mcpAuthToken')))]",
                     "targetPort": 3030,
                     "transport": "auto"
                   },
@@ -769,6 +842,18 @@
             "appIdentityPrincipalId": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').principalId]"
+            },
+            "foundryAccountName": {
+              "type": "string",
+              "value": "[if(parameters('deployFoundry'), format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')), '')]"
+            },
+            "foundryAccountId": {
+              "type": "string",
+              "value": "[if(parameters('deployFoundry'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), '')]"
+            },
+            "azureOpenAiEndpoint": {
+              "type": "string",
+              "value": "[if(parameters('deployFoundry'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), '2025-06-01').endpoint, parameters('azureOpenAiEndpoint'))]"
             },
             "containerAppName": {
               "type": "string",
@@ -867,13 +952,17 @@
       "type": "string",
       "value": "[format('https://{0}/mcp', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}', parameters('environmentName'))), 'Microsoft.Resources/deployments', 'resources'), '2025-04-01').outputs.mcpAppFqdn.value)]"
     },
+    "AZURE_AI_ACCOUNT_NAME": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}', parameters('environmentName'))), 'Microsoft.Resources/deployments', 'resources'), '2025-04-01').outputs.foundryAccountName.value]"
+    },
+    "AZURE_AI_ACCOUNT_ID": {
+      "type": "string",
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}', parameters('environmentName'))), 'Microsoft.Resources/deployments', 'resources'), '2025-04-01').outputs.foundryAccountId.value]"
+    },
     "AZURE_OPENAI_ENDPOINT": {
       "type": "string",
-      "value": "[parameters('azureOpenAiEndpoint')]"
-    },
-    "AZURE_OPENAI_API_KEY": {
-      "type": "string",
-      "value": "[parameters('azureOpenAiApiKey')]"
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}', parameters('environmentName'))), 'Microsoft.Resources/deployments', 'resources'), '2025-04-01').outputs.azureOpenAiEndpoint.value]"
     },
     "AZURE_OPENAI_DEPLOYMENT_NAME": {
       "type": "string",
@@ -898,6 +987,10 @@
     "AZURE_OPENAI_DEPLOYMENT_GPT54MINI": {
       "type": "string",
       "value": "[parameters('openAiDeploymentGpt54Mini')]"
+    },
+    "AZURE_OPENAI_DEPLOYMENT_GPT56LUNA": {
+      "type": "string",
+      "value": "[if(parameters('deployFoundry'), parameters('foundryDeploymentName'), parameters('openAiDeploymentGpt56Luna'))]"
     },
     "AZURE_OPENAI_DEPLOYMENT_DEEPSEEK": {
       "type": "string",

@@ -15,18 +15,16 @@ param deployCosmos bool
 @description('Optional bearer token required on the decoupled MCP server /mcp endpoint. Empty = open (not recommended for public ingress).')
 param mcpAuthToken string = ''
 
-// Azure OpenAI (passed through to container app env; not provisioned here)
+// Microsoft Foundry / Azure OpenAI
+param deployFoundry bool
+param foundryModelName string
+param foundryModelVersion string
+param foundryDeploymentName string
+param foundryModelSkuName string
+param foundryModelCapacity int
 param azureOpenAiEndpoint string
 @secure()
 param azureOpenAiApiKey string
-param openAiDeploymentGpt51 string
-param openAiDeploymentGpt52 string
-param openAiDeploymentGpt52Codex string
-param openAiDeploymentGpt53Codex string
-param openAiDeploymentGpt54 string
-param openAiDeploymentGpt54Mini string
-param openAiDeploymentDeepSeek string
-param openAiDeploymentGrokFast string
 
 // ── Log Analytics ──────────────────────────────────────────────────────────────
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -67,6 +65,55 @@ resource appIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
   name: '${abbrs.managedIdentityUserAssignedIdentities}app-${resourceToken}'
   location: location
   tags: tags
+}
+
+// Destination-owned Foundry resource. AADB uses account-level model inference,
+// so a Foundry project is not required.
+resource foundry 'Microsoft.CognitiveServices/accounts@2025-06-01' = if (deployFoundry) {
+  name: '${abbrs.cognitiveServicesAccounts}aadb-${resourceToken}'
+  location: location
+  tags: tags
+  kind: 'AIServices'
+  sku: { name: 'S0' }
+  identity: { type: 'None' }
+  properties: {
+    allowProjectManagement: false
+    customSubDomainName: '${abbrs.cognitiveServicesAccounts}aadb-${resourceToken}'
+    disableLocalAuth: true
+    dynamicThrottlingEnabled: true
+    publicNetworkAccess: 'Enabled'
+    restrictOutboundNetworkAccess: false
+  }
+}
+
+resource foundryModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = if (deployFoundry) {
+  parent: foundry
+  name: foundryDeploymentName
+  sku: {
+    name: foundryModelSkuName
+    capacity: foundryModelCapacity
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: foundryModelName
+      version: foundryModelVersion
+    }
+    versionUpgradeOption: 'NoAutoUpgrade'
+  }
+}
+
+resource foundryOpenAiUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployFoundry) {
+  name: guid(deployFoundry ? foundry.id : resourceToken, appIdentity.id, 'openai-user')
+  scope: foundry
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    )
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
 }
 
 // ── AcrPull role → managed identity ──────────────────────────────────────────
@@ -194,6 +241,18 @@ resource cosmosRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@20
 // ── Container App ─────────────────────────────────────────────────────────────
 // azd locates the service by the 'azd-service-name' tag value matching
 // the service key in azure.yaml ('app').
+var effectiveAzureOpenAiEndpoint = deployFoundry ? foundry!.properties.endpoint : azureOpenAiEndpoint
+var effectiveAzureOpenAiApiKey = deployFoundry ? '' : azureOpenAiApiKey
+var appOpenAiEnv = concat(
+  [ { name: 'AZURE_OPENAI_ENDPOINT', value: effectiveAzureOpenAiEndpoint } ],
+  empty(effectiveAzureOpenAiApiKey)
+    ? []
+    : [ { name: 'AZURE_OPENAI_API_KEY', secretRef: 'azure-openai-api-key' } ]
+)
+var appSecrets = empty(effectiveAzureOpenAiApiKey)
+  ? []
+  : [ { name: 'azure-openai-api-key', value: effectiveAzureOpenAiApiKey } ]
+
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: '${abbrs.appContainerApps}diagram-builder-${resourceToken}'
   location: location
@@ -205,6 +264,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   properties: {
     managedEnvironmentId: caEnv.id
     configuration: {
+      secrets: appSecrets
       ingress: {
         external: true
         targetPort: 80
@@ -224,14 +284,14 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
           // Placeholder image replaced by 'azd deploy'
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: { cpu: json('0.5'), memory: '1.0Gi' }
-          env: [
+          env: concat([
             // Identity — lets DefaultAzureCredential pick up the managed identity
             { name: 'AZURE_CLIENT_ID', value: appIdentity.properties.clientId }
             // Speech
-            { name: 'AZURE_SPEECH_REGION', value: deploySpeech ? speech.location : '' }
+            { name: 'AZURE_SPEECH_REGION', value: deploySpeech ? speech!.location : '' }
             { name: 'AZURE_SPEECH_RESOURCE_ID', value: deploySpeech ? speech.id : '' }
             // Cosmos DB
-            { name: 'AZURE_COSMOS_ENDPOINT', value: deployCosmos ? cosmos.properties.documentEndpoint : '' }
+            { name: 'AZURE_COSMOS_ENDPOINT', value: deployCosmos ? cosmos!.properties.documentEndpoint : '' }
             { name: 'COSMOS_DATABASE_ID', value: deployCosmos ? cosmosDatabaseId : '' }
             { name: 'COSMOS_CONTAINER_ID', value: deployCosmos ? cosmosContainerId : '' }
             { name: 'COSMOS_FEEDBACK_CONTAINER_ID', value: deployCosmos ? cosmosFeedbackContainerId : '' }
@@ -240,7 +300,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'PUBLIC_URL'
               value: 'https://${abbrs.appContainerApps}diagram-builder-${resourceToken}.${caEnv.properties.defaultDomain}'
             }
-          ]
+          ], appOpenAiEnv)
         }
       ]
       scale: {
@@ -281,7 +341,9 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
     configuration: {
       secrets: mcpSecrets
       ingress: {
-        external: true
+        // Secure default: without a bearer token the endpoint is reachable only
+        // from inside the Container Apps environment.
+        external: !empty(mcpAuthToken)
         targetPort: 3030
         transport: 'auto'
       }
@@ -314,13 +376,16 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
 output registryLoginServer string = acr.properties.loginServer
 output registryName string = acr.name
 output appIdentityPrincipalId string = appIdentity.properties.principalId
+output foundryAccountName string = deployFoundry ? foundry.name : ''
+output foundryAccountId string = deployFoundry ? foundry.id : ''
+output azureOpenAiEndpoint string = effectiveAzureOpenAiEndpoint
 output containerAppName string = containerApp.name
 output containerAppFqdn string = containerApp.properties.configuration.ingress.fqdn
 output mcpAppName string = mcpApp.name
 output mcpAppFqdn string = mcpApp.properties.configuration.ingress.fqdn
-output speechRegionOut string = deploySpeech ? speech.location : ''
+output speechRegionOut string = deploySpeech ? speech!.location : ''
 output speechResourceId string = deploySpeech ? speech.id : ''
-output cosmosEndpoint string = deployCosmos ? cosmos.properties.documentEndpoint : ''
+output cosmosEndpoint string = deployCosmos ? cosmos!.properties.documentEndpoint : ''
 output cosmosDatabaseId string = deployCosmos ? cosmosDatabaseId : ''
 output cosmosContainerId string = deployCosmos ? cosmosContainerId : ''
 output cosmosFeedbackContainerId string = deployCosmos ? cosmosFeedbackContainerId : ''
