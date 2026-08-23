@@ -158,6 +158,7 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
               <button
                 className={`workflow-narrate-btn${avatarStatus === 'speaking' ? ' active' : ''}`}
                 onClick={handleNarrateClick}
+                onMouseEnter={() => AvatarPresenter.preload()}
                 disabled={avatarStatus === 'connecting'}
                 title={avatarStatus === 'speaking' ? 'Stop narration' : 'Have an AI avatar narrate this workflow'}
               >
