@@ -103,13 +103,18 @@ Treat the token as a secret. See the [MCP setup in the main README](../README.md
 
 ## Update Or Remove
 
-From the same repository and selected `azd` environment:
+From the same repository and selected `azd` environment, pull a newer AADB release before deploying:
 
 ```bash
 git pull
+git describe --tags --always
 azd provision
 azd deploy
 ```
+
+The root `package.json` version is displayed in the app header and published at `/version.json`. The packaging hook compares it with the running app and rejects an equal or older version before building. This prevents a mutable image tag from making two different deployments look like the same release.
+
+For recovery only, you can recreate the exact same release with `ALLOW_VERSION_REDEPLOY=true azd deploy`. Do not use the override for routine updates; wait for or check out a newer tagged release.
 
 To delete the resource group and resources created for this environment:
 

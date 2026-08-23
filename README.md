@@ -10,10 +10,11 @@
 ![Grok](https://img.shields.io/badge/Grok-000000?style=for-the-badge&logoColor=white)
 ![Mistral](https://img.shields.io/badge/Mistral-FF7000?style=for-the-badge&logoColor=white)
 ![Kimi](https://img.shields.io/badge/Kimi-1A1A1A?style=for-the-badge&logoColor=white)
+[![Version](https://img.shields.io/github/v/tag/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder?style=for-the-badge&label=version)](https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder/tags)
 
 **A professional AI-powered tool for designing, validating, and deploying Azure cloud architectures**
 
-[Live Demo](https://azure-diagram-builder.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io) • [Short Link](https://aka.ms/diagram-builder) • [Documentation](DOCS/ARCHITECTURE.md) • [Report Bug](../../issues)
+[Live Demo](https://azure-diagram-builder-vnet.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io) • [Short Link](https://aka.ms/diagram-builder) • [Documentation](DOCS/ARCHITECTURE.md) • [Report Bug](../../issues)
 
 </div>
 
@@ -930,6 +931,13 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### August 23, 2026 — AADB v1.1.0
+
+- **Visible product version** — the header shows the running AADB release, and `/version.json` exposes the same value for deployment verification.
+- **Versioned deployments** — `package.json` is the single version source for the UI, telemetry, deployment registration, and ACA `APP_VERSION`. Supported deployment paths reject an equal or older version before building.
+- **Self-contained greenfield deployment** — the default `azd` path creates Microsoft Foundry, GPT-5.6 Luna with medium reasoning, keyless managed-identity access, Speech, Container Apps, ACR, and monitoring in the destination subscription.
+- **Workflow avatar synchronization** — narration now waits for the WebRTC media clock so the spoken step and yellow workflow highlight remain aligned.
 
 ### July 2026 — New Frontier Models & Expanded MCP Toolset
 

@@ -54,6 +54,35 @@ npm run dev
 - **Formatting**: Follow existing code patterns and indentation
 - **Naming**: Use descriptive names; PascalCase for components, camelCase for functions/variables
 
+### Versioning and Releases
+
+The root `package.json` is the single source for the AADB product version. The build publishes that value in the header, telemetry, deployment registration, and `/version.json`; deployment scripts also set ACA `APP_VERSION` to the same value.
+
+Use semantic versioning:
+
+- **Patch** (`1.1.0` → `1.1.1`): backward-compatible fixes and small refinements.
+- **Minor** (`1.1.0` → `1.2.0`): backward-compatible features.
+- **Major** (`1.1.0` → `2.0.0`): breaking saved-diagram, deployment, API, or architecture changes.
+
+Before every release deployment, update both package files with one of:
+
+```bash
+npm version patch --no-git-tag-version
+npm version minor --no-git-tag-version
+npm version major --no-git-tag-version
+npm run build
+```
+
+Commit and push the version change before deployment so the image is reproducible from `main`. Deploy through a supported path, verify the live header and `/version.json`, and only then create the release tag:
+
+```bash
+VERSION="$(node -p "require('./package.json').version")"
+git tag -a "v$VERSION" -m "AADB v$VERSION"
+git push origin main "v$VERSION"
+```
+
+Supported web deployment paths call `scripts/require-version-bump.sh` and stop before building when the live version is equal or newer. `ALLOW_VERSION_REDEPLOY=true` bypasses that check only to recover or recreate the exact same release; it is not the normal release process.
+
 ### Areas for Contribution
 
 - Additional Azure service icon mappings

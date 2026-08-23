@@ -11,13 +11,15 @@ This project runs **two** Azure Container Apps. Deploy to the correct one.
 - **Deploy / update with:**
 
   ```bash
+  npm version patch --no-git-tag-version  # choose patch, minor, or major
+  npm run build
   ./scripts/vnet-migration/03-deploy-webapp.sh
   ```
 
   Builds image tag `:vnet` in ACR `acrazurediagrams1767583743`, auto-passes every
   `VITE_*` from the repo-root `.env` as a build arg, and forces a fresh revision
   suffix each run (the `:vnet` tag string is stable, so ACA would otherwise skip
-  creating a revision).
+  creating a revision). Commit and push the version change before deployment.
 
 ## OLD app — legacy, non-VNet (rollback only)
 
@@ -32,6 +34,10 @@ This project runs **two** Azure Container Apps. Deploy to the correct one.
 
 ## Notes shared by both
 
+- `package.json` is the product-version source. The UI and `/version.json` expose
+  that value, and the deployment scripts reject an equal or older live version
+  before starting ACR Build. Use `ALLOW_VERSION_REDEPLOY=true` only to recover the
+  exact same release.
 - The Dockerfile bakes MSAL client config (`VITE_AZURE_AD_CLIENT_ID`,
   `VITE_AZURE_AD_AUTHORITY`, `VITE_ARM_SCOPE`) at build time. `VITE_AZURE_AD_REDIRECT_URI`
   is intentionally **not** baked — the client defaults to `window.location.origin`,
