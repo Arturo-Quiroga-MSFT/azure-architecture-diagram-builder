@@ -33,14 +33,59 @@ export interface AvatarPresenterOptions {
   onBookmark?: (name: string) => void;
 }
 
+/** Grace period after playback starts before the first utterance is requested. */
+const AUDIO_PRIME_MS = 400;
+/** Upper bound on waiting for a media element to begin rendering. */
+const MEDIA_PLAYBACK_TIMEOUT_MS = 8_000;
+/** Slack added to the estimated speaking time before abandoning the TurnEnd wait. */
+const TURN_END_SLACK_MS = 20_000;
+/** Speech SDK offsets use 100-nanosecond ticks. */
+const TICKS_PER_SECOND = 10_000_000;
+const MEDIA_CLOCK_TOLERANCE_SECONDS = 0.05;
+
+/** Rough upper bound on how long `text` takes to speak, used only as a stall guard. */
+function estimatePlaybackMs(text: string): number {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return (words / 2) * 1000 + TURN_END_SLACK_MS;
+}
+
+/** Resolve once the element is actually rendering media, or when the wait times out. */
+function waitUntilPlaying(el: HTMLMediaElement, timeoutMs: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (!el.paused && el.readyState >= 3 && el.currentTime > 0) {
+      resolve();
+      return;
+    }
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      el.removeEventListener('playing', finish);
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(finish, timeoutMs);
+    el.addEventListener('playing', finish);
+  });
+}
+
 export class AvatarPresenter {
   private synthesizer: any = null;
   private peerConnection: RTCPeerConnection | null = null;
   private videoStream: MediaStream | null = null;
   private audioStream: MediaStream | null = null;
+  private audioElement: HTMLAudioElement | null = null;
   private options: Required<AvatarPresenterOptions>;
-  // Resolver for the most recent speak() call, fired by TurnEnd avatar event.
   private pendingTurnEnd: (() => void) | null = null;
+  private speechStartOffsetTicks: number | null = null;
+  private speechDurationTicks: number | null = null;
+  private turnEndOffsetTicks: number | null = null;
+  private playbackWaitGeneration = 0;
+
+  /** Warm the lazily-imported Speech SDK chunk so connect() is not gated on its download. */
+  static preload(): void {
+    void import('microsoft-cognitiveservices-speech-sdk').catch(() => { /* best effort */ });
+  }
 
   constructor(options: AvatarPresenterOptions = {}) {
     this.options = {
@@ -62,12 +107,17 @@ export class AvatarPresenter {
     this.options.onStatus('connecting');
     this.videoStream = new MediaStream();
     this.audioStream = new MediaStream();
+    this.audioElement = audioEl;
 
-    // Dynamic import keeps the ~10 MB SDK out of the initial bundle
-    const SpeechSDK = await import('microsoft-cognitiveservices-speech-sdk');
+    const forceTcp = (typeof window !== 'undefined' && (window as any).__AVATAR_FORCE_TCP__ !== false);
 
-    // Fetch a short-lived Speech token (aad#resourceId#aadToken format)
-    const { token, region } = await this.fetchSpeechToken();
+    // These three are independent; running them concurrently removes two full
+    // round trips from the perceived start-up delay.
+    const [SpeechSDK, { token, region }, iceServers] = await Promise.all([
+      import('microsoft-cognitiveservices-speech-sdk'),
+      this.fetchSpeechToken(),
+      this.fetchIceServers(forceTcp),
+    ]);
 
     // Must use fromEndpoint + set authorizationToken — fromAuthorizationToken does not
     // accept the aad# format required for Entra ID auth (WebSocket 1006 error otherwise)
@@ -75,27 +125,6 @@ export class AvatarPresenter {
     const speechConfig = SpeechSDK.SpeechConfig.fromEndpoint(wssUrl);
     speechConfig.authorizationToken = token;
     speechConfig.speechSynthesisVoiceName = this.options.voice;
-
-    // Fetch ICE relay credentials server-side (CORS prevents direct browser fetch).
-    // Some networks (corp firewalls, VPNs, residential ISPs) block UDP/3478, so we
-    // build BOTH the standard UDP entry and a TCP/443 entry and force iceTransportPolicy
-    // to 'relay'. This mirrors the `useTcpForWebRTC` workaround in Microsoft's TTS
-    // Avatar reference sample. Override at runtime via window.__AVATAR_FORCE_TCP__ = false
-    // if you want to test plain UDP.
-    let iceServers: RTCIceServer[] = [];
-    const forceTcp = (typeof window !== 'undefined' && (window as any).__AVATAR_FORCE_TCP__ !== false);
-    try {
-      const iceRes = await fetch('/api/ice-token');
-      if (iceRes.ok) {
-        const ice = await iceRes.json();
-        const baseUrl: string = ice.Urls[0];
-        const tcpUrl = baseUrl.replace(':3478', ':443?transport=tcp');
-        const urls = forceTcp ? [tcpUrl, baseUrl] : [baseUrl, tcpUrl];
-        iceServers = [{ urls, username: ice.Username, credential: ice.Password }];
-      }
-    } catch (err) {
-      console.warn('[avatar] /api/ice-token failed:', err);
-    }
 
     const avatarConfig = new SpeechSDK.AvatarConfig(
       this.options.character,
@@ -159,17 +188,13 @@ export class AvatarPresenter {
 
     this.synthesizer = new SpeechSDK.AvatarSynthesizer(speechConfig, avatarConfig);
 
-    // Track speaking state and resolve pending speak() promises on TurnEnd,
-    // which fires when the avatar actually finishes playing the audio (the
-    // speakTextAsync promise resolves earlier, when synthesis is queued).
     this.synthesizer.avatarEventReceived = (_s: any, e: any) => {
       if (e.description === 'SwitchToSpeaking') {
+        if (this.pendingTurnEnd) this.speechStartOffsetTicks = e.offset;
         this.options.onStatus('speaking');
       } else if (e.description === 'TurnEnd') {
-        this.options.onStatus('ready');
-        const resolver = this.pendingTurnEnd;
-        this.pendingTurnEnd = null;
-        resolver?.();
+        this.turnEndOffsetTicks = e.offset;
+        this.scheduleTurnEndResolution();
       }
     };
 
@@ -201,15 +226,24 @@ export class AvatarPresenter {
     playMedia(videoEl);
     playMedia(audioEl);
 
+    // WebRTC media is realtime: audio that arrives before the element is actually
+    // rendering is discarded, not buffered. Reporting 'ready' before playback began
+    // let the caller speak into a dead pipeline, losing the opening utterances.
+    await Promise.all([
+      waitUntilPlaying(videoEl, MEDIA_PLAYBACK_TIMEOUT_MS),
+      waitUntilPlaying(audioEl, MEDIA_PLAYBACK_TIMEOUT_MS),
+    ]);
+    await new Promise(resolve => setTimeout(resolve, AUDIO_PRIME_MS));
     this.options.onStatus('ready');
   }
 
-  /** Speak plain text. Resolves when the avatar finishes *playing* the audio,
-   *  signalled by the SDK's TurnEnd avatar event (not the earlier server-side
-   *  synthesis-complete signal from speakTextAsync).
-   */
+  /** Speak plain text and resolve when its audio reaches the WebRTC player. */
   async speak(text: string): Promise<void> {
     if (!this.synthesizer) throw new Error('Avatar not connected.');
+    this.playbackWaitGeneration += 1;
+    this.speechStartOffsetTicks = null;
+    this.speechDurationTicks = null;
+    this.turnEndOffsetTicks = null;
     this.options.onStatus('speaking');
 
     // Prepare the TurnEnd waiter BEFORE starting synthesis so we don't miss
@@ -218,6 +252,7 @@ export class AvatarPresenter {
       this.pendingTurnEnd = resolve;
     });
 
+    let stallTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       const result = await this.synthesizer.speakTextAsync(text);
       if (result?.errorDetails) {
@@ -226,20 +261,32 @@ export class AvatarPresenter {
         this.options.onStatus('error');
         throw new Error(result.errorDetails);
       }
-      // Wait for the avatar to actually finish playing.
-      await turnEndPromise;
+      this.speechDurationTicks = Number.isFinite(result?.audioDuration)
+        ? result.audioDuration
+        : 0;
+      this.scheduleTurnEndResolution();
+      // Wait for the avatar to actually finish playing, bounded so a TurnEnd that
+      // never arrives cannot stall a multi-step narration indefinitely.
+      const stallGuard = new Promise<void>((resolve) => {
+        stallTimer = setTimeout(resolve, estimatePlaybackMs(text));
+      });
+      await Promise.race([turnEndPromise, stallGuard]);
+      this.pendingTurnEnd = null;
       this.options.onWord(-1);
       this.options.onStatus('ready');
     } catch (err) {
       this.pendingTurnEnd = null;
       this.options.onStatus('error');
       throw err;
+    } finally {
+      clearTimeout(stallTimer);
     }
   }
 
   /** Interrupt current speech mid-sentence. */
   async stopSpeaking(): Promise<void> {
     this.options.onWord(-1);
+    this.playbackWaitGeneration += 1;
     // Release any waiter so the loop doesn't hang on a TurnEnd that may not fire.
     const resolver = this.pendingTurnEnd;
     this.pendingTurnEnd = null;
@@ -259,8 +306,69 @@ export class AvatarPresenter {
     return res.json();
   }
 
+  /**
+   * Fetch ICE relay credentials server-side (CORS prevents direct browser fetch).
+   * Some networks (corp firewalls, VPNs, residential ISPs) block UDP/3478, so we
+   * build BOTH the standard UDP entry and a TCP/443 entry and force iceTransportPolicy
+   * to 'relay'. This mirrors the `useTcpForWebRTC` workaround in Microsoft's TTS
+   * Avatar reference sample. Override at runtime via window.__AVATAR_FORCE_TCP__ = false
+   * if you want to test plain UDP.
+   */
+  private async fetchIceServers(forceTcp: boolean): Promise<RTCIceServer[]> {
+    try {
+      const iceRes = await fetch('/api/ice-token');
+      if (!iceRes.ok) return [];
+      const ice = await iceRes.json();
+      const baseUrl: string = ice.Urls[0];
+      const tcpUrl = baseUrl.replace(':3478', ':443?transport=tcp');
+      const urls = forceTcp ? [tcpUrl, baseUrl] : [baseUrl, tcpUrl];
+      return [{ urls, username: ice.Username, credential: ice.Password }];
+    } catch (err) {
+      console.warn('[avatar] /api/ice-token failed:', err);
+      return [];
+    }
+  }
+
+  private waitForPlaybackOffset(offsetTicks: number, generation: number): Promise<void> {
+    const targetSeconds = offsetTicks / TICKS_PER_SECOND;
+    return new Promise<void>((resolve) => {
+      const check = () => {
+        if (generation !== this.playbackWaitGeneration || !this.audioElement) {
+          resolve();
+          return;
+        }
+        if (this.audioElement.currentTime + MEDIA_CLOCK_TOLERANCE_SECONDS >= targetSeconds) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(check);
+      };
+      check();
+    });
+  }
+
+  private scheduleTurnEndResolution(): void {
+    if (!this.pendingTurnEnd || this.turnEndOffsetTicks == null || this.speechDurationTicks == null) return;
+
+    const resolver = this.pendingTurnEnd;
+    this.pendingTurnEnd = null;
+    const generation = this.playbackWaitGeneration;
+    const spokenEndOffset = this.speechStartOffsetTicks != null && this.speechDurationTicks > 0
+      ? this.speechStartOffsetTicks + this.speechDurationTicks
+      : this.turnEndOffsetTicks;
+    const targetOffset = Math.min(spokenEndOffset, this.turnEndOffsetTicks);
+
+    void this.waitForPlaybackOffset(targetOffset, generation).then(() => {
+      if (generation === this.playbackWaitGeneration) {
+        this.options.onStatus('ready');
+      }
+      resolver();
+    });
+  }
+
   /** Close the WebRTC session and release all resources. */
   disconnect(): void {
+    this.playbackWaitGeneration += 1;
     if (this.peerConnection) {
       this.peerConnection.close();
       this.peerConnection = null;
@@ -269,6 +377,7 @@ export class AvatarPresenter {
     this.audioStream?.getTracks().forEach(track => track.stop());
     this.videoStream = null;
     this.audioStream = null;
+    this.audioElement = null;
     if (this.synthesizer) {
       try { this.synthesizer.close(); } catch { /* ignore */ }
       this.synthesizer = null;
