@@ -105,7 +105,6 @@ const IconPalette: React.FC<IconPaletteProps> = ({ forceCollapsed }) => {
         return next;
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   return (

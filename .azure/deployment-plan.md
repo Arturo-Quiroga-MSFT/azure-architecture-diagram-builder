@@ -211,8 +211,8 @@ Improve the existing VNet-hosted AADB application before adding major features: 
 
 #### Phase B — Release Confidence and Performance Baseline
 
-1. Add one `npm run verify:release` command covering TypeScript, focused lint, deterministic tests, production build, version contract, production exclusions, and Playwright smoke tests.
-2. Add browser smoke coverage for page load, version display, model configuration, basic diagram rendering from a deterministic fixture, and critical modal opening.
+1. [x] Add one `npm run verify:release` command covering TypeScript, full lint, deterministic tests, production build, version contract, production exclusions, and Playwright smoke tests.
+2. [x] Add browser smoke coverage for page load, version display, model configuration, basic diagram rendering from a deterministic fixture, and critical modal opening.
 3. Capture bundle composition and Web Vitals before optimization; establish budgets rather than optimizing by intuition.
 4. Lazy-load export libraries and infrequently used heavy modals, then compare bundle and interaction metrics with the baseline.
 
@@ -246,7 +246,7 @@ Improve the existing VNet-hosted AADB application before adding major features: 
 ### Delivery Plan
 
 - **Increment 1:** Phase A health endpoints, probes, immutable image identity, and staged rollout/rollback.
-- **Increment 2:** Phase B unified release verification and browser smoke suite.
+- **Increment 2:** Phase B unified release verification and browser smoke suite. **Completed locally; CI-enforced, no runtime deployment required.**
 - **Increment 3:** Phase B measured code splitting and performance budget.
 - **Increment 4:** Phase C error boundaries, first `App.tsx` extraction, and correlated logging.
 - **Decision gate:** choose public-demo access controls and VNet/Bicep convergence scope using measured traffic, cost, and operational evidence.
@@ -281,6 +281,24 @@ Implemented locally on 2026-08-23; no Azure resources changed.
 - **Existing VNet app:** its system identity currently has no ACR role. The rollout script creates resource-scoped `AcrPull` before replacing stored registry credentials with managed-identity pull.
 - **Runtime secret migration:** the candidate revision replaces the existing plaintext `AZURE_OPENAI_API_KEY` environment value with a Container Apps secret reference; keyless Foundry access remains a later security-boundary decision for this legacy deployment.
 - **Issues:** no overbroad role assignments introduced by Increment 1.
+
+### Increment 2 Release Confidence Evidence
+
+Implemented and verified on 2026-08-23; no Azure resources or runtime application code changed.
+
+| Check | Result |
+| --- | --- |
+| TypeScript | Root app and Vite config type checks pass with TypeScript pinned to parser-supported `5.3.3` |
+| Lint | Full `npm run lint` passes; removed one unused function and six stale suppression comments |
+| Deterministic tests | All 11 existing test scripts pass through `npm run test:deterministic` |
+| Version contract | `package.json`, root `package-lock.json`, lockfile root package, and built `/version.json` agree |
+| Browser smoke | Chromium test passed in 1.2 seconds after isolated production build; mocked one Responses API call and rendered App Service, SQL Database, one connection, and two workflow steps |
+| UI surfaces | Smoke test verified title/version, Help modal, model selector, Generate modal, React Flow nodes, workflow count, and enabled validation command |
+| Isolation | Smoke build uses synthetic endpoint/deployment values and intercepts `/api/openai`; no Azure resource or live model request occurs |
+| Unified gate | `npm run verify:release` passed end to end |
+| CI | `.github/workflows/quality.yml` runs on pull requests and pushes to `main`; manual Azure deployment also runs the same gate before authentication/deployment |
+| Bundle baseline | Standard production build main chunk: approximately 3.71 MB / 1.07 MB gzip. Synthetic one-model smoke build: approximately 3.54 MB / 1.00 MB gzip. These are build outputs, not measured browser Web Vitals. |
+| Deferred security debt | `npm install` reports 25 transitive audit findings (1 low, 4 moderate, 18 high, 2 critical). No automatic audit fix was applied; dependency triage belongs in a separate scoped security increment. |
 
 Pending validation before deployment:
 

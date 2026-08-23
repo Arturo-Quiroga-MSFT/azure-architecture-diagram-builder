@@ -937,6 +937,7 @@ azure-diagrams/
 - **Health-aware hosting** — the web container exposes shallow liveness and readiness endpoints, and reusable Container Apps infrastructure defines explicit startup, readiness, and liveness probes for both web and MCP services.
 - **Safer VNet releases** — production images use immutable version-and-commit tags, ACR pulls use managed identity, and traffic remains on the previous revision until the candidate passes direct health and version checks.
 - **Rollback boundary** — the prior healthy revision remains active at 0% traffic and each deployment prints the exact rollback command.
+- **Unified release gate** — `npm run verify:release` runs type checks, full lint, 11 deterministic regression scripts, the production build, version consistency, and a mocked Playwright generation workflow. Pull requests, pushes to `main`, and the manual Azure workflow use the same gate.
 
 ### August 23, 2026 — AADB v1.1.0
 

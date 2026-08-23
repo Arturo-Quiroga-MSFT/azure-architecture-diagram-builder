@@ -116,7 +116,6 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
     if (openSignal && openSignal > 0) openGenerator();
     // `openSignal` is intentionally the only trigger; callbacks/state should
     // not reopen the modal by themselves.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openSignal]);
 
   // Pending auto-close timer. Tracked in a ref so we can cancel it when the

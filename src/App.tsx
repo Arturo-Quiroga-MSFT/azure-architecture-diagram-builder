@@ -915,41 +915,6 @@ function App() {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-// Remove node from its parent group
-  // @ts-ignore - Reserved for future use in context menu
-  const _ungroupNode = useCallback((nodeId: string) => {
-    setNodes((nds) => nds.map((node) => {
-      if (node.id === nodeId && node.parentNode) {
-        // Find the parent group to get its absolute position
-        const parentGroup = nds.find(n => n.id === node.parentNode);
-        
-        if (parentGroup) {
-          // Convert from parent-relative to absolute canvas coordinates
-          const absolutePosition = {
-            x: parentGroup.position.x + node.position.x,
-            y: parentGroup.position.y + node.position.y,
-          };
-          
-          return {
-            ...node,
-            parentNode: undefined,
-            position: absolutePosition,
-            // Remove extent constraint when ungrouping
-            extent: undefined,
-          };
-        }
-        
-        // Fallback: just remove parent if parent not found
-        return {
-          ...node,
-          parentNode: undefined,
-          extent: undefined,
-        };
-      }
-      return node;
-    }));
-  }, []);
-
   // Handle node deletion - convert child nodes to absolute positions when parent group is deleted
   const onNodesDelete = useCallback((deleted: any[]) => {
     const deletedGroupIds = deleted.filter(n => n.type === 'groupNode').map(n => n.id);

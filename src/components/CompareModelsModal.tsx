@@ -969,7 +969,6 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
         </div>
 
         {/* Floating Avatar Presenter Panel — always in DOM so refs are populated */}
-        {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
         <div
           className="compare-avatar-panel"
           style={avatarStatus === 'idle' ? { display: 'none' } : {

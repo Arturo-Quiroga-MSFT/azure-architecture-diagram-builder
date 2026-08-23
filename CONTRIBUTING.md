@@ -2,7 +2,7 @@
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit [Microsoft CLA](https://cla.opensource.microsoft.com).
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
@@ -57,6 +57,17 @@ npm run dev
 ### Versioning and Releases
 
 The root `package.json` is the single source for the AADB product version. The build publishes that value in the header, telemetry, deployment registration, and `/version.json`; deployment scripts also set ACA `APP_VERSION` to the same value.
+
+Install the pinned Playwright browser once, then run the complete release gate before merging or deploying:
+
+```bash
+npx playwright install chromium
+npm run verify:release
+```
+
+The gate runs both TypeScript projects, full-repository ESLint, all deterministic regression scripts, the production build, package/build version consistency, and a Playwright smoke test. The smoke test builds into an isolated directory, mocks the AI proxy with a fixed architecture, and exercises page load, version display, Help, model selection, Generate Diagram, React Flow rendering, workflow rendering, and validation availability. It never calls Azure or a live model.
+
+GitHub Actions runs the same command on pull requests, pushes to `main`, and before the manual Azure deployment workflow.
 
 Use semantic versioning:
 

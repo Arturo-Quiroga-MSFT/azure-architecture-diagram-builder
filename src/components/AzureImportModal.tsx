@@ -63,7 +63,6 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
       if (name) { setAccount(name); setNeedsSignIn(false); loadSubs(); }
       else { setNeedsSignIn(true); }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Load resource groups when a subscription is chosen.

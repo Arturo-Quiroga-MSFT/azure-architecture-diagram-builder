@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Builds a polished overview slide deck for the Azure Architecture Diagram Builder.
  *
