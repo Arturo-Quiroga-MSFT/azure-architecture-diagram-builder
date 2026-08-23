@@ -123,6 +123,16 @@ Revalidation completed after the correction:
 - Production build and `test:production-exclusions` passed.
 - Production remained on `v1.1.0`; registry authentication is now managed identity, `AcrPull` is present, and revision mode is multiple with `0000003` at 100% traffic.
 
+#### Successful deployment
+
+- ACR run `ch6q` built immutable image `v1.2.0-1dbdba1f07a7`.
+- Candidate revision `azure-diagram-builder-vnet--v1-2-0-1dbdba1f07a7` became Healthy and Provisioned before traffic moved.
+- Production traffic moved to the candidate at 100%; rollback revision `azure-diagram-builder-vnet--0000003` remains available.
+- Live root, health, readiness, version, Speech token, and one bounded configured-model OpenAI proxy request returned HTTP 200.
+- Browser verification confirmed the UI, `/version.json`, `/api/health`, and `/api/ready` all report `1.2.0`.
+- Live registry authentication uses the system identity with resource-scoped `AcrPull`; `AZURE_OPENAI_API_KEY` is a secret reference rather than a plaintext environment value.
+- Probe requests were functionally healthy but generated high-volume access logs. Exact health/readiness nginx locations now disable access logging for probe traffic only; this recovery refinement requires the final same-version rollout before tagging.
+
 ## 8. Role Assignment Verification
 
 - **Identity:** One user-assigned managed identity is attached to both Container Apps.
