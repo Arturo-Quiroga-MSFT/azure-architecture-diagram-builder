@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — Production Foundation 1.2 Increment 1 (v1.1.0 remains deployed)
+> **Status:** Deployed — Production Foundation 1.2 Increment 1
 
 Generated: 2026-08-21
 
@@ -133,6 +133,18 @@ Revalidation completed after the correction:
 - Live registry authentication uses the system identity with resource-scoped `AcrPull`; `AZURE_OPENAI_API_KEY` is a secret reference rather than a plaintext environment value.
 - Probe requests were functionally healthy but generated high-volume access logs. Exact health/readiness nginx locations now disable access logging for probe traffic only; this recovery refinement requires the final same-version rollout before tagging.
 - Recovery ACR run `ch6r` built image `v1.2.0-fdced3a932db`, but two consecutive app-scope writes collided before candidate creation. Production remained on the healthy `1dbdba1…` revision at 100%. The deployment script now skips already-present secret and managed-identity registry configuration; secret rotation requires explicit `ROTATE_OPENAI_SECRET=true`.
+
+#### Final production state
+
+- ACR run `ch6s` built immutable image `azure-diagram-builder:v1.2.0-7143ea235331`.
+- Active production revision: `azure-diagram-builder-vnet--v1-2-0-7143ea235331`; Healthy, Provisioned, one replica, 100% traffic.
+- Rollback revision: `azure-diagram-builder-vnet--v1-2-0-1dbdba1f07a7`; Healthy, Provisioned, one replica, active at 0% traffic.
+- Rollback command: `az containerapp ingress traffic set -n azure-diagram-builder-vnet -g azure-diagrams-rg --revision-weight azure-diagram-builder-vnet--v1-2-0-1dbdba1f07a7=100 azure-diagram-builder-vnet--v1-2-0-7143ea235331=0`.
+- Registry pull uses the Container App system identity; the identity has `AcrPull` scoped to `acrazurediagrams1767583743` and no registry username/password is configured.
+- Runtime `AZURE_OPENAI_API_KEY` is a Container Apps secret reference, not a plaintext environment value.
+- Live `/`, `/api/health`, `/api/ready`, `/version.json`, `/api/speech-token`, and one bounded request through one configured OpenAI deployment returned HTTP 200.
+- Browser verification confirmed the product title, UI version, manifest, health, and readiness all agree on `v1.2.0`.
+- Probe access-log suppression passed in the local production container and the final ACA revision logs contained no `/api/health` or `/api/ready` access-log entries while ordinary requests remained logged.
 
 ## 8. Role Assignment Verification
 
