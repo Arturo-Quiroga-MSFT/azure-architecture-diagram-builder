@@ -47,7 +47,7 @@ container.probes = [
     initialDelaySeconds: 0,
     periodSeconds: 1,
     timeoutSeconds: 1,
-    failureThreshold: 60,
+    failureThreshold: 48,
     successThreshold: 1,
   },
   {
@@ -56,7 +56,7 @@ container.probes = [
     initialDelaySeconds: 5,
     periodSeconds: 1,
     timeoutSeconds: 1,
-    failureThreshold: 60,
+    failureThreshold: 48,
     successThreshold: 1,
   },
   {

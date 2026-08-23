@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.45.15.27210",
-      "templateHash": "13931590692065721038"
+      "templateHash": "8637888424204637110"
     }
   },
   "parameters": {
@@ -389,7 +389,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.45.15.27210",
-              "templateHash": "3776273776469660508"
+              "templateHash": "2040006011635569401"
             }
           },
           "parameters": {
@@ -770,7 +770,7 @@
                           "initialDelaySeconds": 0,
                           "periodSeconds": 1,
                           "timeoutSeconds": 1,
-                          "failureThreshold": 60,
+                          "failureThreshold": 48,
                           "successThreshold": 1
                         },
                         {
@@ -783,7 +783,7 @@
                           "initialDelaySeconds": 5,
                           "periodSeconds": 1,
                           "timeoutSeconds": 1,
-                          "failureThreshold": 60,
+                          "failureThreshold": 48,
                           "successThreshold": 1
                         },
                         {
@@ -866,7 +866,7 @@
                           "initialDelaySeconds": 0,
                           "periodSeconds": 1,
                           "timeoutSeconds": 1,
-                          "failureThreshold": 60,
+                          "failureThreshold": 48,
                           "successThreshold": 1
                         },
                         {
@@ -879,7 +879,7 @@
                           "initialDelaySeconds": 5,
                           "periodSeconds": 1,
                           "timeoutSeconds": 1,
-                          "failureThreshold": 60,
+                          "failureThreshold": 48,
                           "successThreshold": 1
                         },
                         {

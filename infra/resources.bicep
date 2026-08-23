@@ -291,7 +291,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               initialDelaySeconds: 0
               periodSeconds: 1
               timeoutSeconds: 1
-              failureThreshold: 60
+              failureThreshold: 48
               successThreshold: 1
             }
             {
@@ -300,7 +300,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               initialDelaySeconds: 5
               periodSeconds: 1
               timeoutSeconds: 1
-              failureThreshold: 60
+              failureThreshold: 48
               successThreshold: 1
             }
             {
@@ -397,7 +397,7 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
               initialDelaySeconds: 0
               periodSeconds: 1
               timeoutSeconds: 1
-              failureThreshold: 60
+              failureThreshold: 48
               successThreshold: 1
             }
             {
@@ -406,7 +406,7 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
               initialDelaySeconds: 5
               periodSeconds: 1
               timeoutSeconds: 1
-              failureThreshold: 60
+              failureThreshold: 48
               successThreshold: 1
             }
             {

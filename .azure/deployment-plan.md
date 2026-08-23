@@ -112,6 +112,17 @@ Validated on 2026-08-21 against `SUB-2` without creating greenfield resources.
 | `npx tsc --noEmit -p tsconfig.json`, `npx tsc --noEmit -p tsconfig.node.json`, `npm run test:production-exclusions` | All exit 0 |
 | `require-version-bump.sh` against production v1.1.0 | Passed transition `v1.1.0 -> v1.2.0` |
 
+#### First deployment attempt
+
+ACR run `ch6p` completed successfully and the app identity received resource-scoped `AcrPull`. ACA rejected the candidate before creating a revision because startup/readiness `failureThreshold: 60` exceeded the target API range of 1–48. Production remained on `v1.1.0`, revision `0000003`, at 100% traffic. No failed candidate revision was created. Multiple-revision mode and managed-identity registry authentication were applied successfully. The probe threshold was corrected to 48 and requires revalidation before retry.
+
+Revalidation completed after the correction:
+
+- Live revision template transformation asserted all probe thresholds are at most 48.
+- Subscription validation and what-if passed again with Create 15 / Modify 0 / Delete 0 in isolated environment `aadb-v120-validate`.
+- Production build and `test:production-exclusions` passed.
+- Production remained on `v1.1.0`; registry authentication is now managed identity, `AcrPull` is present, and revision mode is multiple with `0000003` at 100% traffic.
+
 ## 8. Role Assignment Verification
 
 - **Identity:** One user-assigned managed identity is attached to both Container Apps.
