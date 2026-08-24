@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — Production Foundation v1.4.1 Increment 4 correction; production is on v1.4.0
+> **Status:** Deployed — Production Foundation v1.4.1 Increment 4
 
 Generated: 2026-08-21
 
@@ -362,7 +362,9 @@ Pending v1.4.0 release steps:
 
 Production `v1.4.0` deployed successfully on 2026-08-24, but fresh browser verification showed GPT-5.1 selected when multiple model deployments were configured. The startup loader selected the first available model instead of preferring the configured default. `v1.4.1` now chooses GPT-5.6 Luna when it is available and falls back to the first configured model only when Luna is unavailable.
 
-The release smoke build now configures both GPT-5.1 and GPT-5.6 Luna and asserts that the Generate modal starts on Luna. `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests. Subscription validation and isolated what-if passed again with Create 15 / Modify 0 / Delete 0. Effective policy assignments and the static Bicep role definitions are unchanged from the completed `v1.4.0` validation. Patch deployment remains pending.
+The release smoke build now configures both GPT-5.1 and GPT-5.6 Luna and asserts that the Generate modal starts on Luna. `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests. Subscription validation and isolated what-if passed again with Create 15 / Modify 0 / Delete 0. Effective policy assignments and the static Bicep role definitions are unchanged from the completed `v1.4.0` validation.
+
+`v1.4.1` deployment proof: ACR run `ch6v` pushed immutable image `v1.4.1-d00b574c6347` with digest `sha256:fbb05e2361f6478dc1a6806bdadea2a7fb4b09abbcf64514248f8b13860b5031`. Revision `azure-diagram-builder-vnet--v1-4-1-d00b574c6347` is Healthy and Provisioned with one replica and 100% traffic; `v1.4.0-360517d12258` remains Healthy and Provisioned at 0% for rollback. Root returned HTTP 200; health, readiness, and version surfaces report `1.4.1`. Request ID `prod-v141-20260824122722` was returned and recorded in the matching structured completion log. A fresh browser session displayed `v1.4.1`, selected GPT-5.6 Luna with medium reasoning in both the toolbar and Generate modal, and showed no alerts.
 
 #### Increment 3 final production state
 
