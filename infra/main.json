@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.45.15.27210",
-      "templateHash": "8637888424204637110"
+      "templateHash": "4467966414713188717"
     }
   },
   "parameters": {
@@ -389,7 +389,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.45.15.27210",
-              "templateHash": "2040006011635569401"
+              "templateHash": "9519278916178748820"
             }
           },
           "parameters": {
@@ -451,7 +451,6 @@
             "cosmosContainerId": "diagrams",
             "cosmosFeedbackContainerId": "feedback",
             "effectiveAzureOpenAiApiKey": "[if(parameters('deployFoundry'), '', parameters('azureOpenAiApiKey'))]",
-            "appSecrets": "[if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(), createArray(createObject('name', 'azure-openai-api-key', 'value', variables('effectiveAzureOpenAiApiKey'))))]",
             "mcpAuthEnv": "[if(empty(parameters('mcpAuthToken')), createArray(), createArray(createObject('name', 'MCP_AUTH_TOKEN', 'secretRef', 'mcp-auth-token')))]",
             "mcpSecrets": "[if(empty(parameters('mcpAuthToken')), createArray(), createArray(createObject('name', 'mcp-auth-token', 'value', parameters('mcpAuthToken'))))]"
           },
@@ -737,7 +736,7 @@
               "properties": {
                 "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken')))]",
                 "configuration": {
-                  "secrets": "[variables('appSecrets')]",
+                  "secrets": "[if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(createObject('name', 'server-appinsights-connection-string', 'value', reference(resourceId('Microsoft.Insights/components', format('{0}{1}', parameters('abbrs').insightsComponents, parameters('resourceToken'))), '2020-02-02').ConnectionString)), createArray(createObject('name', 'azure-openai-api-key', 'value', variables('effectiveAzureOpenAiApiKey')), createObject('name', 'server-appinsights-connection-string', 'value', reference(resourceId('Microsoft.Insights/components', format('{0}{1}', parameters('abbrs').insightsComponents, parameters('resourceToken'))), '2020-02-02').ConnectionString)))]",
                   "ingress": {
                     "external": true,
                     "targetPort": 80,
@@ -800,7 +799,7 @@
                           "successThreshold": 1
                         }
                       ],
-                      "env": "[concat(createArray(createObject('name', 'AZURE_CLIENT_ID', 'value', reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').clientId), createObject('name', 'AZURE_SPEECH_REGION', 'value', if(parameters('deploySpeech'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '2023-05-01', 'full').location, '')), createObject('name', 'AZURE_SPEECH_RESOURCE_ID', 'value', if(parameters('deploySpeech'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '')), createObject('name', 'AZURE_COSMOS_ENDPOINT', 'value', if(parameters('deployCosmos'), reference(resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken'))), '2024-02-15-preview').documentEndpoint, '')), createObject('name', 'COSMOS_DATABASE_ID', 'value', if(parameters('deployCosmos'), variables('cosmosDatabaseId'), '')), createObject('name', 'COSMOS_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosContainerId'), '')), createObject('name', 'COSMOS_FEEDBACK_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosFeedbackContainerId'), '')), createObject('name', 'PUBLIC_URL', 'value', format('https://{0}diagram-builder-{1}.{2}', parameters('abbrs').appContainerApps, parameters('resourceToken'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken'))), '2024-03-01').defaultDomain))), concat(createArray(createObject('name', 'AZURE_OPENAI_ENDPOINT', 'value', if(parameters('deployFoundry'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), '2025-06-01').endpoint, parameters('azureOpenAiEndpoint')))), if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(), createArray(createObject('name', 'AZURE_OPENAI_API_KEY', 'secretRef', 'azure-openai-api-key')))))]"
+                      "env": "[concat(createArray(createObject('name', 'AZURE_CLIENT_ID', 'value', reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken'))), '2023-01-31').clientId), createObject('name', 'APPLICATIONINSIGHTS_CONNECTION_STRING', 'secretRef', 'server-appinsights-connection-string'), createObject('name', 'OTEL_SERVICE_NAME', 'value', 'aadb-token-server'), createObject('name', 'NODE_ENV', 'value', 'production'), createObject('name', 'AZURE_SPEECH_REGION', 'value', if(parameters('deploySpeech'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '2023-05-01', 'full').location, '')), createObject('name', 'AZURE_SPEECH_RESOURCE_ID', 'value', if(parameters('deploySpeech'), resourceId('Microsoft.CognitiveServices/accounts', format('{0}{1}', parameters('abbrs').cognitiveServicesSpeech, parameters('resourceToken'))), '')), createObject('name', 'AZURE_COSMOS_ENDPOINT', 'value', if(parameters('deployCosmos'), reference(resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken'))), '2024-02-15-preview').documentEndpoint, '')), createObject('name', 'COSMOS_DATABASE_ID', 'value', if(parameters('deployCosmos'), variables('cosmosDatabaseId'), '')), createObject('name', 'COSMOS_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosContainerId'), '')), createObject('name', 'COSMOS_FEEDBACK_CONTAINER_ID', 'value', if(parameters('deployCosmos'), variables('cosmosFeedbackContainerId'), '')), createObject('name', 'PUBLIC_URL', 'value', format('https://{0}diagram-builder-{1}.{2}', parameters('abbrs').appContainerApps, parameters('resourceToken'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken'))), '2024-03-01').defaultDomain))), concat(createArray(createObject('name', 'AZURE_OPENAI_ENDPOINT', 'value', if(parameters('deployFoundry'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken'))), '2025-06-01').endpoint, parameters('azureOpenAiEndpoint')))), if(empty(variables('effectiveAzureOpenAiApiKey')), createArray(), createArray(createObject('name', 'AZURE_OPENAI_API_KEY', 'secretRef', 'azure-openai-api-key')))))]"
                     }
                   ],
                   "scale": {
@@ -812,6 +811,7 @@
               "dependsOn": [
                 "[resourceId('Microsoft.ContainerRegistry/registries', format('{0}{1}', parameters('abbrs').containerRegistryRegistries, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}app-{1}', parameters('abbrs').managedIdentityUserAssignedIdentities, parameters('resourceToken')))]",
+                "[resourceId('Microsoft.Insights/components', format('{0}{1}', parameters('abbrs').insightsComponents, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.App/managedEnvironments', format('{0}{1}', parameters('abbrs').appManagedEnvironments, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', format('{0}{1}', parameters('abbrs').documentDBDatabaseAccounts, parameters('resourceToken')))]",
                 "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}aadb-{1}', parameters('abbrs').cognitiveServicesAccounts, parameters('resourceToken')))]",

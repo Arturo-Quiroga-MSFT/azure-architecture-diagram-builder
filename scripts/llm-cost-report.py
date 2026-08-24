@@ -57,12 +57,17 @@ ENVVAR_TO_DISPLAY = {
     "VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX": "GPT-5.3 Codex",
     "VITE_AZURE_OPENAI_DEPLOYMENT_GPT54": "GPT-5.4",
     "VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI": "GPT-5.4 Mini",
+    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL": "GPT-5.6 Sol",
+    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA": "GPT-5.6 Terra",
+    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA": "GPT-5.6 Luna",
+    "VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1": "MAI-Thinking-1 (Preview)",
     "VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK": "DeepSeek V3.2 Speciale",
     "VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO": "DeepSeek V4 Pro",
     "VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST": "Grok 4.1 Fast",
     "VITE_AZURE_OPENAI_DEPLOYMENT_GROK43": "Grok 4.3",
     "VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3": "Mistral Large 3",
     "VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25": "Kimi K2.5",
+    "VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE": "Kimi K2.7 Code",
 }
 
 
@@ -226,6 +231,8 @@ customEvents
          totalTok  = toint(customMeasurements.totalTokens)
 | summarize Calls = count(),
             Users = dcount(user_Id),
+            Sessions = dcount(session_Id),
+            Workflows = dcountif(tostring(customDimensions.workflowId), isnotempty(tostring(customDimensions.workflowId))),
             PromptTokens = sum(promptTok),
             CompletionTokens = sum(compTok),
             TotalTokens = sum(totalTok)
@@ -253,6 +260,8 @@ customEvents
         stats[model] = {
             "calls": int(r[idx["Calls"]] or 0),
             "users": int(r[idx["Users"]] or 0),
+            "sessions": int(r[idx["Sessions"]] or 0),
+            "workflows": int(r[idx["Workflows"]] or 0),
             "promptTokens": int(r[idx["PromptTokens"]] or 0),
             "completionTokens": int(r[idx["CompletionTokens"]] or 0),
             "totalTokens": int(r[idx["TotalTokens"]] or 0),
@@ -307,6 +316,8 @@ def build_report(args, env_deployments, cost_by_dep, cost_by_meter,
         t = telemetry.get(display, {})
         calls = t.get("calls", 0)
         users = t.get("users", 0)
+        sessions = t.get("sessions", 0)
+        workflows = t.get("workflows", 0)
         total_tok = t.get("totalTokens", 0)
         rows.append({
             "model": display,
@@ -318,11 +329,15 @@ def build_report(args, env_deployments, cost_by_dep, cost_by_meter,
             "otherCost": split.get("other", 0.0),
             "calls": calls,
             "users": users,
+            "sessions": sessions,
+            "workflows": workflows,
             "promptTokens": t.get("promptTokens", 0),
             "completionTokens": t.get("completionTokens", 0),
             "totalTokens": total_tok,
             "costPerCall": (cost / calls) if calls else 0.0,
             "costPerUser": (cost / users) if users else 0.0,
+            "costPerSession": (cost / sessions) if sessions else 0.0,
+            "costPerWorkflow": (cost / workflows) if workflows else 0.0,
             "costPer1M": (cost / (total_tok / 1_000_000)) if total_tok else 0.0,
         })
 
@@ -361,20 +376,22 @@ def build_report(args, env_deployments, cost_by_dep, cost_by_meter,
     # Per-model joined table.
     lines.append("## Per-model cost vs usage")
     lines.append("")
-    lines.append("| Model | Deployment | Cost | Calls | Users | Total Tokens | "
-                 "$/Call | $/User | $/1M Tok |")
-    lines.append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+    lines.append("| Model | Deployment | Cost | Calls | Users | Sessions | Workflows | Total Tokens | "
+                 "$/Call | $/Session | $/Workflow | $/1M Tok |")
+    lines.append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
     for r in rows:
         lines.append(
             f"| {r['model']} | `{r['deployment']}` | {fmt_money(r['cost'])} | "
             f"{fmt_int(r['calls'])} | {fmt_int(r['users'])} | "
+            f"{fmt_int(r['sessions'])} | {fmt_int(r['workflows'])} | "
             f"{fmt_int(r['totalTokens'])} | "
             f"{fmt_money(r['costPerCall']) if r['calls'] else '—'} | "
-            f"{fmt_money(r['costPerUser']) if r['users'] else '—'} | "
+            f"{fmt_money(r['costPerSession']) if r['sessions'] else '—'} | "
+            f"{fmt_money(r['costPerWorkflow']) if r['workflows'] else '—'} | "
             f"{fmt_money(r['costPer1M']) if r['totalTokens'] else '—'} |"
         )
     lines.append(f"| **Total** | | **{fmt_money(total_cost)}** | "
-                 f"**{fmt_int(total_calls)}** | | **{fmt_int(total_tokens)}** | | | "
+                 f"**{fmt_int(total_calls)}** | | | | **{fmt_int(total_tokens)}** | | | | "
                  f"**{fmt_money(blended_1m)}** |")
     lines.append("")
 
@@ -518,9 +535,9 @@ def main() -> int:
         w = csv.DictWriter(f, fieldnames=[
             "model", "deployment", "cost",
             "inputCost", "outputCost", "cachedCost", "otherCost",
-            "calls", "users",
+            "calls", "users", "sessions", "workflows",
             "promptTokens", "completionTokens", "totalTokens",
-            "costPerCall", "costPerUser", "costPer1M",
+            "costPerCall", "costPerUser", "costPerSession", "costPerWorkflow", "costPer1M",
         ])
         w.writeheader()
         for r in rows:

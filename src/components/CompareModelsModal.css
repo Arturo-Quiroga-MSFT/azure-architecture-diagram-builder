@@ -738,9 +738,6 @@ body.dark-mode .compare-critique-text {
   user-select: none;
 }
 .compare-avatar-panel-header:active { cursor: grabbing; }
-  background: #0f172a;
-  border-bottom: 1px solid #334155;
-}
 
 .compare-avatar-panel-title {
   display: flex;

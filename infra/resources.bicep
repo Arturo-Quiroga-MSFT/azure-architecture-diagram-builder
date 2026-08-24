@@ -250,8 +250,11 @@ var appOpenAiEnv = concat(
     : [ { name: 'AZURE_OPENAI_API_KEY', secretRef: 'azure-openai-api-key' } ]
 )
 var appSecrets = empty(effectiveAzureOpenAiApiKey)
-  ? []
-  : [ { name: 'azure-openai-api-key', value: effectiveAzureOpenAiApiKey } ]
+  ? [ { name: 'server-appinsights-connection-string', value: appInsights.properties.ConnectionString } ]
+  : [
+      { name: 'azure-openai-api-key', value: effectiveAzureOpenAiApiKey }
+      { name: 'server-appinsights-connection-string', value: appInsights.properties.ConnectionString }
+    ]
 
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: '${abbrs.appContainerApps}diagram-builder-${resourceToken}'
@@ -316,6 +319,9 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
           env: concat([
             // Identity — lets DefaultAzureCredential pick up the managed identity
             { name: 'AZURE_CLIENT_ID', value: appIdentity.properties.clientId }
+            { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', secretRef: 'server-appinsights-connection-string' }
+            { name: 'OTEL_SERVICE_NAME', value: 'aadb-token-server' }
+            { name: 'NODE_ENV', value: 'production' }
             // Speech
             { name: 'AZURE_SPEECH_REGION', value: deploySpeech ? speech!.location : '' }
             { name: 'AZURE_SPEECH_RESOURCE_ID', value: deploySpeech ? speech.id : '' }

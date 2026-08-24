@@ -481,11 +481,13 @@ export function trackAIModelUsage(params: {
   completionTokens?: number;
   totalTokens?: number;
   elapsedTimeMs?: number;
+  correlationId?: string;
 }): void {
   trackEvent('AI_Model_Usage', {
     model: params.model || 'unknown',
     operation: params.operation,
     reasoningEffort: params.reasoningEffort || 'none',
+    correlationId: params.correlationId || 'unavailable',
   }, {
     promptTokens: params.promptTokens ?? 0,
     completionTokens: params.completionTokens ?? 0,

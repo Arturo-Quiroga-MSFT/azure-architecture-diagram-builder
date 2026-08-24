@@ -71,9 +71,13 @@ container.probes = [
 ];
 
 setSecretRef('AZURE_OPENAI_API_KEY', 'azure-openai-api-key');
+setSecretRef('APPLICATIONINSIGHTS_CONNECTION_STRING', 'server-appinsights-connection-string');
+setSecretRef('TELEMETRY_HASH_SECRET', 'telemetry-hash-secret');
 setValue('APP_VERSION', appVersion);
 setValue('PUBLIC_URL', publicUrl);
 setValue('ENABLE_ADOPTION_IMPACT', 'false');
+setValue('NODE_ENV', 'production');
+setValue('OTEL_SERVICE_NAME', 'aadb-token-server');
 
 template.revisionSuffix = revisionSuffix;
 

@@ -9,13 +9,17 @@
  * Runs on 127.0.0.1:3001 (not exposed externally — nginx proxies /api/).
  */
 
+require('./instrumentation');
+
 const express = require('express');
 const { DefaultAzureCredential } = require('@azure/identity');
 const { CosmosClient } = require('@azure/cosmos');
+const { trace, SpanStatusCode } = require('@opentelemetry/api');
 const crypto = require('crypto');
 const { AsyncLocalStorage } = require('async_hooks');
 
 const app = express();
+app.set('trust proxy', 1);
 // The Azure OpenAI proxy forwards vision requests that embed base64 images, so
 // it needs a larger body limit. This route-scoped parser runs before the small
 // global parser below; the global parser then skips bodies already parsed here.
@@ -30,6 +34,19 @@ const APP_VERSION = process.env.APP_VERSION || 'development';
 const REVISION_NAME = process.env.CONTAINER_APP_REVISION || '';
 const requestContext = new AsyncLocalStorage();
 const CORRELATION_ID_RE = /^[A-Za-z0-9._-]{1,128}$/;
+const TELEMETRY_LABEL_RE = /^[A-Za-z0-9 ._()+-]{1,100}$/;
+const TELEMETRY_OPERATION_RE = /^[a-z0-9._-]{1,64}$/;
+const TELEMETRY_HASH_SECRET = process.env.TELEMETRY_HASH_SECRET || '';
+const tracer = trace.getTracer('aadb-token-server', APP_VERSION);
+let openAiInFlight = 0;
+let openAiPeakInFlight = 0;
+
+function privacySafeClientKey(req) {
+  if (!TELEMETRY_HASH_SECRET) return 'unavailable';
+  const day = new Date().toISOString().slice(0, 10);
+  const source = `${day}|${req.ip || ''}|${req.get('user-agent') || ''}`;
+  return crypto.createHmac('sha256', TELEMETRY_HASH_SECRET).update(source).digest('hex').slice(0, 24);
+}
 
 function structuredLog(level, event, details = {}) {
   const context = requestContext.getStore();
@@ -51,10 +68,12 @@ app.use((req, res, next) => {
     ? suppliedId
     : crypto.randomUUID();
   const startedAt = Date.now();
+  const clientKey = privacySafeClientKey(req);
 
   res.set('x-correlation-id', correlationId);
-  requestContext.run({ correlationId }, () => {
+  requestContext.run({ correlationId, clientKey }, () => {
     res.on('finish', () => {
+      if (req.path === '/api/health' || req.path === '/api/ready') return;
       structuredLog(res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info', 'http_request', {
         method: req.method,
         path: req.path,
@@ -99,6 +118,35 @@ function buildOpenAIUrl(deployment, apiFormat) {
     return `${base}openai/deployments/${encodeURIComponent(deployment)}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
   return `${base}openai/v1/responses`;
+}
+
+function extractUsage(text, apiFormat) {
+  try {
+    const payload = JSON.parse(text);
+    const usage = payload?.usage || {};
+    const promptTokens = apiFormat === 'responses' ? usage.input_tokens : usage.prompt_tokens;
+    const completionTokens = apiFormat === 'responses' ? usage.output_tokens : usage.completion_tokens;
+    const cachedTokens = apiFormat === 'responses'
+      ? usage.input_tokens_details?.cached_tokens
+      : usage.prompt_tokens_details?.cached_tokens;
+    return {
+      promptTokens: Number(promptTokens) || 0,
+      completionTokens: Number(completionTokens) || 0,
+      cachedTokens: Number(cachedTokens) || 0,
+      totalTokens: Number(usage.total_tokens) || (Number(promptTokens) || 0) + (Number(completionTokens) || 0),
+    };
+  } catch {
+    return { promptTokens: 0, completionTokens: 0, cachedTokens: 0, totalTokens: 0 };
+  }
+}
+
+function classifyUpstreamResult(status) {
+  if (status === 429) return 'rate_limited';
+  if (status === 401 || status === 403) return 'authentication';
+  if (status === 404) return 'deployment_not_found';
+  if (status >= 500) return 'upstream_server_error';
+  if (status >= 400) return 'invalid_request';
+  return 'none';
 }
 
 if (!OPENAI_ENDPOINT) {
@@ -152,18 +200,43 @@ app.post('/api/openai', async (req, res) => {
     return res.status(503).json({ error: 'AZURE_OPENAI_ENDPOINT is not configured on the server' });
   }
 
-  const { apiFormat, deployment, body } = req.body || {};
+  const { apiFormat, deployment, model, operation, body } = req.body || {};
   if (apiFormat !== 'responses' && apiFormat !== 'chat-completions' && apiFormat !== 'chat-completions-v1') {
     return res.status(400).json({ error: "apiFormat must be 'responses', 'chat-completions', or 'chat-completions-v1'" });
   }
   if (typeof deployment !== 'string' || !DEPLOYMENT_NAME_RE.test(deployment)) {
     return res.status(400).json({ error: 'invalid deployment name' });
   }
+  if (model != null && (typeof model !== 'string' || !TELEMETRY_LABEL_RE.test(model))) {
+    return res.status(400).json({ error: 'invalid model label' });
+  }
+  if (operation != null && (typeof operation !== 'string' || !TELEMETRY_OPERATION_RE.test(operation))) {
+    return res.status(400).json({ error: 'invalid operation name' });
+  }
   if (!body || typeof body !== 'object') {
     return res.status(400).json({ error: 'missing request body' });
   }
 
-  try {
+  const startedAt = Date.now();
+  const context = requestContext.getStore();
+  const modelLabel = model || deployment;
+  const operationName = operation || 'unspecified';
+  openAiInFlight += 1;
+  openAiPeakInFlight = Math.max(openAiPeakInFlight, openAiInFlight);
+  const concurrentAtStart = openAiInFlight;
+
+  return tracer.startActiveSpan('aadb.openai.proxy', async (span) => {
+    span.setAttributes({
+      'aadb.correlation_id': context?.correlationId || 'unavailable',
+      'aadb.client_key': context?.clientKey || 'unavailable',
+      'aadb.model': modelLabel,
+      'aadb.deployment': deployment,
+      'aadb.operation': operationName,
+      'aadb.api_format': apiFormat,
+      'aadb.concurrent_at_start': concurrentAtStart,
+    });
+
+    try {
     const headers = { 'Content-Type': 'application/json' };
     if (OPENAI_API_KEY) {
       headers['api-key'] = OPENAI_API_KEY;
@@ -180,13 +253,64 @@ app.post('/api/openai', async (req, res) => {
     });
 
     const text = await upstream.text();
+    const usage = extractUsage(text, apiFormat);
+    const durationMs = Date.now() - startedAt;
+    const errorType = classifyUpstreamResult(upstream.status);
+    span.setAttributes({
+      'http.response.status_code': upstream.status,
+      'aadb.prompt_tokens': usage.promptTokens,
+      'aadb.completion_tokens': usage.completionTokens,
+      'aadb.cached_tokens': usage.cachedTokens,
+      'aadb.total_tokens': usage.totalTokens,
+      'aadb.duration_ms': durationMs,
+      'aadb.error_type': errorType,
+    });
+    span.setStatus({ code: upstream.ok ? SpanStatusCode.OK : SpanStatusCode.ERROR });
+    structuredLog(upstream.ok ? 'info' : 'warn', 'openai_request_completed', {
+      model: modelLabel,
+      deployment,
+      operation: operationName,
+      apiFormat,
+      status: upstream.status,
+      success: upstream.ok,
+      errorType,
+      ...usage,
+      durationMs,
+      concurrentAtStart,
+      peakConcurrent: openAiPeakInFlight,
+      clientKey: context?.clientKey || 'unavailable',
+    });
     res.status(upstream.status);
     res.set('Content-Type', upstream.headers.get('content-type') || 'application/json');
     res.send(text);
-  } catch (err) {
-    structuredLog('error', 'openai_proxy_failed', { errorMessage: err.message });
+    } catch (err) {
+    const durationMs = Date.now() - startedAt;
+    span.recordException(err);
+    span.setStatus({ code: SpanStatusCode.ERROR, message: 'proxy_transport_error' });
+    structuredLog('error', 'openai_request_failed', {
+      model: modelLabel,
+      deployment,
+      operation: operationName,
+      apiFormat,
+      status: 502,
+      success: false,
+      errorType: 'proxy_transport_error',
+      promptTokens: 0,
+      completionTokens: 0,
+      cachedTokens: 0,
+      totalTokens: 0,
+      durationMs,
+      concurrentAtStart,
+      peakConcurrent: openAiPeakInFlight,
+      clientKey: context?.clientKey || 'unavailable',
+    });
     res.status(502).json({ error: 'Azure OpenAI proxy request failed' });
-  }
+    } finally {
+      openAiInFlight = Math.max(0, openAiInFlight - 1);
+      span.setAttribute('aadb.concurrent_at_end', openAiInFlight);
+      span.end();
+    }
+  });
 });
 
 // ── Microsoft Learn docs grounding ─────────────────────────────────────────

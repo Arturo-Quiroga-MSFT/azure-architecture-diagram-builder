@@ -135,6 +135,8 @@ export interface OpenAIProxyResult {
 export async function callAzureOpenAIProxy(params: {
   apiFormat: ApiFormat;
   deployment: string;
+  model: string;
+  operation: string;
   body: any;
   signal?: AbortSignal;
 }): Promise<OpenAIProxyResult> {
@@ -148,6 +150,8 @@ export async function callAzureOpenAIProxy(params: {
     body: JSON.stringify({
       apiFormat: params.apiFormat,
       deployment: params.deployment,
+      model: params.model,
+      operation: params.operation,
       body: params.body,
     }),
     signal: params.signal,

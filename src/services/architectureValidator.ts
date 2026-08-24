@@ -83,9 +83,11 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
   
   console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
 
-  const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+  const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
     apiFormat,
     deployment,
+    model: modelConfig.displayName,
+    operation: 'architecture_validation',
     body: requestBody,
   });
   
@@ -122,6 +124,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
     completionTokens: metrics.completionTokens,
     totalTokens: metrics.totalTokens,
     elapsedTimeMs: metrics.elapsedTimeMs,
+    correlationId,
   });
   
   return { content, metrics };

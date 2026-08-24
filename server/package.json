@@ -4,8 +4,10 @@
   "description": "Speech token server using DefaultAzureCredential",
   "main": "token-server.js",
   "dependencies": {
-    "@azure/identity": "^4.0.0",
     "@azure/cosmos": "^4.1.1",
+    "@azure/identity": "^4.0.0",
+    "@azure/monitor-opentelemetry": "^1.19.0",
+    "@opentelemetry/api": "^1.9.1",
     "express": "^4.18.0"
   }
 }

@@ -40,5 +40,20 @@ const deployScript = fs.readFileSync(
 );
 assert.match(deployScript, /VITE_ENABLE_ADOPTION_IMPACT=false/);
 assert.match(deployScript, /ENABLE_ADOPTION_IMPACT=false/);
+assert.match(deployScript, /server-appinsights-connection-string/);
+assert.match(deployScript, /telemetry-hash-secret/);
+assert.match(deployScript, /--logs-destination log-analytics/);
 
-console.log('Production Adoption & Impact exclusion contract passed.');
+const revisionRenderer = fs.readFileSync(
+  path.join(root, 'scripts/vnet-migration/render-webapp-revision.mjs'),
+  'utf8',
+);
+assert.match(revisionRenderer, /setSecretRef\('APPLICATIONINSIGHTS_CONNECTION_STRING', 'server-appinsights-connection-string'\)/);
+assert.match(revisionRenderer, /setSecretRef\('TELEMETRY_HASH_SECRET', 'telemetry-hash-secret'\)/);
+assert.match(revisionRenderer, /setValue\('OTEL_SERVICE_NAME', 'aadb-token-server'\)/);
+
+const bicep = fs.readFileSync(path.join(root, 'infra/resources.bicep'), 'utf8');
+assert.match(bicep, /APPLICATIONINSIGHTS_CONNECTION_STRING', secretRef: 'server-appinsights-connection-string'/);
+assert.doesNotMatch(bicep, /APPLICATIONINSIGHTS_CONNECTION_STRING', value:/);
+
+console.log('Production exclusion and telemetry secret contracts passed.');

@@ -111,6 +111,7 @@ WORKDIR /srv/token-server
 COPY server/package*.json ./
 RUN npm ci --omit=dev
 COPY server/token-server.js ./
+COPY server/instrumentation.js ./
 COPY server/impact-routes.js server/impact-records.js ./
 RUN if [ "$ENABLE_ADOPTION_IMPACT" != "true" ]; then rm -f impact-routes.js impact-records.js; fi
 

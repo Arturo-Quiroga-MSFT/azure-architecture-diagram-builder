@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Release candidate |
 | `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Deployed |
 | `v1.5.0` | 2026-08-24 | Human layout guidance | Deployed |
 | `v1.4.1` | 2026-08-24 | GPT-5.6 Luna default-model correction | Deployed |
@@ -13,6 +14,44 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v1.7.0: Authoritative Server Telemetry
+
+### Dedicated Azure Monitor boundary
+
+- The production Node proxy uses `aadb-usage-analytics-insights`, backed by `workspace-azurediagramsrgbuvF` with 30-day retention.
+- Browser product analytics remain in `aq-app-insights-001`; server traffic is isolated from that shared historical resource.
+- Azure Monitor OpenTelemetry initializes before Express and assigns the `aadb-token-server` service role.
+- The Container Apps environment rollout configures console/system log retention in the same workspace idempotently.
+
+### Authoritative model and route records
+
+- The server records successful upstream responses, upstream failures, and proxy transport failures.
+- Fields include correlation ID, rotating client key, model, deployment, operation, API format, status, normalized error class, input/output/cached/total tokens, duration, concurrency at request start, and process peak concurrency.
+- Current browser calls send model and operation identity; legacy direct callers remain supported and are classified as deployment/`unspecified`.
+- Browser `AI_Model_Usage` events now retain the server correlation ID, enabling joins with server records.
+- Image-analysis calls now emit the same model/token telemetry as generation, validation, guides, and chat follow-ups.
+
+### Privacy and operational controls
+
+- Client burst analysis uses a daily rotating HMAC key derived with a Container Apps secret.
+- Raw IP addresses and user-agent strings are not retained.
+- Prompts, request bodies, model responses, feedback comments, credentials, connection strings, API keys, and access tokens are not logged.
+- Health/readiness completion records are suppressed to avoid approximately one retained event per second per replica.
+- Server connection strings and HMAC values are Container Apps secrets; candidate revisions contain secret references only.
+
+### Cost and query support
+
+- The LLM cost report maps Luna, Sol, Terra, MAI-Thinking, and Kimi K2.7 in addition to the existing models.
+- Joined reports include sessions, workflows, cost per session, and cost per workflow.
+- `DOCS/SERVER-TELEMETRY.md` contains KQL for model volume/tokens, concurrency, client bursts, and failure classification.
+
+### Verification
+
+- The authoritative contract validates token parsing, cached tokens, concurrency overlap, 429 classification, correlation, legacy callers, client hashing, probe suppression, and absence of body/raw-client markers.
+- The real Alpine/nginx/Node production image built successfully with zero server-package vulnerabilities.
+- The telemetry-enabled container returned root, health, and readiness successfully and reached readiness in 2 seconds, within the 48-second startup budget.
+- Bicep, shell, candidate rendering, production exclusions, Python cost reporting, TypeScript, Node syntax, and lint checks passed.
 
 ## v1.6.0: Guided Chat Refinement Guard
 
@@ -206,7 +245,7 @@ These are measured bundle/transfer results, not a claim about population-level p
 
 ## Current Release Validation
 
-For `v1.6.0`, the verified release gate includes:
+For `v1.7.0`, the verified release gate includes:
 
 - Application and Vite TypeScript checks
 - Full ESLint with zero warnings
@@ -218,7 +257,7 @@ For `v1.6.0`, the verified release gate includes:
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production `v1.6.0` is served by a healthy, provisioned immutable Container Apps revision with `v1.5.0` retained as the rollback target. A deployed deterministic browser check reproduced the reported geo-replication-plus-Redis response and confirmed that Requested Only added the SQL replica without Redis.
+Production remains on `v1.6.0` until `v1.7.0` completes Azure validation and staged rollout.
 
 ## Remaining Boundaries
 

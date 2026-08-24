@@ -70,9 +70,11 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
   
   console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
 
-  const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+  const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
     apiFormat,
     deployment,
+    model: modelConfig.displayName,
+    operation: 'deployment_guide',
     body: requestBody,
   });
   
@@ -108,6 +110,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
     completionTokens: metrics.completionTokens,
     totalTokens: metrics.totalTokens,
     elapsedTimeMs: metrics.elapsedTimeMs,
+    correlationId,
   });
   
   return { content, metrics };

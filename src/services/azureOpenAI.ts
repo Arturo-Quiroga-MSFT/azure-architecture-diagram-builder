@@ -78,9 +78,11 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
   console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
 
   try {
-    const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+    const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
       apiFormat,
       deployment,
+      model: modelConfig.displayName,
+      operation,
       body: requestBody,
       signal: controller.signal,
     });
@@ -128,6 +130,7 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
       completionTokens: metrics.completionTokens,
       totalTokens: metrics.totalTokens,
       elapsedTimeMs: metrics.elapsedTimeMs,
+      correlationId,
     });
     
     return { content, metrics };
@@ -460,9 +463,11 @@ If the image is not an architecture diagram or is unclear, describe what you can
   console.log(`🖼️ Analyzing architecture diagram with ${modelConfig.displayName}... | API: Responses`);
 
   try {
-    const { ok, status, data, errorText } = await callAzureOpenAIProxy({
+    const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
       apiFormat: 'responses',
       deployment,
+      model: modelConfig.displayName,
+      operation: 'image_analysis',
       body: requestBody,
       signal: controller.signal,
     });
@@ -516,6 +521,17 @@ If the image is not an architecture diagram or is unclear, describe what you can
     console.log('🖼️ Image analysis complete:', content.length, 'chars |', 
       `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out |`,
       `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+
+    trackAIModelUsage({
+      model: modelConfig.displayName,
+      operation: 'image_analysis',
+      reasoningEffort: modelConfig.isReasoning ? settings.reasoningEffort : undefined,
+      promptTokens: metrics.promptTokens,
+      completionTokens: metrics.completionTokens,
+      totalTokens: metrics.totalTokens,
+      elapsedTimeMs: metrics.elapsedTimeMs,
+      correlationId,
+    });
     
     return { description: content, metrics };
   } catch (error: any) {

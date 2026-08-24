@@ -929,10 +929,19 @@ azure-diagrams/
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
 - **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
 - **[Release Notes](DOCS/RELEASE-NOTES.md)** - Recent features, fixes, operations, and verification
+- **[Authoritative Server Telemetry](DOCS/SERVER-TELEMETRY.md)** - Server event schema, privacy boundary, KQL, and cost allocation
 
 ---
 
 ## 🌟 What's New
+
+### August 24, 2026 — AADB v1.7.0 Authoritative Server Telemetry
+
+- **Dedicated server observability** — the Node proxy sends OpenTelemetry requests/dependencies to a dedicated Application Insights resource and retains structured console/system logs in its connected Log Analytics workspace.
+- **Authoritative model records** — every completed or failed upstream model call records correlation ID, model/deployment, operation, API format, status/error class, input/output/cached/total tokens, duration, and concurrency.
+- **Privacy-safe burst signals** — client activity uses a daily rotating HMAC key; raw IP addresses, user agents, prompts, request bodies, responses, credentials, and tokens are never logged.
+- **Cost allocation** — the LLM cost report now recognizes all current model deployments and reports cost per call, browser session, workflow, and one million tokens.
+- **Operational noise reduction** — high-frequency health/readiness probe completion logs are suppressed while ordinary route and model telemetry remains available.
 
 ### August 24, 2026 — AADB v1.6.0 Guided Chat Refinement Guard
 

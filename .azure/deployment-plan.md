@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — v1.6.0 Guided Chat refinement guard
+> **Status:** Validated — v1.7.0 authoritative server telemetry; production remains on v1.6.0
 
 Generated: 2026-08-21
 
@@ -423,6 +423,29 @@ Production deployment proof:
 | Runtime surfaces | Root returned HTTP 200; health, readiness, and version endpoints reported `1.6.0` |
 | Reported-case browser check | Deployed deterministic check began with one SQL node; geo-replication plus AI-proposed Redis opened review with zero Redis nodes and focus on Keep Current |
 | Requested-only browser check | Apply Requested Only produced two SQL Database nodes, zero Redis nodes, a one-connection addition summary, and no alerts |
+
+### v1.7.0 Authoritative Server Telemetry
+
+Implemented locally on 2026-08-24. The VNet Node proxy now emits authoritative model completion/failure records and Azure Monitor OpenTelemetry traces to the dedicated `aadb-usage-analytics-insights` resource. The Container Apps environment rollout retains console/system logs in `workspace-azurediagramsrgbuvF`. Server records include model/operation, status/error class, token usage, duration, concurrency, correlation, revision/version, and a daily rotating HMAC client key while excluding prompts, bodies, responses, credentials, tokens, raw IPs, and user-agent strings.
+
+Local evidence:
+
+| Check | Exact result |
+| --- | --- |
+| Authoritative contract | Successful usage, cached/input/output/total tokens, two overlapping requests, 429 classification, correlation, malformed-ID replacement, legacy callers, client hashing, probe suppression, and privacy markers passed |
+| Production container | Real Alpine/nginx/Node image built; root, health, and readiness returned successfully with OpenTelemetry enabled; readiness measured 2 seconds against a 48-second budget |
+| Package boundary | Server install completed with zero audit vulnerabilities; public lockfile internal-feed URL count is zero |
+| Azure resources | Existing `aadb-usage-analytics-insights` and `workspace-azurediagramsrgbuvF` are linked and Succeeded; workspace retention is 30 days |
+| Deployment wiring | Candidate renderer emits App Insights/HMAC secret references; rollout idempotently configures secrets and environment Log Analytics destination |
+| Reusable Bicep | Generated App Insights connection is exposed to the Node server through a secret reference; no plaintext connection environment value is emitted |
+| Cost allocation | Current model mappings plus per-session/per-workflow cost fields compile; server KQL is documented |
+| Build cleanup | Pre-existing orphaned Compare Models avatar CSS declarations removed; subsequent production build reported zero CSS syntax/minifier warnings |
+| Unified gate | `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 13 deterministic checks, version contract, and two Chromium tests |
+| Azure context | Subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, state `Enabled` |
+| Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
+| Policy/RBAC boundary | Existing effective policies evaluated successfully by what-if; no resource type, role assignment, or identity-scope change |
+
+Production deployment remains pending.
 
 #### Increment 3 final production state
 

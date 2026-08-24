@@ -26,7 +26,10 @@ ACR="acrazurediagrams1767583743"
 IMAGE="azure-diagram-builder"
 BUILD_ONLY="${BUILD_ONLY:-false}"
 ROTATE_OPENAI_SECRET="${ROTATE_OPENAI_SECRET:-false}"
+ROTATE_SERVER_TELEMETRY_SECRET="${ROTATE_SERVER_TELEMETRY_SECRET:-false}"
 NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
+SERVER_APP_INSIGHTS="aadb-usage-analytics-insights"
+LOG_WORKSPACE="workspace-azurediagramsrgbuvF"
 
 COSMOS_ACCOUNT="aqcosmosdb007"
 COSMOS_DATA_CONTRIBUTOR="00000000-0000-0000-0000-000000000002"  # Cosmos DB Built-in Data Contributor
@@ -70,6 +73,10 @@ VITE_ENDPOINT="$(get_val VITE_AZURE_OPENAI_ENDPOINT)"
 VITE_DEPLOY52="$(get_val VITE_AZURE_OPENAI_DEPLOYMENT_GPT52)"
 [[ -n "$OPENAI_KEY" && -n "$VITE_ENDPOINT" && -n "$VITE_DEPLOY52" ]] \
   || { echo "❌ Missing one of AZURE_OPENAI_API_KEY / VITE_AZURE_OPENAI_ENDPOINT / VITE_AZURE_OPENAI_DEPLOYMENT_GPT52 in .env"; exit 1; }
+SERVER_APPINSIGHTS_CONNECTION_STRING="$(az monitor app-insights component show \
+  --app "$SERVER_APP_INSIGHTS" -g "$RG" --query connectionString -o tsv)"
+[[ -n "$SERVER_APPINSIGHTS_CONNECTION_STRING" ]] \
+  || { echo "❌ Application Insights connection string is unavailable for $SERVER_APP_INSIGHTS"; exit 1; }
 
 # Admin token for GET /api/feedback/list — generate + persist to .env if absent.
 FEEDBACK_TOKEN="$(get_val FEEDBACK_ADMIN_TOKEN)"
@@ -104,6 +111,7 @@ EXISTING_TAG="$(az acr repository show-tags --name "$ACR" --repository "$IMAGE" 
 if [[ -n "$EXISTING_TAG" ]]; then
   echo "✓ Reusing existing immutable image $ACR_IMAGE"
 else
+  TELEMETRY_HASH_SECRET="$(openssl rand -hex 32)"
   az acr build --registry "$ACR" --image "$IMAGE:$TAG" \
     --build-arg "NPM_REGISTRY=$NPM_REGISTRY" \
     "${BUILD_ARGS[@]}" \
@@ -138,6 +146,8 @@ else
     --secrets \
         azure-openai-api-key="$OPENAI_KEY" \
         feedback-admin-token="$FEEDBACK_TOKEN" \
+      server-appinsights-connection-string="$SERVER_APPINSIGHTS_CONNECTION_STRING" \
+      telemetry-hash-secret="$TELEMETRY_HASH_SECRET" \
     --env-vars \
         AZURE_COSMOS_ENDPOINT="https://aqcosmosdb007.documents.azure.com:443/" \
         COSMOS_DATABASE_ID="diagrams-db" \
@@ -147,6 +157,10 @@ else
         AZURE_SPEECH_RESOURCE_ID="/subscriptions/$SUB/resourceGroups/$SPEECH_RG/providers/Microsoft.CognitiveServices/accounts/$SPEECH_ACCOUNT" \
         AZURE_OPENAI_ENDPOINT="https://r2d2-foundry-001.openai.azure.com/" \
         AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key \
+        APPLICATIONINSIGHTS_CONNECTION_STRING=secretref:server-appinsights-connection-string \
+        TELEMETRY_HASH_SECRET=secretref:telemetry-hash-secret \
+        OTEL_SERVICE_NAME="aadb-token-server" \
+        NODE_ENV="production" \
         APP_VERSION="$APP_VERSION" \
         FEEDBACK_ADMIN_TOKEN=secretref:feedback-admin-token \
         PUBLIC_URL="https://pending.invalid" \
@@ -176,6 +190,46 @@ if [[ -z "$EXISTING_OPENAI_SECRET" || "$ROTATE_OPENAI_SECRET" == "true" ]]; then
     --secrets azure-openai-api-key="$OPENAI_KEY" -o none
 else
   echo "  • OpenAI runtime secret already present"
+fi
+
+EXISTING_SERVER_TELEMETRY_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
+  --query "[?name=='server-appinsights-connection-string'] | [0].name" -o tsv)"
+if [[ -z "$EXISTING_SERVER_TELEMETRY_SECRET" || "$ROTATE_SERVER_TELEMETRY_SECRET" == "true" ]]; then
+  az containerapp secret set -n "$NEW_APP" -g "$RG" \
+    --secrets server-appinsights-connection-string="$SERVER_APPINSIGHTS_CONNECTION_STRING" -o none
+  echo "  ✓ Dedicated server Application Insights connection configured"
+else
+  echo "  • Dedicated server Application Insights secret already present"
+fi
+
+EXISTING_TELEMETRY_HASH_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
+  --query "[?name=='telemetry-hash-secret'] | [0].name" -o tsv)"
+if [[ -z "$EXISTING_TELEMETRY_HASH_SECRET" ]]; then
+  TELEMETRY_HASH_SECRET="$(openssl rand -hex 32)"
+  az containerapp secret set -n "$NEW_APP" -g "$RG" \
+    --secrets telemetry-hash-secret="$TELEMETRY_HASH_SECRET" -o none
+  unset TELEMETRY_HASH_SECRET
+  echo "  ✓ Privacy-safe client-key secret generated"
+else
+  echo "  • Privacy-safe client-key secret already present"
+fi
+
+LOG_WORKSPACE_ID="$(az monitor log-analytics workspace show -n "$LOG_WORKSPACE" -g "$RG" --query customerId -o tsv)"
+CURRENT_LOG_DESTINATION="$(az containerapp env show -n "$NEW_ENV" -g "$RG" \
+  --query properties.appLogsConfiguration.destination -o tsv)"
+CURRENT_LOG_WORKSPACE_ID="$(az containerapp env show -n "$NEW_ENV" -g "$RG" \
+  --query properties.appLogsConfiguration.logAnalyticsConfiguration.customerId -o tsv)"
+if [[ "$CURRENT_LOG_DESTINATION" != "log-analytics" || "$CURRENT_LOG_WORKSPACE_ID" != "$LOG_WORKSPACE_ID" ]]; then
+  LOG_WORKSPACE_KEY="$(az monitor log-analytics workspace get-shared-keys -n "$LOG_WORKSPACE" -g "$RG" \
+    --query primarySharedKey -o tsv)"
+  az containerapp env update -n "$NEW_ENV" -g "$RG" \
+    --logs-destination log-analytics \
+    --logs-workspace-id "$LOG_WORKSPACE_ID" \
+    --logs-workspace-key "$LOG_WORKSPACE_KEY" -o none
+  unset LOG_WORKSPACE_KEY
+  echo "  ✓ Container Apps console/system logs retained in $LOG_WORKSPACE"
+else
+  echo "  • Container Apps Log Analytics destination already configured"
 fi
 
 REGISTRY_IDENTITY="$(az containerapp show -n "$NEW_APP" -g "$RG" \
