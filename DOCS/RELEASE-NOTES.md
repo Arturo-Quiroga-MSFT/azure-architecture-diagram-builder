@@ -6,7 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Release candidate |
+| `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Deployed |
 | `v1.5.0` | 2026-08-24 | Human layout guidance | Deployed |
 | `v1.4.1` | 2026-08-24 | GPT-5.6 Luna default-model correction | Deployed |
 | `v1.4.0` | 2026-08-24 | Error containment, correlated diagnostics, maintainability | Deployed |
@@ -218,7 +218,7 @@ For `v1.6.0`, the verified release gate includes:
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production remains on `v1.5.0` until `v1.6.0` completes Azure validation and staged rollout.
+Production `v1.6.0` is served by a healthy, provisioned immutable Container Apps revision with `v1.5.0` retained as the rollback target. A deployed deterministic browser check reproduced the reported geo-replication-plus-Redis response and confirmed that Requested Only added the SQL replica without Redis.
 
 ## Remaining Boundaries
 

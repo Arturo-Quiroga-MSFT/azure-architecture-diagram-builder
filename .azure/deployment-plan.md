@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — v1.6.0 Guided Chat refinement guard; production remains on v1.5.0
+> **Status:** Deployed — v1.6.0 Guided Chat refinement guard
 
 Generated: 2026-08-21
 
@@ -413,7 +413,16 @@ Local evidence:
 | Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
 | Infrastructure boundary | Application-only change; Bicep, effective policy inputs, and previously verified resource-scoped RBAC definitions are unchanged |
 
-Production deployment remains pending.
+Production deployment proof:
+
+| Check | Exact result |
+| --- | --- |
+| Immutable image | ACR run `ch6x` pushed `v1.6.0-3da2c48e317e` with digest `sha256:01a2c2288152df5856a2654553919292954dd34d3b33e60d273b7aca32792c94` |
+| Active revision | `azure-diagram-builder-vnet--v1-6-0-3da2c48e317e`; Healthy, Provisioned, one replica, 100% traffic |
+| Rollback revision | `azure-diagram-builder-vnet--v1-5-0-a60167eea563`; Healthy, Provisioned, one replica, 0% traffic |
+| Runtime surfaces | Root returned HTTP 200; health, readiness, and version endpoints reported `1.6.0` |
+| Reported-case browser check | Deployed deterministic check began with one SQL node; geo-replication plus AI-proposed Redis opened review with zero Redis nodes and focus on Keep Current |
+| Requested-only browser check | Apply Requested Only produced two SQL Database nodes, zero Redis nodes, a one-connection addition summary, and no alerts |
 
 #### Increment 3 final production state
 
