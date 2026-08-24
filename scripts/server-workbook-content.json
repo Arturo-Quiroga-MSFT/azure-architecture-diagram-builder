@@ -1,0 +1,282 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "71b1a253-dc3d-44f3-a59a-e1b3caa94f01",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "label": "Time range",
+            "type": 4,
+            "isRequired": true,
+            "value": { "durationMs": 604800000 },
+            "typeSettings": {
+              "selectableValues": [
+                { "durationMs": 3600000 },
+                { "durationMs": 14400000 },
+                { "durationMs": 43200000 },
+                { "durationMs": 86400000 },
+                { "durationMs": 172800000 },
+                { "durationMs": 604800000 },
+                { "durationMs": 2592000000 },
+                { "durationMs": 7776000000 }
+              ],
+              "allowCustom": true
+            }
+          },
+          {
+            "id": "71b1a253-dc3d-44f3-a59a-e1b3caa94f02",
+            "version": "KqlParameterItem/1.0",
+            "name": "Granularity",
+            "label": "Chart granularity",
+            "type": 2,
+            "isRequired": true,
+            "jsonData": "[{\"value\":\"5m\",\"label\":\"5 minutes\"},{\"value\":\"1h\",\"label\":\"Hourly\",\"selected\":true},{\"value\":\"1d\",\"label\":\"Daily\"}]",
+            "value": "1h"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "# AADB — Server Usage & Guardrails\nAuthoritative server-side model traffic from the production Azure Container App. Data comes from retained structured events in Log Analytics and custom OpenTelemetry model spans in the dedicated Application Insights resource.\n\n> **Privacy boundary:** no prompts, request bodies, model responses, credentials, access tokens, raw IP addresses, user agents, referers, or query strings are retained. Client burst signals use daily rotating HMAC keys."
+      },
+      "name": "title"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Server overview" },
+      "name": "overview-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let E = ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed');\nE\n| summarize Calls=count(), Successes=countif(tobool(event.success)), Failures=countif(tobool(event.success)==false), Status429=countif(toint(event.status)==429), InputTokens=sum(tolong(event.promptTokens)), OutputTokens=sum(tolong(event.completionTokens)), CachedTokens=sum(tolong(event.cachedTokens)), TotalTokens=sum(tolong(event.totalTokens)), RotatingClients=dcount(tostring(event.clientKey)), PeakConcurrency=max(toint(event.peakConcurrent)), LastEvent=max(TimeGenerated)",
+        "title": "Authoritative model traffic",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "overview-kpis"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let E = ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed');\nE\n| summarize Calls=count(), Failures=countif(tobool(event.success)==false), TotalTokens=sum(tolong(event.totalTokens)) by bin(TimeGenerated, {Granularity})\n| order by TimeGenerated asc",
+        "title": "Calls, failures, and tokens over time",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart"
+      },
+      "name": "traffic-trend"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Models, operations, and latency" },
+      "name": "models-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed')\n| extend Model=tostring(event.model), Operation=tostring(event.operation), Status=toint(event.status), Success=tobool(event.success), InputTokens=tolong(event.promptTokens), OutputTokens=tolong(event.completionTokens), CachedTokens=tolong(event.cachedTokens), TotalTokens=tolong(event.totalTokens), DurationMs=todouble(event.durationMs)\n| summarize Calls=count(), Failures=countif(not(Success)), Status429=countif(Status==429), InputTokens=sum(InputTokens), OutputTokens=sum(OutputTokens), CachedTokens=sum(CachedTokens), TotalTokens=sum(TotalTokens), AvgDurationMs=round(avg(DurationMs),0), P95DurationMs=round(percentile(DurationMs,95),0), Clients=dcount(tostring(event.clientKey)) by Model, Operation\n| order by Calls desc",
+        "title": "Usage by model and operation",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "model-operation-table"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed')\n| summarize InputTokens=sum(tolong(event.promptTokens)), OutputTokens=sum(tolong(event.completionTokens)), CachedTokens=sum(tolong(event.cachedTokens)) by Model=tostring(event.model)\n| order by OutputTokens desc",
+        "title": "Token mix by model",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "barchart"
+      },
+      "name": "token-mix"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Failures and throttling" },
+      "name": "failures-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed')\n| where tobool(event.success) == false\n| summarize Failures=count(), RotatingClients=dcount(tostring(event.clientKey)), LastFailure=max(TimeGenerated) by ErrorType=tostring(event.errorType), Status=toint(event.status), Model=tostring(event.model), Operation=tostring(event.operation)\n| order by Failures desc",
+        "title": "Failure classification",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "failure-table"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed')\n| summarize Failures=count(), Status429=countif(toint(event.status)==429) by bin(TimeGenerated, {Granularity})\n| order by TimeGenerated asc",
+        "title": "Failure and 429 trend",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart"
+      },
+      "name": "failure-trend"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Concurrency and burst signals" },
+      "name": "guardrails-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event = parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed')\n| summarize PeakConcurrent=max(toint(event.peakConcurrent)), P95ConcurrentAtStart=round(percentile(toint(event.concurrentAtStart),95),1), Calls=count() by bin(TimeGenerated, {Granularity}), RevisionName_s\n| order by TimeGenerated asc",
+        "title": "Server concurrency by revision",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "linechart"
+      },
+      "name": "concurrency-trend"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let ClientMinutes = ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event=parse_json(Log_s), ClientKey=tostring(parse_json(Log_s).clientKey)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed') and ClientKey != 'unavailable'\n| summarize Calls=count(), Tokens=sum(tolong(event.totalTokens)) by ClientKey, Minute=bin(TimeGenerated,1m);\nClientMinutes\n| summarize PeakCallsPerClientMinute=max(Calls), ClientMinutesOver5=countif(Calls>5), ClientMinutesOver10=countif(Calls>10), ClientMinutesOver20=countif(Calls>20), PeakTokensPerClientMinute=max(Tokens), DistinctRotatingClients=dcount(ClientKey)",
+        "title": "Privacy-safe burst thresholds",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "burst-kpis"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Revision and platform health" },
+      "name": "revision-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event=parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed', 'openai_request_failed')\n| summarize Calls=count(), Failures=countif(tobool(event.success)==false), Tokens=sum(tolong(event.totalTokens)), LastEvent=max(TimeGenerated) by RevisionName_s, Version=tostring(event.version)\n| order by LastEvent desc",
+        "title": "Authoritative events by revision",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "revision-events"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppSystemLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| summarize Events=count(), LastEvent=max(TimeGenerated) by RevisionName_s, Reason_s, Level\n| top 50 by Events desc",
+        "title": "Container Apps system events",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "system-events"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Telemetry health and privacy" },
+      "name": "quality-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let E = ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event=parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed','openai_request_failed');\nE\n| summarize Events=count(), MissingCorrelation=countif(isempty(tostring(event.correlationId))), MissingModel=countif(isempty(tostring(event.model))), MissingOperation=countif(isempty(tostring(event.operation))), MissingClientKey=countif(isempty(tostring(event.clientKey)) or tostring(event.clientKey)=='unavailable'), MissingTokens=countif(isnull(tolong(event.totalTokens))), StructuredProbeEvents=countif(tostring(event.path) in ('/api/health','/api/ready')), LastEvent=max(TimeGenerated)",
+        "title": "Authoritative event completeness",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "event-quality"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| summarize UserAgentMarkers=countif(Log_s has 'Mozilla/' or Log_s has 'curl/' or Log_s has 'python-requests/'), QueryStringMarkers=countif(Log_s has '?'), RawIpv4Like=countif(Log_s matches regex @'(^| )([0-9]{1,3}\\.){3}[0-9]{1,3}( |$)'), SanitizedAccessRecords=countif(Log_s has 'method=' and Log_s has 'path=')",
+        "title": "Retained-log privacy checks (all marker counts should remain zero)",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "privacy-checks"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppDependencies\n| where TimeGenerated {TimeRange}\n| where tolower(_ResourceId) endswith '/aadb-usage-analytics-insights'\n| where Name == 'aadb.openai.proxy'\n| summarize Spans=count(), Failures=countif(Success==false), LastSpan=max(TimeGenerated), AvgDurationMs=round(avg(DurationMs),0), P95DurationMs=round(percentile(DurationMs,95),0) by AppRoleInstance\n| order by LastSpan desc",
+        "title": "Dedicated Application Insights custom spans",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "span-health"
+    },
+    {
+      "type": 1,
+      "content": { "json": "## Recent correlations" },
+      "name": "correlations-header"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where TimeGenerated {TimeRange}\n| where ContainerAppName_s == 'azure-diagram-builder-vnet'\n| extend event=parse_json(Log_s)\n| where tostring(event.event) in ('openai_request_completed','openai_request_failed')\n| project TimeGenerated, CorrelationId=tostring(event.correlationId), Model=tostring(event.model), Operation=tostring(event.operation), Status=toint(event.status), Success=tobool(event.success), ErrorType=tostring(event.errorType), TotalTokens=tolong(event.totalTokens), DurationMs=todouble(event.durationMs), Concurrent=toint(event.concurrentAtStart), RevisionName_s\n| top 100 by TimeGenerated desc",
+        "title": "Latest authoritative model requests",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table"
+      },
+      "name": "recent-correlations"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Cost allocation\nToken totals above are authoritative for AADB server traffic. For billed cost and allocation by call, anonymous browser, session, and workflow, run `python3 scripts/llm-cost-report.py --days 30`. Azure Cost Management is the billing source of truth; telemetry is the usage-allocation source when Foundry deployments are shared."
+      },
+      "name": "cost-note"
+    }
+  ],
+  "fallbackResourceIds": [],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

@@ -472,6 +472,20 @@ Production verification then found readiness auto-spans and nginx raw access/err
 | Probe suppression | Structured ready/health events 0. All incoming probe spans were attributed to the old `v1.7.0` replica; it was deactivated after verification. `v1.7.1` emitted zero incoming spans |
 | Runtime surfaces | Health, readiness, and version reported `1.7.1`; production traffic remained 100% on `v1.7.1` after rollback cleanup |
 
+### Server Usage & Guardrails Workbook
+
+Deployed on 2026-08-24 as a separate operational workbook for the authoritative server telemetry boundary.
+
+| Check | Exact result |
+| --- | --- |
+| Workbook | `AADB — Server Usage & Guardrails`; stable ID `2e389b56-22db-43a1-87ba-d5e206bd8102` in `azure-diagrams-rg` |
+| Source | `workspace-azurediagramsrgbuvF`; dedicated spans from `aadb-usage-analytics-insights` are queryable through the same workspace |
+| Content | Azure-stored `Notebook/1.0`; 24 items and 14 KQL panels |
+| Validation | Every source KQL panel executed successfully against the live workspace before and after deployment |
+| Coverage | Server overview, models/operations/tokens, failures/429s, concurrency, burst thresholds, revision/system health, completeness/privacy, custom-span health, recent correlations, and cost-allocation guidance |
+| Deployment | Update-in-place script verifies subscription/tenant, resource sources, stored version, and stored KQL panel count |
+| Portal | `https://portal.azure.com/#@a172a259-b1c7-4944-b2e1-6d551f954711/resource/subscriptions/7a28b21e-0d3e-4435-a686-d92889d4ee96/resourceGroups/azure-diagrams-rg/providers/microsoft.insights/workbooks/2e389b56-22db-43a1-87ba-d5e206bd8102/workbook` |
+
 #### Increment 3 final production state
 
 - ACR run `ch6t` built immutable image `azure-diagram-builder:v1.3.0-5acff2b69249`.

@@ -930,6 +930,7 @@ azure-diagrams/
 - **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
 - **[Release Notes](DOCS/RELEASE-NOTES.md)** - Recent features, fixes, operations, and verification
 - **[Authoritative Server Telemetry](DOCS/SERVER-TELEMETRY.md)** - Server event schema, privacy boundary, KQL, and cost allocation
+- **Server Usage & Guardrails Workbook** - Deploy the authoritative operational dashboard with `./scripts/deploy-server-workbook.sh`
 
 ---
 

@@ -120,3 +120,31 @@ Cost attribution remains an allocation estimate when a Foundry deployment is sha
 ## Production State
 
 Production `v1.7.1` sends custom model spans to `aadb-usage-analytics-insights` and retained structured/proxy logs to `workspace-azurediagramsrgbuvF`. Incoming HTTP auto-spans are disabled. The previous `v1.7.0` revision was deactivated because its older instrumentation emitted readiness spans; `v1.6.0` remains the active-at-zero rollback target.
+
+## Azure Workbook
+
+`AADB — Server Usage & Guardrails` is a separate operational workbook sourced from `workspace-azurediagramsrgbuvF`. It keeps authoritative server traffic separate from the browser-focused Usage Analytics workbook.
+
+- Stable workbook ID: `2e389b56-22db-43a1-87ba-d5e206bd8102`
+- Azure resource group: `azure-diagrams-rg`
+- [Open the deployed workbook in Azure Portal](https://portal.azure.com/#@a172a259-b1c7-4944-b2e1-6d551f954711/resource/subscriptions/7a28b21e-0d3e-4435-a686-d92889d4ee96/resourceGroups/azure-diagrams-rg/providers/microsoft.insights/workbooks/2e389b56-22db-43a1-87ba-d5e206bd8102/workbook)
+
+Sections include:
+
+- server calls, success/failure, 429s, tokens, rotating clients, concurrency, and freshness
+- model/operation usage, token mix, and latency
+- failure classification and trends
+- concurrency and privacy-safe burst thresholds
+- revision and Container Apps system health
+- telemetry completeness, privacy checks, and dedicated custom-span health
+- recent correlation IDs for investigation
+
+The source artifact is `scripts/server-workbook-content.json`. Every embedded KQL panel is executed against the live workspace by `scripts/validate-server-workbook.mjs` before deployment.
+
+The deployed workbook contains 24 items and 14 KQL panels. The deployment script fetches Azure-stored content with `canFetchContent=true` and verifies its version and query count after every update.
+
+Deploy or update the stable workbook in place:
+
+```bash
+./scripts/deploy-server-workbook.sh
+```
