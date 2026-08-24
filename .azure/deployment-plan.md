@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — v1.5.0 canvas layout guidance; production remains on v1.4.1
+> **Status:** Deployed — v1.5.0 canvas layout guidance
 
 Generated: 2026-08-21
 
@@ -386,7 +386,16 @@ Validated on 2026-08-24 without changing Azure resources:
 | Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
 | Infrastructure boundary | Application-only change; Bicep, effective policy inputs, and previously verified resource-scoped RBAC definitions are unchanged |
 
-Production deployment remains pending.
+Production deployment proof:
+
+| Check | Exact result |
+| --- | --- |
+| Immutable image | ACR run `ch6w` pushed `v1.5.0-a60167eea563` with digest `sha256:0df0e165202d92872186b7fd5c19dbfc85611d293d71f2a118ff51e6c2bb7237` |
+| Active revision | `azure-diagram-builder-vnet--v1-5-0-a60167eea563`; Healthy, Provisioned, one replica, 100% traffic |
+| Rollback revision | `azure-diagram-builder-vnet--v1-4-1-d00b574c6347`; Healthy, Provisioned, one replica, 0% traffic |
+| Runtime surfaces | Root returned HTTP 200; health, readiness, and version endpoints reported `1.5.0` |
+| First-use browser check | A deterministic mocked generation on the deployed UI displayed the exact guidance, rendered four React Flow nodes, showed no alerts, dismissed the note, and persisted the seen marker |
+| Later-occurrence browser check | A second deterministic generation in the same browser profile displayed the reminder and hid it after 10 seconds while preserving the seen marker; no alerts were present |
 
 #### Increment 3 final production state
 
