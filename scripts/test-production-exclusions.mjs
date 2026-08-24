@@ -56,4 +56,17 @@ const bicep = fs.readFileSync(path.join(root, 'infra/resources.bicep'), 'utf8');
 assert.match(bicep, /APPLICATIONINSIGHTS_CONNECTION_STRING', secretRef: 'server-appinsights-connection-string'/);
 assert.doesNotMatch(bicep, /APPLICATIONINSIGHTS_CONNECTION_STRING', value:/);
 
+const instrumentation = fs.readFileSync(path.join(root, 'server/instrumentation.js'), 'utf8');
+assert.match(instrumentation, /disableIncomingRequestInstrumentation: true/);
+assert.match(instrumentation, /console: \{ enabled: false \}/);
+
+const nginx = fs.readFileSync(path.join(root, 'nginx.conf'), 'utf8');
+const privacyLogFormat = nginx.match(/log_format privacy_safe([\s\S]*?);/)?.[0] || '';
+assert.ok(privacyLogFormat, 'privacy-safe nginx log format is missing');
+assert.doesNotMatch(privacyLogFormat, /remote_addr|http_user_agent|http_referer|request_uri|args/);
+assert.match(privacyLogFormat, /request_method/);
+assert.match(privacyLogFormat, /\$uri/);
+assert.match(nginx, /access_log \/var\/log\/nginx\/access\.log privacy_safe/);
+assert.match(nginx, /error_log \/dev\/stderr crit/);
+
 console.log('Production exclusion and telemetry secret contracts passed.');

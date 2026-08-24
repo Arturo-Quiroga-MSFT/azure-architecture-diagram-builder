@@ -935,6 +935,13 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### August 24, 2026 — AADB v1.7.1 Telemetry Privacy & Noise Fix
+
+- **No readiness-probe spans** — incoming HTTP auto-instrumentation is disabled; retained structured route/model events remain the authoritative server source.
+- **Privacy-safe proxy logs** — nginx access logs retain method, route, status, bytes, duration, and correlation only; raw IPs, user agents, referers, and query strings are excluded.
+- **Critical-only nginx errors** — nginx retains critical process failures while application/upstream failures remain available through privacy-safe Node events.
+- **Container-verified** — marker user-agent, query string, and container-network IP were absent from real runtime logs while the sanitized route record remained.
+
 ### August 24, 2026 — AADB v1.7.0 Authoritative Server Telemetry
 
 - **Dedicated server observability** — the Node proxy sends OpenTelemetry requests/dependencies to a dedicated Application Insights resource and retains structured console/system logs in its connected Log Analytics workspace.

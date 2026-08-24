@@ -6,7 +6,8 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Release candidate |
+| `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Release candidate |
+| `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Deployed |
 | `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Deployed |
 | `v1.5.0` | 2026-08-24 | Human layout guidance | Deployed |
 | `v1.4.1` | 2026-08-24 | GPT-5.6 Luna default-model correction | Deployed |
@@ -15,13 +16,24 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
 
+## v1.7.1: Telemetry Privacy and Noise Correction
+
+Production verification of `v1.7.0` proved that authoritative events reached Log Analytics and custom spans reached dedicated Application Insights. It also found two collection paths outside the structured event contract:
+
+- HTTP auto-instrumentation recorded every one-second readiness probe.
+- Default nginx access/error records could include raw client or full request information.
+
+The patch disables incoming HTTP auto-spans and console duplication, keeps custom model spans, replaces nginx combined access records with a privacy-safe method/path/status/bytes/duration/correlation format, and limits nginx error retention to critical process failures. Application and upstream errors remain represented by privacy-safe structured Node events.
+
+The real production image was exercised with unique user-agent and query-string markers. Neither marker nor the container-network IP appeared in retained runtime logs, while the sanitized route/status record remained. Static contracts enforce these settings.
+
 ## v1.7.0: Authoritative Server Telemetry
 
 ### Dedicated Azure Monitor boundary
 
 - The production Node proxy uses `aadb-usage-analytics-insights`, backed by `workspace-azurediagramsrgbuvF` with 30-day retention.
 - Browser product analytics remain in `aq-app-insights-001`; server traffic is isolated from that shared historical resource.
-- Azure Monitor OpenTelemetry initializes before Express and assigns the `aadb-token-server` service role.
+- Azure Monitor OpenTelemetry initializes before Express and assigns the `aadb-token-server` service role; incoming HTTP auto-spans are disabled to prevent duplicate/probe telemetry and raw-client dimensions.
 - The Container Apps environment rollout configures console/system log retention in the same workspace idempotently.
 
 ### Authoritative model and route records
@@ -35,7 +47,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 ### Privacy and operational controls
 
 - Client burst analysis uses a daily rotating HMAC key derived with a Container Apps secret.
-- Raw IP addresses and user-agent strings are not retained.
+- Raw IP addresses and user-agent strings are not retained; nginx uses a privacy-safe access format without IP, user-agent, referer, or query-string fields and retains only critical nginx process errors.
 - Prompts, request bodies, model responses, feedback comments, credentials, connection strings, API keys, and access tokens are not logged.
 - Health/readiness completion records are suppressed to avoid approximately one retained event per second per replica.
 - Server connection strings and HMAC values are Container Apps secrets; candidate revisions contain secret references only.
@@ -245,7 +257,7 @@ These are measured bundle/transfer results, not a claim about population-level p
 
 ## Current Release Validation
 
-For `v1.7.0`, the verified release gate includes:
+For `v1.7.1`, the verified release gate includes:
 
 - Application and Vite TypeScript checks
 - Full ESLint with zero warnings
@@ -257,7 +269,7 @@ For `v1.7.0`, the verified release gate includes:
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production remains on `v1.6.0` until `v1.7.0` completes Azure validation and staged rollout.
+Production remains on `v1.7.0` until `v1.7.1` completes validation and staged rollout.
 
 ## Remaining Boundaries
 

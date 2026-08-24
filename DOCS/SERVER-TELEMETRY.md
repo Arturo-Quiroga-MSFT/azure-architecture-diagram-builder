@@ -2,7 +2,7 @@
 
 The production Node proxy emits privacy-safe, server-authoritative model request telemetry to two connected Azure Monitor surfaces:
 
-- **Application Insights:** `aadb-usage-analytics-insights`
+- **Application Insights:** `aadb-usage-analytics-insights` (custom model spans and outbound dependencies)
 - **Log Analytics:** `workspace-azurediagramsrgbuvF`
 
 Browser usage analytics remain in `aq-app-insights-001`. Keeping the server resource separate prevents unrelated browser/application telemetry from contaminating public-endpoint traffic measurements.
@@ -27,7 +27,7 @@ Never recorded:
 - model response content
 - feedback comments
 - API keys, connection strings, credentials, or access tokens
-- raw IP addresses or user-agent strings
+- raw IP addresses or user-agent strings; automatic incoming HTTP spans are disabled, nginx excludes IP, user-agent, referer, and query-string fields from retained access logs, and nginx error retention is limited to critical process failures
 
 The client key is HMAC-derived from the request IP and user agent with a secret stored in Container Apps. It rotates daily and is intended for aggregate burst analysis, not user identity. Direct clients can still distribute traffic across source identities; this field is a guardrail signal rather than authenticated identity.
 

@@ -13,6 +13,12 @@ if (connectionString) {
     const { useAzureMonitor } = require('@azure/monitor-opentelemetry');
     useAzureMonitor({
       azureMonitorExporterOptions: { connectionString },
+      instrumentationOptions: {
+        http: {
+          disableIncomingRequestInstrumentation: true,
+        },
+        console: { enabled: false },
+      },
     });
   } catch (error) {
     console.error(JSON.stringify({

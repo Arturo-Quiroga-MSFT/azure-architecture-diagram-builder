@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — v1.7.0 authoritative server telemetry; production remains on v1.6.0
+> **Status:** Validated — v1.7.1 telemetry privacy/noise correction; production is on v1.7.0
 
 Generated: 2026-08-21
 
@@ -440,12 +440,23 @@ Local evidence:
 | Reusable Bicep | Generated App Insights connection is exposed to the Node server through a secret reference; no plaintext connection environment value is emitted |
 | Cost allocation | Current model mappings plus per-session/per-workflow cost fields compile; server KQL is documented |
 | Build cleanup | Pre-existing orphaned Compare Models avatar CSS declarations removed; subsequent production build reported zero CSS syntax/minifier warnings |
+| Privacy-safe proxy logs | Incoming HTTP auto-spans disabled; nginx access format excludes IP, user-agent, referer, and query-string fields while preserving method, route, status, duration, bytes, and correlation; nginx error retention is limited to critical process failures |
 | Unified gate | `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 13 deterministic checks, version contract, and two Chromium tests |
 | Azure context | Subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, state `Enabled` |
 | Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
 | Policy/RBAC boundary | Existing effective policies evaluated successfully by what-if; no resource type, role assignment, or identity-scope change |
 
-Production deployment remains pending.
+`v1.7.0` production deployment completed; the `v1.7.1` correction remains pending.
+
+#### v1.7.0 deployment and v1.7.1 correction
+
+ACR run `ch6y` pushed immutable image `v1.7.0-a31a6368c198` with digest `sha256:36f1cc8bd5b1726136242dfa31ec3155dbe8ea9ae915b2f5eece1c46666f9069`. Revision `azure-diagram-builder-vnet--v1-7-0-a31a6368c198` became Healthy and Provisioned with one replica and 100% traffic; `v1.6.0-3da2c48e317e` remained Healthy at 0% for rollback. Health/readiness/version reported `1.7.0`. Dedicated App Insights and HMAC values were secret references with null plaintext values, and the Container Apps environment reported `log-analytics` destination with the expected workspace customer ID.
+
+A bounded Luna request (`prod-v170-telemetry-20260824152717`) returned 19 tokens. The retained Log Analytics event recorded 12 input, 7 output, 19 total tokens, 2,031 ms duration, concurrency 1, revision/version, correlation ID, and a 24-character HMAC client key without prompt/response content. Dedicated Application Insights also received `aadb-token-server` telemetry.
+
+Production verification then found readiness auto-spans and nginx raw access/error fields outside the structured event. `v1.7.1` disables incoming HTTP auto-spans, applies a privacy-safe nginx access format, and limits nginx errors to critical process failures. A real container test proved marker user-agent/query/IP values absent while the sanitized route record remained.
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 13 deterministic checks, version contract, and two Chromium tests. Bicep compilation and subscription validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0. Azure resources, policy inputs, and role assignments are unchanged from validated `v1.7.0`. Production rollout remains pending.
 
 #### Increment 3 final production state
 
