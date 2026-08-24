@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — Production Foundation v1.3.0 Increment 3 (`v1.2.0` remains deployed)
+> **Status:** Deployed — Production Foundation v1.3.0 Increment 3
 
 Generated: 2026-08-21
 
@@ -318,6 +318,18 @@ Implemented locally as `v1.3.0` on 2026-08-24; production remains on `v1.2.0` un
 Deferred chunks include ELK, PPTX, JSZip, canvas capture, Visio, Draw.io, interactive HTML, blueprint/reference PNG, and deployment-guide generation. The deterministic initial-bundle budget is 1,900,000 raw bytes and 500,000 gzip bytes. The release smoke test exercises lazy ELK and interactive HTML export in addition to the generation workflow.
 
 The initial layout-shift trace identified the expanded icon category receiving metadata after first paint. Icon metadata now initializes synchronously while SVG URL loading remains asynchronous; the category shift disappeared and the final local CLS sample was 0.0943. Production comparison remains pending.
+
+#### Increment 3 final production state
+
+- ACR run `ch6t` built immutable image `azure-diagram-builder:v1.3.0-5acff2b69249`.
+- Active revision `azure-diagram-builder-vnet--v1-3-0-5acff2b69249` is Healthy, Provisioned, one replica, and receives 100% traffic.
+- Rollback revision `azure-diagram-builder-vnet--v1-2-0-7143ea235331` remains active, Healthy, Provisioned, and available at 0% traffic.
+- Live root, health, readiness, version, Speech token, and one bounded configured-model OpenAI proxy request returned HTTP 200.
+- Production UI, `/version.json`, `/api/health`, and `/api/ready` report `v1.3.0`; probe-log suppression remains effective.
+- Deployed initial decoded JavaScript fell from 3,716,675 to 1,753,011 bytes (52.8%) and transfer bytes from 1,253,242 to 545,966 (56.4%) in one cold-cache Chromium sample using the same measurement method.
+- The deployed v1.3 browser timing sample was DCL 1,714 ms, FCP 1,808 ms, LCP 1,864 ms, CLS 0.1294. This one sample was slower than the earlier v1.2 sample, so no timing improvement is claimed; network and host variance dominate one-shot timing comparisons.
+- Production browser verification fetched and executed lazy ELK and interactive HTML exporter chunks without visible errors. The integrated shared browser did not expose a download event; the same HTML download assertion passes in Playwright release smoke.
+- Release quality gate and existing CI both passed on deployed source commit `5acff2b`.
 
 Pending v1.3.0 validation before deployment:
 
