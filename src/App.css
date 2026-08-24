@@ -627,6 +627,102 @@ body.dark-mode .toolbar-dropdown-separator {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.canvas-layout-hint {
+  position: absolute;
+  left: 50%;
+  z-index: 7;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: min(560px, calc(100% - 32px));
+  padding: 12px 12px 12px 14px;
+  color: #172554;
+  background: rgba(239, 246, 255, 0.96);
+  border: 1px solid #60a5fa;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(30, 64, 175, 0.18);
+  transform: translateX(-50%);
+  backdrop-filter: blur(4px);
+  animation: canvas-layout-hint-in 0.35s ease-out;
+}
+
+.canvas-layout-hint > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #2563eb;
+}
+
+.canvas-layout-hint-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.canvas-layout-hint-copy strong {
+  color: #1d4ed8;
+  font-size: 0.86rem;
+}
+
+.canvas-layout-hint-close {
+  display: inline-flex;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #475569;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.canvas-layout-hint-close:hover {
+  color: #172554;
+  background: rgba(96, 165, 250, 0.18);
+}
+
+@keyframes canvas-layout-hint-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+body.dark-mode .canvas-layout-hint {
+  color: #dbeafe;
+  background: rgba(15, 23, 42, 0.96);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+}
+
+body.dark-mode .canvas-layout-hint-copy strong,
+body.dark-mode .canvas-layout-hint > svg {
+  color: #93c5fd;
+}
+
+body.dark-mode .canvas-layout-hint-close {
+  color: #cbd5e1;
+}
+
+@media (max-width: 700px) {
+  .canvas-layout-hint {
+    right: 96px;
+    left: 16px;
+    width: auto;
+    transform: none;
+    animation-name: canvas-layout-hint-in-narrow;
+  }
+}
+
+@keyframes canvas-layout-hint-in-narrow {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Empty-canvas call-to-action: centered "start with a conversation" prompt.
    The wrapper ignores pointer events so drag-and-drop still reaches the
    canvas; only the button re-enables them. */

@@ -20,7 +20,7 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
@@ -131,6 +131,7 @@ const EXPORT_HISTORY_STORAGE_KEY = 'azure-diagram-builder.exportHistory.v1';
 const EXPORT_BACKGROUND_STORAGE_KEY = 'azure-diagram-builder.exportBackground.v1';
 const EDGE_STYLE_STORAGE_KEY = 'azure-diagram-builder.edgeStyle.v1';
 const CANVAS_HINT_STORAGE_KEY = 'azure-diagram-builder.canvasHintDismissed.v1';
+const LAYOUT_HINT_SEEN_STORAGE_KEY = 'azure-diagram-builder.layoutHintSeen.v1';
 const HEADER_COLLAPSED_STORAGE_KEY = 'azure-diagram-builder.headerCollapsed.v1';
 
 // Derive a short, human-friendly architecture title from a free-form prompt
@@ -248,6 +249,8 @@ function App() {
   // Canvas navigation hint: teaches scroll-to-zoom / drag-to-pan / fit-view.
   // Dismissed permanently once the user closes it (persisted in localStorage).
   const [showCanvasHint, setShowCanvasHint] = useState<boolean>(() => localStorage.getItem(CANVAS_HINT_STORAGE_KEY) !== '1');
+  const [showLayoutHint, setShowLayoutHint] = useState(false);
+  const layoutHintTimeoutRef = useRef<number | null>(null);
   // Collapses the top toolbar rows to maximize canvas height. Independent of
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
@@ -263,6 +266,24 @@ function App() {
   const generationCountRef = useRef(0);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
   const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
+
+  const presentLayoutHint = useCallback(() => {
+    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+    setShowLayoutHint(true);
+
+    let hasSeenLayoutHint = false;
+    try { hasSeenLayoutHint = localStorage.getItem(LAYOUT_HINT_SEEN_STORAGE_KEY) === '1'; } catch { /* ignore */ }
+    if (hasSeenLayoutHint) {
+      layoutHintTimeoutRef.current = window.setTimeout(() => {
+        setShowLayoutHint(false);
+        layoutHintTimeoutRef.current = null;
+      }, 10_000);
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+  }, []);
 
   // Focus mode: hides canvas chrome (side panels via the signal above, plus the
   // "Generated from" prompt banner and the "Generated with" model badge) so only
@@ -2426,6 +2447,7 @@ function App() {
     console.log(`Setting ${finalNodes.length} nodes and ${newEdges.length} edges`);
     setNodes(finalNodes);
     setEdges(deconflictEdgeLabels(newNodes, newEdges));
+    presentLayoutHint();
 
     // Set the model badge from metrics
     if (architecture.metrics) {
@@ -2527,7 +2549,7 @@ function App() {
       console.error('Error in handleAIGenerate:', error);
       alert('Failed to generate diagram. Check console for details.');
     }
-  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle]);
+  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle, presentLayoutHint]);
 
   // ── az prototype import ──────────────────────────────────────────────
   // (Import az prototype UI removed — feature unused.)
@@ -3443,6 +3465,7 @@ function App() {
                       setNodes([]);
                       setEdges([]);
                       resetGenerationSession();
+                      setShowLayoutHint(false);
                       setValidationResult(null);
                       setValidationNeedsRefresh(false);
                       setDeploymentGuide(null);
@@ -3901,6 +3924,34 @@ function App() {
                   aria-label="Dismiss navigation tips"
                 >
                   <X size={14} />
+                </button>
+              </div>
+            )}
+            {showLayoutHint && nodes.length > 0 && !focusMode && (
+              <div
+                className="canvas-layout-hint"
+                role="note"
+                aria-label="Diagram layout guidance"
+                style={{ top: architecturePrompt ? 64 : 16 }}
+              >
+                <Move size={18} aria-hidden="true" />
+                <div className="canvas-layout-hint-copy">
+                  <strong>Make this layout yours</strong>
+                  <span>AI arranged the first draft, but visual grouping and spacing are subjective. Drag services and groups into the positions that best communicate your architecture.</span>
+                </div>
+                <button
+                  type="button"
+                  className="canvas-layout-hint-close"
+                  onClick={() => {
+                    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+                    layoutHintTimeoutRef.current = null;
+                    setShowLayoutHint(false);
+                    try { localStorage.setItem(LAYOUT_HINT_SEEN_STORAGE_KEY, '1'); } catch { /* ignore */ }
+                  }}
+                  title="Dismiss layout guidance"
+                  aria-label="Dismiss layout guidance"
+                >
+                  <X size={15} />
                 </button>
               </div>
             )}

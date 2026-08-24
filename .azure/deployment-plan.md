@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — Production Foundation v1.4.1 Increment 4
+> **Status:** Validated — v1.5.0 canvas layout guidance; production remains on v1.4.1
 
 Generated: 2026-08-21
 
@@ -365,6 +365,28 @@ Production `v1.4.0` deployed successfully on 2026-08-24, but fresh browser verif
 The release smoke build now configures both GPT-5.1 and GPT-5.6 Luna and asserts that the Generate modal starts on Luna. `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests. Subscription validation and isolated what-if passed again with Create 15 / Modify 0 / Delete 0. Effective policy assignments and the static Bicep role definitions are unchanged from the completed `v1.4.0` validation.
 
 `v1.4.1` deployment proof: ACR run `ch6v` pushed immutable image `v1.4.1-d00b574c6347` with digest `sha256:fbb05e2361f6478dc1a6806bdadea2a7fb4b09abbcf64514248f8b13860b5031`. Revision `azure-diagram-builder-vnet--v1-4-1-d00b574c6347` is Healthy and Provisioned with one replica and 100% traffic; `v1.4.0-360517d12258` remains Healthy and Provisioned at 0% for rollback. Root returned HTTP 200; health, readiness, and version surfaces report `1.4.1`. Request ID `prod-v141-20260824122722` was returned and recorded in the matching structured completion log. A fresh browser session displayed `v1.4.1`, selected GPT-5.6 Luna with medium reasoning in both the toolbar and Generate modal, and showed no alerts.
+
+### v1.5.0 Canvas Layout Guidance
+
+After a successful AI generation, regeneration, or refinement, the canvas displays a dismissible note beneath the generated-prompt banner:
+
+> **Make this layout yours**
+> AI arranged the first draft, but visual grouping and spacing are subjective. Drag services and groups into the positions that best communicate your architecture.
+
+The first occurrence remains until dismissed. Dismissal is recorded in local storage; later AI updates show the reminder for 10 seconds. Start Fresh clears an active reminder without resetting the user's seen preference. Focus mode suppresses the note. Release smoke coverage asserts the exact guidance, close behavior, and persistence marker after deterministic diagram generation.
+
+Validated on 2026-08-24 without changing Azure resources:
+
+| Check | Exact result |
+| --- | --- |
+| `npm run verify:release` | Exit 0; type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests passed |
+| Guidance browser regression | Deterministic generation displayed the exact note, dismissal hid it, and local storage recorded `azure-diagram-builder.layoutHintSeen.v1=1` |
+| Version contract | Package metadata and built `version.json` reported `1.5.0` after rebuilding stale generated output |
+| Azure context | Subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, state `Enabled` |
+| Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
+| Infrastructure boundary | Application-only change; Bicep, effective policy inputs, and previously verified resource-scoped RBAC definitions are unchanged |
+
+Production deployment remains pending.
 
 #### Increment 3 final production state
 

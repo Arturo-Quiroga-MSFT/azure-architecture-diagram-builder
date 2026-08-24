@@ -94,6 +94,12 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(1);
   await expect(page.locator('.workflow-panel')).toContainText('2 steps');
   await expect(page.getByRole('button', { name: 'Validate Architecture' })).toBeEnabled();
+  const layoutHint = page.getByRole('note', { name: 'Diagram layout guidance' });
+  await expect(layoutHint).toContainText('Make this layout yours');
+  await expect(layoutHint).toContainText('Drag services and groups into the positions that best communicate your architecture.');
+  await page.getByRole('button', { name: 'Dismiss layout guidance' }).click();
+  await expect(layoutHint).toBeHidden();
+  await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');
 
   const elkChunk = page.waitForResponse((response) =>
     response.url().includes('/assets/elkLayoutEngine-') && response.ok(),
