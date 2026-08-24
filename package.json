@@ -29,7 +29,7 @@
     "test:deterministic": "node scripts/run-deterministic-tests.mjs",
     "test:version": "node scripts/test-version-contract.mjs",
     "test:smoke": "node scripts/run-release-smoke.mjs",
-    "verify:release": "npm run typecheck && npm run lint && npm run test:deterministic && npm run build && npm run test:version && npm run test:smoke",
+    "verify:release": "npm run typecheck && npm run lint && npm run build && npm run test:deterministic && npm run test:version && npm run test:smoke",
     "eval:aadb:build": "node scripts/evaluations/build-aadb-seed.mjs",
     "eval:aadb:deterministic": "node scripts/evaluations/run-aadb-deterministic.mjs",
     "eval:aadb:verify": "node scripts/evaluations/test-aadb-baseline.mjs",

@@ -300,6 +300,8 @@ Implemented and verified on 2026-08-23; no Azure resources or runtime applicatio
 | Bundle baseline | Standard production build main chunk: approximately 3.71 MB / 1.07 MB gzip. Synthetic one-model smoke build: approximately 3.54 MB / 1.00 MB gzip. These are build outputs, not measured browser Web Vitals. |
 | Deferred security debt | `npm install` reports 25 transitive audit findings (1 low, 4 moderate, 18 high, 2 critical). No automatic audit fix was applied; dependency triage belongs in a separate scoped security increment. |
 
+The first GitHub Actions run reached `verify:release` but failed because `test:production-exclusions` requires `dist/` and deterministic tests ran before the production build on a clean runner. The gate now builds before deterministic tests; the repair is validated from a workspace with generated build/test outputs removed.
+
 Pending validation before deployment:
 
 - [x] All Increment 1 validation checks pass
