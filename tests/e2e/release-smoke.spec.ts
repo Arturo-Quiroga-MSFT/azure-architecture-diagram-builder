@@ -82,7 +82,7 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
 
   await page.locator('button.btn-generate-ai').first().click();
   await expect(page.getByRole('heading', { name: 'Generate Diagram' })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Select AI model' }).selectOption('gpt-5.6-luna');
+  await expect(page.getByRole('combobox', { name: 'Select AI model' })).toHaveValue('gpt-5.6-luna');
   await page.locator('#architecture-description').fill('Create a web app backed by Azure SQL.');
   await page.getByRole('button', { name: 'Generate Architecture' }).click();
 

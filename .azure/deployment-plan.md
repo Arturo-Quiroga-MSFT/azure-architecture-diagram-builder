@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — Production Foundation v1.4.0 Increment 4; production remains on v1.3.0
+> **Status:** Validated — Production Foundation v1.4.1 Increment 4 correction; production is on v1.4.0
 
 Generated: 2026-08-21
 
@@ -352,9 +352,17 @@ Pending v1.4.0 release steps:
 
 - [x] Rerun the unified gate after the version bump.
 - [x] Complete Azure pre-deployment validation against the existing production subscription using an isolated what-if environment.
-- [ ] Commit and push the validated source SHA.
-- [ ] Deploy the immutable `v1.4.0-<git-sha>` image through the staged VNet rollout.
-- [ ] Verify version surfaces, correlation logs, candidate health, traffic, and rollback state in Azure.
+- [x] Commit and push the validated source SHA.
+- [x] Deploy the immutable `v1.4.0-<git-sha>` image through the staged VNet rollout.
+- [x] Verify version surfaces, correlation logs, candidate health, traffic, and rollback state in Azure.
+
+`v1.4.0` deployment proof: ACR run `ch6u` pushed image `v1.4.0-360517d12258` with digest `sha256:a17db741e79f78a033b2cc57216dcc15d7c9c11760869621ca60cbda28a5a184`. Revision `azure-diagram-builder-vnet--v1-4-0-360517d12258` became Healthy and Provisioned with one replica and 100% traffic; `v1.3.0-5acff2b69249` remained Healthy and Provisioned at 0% for rollback. Root returned HTTP 200 and health, readiness, and version surfaces reported `1.4.0`. Production preserved request ID `prod-v140-20260824121441` in the response and matching structured completion log.
+
+#### v1.4.1 Luna default correction
+
+Production `v1.4.0` deployed successfully on 2026-08-24, but fresh browser verification showed GPT-5.1 selected when multiple model deployments were configured. The startup loader selected the first available model instead of preferring the configured default. `v1.4.1` now chooses GPT-5.6 Luna when it is available and falls back to the first configured model only when Luna is unavailable.
+
+The release smoke build now configures both GPT-5.1 and GPT-5.6 Luna and asserts that the Generate modal starts on Luna. `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests. Subscription validation and isolated what-if passed again with Create 15 / Modify 0 / Delete 0. Effective policy assignments and the static Bicep role definitions are unchanged from the completed `v1.4.0` validation. Patch deployment remains pending.
 
 #### Increment 3 final production state
 

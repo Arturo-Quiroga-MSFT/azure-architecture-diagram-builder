@@ -270,7 +270,9 @@ export function getDeploymentName(model: ModelType): string {
  */
 function loadSettings(): ModelSettings {
   const availableModels = getAvailableModels();
-  const firstAvailableModel = availableModels[0] ?? DEFAULT_SETTINGS.model;
+  const defaultAvailableModel = availableModels.includes(DEFAULT_SETTINGS.model)
+    ? DEFAULT_SETTINGS.model
+    : availableModels[0] ?? DEFAULT_SETTINGS.model;
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -281,7 +283,7 @@ function loadSettings(): ModelSettings {
         return {
           model: isModelAvailable(parsed.model as ModelType)
             ? parsed.model as ModelType
-            : firstAvailableModel,
+            : defaultAvailableModel,
           reasoningEffort: ['none', 'low', 'medium', 'high'].includes(parsed.reasoningEffort) 
             ? parsed.reasoningEffort 
             : DEFAULT_SETTINGS.reasoningEffort,
@@ -292,7 +294,7 @@ function loadSettings(): ModelSettings {
   } catch (e) {
     console.warn('Failed to load model settings:', e);
   }
-  return { ...DEFAULT_SETTINGS, model: firstAvailableModel };
+  return { ...DEFAULT_SETTINGS, model: defaultAvailableModel };
 }
 
 /**
