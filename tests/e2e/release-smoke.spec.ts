@@ -49,6 +49,7 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await page.route('**/api/openai', async (route) => {
     proxyCalls += 1;
     const request = route.request().postDataJSON();
+    expect(route.request().headers()['x-correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
     expect(request.apiFormat).toBe('responses');
     expect(request.deployment).toBe('smoke-gpt-5-6-luna');
     expect(request.body.model).toBe('smoke-gpt-5-6-luna');
@@ -108,4 +109,12 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await page.getByRole('menuitem', { name: 'Export Interactive HTML' }).click();
   await expect.poll(async () => (await htmlDownload).suggestedFilename()).toMatch(/\.html$/);
   expect(pageErrors).toEqual([]);
+});
+
+test('root error boundary contains render failures', async ({ page }) => {
+  await page.goto('/?error-boundary-test', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByRole('alert')).toContainText('Something interrupted the workspace');
+  await expect(page.getByRole('button', { name: 'Reload application' })).toBeVisible();
+  await expect(page.locator('.react-flow')).toHaveCount(0);
 });

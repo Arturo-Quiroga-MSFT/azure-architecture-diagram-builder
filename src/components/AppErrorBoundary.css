@@ -1,0 +1,44 @@
+.app-error-boundary {
+  align-items: center;
+  background: #eef4f8;
+  color: #172033;
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.app-error-boundary-panel {
+  background: #fff;
+  border-left: 4px solid #0078d4;
+  box-shadow: 0 12px 32px rgba(23, 32, 51, 0.14);
+  max-width: 34rem;
+  padding: 2rem;
+}
+
+.app-error-boundary-label {
+  color: #0067b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.app-error-boundary h1 {
+  font-size: 1.5rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.app-error-boundary p {
+  line-height: 1.55;
+  margin: 0 0 1.5rem;
+}
+
+.app-error-boundary button {
+  background: #0078d4;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.7rem 1rem;
+}

@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — Production Foundation v1.3.0 Increment 3
+> **Status:** Validated — Production Foundation v1.4.0 Increment 4; production remains on v1.3.0
 
 Generated: 2026-08-21
 
@@ -97,6 +97,21 @@ Validated on 2026-08-21 against `SUB-2` without creating greenfield resources.
 | Packaging | Web and MCP services packaged successfully in 1 minute 20 seconds |
 | Policy | Existing Defender policy assignments reviewed; none deny the proposed resource types or East US 2 |
 | BYO branch | `deployFoundry=false` skips Foundry catalog/quota preflight and retains external endpoint/optional-key inputs |
+
+### Production Foundation 1.4 Increment 4 Proof
+
+Validated on 2026-08-24 without changing Azure resources.
+
+| Command / check | Exact result |
+| --- | --- |
+| `az account show` | CLI context matched production subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, state `Enabled` |
+| `validate-deployment.sh --scope sub --location eastus2 --subscription 7a28b21e-0d3e-4435-a686-d92889d4ee96 --template ./infra/main.bicep --parameters /tmp/aadb-v120-validation-parameters.json` | `OVERALL: PASS`; Azure CLI installed and authenticated, Bicep compiled, subscription deployment validated, and isolated what-if reported Create 15 / Modify 0 / Delete 0 |
+| Azure Policy assignment review | Eight effective assignments retrieved, including inherited MCAP deny/audit/deploy initiatives; the validated template completed what-if under those effective policies with no policy error |
+| Static RBAC review | Shared user-assigned identity has resource-scoped `AcrPull`, conditional Foundry OpenAI User, conditional Speech User, and conditional Cosmos DB Built-in Data Contributor; no generic subscription/resource-group data-access role |
+| `npm run build` | Exit 0 in 11.57 seconds; emitted `dist/version.json` reported `1.4.0` |
+| `npm run verify:release` | Exit 0; type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests passed |
+
+This proof validates the reusable subscription-scoped Bicep in the isolated environment `aadb-v120-validate`. It does not claim that the code-only `v1.4.0` image is deployed or that production runtime behavior has been verified.
 
 ### Production Foundation 1.2 Increment 1 Proof
 
@@ -247,8 +262,8 @@ Improve the existing VNet-hosted AADB application before adding major features: 
 
 - **Increment 1:** Phase A health endpoints, probes, immutable image identity, and staged rollout/rollback.
 - **Increment 2:** Phase B unified release verification and browser smoke suite. **Completed locally; CI-enforced, no runtime deployment required.**
-- **Increment 3:** Phase B measured code splitting and performance budget. **Implemented locally; release validation and deployment pending.**
-- **Increment 4:** Phase C error boundaries, first `App.tsx` extraction, and correlated logging.
+- **Increment 3:** Phase B measured code splitting and performance budget. **Deployed as v1.3.0.**
+- **Increment 4:** Phase C error boundaries, first `App.tsx` extraction, and correlated logging. **Validated as v1.4.0; deployment pending.**
 - **Decision gate:** choose public-demo access controls and VNet/Bicep convergence scope using measured traffic, cost, and operational evidence.
 
 ### Approval Boundary
@@ -318,6 +333,28 @@ Implemented locally as `v1.3.0` on 2026-08-24; production remains on `v1.2.0` un
 Deferred chunks include ELK, PPTX, JSZip, canvas capture, Visio, Draw.io, interactive HTML, blueprint/reference PNG, and deployment-guide generation. The deterministic initial-bundle budget is 1,900,000 raw bytes and 500,000 gzip bytes. The release smoke test exercises lazy ELK and interactive HTML export in addition to the generation workflow.
 
 The initial layout-shift trace identified the expanded icon category receiving metadata after first paint. Icon metadata now initializes synchronously while SVG URL loading remains asynchronous; the category shift disappeared and the final local CLS sample was 0.0943. Production comparison remains pending.
+
+### Increment 4 Maintainability and Diagnostics Evidence
+
+Validated as `v1.4.0` on 2026-08-24; production remains on `v1.3.0` until deployment approval.
+
+| Check | Result |
+| --- | --- |
+| Error containment | Root React error boundary reports exceptions through the existing Application Insights instance and renders a recoverable Reload application fallback |
+| Boundary regression | A build-time-gated Playwright harness triggers a render failure only in the isolated smoke build; the fallback and absence of the workspace canvas are asserted |
+| Request correlation | Frontend OpenAI proxy requests send a UUID; the Node proxy preserves valid `x-correlation-id` values, replaces malformed values, and returns the effective ID |
+| Structured logging | Request-completion JSON includes version, optional revision, correlation ID, method, path, status, and duration; the deterministic test confirms a request-body marker is not logged |
+| User diagnostics | Failed OpenAI proxy diagnostics include the correlated Request ID without exposing prompt or response content |
+| First extraction | Generation prompt lineage, workflow, model metadata, reference/blueprint artifacts, reset, begin, and restore behavior moved from `App.tsx` into `useGenerationSession` |
+| Unified gate | `npm run verify:release` passes with type checks, full lint, production build, bundle budget, 12 deterministic tests, version contract, and two Chromium smoke tests |
+
+Pending v1.4.0 release steps:
+
+- [x] Rerun the unified gate after the version bump.
+- [x] Complete Azure pre-deployment validation against the existing production subscription using an isolated what-if environment.
+- [ ] Commit and push the validated source SHA.
+- [ ] Deploy the immutable `v1.4.0-<git-sha>` image through the staged VNet rollout.
+- [ ] Verify version surfaces, correlation logs, candidate health, traffic, and rollback state in Azure.
 
 #### Increment 3 final production state
 

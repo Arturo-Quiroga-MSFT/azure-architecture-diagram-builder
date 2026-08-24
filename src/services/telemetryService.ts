@@ -119,6 +119,19 @@ export function trackMetric(name: string, average: number, properties?: Record<s
   appInsights.trackMetric({ name, average }, properties as ICustomProperties);
 }
 
+export function trackException(error: Error, properties?: Record<string, string>): void {
+  if (!appInsights) return;
+  appInsights.trackException({
+    exception: error,
+    properties: {
+      schemaVersion: TELEMETRY_SCHEMA_VERSION,
+      appVersion: APP_VERSION,
+      environment: import.meta.env.MODE,
+      ...properties,
+    },
+  });
+}
+
 // ─── Feature-specific tracking helpers ──────────────────────────────
 
 /**

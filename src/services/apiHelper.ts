@@ -121,6 +121,7 @@ export interface OpenAIProxyResult {
   status: number;
   data: any;
   errorText?: string;
+  correlationId: string;
 }
 
 /**
@@ -137,9 +138,13 @@ export async function callAzureOpenAIProxy(params: {
   body: any;
   signal?: AbortSignal;
 }): Promise<OpenAIProxyResult> {
+  const requestCorrelationId = crypto.randomUUID();
   const response = await fetch('/api/openai', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-correlation-id': requestCorrelationId,
+    },
     body: JSON.stringify({
       apiFormat: params.apiFormat,
       deployment: params.deployment,
@@ -147,12 +152,14 @@ export async function callAzureOpenAIProxy(params: {
     }),
     signal: params.signal,
   });
+  const correlationId = response.headers.get('x-correlation-id') || requestCorrelationId;
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => '');
-    return { ok: false, status: response.status, data: null, errorText };
+    const diagnosticText = `${errorText}${errorText ? ' ' : ''}(Request ID: ${correlationId})`;
+    return { ok: false, status: response.status, data: null, errorText: diagnosticText, correlationId };
   }
 
   const data = await response.json();
-  return { ok: true, status: response.status, data };
+  return { ok: true, status: response.status, data, correlationId };
 }

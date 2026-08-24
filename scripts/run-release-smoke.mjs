@@ -9,6 +9,7 @@ const smokeEnv = {
   VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA: 'smoke-gpt-5-6-luna',
   VITE_APPINSIGHTS_CONNECTION_STRING: '',
   VITE_SPEECH_REGION: '',
+  VITE_ERROR_BOUNDARY_TEST: 'true',
 };
 
 function run(args, env = process.env) {

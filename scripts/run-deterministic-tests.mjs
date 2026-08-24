@@ -13,6 +13,7 @@ const tests = [
   'test:production-exclusions',
   'test:service-names',
   'test:pricing-mode',
+  'test:correlation',
 ];
 
 for (const testName of tests) {

@@ -28,8 +28,6 @@ import AIArchitectureGenerator from './components/AIArchitectureGenerator';
 import ArchitectureChatPanel from './components/ArchitectureChatPanel';
 import { DeliverChooser, JourneyStrip, StartChooser, type JourneyStep } from './components/GuidedJourney';
 import HelpLearnPanel from './components/GuidedHelpPanel';
-import type { ReferenceArchitecture } from './services/referenceArchitectureAI';
-import type { BlueprintArchitecture } from './services/blueprintArchitectureAI';
 import ReferenceImageViewer from './components/ReferenceImageViewer';
 import TitleBlock from './components/TitleBlock';
 import ModelBadge from './components/ModelBadge';
@@ -90,6 +88,7 @@ import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
 import { APP_VERSION } from './appVersion';
+import { useGenerationSession } from './hooks/useGenerationSession';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 
@@ -165,11 +164,21 @@ function deriveTitleFromPrompt(prompt: string | undefined | null): string | unde
 function App() {
   const [nodes, setNodes, onNodesChangeBase] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [architecturePrompt, setArchitecturePrompt] = useState<string>('');
-  // The FIRST prompt of the current diagram lineage. Unlike architecturePrompt
-  // (which each chat refinement overwrites), this is captured once when the
-  // canvas is empty so the customer deck's "brief" reflects the original ask.
-  const [originalPrompt, setOriginalPrompt] = useState<string>('');
+  const {
+    architecturePrompt,
+    originalPrompt,
+    workflow,
+    setWorkflow,
+    generatedWithModel,
+    setGeneratedWithModel,
+    lastReferenceArchitecture,
+    setLastReferenceArchitecture,
+    lastBlueprintArchitecture,
+    setLastBlueprintArchitecture,
+    beginGeneration,
+    resetGenerationSession,
+    restoreGenerationSession,
+  } = useGenerationSession();
   const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -194,8 +203,6 @@ function App() {
   }, [onNodesChangeBase]);
 
   
-  const [workflow, setWorkflow] = useState<any[]>([]);
-  // const [showWorkflow, setShowWorkflow] = useState(false);
   const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
   const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
@@ -226,7 +233,6 @@ function App() {
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
-  const [generatedWithModel, setGeneratedWithModel] = useState<{ name: string; timeMs?: number } | null>(null);
 
   // Version History State
   const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
@@ -256,8 +262,6 @@ function App() {
   // after a "success moment" (the 2nd diagram) rather than nagging up front.
   const generationCountRef = useRef(0);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
-  const [lastReferenceArchitecture, setLastReferenceArchitecture] = useState<ReferenceArchitecture | null>(null);
-  const [lastBlueprintArchitecture, setLastBlueprintArchitecture] = useState<BlueprintArchitecture | null>(null);
   const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
 
   // Focus mode: hides canvas chrome (side panels via the signal above, plus the
@@ -1857,21 +1861,13 @@ function App() {
         });
       }
 
-      // Restore workflow if present
-      if (flow.workflow && Array.isArray(flow.workflow)) {
-        setWorkflow(flow.workflow);
-      } else {
-        setWorkflow([]);
-      }
-
-      // Restore architecture prompt if present
-      if (flow.architecturePrompt) {
-        setArchitecturePrompt(flow.architecturePrompt);
-      }
-      // Restore the original brief (fall back to the saved prompt).
-      setOriginalPrompt(flow.originalPrompt || flow.architecturePrompt || '');
+      restoreGenerationSession({
+        workflow: flow.workflow,
+        architecturePrompt: flow.architecturePrompt,
+        originalPrompt: flow.originalPrompt,
+      });
     },
-    [setNodes, setEdges, reactFlowInstance]
+    [setNodes, setEdges, reactFlowInstance, restoreGenerationSession]
   );
 
 
@@ -1925,14 +1921,11 @@ function App() {
         setTitleBlockData(version.titleBlockData);
       }
       
-      if (version.workflow) {
-        setWorkflow(version.workflow);
-      }
-      
-      if (version.architecturePrompt) {
-        setArchitecturePrompt(version.architecturePrompt);
-      }
-      setOriginalPrompt(version.originalPrompt || version.architecturePrompt || '');
+      restoreGenerationSession({
+        workflow: version.workflow,
+        architecturePrompt: version.architecturePrompt,
+        originalPrompt: version.originalPrompt,
+      });
       
       console.log('✅ Version restored successfully');
       trackVersionOperation('restore');
@@ -2053,16 +2046,7 @@ function App() {
         setNodes([]);
         setEdges([]);
       }
-      setArchitecturePrompt('');
-      setWorkflow([]);
-      setGeneratedWithModel(null);
-      // setShowWorkflow(false);
-
-      // Store the prompt and workflow for display
-      setArchitecturePrompt(prompt);
-      // Preserve the ORIGINAL prompt across chat refinements so the customer
-      // deck's "brief" always shows the first ask, not the latest tweak.
-      if (!isRefinement) setOriginalPrompt(prompt);
+      beginGeneration(prompt, isRefinement);
 
       // Pick up an architecture name from the AI payload (manifest.title in
       // Both mode) or derive a short title from the prompt so the banner
@@ -3458,10 +3442,7 @@ function App() {
                       trackStartFresh();
                       setNodes([]);
                       setEdges([]);
-                      setArchitecturePrompt('');
-                      setOriginalPrompt('');
-                      setWorkflow([]);
-                      setGeneratedWithModel(null);
+                      resetGenerationSession();
                       setValidationResult(null);
                       setValidationNeedsRefresh(false);
                       setDeploymentGuide(null);

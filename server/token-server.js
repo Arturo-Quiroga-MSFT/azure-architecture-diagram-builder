@@ -13,6 +13,7 @@ const express = require('express');
 const { DefaultAzureCredential } = require('@azure/identity');
 const { CosmosClient } = require('@azure/cosmos');
 const crypto = require('crypto');
+const { AsyncLocalStorage } = require('async_hooks');
 
 const app = express();
 // The Azure OpenAI proxy forwards vision requests that embed base64 images, so
@@ -26,6 +27,44 @@ const REGION = process.env.AZURE_SPEECH_REGION;
 const RESOURCE_NAME = process.env.AZURE_SPEECH_RESOURCE_NAME;
 const RESOURCE_ID = process.env.AZURE_SPEECH_RESOURCE_ID;
 const APP_VERSION = process.env.APP_VERSION || 'development';
+const REVISION_NAME = process.env.CONTAINER_APP_REVISION || '';
+const requestContext = new AsyncLocalStorage();
+const CORRELATION_ID_RE = /^[A-Za-z0-9._-]{1,128}$/;
+
+function structuredLog(level, event, details = {}) {
+  const context = requestContext.getStore();
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    level,
+    service: 'aadb-token-server',
+    event,
+    version: APP_VERSION,
+    ...(REVISION_NAME ? { revision: REVISION_NAME } : {}),
+    ...(context?.correlationId ? { correlationId: context.correlationId } : {}),
+    ...details,
+  }));
+}
+
+app.use((req, res, next) => {
+  const suppliedId = req.get('x-correlation-id');
+  const correlationId = suppliedId && CORRELATION_ID_RE.test(suppliedId)
+    ? suppliedId
+    : crypto.randomUUID();
+  const startedAt = Date.now();
+
+  res.set('x-correlation-id', correlationId);
+  requestContext.run({ correlationId }, () => {
+    res.on('finish', () => {
+      structuredLog(res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info', 'http_request', {
+        method: req.method,
+        path: req.path,
+        status: res.statusCode,
+        durationMs: Date.now() - startedAt,
+      });
+    });
+    next();
+  });
+});
 
 app.get('/api/health', (_req, res) => {
   res.set('Cache-Control', 'no-store').json({ status: 'ok', version: APP_VERSION });
@@ -103,7 +142,7 @@ app.get('/api/speech-token', async (_req, res) => {
     // JS Speech SDK requires the aad#{resourceId}#{aadToken} format for Entra ID auth
     res.json({ token: `aad#${RESOURCE_ID}#${aadToken}`, region: REGION });
   } catch (err) {
-    console.error('[speech-token] error:', err.message);
+    structuredLog('error', 'speech_token_failed', { errorMessage: err.message });
     res.status(500).json({ error: 'Failed to acquire speech token' });
   }
 });
@@ -145,7 +184,7 @@ app.post('/api/openai', async (req, res) => {
     res.set('Content-Type', upstream.headers.get('content-type') || 'application/json');
     res.send(text);
   } catch (err) {
-    console.error('[openai-proxy] error:', err.message);
+    structuredLog('error', 'openai_proxy_failed', { errorMessage: err.message });
     res.status(502).json({ error: 'Azure OpenAI proxy request failed' });
   }
 });
