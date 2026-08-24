@@ -932,6 +932,14 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### August 24, 2026 — AADB v1.3.0 Performance Foundation
+
+- **57% smaller startup JavaScript** — the measured standard-build initial chunk fell from 1.07 MB to 455 KB gzip by loading ELK, PowerPoint, ZIP, canvas capture, Visio, Draw.io, HTML, blueprint/reference PNG, and deployment-guide code only when requested.
+- **Performance budget** — the release gate now rejects initial JavaScript above 1.9 MB raw or 500 KB gzip.
+- **Measured browser baseline** — `npm run measure:performance -- <url>` captures cold-cache navigation timing, FCP, LCP, CLS, and initial JavaScript transfer/decoded bytes with explicit environment boundaries.
+- **Stable first paint** — icon metadata is present on the first render while SVG files continue loading asynchronously, removing the observed category-list insertion shift.
+- **Lazy-feature coverage** — the Playwright release smoke now loads ELK and downloads interactive HTML in addition to generating and rendering an architecture.
+
 ### August 23, 2026 — AADB v1.2.0 Production Foundation
 
 - **Health-aware hosting** — the web container exposes shallow liveness and readiness endpoints, and reusable Container Apps infrastructure defines explicit startup, readiness, and liveness probes for both web and MCP services.

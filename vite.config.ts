@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
+import { gzipSync } from 'node:zlib'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import type { OutputBundle, OutputChunk } from 'rollup'
 
 const { version: appVersion } = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
@@ -11,6 +13,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const enableAdoptionImpact = mode === 'development'
     || env.VITE_ENABLE_ADOPTION_IMPACT === 'true'
+  const emitBundleReport = process.env.AADB_BUNDLE_REPORT === 'true'
 
   return {
     define: {
@@ -29,6 +32,28 @@ export default defineConfig(({ mode }) => {
           })
         },
       },
+      ...(emitBundleReport ? [{
+        name: 'aadb-bundle-report',
+        generateBundle(_options, bundle: OutputBundle) {
+          const chunks = Object.values(bundle)
+            .filter((item): item is OutputChunk => item.type === 'chunk')
+            .map((chunk) => ({
+              file: chunk.fileName,
+              bytes: Buffer.byteLength(chunk.code),
+              gzipBytes: gzipSync(chunk.code).byteLength,
+              modules: Object.entries(chunk.modules)
+                .map(([module, details]) => ({ module, bytes: details.renderedLength }))
+                .sort((left, right) => right.bytes - left.bytes),
+            }))
+            .sort((left, right) => right.bytes - left.bytes)
+
+          this.emitFile({
+            type: 'asset',
+            fileName: 'bundle-report.json',
+            source: `${JSON.stringify({ version: appVersion, chunks }, null, 2)}\n`,
+          })
+        },
+      }] : []),
     ],
     server: {
       port: 3000,

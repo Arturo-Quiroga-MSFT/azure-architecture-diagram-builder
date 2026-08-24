@@ -6,8 +6,6 @@ import { Sparkles, X, Loader2, Clock, Zap, Brain, Network, PenTool, Layers } fro
 import { generateArchitectureWithAI, isAzureOpenAIConfigured, AIMetrics, analyzeArchitectureDiagramImage, ModelOverride } from '../services/azureOpenAI';import { generateReferenceArchitectureWithAI } from '../services/referenceArchitectureAI';
 import { generateBlueprintArchitectureWithAI } from '../services/blueprintArchitectureAI';
 import { generateComponentManifest, ComponentManifest } from '../services/componentManifestAI';
-import { exportReferenceArchitectureAsPng } from '../utils/exportReferencePng';
-import { exportBlueprintArchitectureAsPng } from '../utils/exportBlueprintPng';
 import ImageUploader from './ImageUploader';
 import { useModelSettings, MODEL_CONFIG, getAvailableModels, ModelType, ReasoningEffort, FEATURE_CONFIG, isModelAvailable } from '../stores/modelSettingsStore';
 import { trackImageImport } from '../services/telemetryService';
@@ -340,6 +338,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
 
         // Always export the PNG — it is the only artifact produced in this mode.
         try {
+          const { exportReferenceArchitectureAsPng } = await import('../utils/exportReferencePng');
           await exportReferenceArchitectureAsPng(ref);
         } catch (err) {
           console.warn('Reference architecture PNG export failed:', err);
@@ -361,6 +360,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
         onBlueprintArchitecture?.(bp);
 
         try {
+          const { exportBlueprintArchitectureAsPng } = await import('../utils/exportBlueprintPng');
           await exportBlueprintArchitectureAsPng(bp, { legendPosition });
         } catch (err) {
           console.warn('Blueprint architecture PNG export failed:', err);
@@ -457,6 +457,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
         // (matches the existing "auto" behavior they're already used to).
         if (autoSnapshot) {
           try {
+            const { exportBlueprintArchitectureAsPng } = await import('../utils/exportBlueprintPng');
             await exportBlueprintArchitectureAsPng(bpResult, { legendPosition });
           } catch (err) {
             console.warn('Blueprint architecture PNG export failed:', err);

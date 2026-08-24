@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — Production Foundation 1.2 Increment 1
+> **Status:** Validated — Production Foundation v1.3.0 Increment 3 (`v1.2.0` remains deployed)
 
 Generated: 2026-08-21
 
@@ -213,8 +213,8 @@ Improve the existing VNet-hosted AADB application before adding major features: 
 
 1. [x] Add one `npm run verify:release` command covering TypeScript, full lint, deterministic tests, production build, version contract, production exclusions, and Playwright smoke tests.
 2. [x] Add browser smoke coverage for page load, version display, model configuration, basic diagram rendering from a deterministic fixture, and critical modal opening.
-3. Capture bundle composition and Web Vitals before optimization; establish budgets rather than optimizing by intuition.
-4. Lazy-load export libraries and infrequently used heavy modals, then compare bundle and interaction metrics with the baseline.
+3. [x] Capture bundle composition and browser performance before optimization; establish budgets rather than optimizing by intuition.
+4. [x] Lazy-load ELK and export-only libraries, then compare bundle and interaction metrics with the baseline.
 
 #### Phase C — Maintainability and Public-Service Controls
 
@@ -247,7 +247,7 @@ Improve the existing VNet-hosted AADB application before adding major features: 
 
 - **Increment 1:** Phase A health endpoints, probes, immutable image identity, and staged rollout/rollback.
 - **Increment 2:** Phase B unified release verification and browser smoke suite. **Completed locally; CI-enforced, no runtime deployment required.**
-- **Increment 3:** Phase B measured code splitting and performance budget.
+- **Increment 3:** Phase B measured code splitting and performance budget. **Implemented locally; release validation and deployment pending.**
 - **Increment 4:** Phase C error boundaries, first `App.tsx` extraction, and correlated logging.
 - **Decision gate:** choose public-demo access controls and VNet/Bicep convergence scope using measured traffic, cost, and operational evidence.
 
@@ -301,6 +301,36 @@ Implemented and verified on 2026-08-23; no Azure resources or runtime applicatio
 | Deferred security debt | `npm install` reports 25 transitive audit findings (1 low, 4 moderate, 18 high, 2 critical). No automatic audit fix was applied; dependency triage belongs in a separate scoped security increment. |
 
 The first GitHub Actions run reached `verify:release` but failed because `test:production-exclusions` requires `dist/` and deterministic tests ran before the production build on a clean runner. The gate now builds before deterministic tests; the repair is validated from a workspace with generated build/test outputs removed.
+
+### Increment 3 Performance Evidence
+
+Implemented locally as `v1.3.0` on 2026-08-24; production remains on `v1.2.0` until release validation and deployment.
+
+| Check | Before | After | Evidence boundary |
+| --- | ---: | ---: | --- |
+| Initial JS raw | 3,749,390 bytes | 1,785,494 bytes | Same standard Vite build with opt-in Rollup report; 52.4% reduction |
+| Initial JS gzip | 1,070,051 bytes | 455,477 bytes | Same standard Vite build with opt-in Rollup report; 57.4% reduction |
+| Deployed cold-cache decoded JS | 3,716,675 bytes | Not yet deployed | Measured on production `v1.2.0`; post-change production comparison pending |
+| Optimized local decoded JS | Not applicable | 1,752,991 bytes | Loopback preview; do not compare timing directly with deployed Azure measurement |
+| Deployed `v1.2.0` browser baseline | DCL 417 ms, FCP 460 ms, LCP 544 ms, CLS 0.1358 | Not yet deployed | One cold-cache Chromium run; not a population percentile |
+| Optimized local browser sample | Not applicable | DCL 59 ms, FCP 104 ms, LCP 112 ms, CLS 0.0943 | One loopback Chromium run; timing is not directly comparable with deployed Azure |
+
+Deferred chunks include ELK, PPTX, JSZip, canvas capture, Visio, Draw.io, interactive HTML, blueprint/reference PNG, and deployment-guide generation. The deterministic initial-bundle budget is 1,900,000 raw bytes and 500,000 gzip bytes. The release smoke test exercises lazy ELK and interactive HTML export in addition to the generation workflow.
+
+The initial layout-shift trace identified the expanded icon category receiving metadata after first paint. Icon metadata now initializes synchronously while SVG URL loading remains asynchronous; the category shift disappeared and the final local CLS sample was 0.0943. Production comparison remains pending.
+
+Pending v1.3.0 validation before deployment:
+
+- [x] All Increment 3 validation checks pass
+  - [x] 1. Core Validation (Azure CLI, authentication, Bicep build, deployment validation, and what-if)
+  - [x] 2. Docker Build and local production-container smoke test
+  - [x] 3. Azure Policy Validation (no infrastructure or policy-scope changes from validated Increment 1)
+- [x] `npm run verify:release` passes with type checks, full lint, bundle budget, 11 deterministic tests, version contract, and Playwright smoke.
+- [x] Lazy ELK layout and interactive HTML export execute in the browser smoke test.
+- [x] Public lockfile contains no internal Microsoft feed URLs.
+- [x] Subscription validation/what-if passed for isolated environment `aadb-v120-validate`: Create 15 / Modify 0 / Delete 0.
+- [x] Local production container returned HTTP 200 for root, health, readiness, and version; all version surfaces reported `1.3.0`.
+- [x] Shipped container initial JavaScript measured 452,608 gzip bytes, within the 500,000-byte budget.
 
 Pending validation before deployment:
 

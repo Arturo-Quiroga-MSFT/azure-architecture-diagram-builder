@@ -18,7 +18,9 @@ const IconPalette: React.FC<IconPaletteProps> = ({ forceCollapsed }) => {
   }, [forceCollapsed]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['ai + machine learning']));
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryIcons, setCategoryIcons] = useState<Map<string, AzureIcon[]>>(new Map());
+  const [categoryIcons] = useState<Map<string, AzureIcon[]>>(() => new Map(
+    iconCategories.map((category) => [category, loadIconsFromCategory(category)]),
+  ));
   const [iconUrls, setIconUrls] = useState<Map<string, string>>(new Map());
 
   const toggleCategory = async (category: string) => {
@@ -40,26 +42,18 @@ const IconPalette: React.FC<IconPaletteProps> = ({ forceCollapsed }) => {
     setExpandedCategories(newExpanded);
   };
 
-  // Load all icon metadata on mount so search works across all categories
+  // Load icon URLs for the initially expanded category.
   useEffect(() => {
-    const loadAllIconMetadata = async () => {
-      const newCategoryIcons = new Map<string, AzureIcon[]>();
-      for (const category of iconCategories) {
-        const icons = await loadIconsFromCategory(category);
-        newCategoryIcons.set(category, icons);
-      }
-      setCategoryIcons(newCategoryIcons);
-
-      // Load icon URLs for the initially expanded category
-      const initialIcons = newCategoryIcons.get('ai + machine learning') || [];
+    const loadInitialIconUrls = async () => {
+      const initialIcons = categoryIcons.get('ai + machine learning') || [];
       for (const icon of initialIcons) {
         const url = await loadIcon(icon.path);
         setIconUrls(prev => new Map(prev).set(icon.path, url));
       }
     };
     
-    loadAllIconMetadata();
-  }, []);
+    void loadInitialIconUrls();
+  }, [categoryIcons]);
 
   const onDragStart = (event: React.DragEvent, icon: AzureIcon) => {
     event.dataTransfer.setData('application/reactflow', 'azureNode');

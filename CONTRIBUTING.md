@@ -67,6 +67,14 @@ npm run verify:release
 
 The gate runs both TypeScript projects, full-repository ESLint, all deterministic regression scripts, the production build, package/build version consistency, and a Playwright smoke test. The smoke test builds into an isolated directory, mocks the AI proxy with a fixed architecture, and exercises page load, version display, Help, model selection, Generate Diagram, React Flow rendering, workflow rendering, and validation availability. It never calls Azure or a live model.
 
+The initial JavaScript budget lives in `performance-budget.json`. To capture a cold-cache browser sample for a deployed or local URL:
+
+```bash
+npm run measure:performance -- https://<app-host>/
+```
+
+Compare bundle bytes from identical builds directly. Treat browser timings as samples tied to their network, host, runner, and viewport; do not compare a loopback timing to an Azure-hosted timing as if they were equivalent.
+
 GitHub Actions runs the same command on pull requests, pushes to `main`, and before the manual Azure deployment workflow.
 
 Use semantic versioning:

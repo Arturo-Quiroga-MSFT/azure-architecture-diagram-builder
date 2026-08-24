@@ -78,7 +78,7 @@ export function matchesIconSearch(icon: AzureIcon, term: string): boolean {
 }
 
 // This function will dynamically load icons from the file system
-export async function loadIconsFromCategory(category: string): Promise<AzureIcon[]> {
+export function loadIconsFromCategory(category: string): AzureIcon[] {
   try {
     const icons: AzureIcon[] = [];
     

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package, Clock, Zap } from 'lucide-react';
-import { DeploymentGuide, downloadDeploymentGuide, downloadBicepTemplate, downloadAllBicepTemplates, BicepModule } from '../services/deploymentGuideGenerator';
+import type { DeploymentGuide, BicepModule } from '../services/deploymentGuideGenerator';
 import './DeploymentGuideModal.css';
 
 interface DeploymentGuideModalProps {
@@ -26,17 +26,20 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!guide) return;
+    const { downloadDeploymentGuide } = await import('../services/deploymentGuideGenerator');
     downloadDeploymentGuide(guide);
   };
 
-  const handleDownloadBicep = (template: BicepModule) => {
+  const handleDownloadBicep = async (template: BicepModule) => {
+    const { downloadBicepTemplate } = await import('../services/deploymentGuideGenerator');
     downloadBicepTemplate(template);
   };
 
-  const handleDownloadAllBicep = () => {
+  const handleDownloadAllBicep = async () => {
     if (!guide) return;
+    const { downloadAllBicepTemplates } = await import('../services/deploymentGuideGenerator');
     downloadAllBicepTemplates(guide);
   };
 

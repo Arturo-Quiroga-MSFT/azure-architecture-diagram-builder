@@ -16,7 +16,7 @@ import ReactFlow, {
   MarkerType,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { captureDiagramAsPng, captureDiagramAsSvg, type ExportBackground } from './utils/captureCanvas';
+import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
@@ -28,9 +28,7 @@ import AIArchitectureGenerator from './components/AIArchitectureGenerator';
 import ArchitectureChatPanel from './components/ArchitectureChatPanel';
 import { DeliverChooser, JourneyStrip, StartChooser, type JourneyStep } from './components/GuidedJourney';
 import HelpLearnPanel from './components/GuidedHelpPanel';
-import { exportReferenceArchitectureAsPng } from './utils/exportReferencePng';
 import type { ReferenceArchitecture } from './services/referenceArchitectureAI';
-import { exportBlueprintArchitectureAsPng } from './utils/exportBlueprintPng';
 import type { BlueprintArchitecture } from './services/blueprintArchitectureAI';
 import ReferenceImageViewer from './components/ReferenceImageViewer';
 import TitleBlock from './components/TitleBlock';
@@ -51,18 +49,16 @@ import CompareValidationModal from './components/CompareValidationModal';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
-import { layoutArchitecture as elkLayoutArchitecture } from './utils/elkLayoutEngine';
 import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing } from './services/costEstimationService';
 import { usePricingMode } from './stores/pricingModeStore';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS, RegionInfo } from './services/regionalPricingService';
-import JSZip from 'jszip';
 import { formatMonthlyCost, getPricingFreshness } from './utils/pricingHelpers';
 import { PRICING_DATA_AS_OF } from './data/azurePricing';
 import { costReportToHtml } from './utils/costReportHtml';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { bandLabel } from './services/wafMaturity';
-import { generateDeploymentGuide, DeploymentGuide } from './services/deploymentGuideGenerator';
+import type { DeploymentGuide } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
@@ -70,14 +66,11 @@ import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePrici
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
-import { exportAndDownloadDrawio } from './services/drawioExporter';
-import { buildVsdxBlob } from './services/visioVsdxExporter';
-import { exportDiagramAsPptx, exportArchitectureDeck, type DeckService } from './services/pptxExporter';
+import type { DeckService } from './services/pptxExporter';
 import { extractArchitectureFromArm, summarizeCoverage } from './services/armExtractor';
 import { buildArchitectureFromResources } from './services/resourceGraphAdapter';
 import { getResources as getAzureResources } from './services/azureImportProvider';
 import { isDelegatedAuthConfigured, getSignedInName, consumeReopenFlag } from './services/msalAuth';
-import { exportDiagramAsHtml } from './services/htmlDiagramExporter';
 import {
   applyLayoutPreset,
   type LayoutPreset,
@@ -103,6 +96,19 @@ import './App.css';
 const ImpactModal = __ENABLE_ADOPTION_IMPACT__
   ? React.lazy(() => import('./components/ImpactModal'))
   : null;
+
+type CaptureModule = typeof import('./utils/captureCanvas');
+let captureModulePromise: Promise<CaptureModule> | undefined;
+const loadCaptureModule = () => {
+  captureModulePromise ??= import('./utils/captureCanvas');
+  return captureModulePromise;
+};
+
+const captureDiagramAsPng: CaptureModule['captureDiagramAsPng'] = async (...args) =>
+  (await loadCaptureModule()).captureDiagramAsPng(...args);
+
+const captureDiagramAsSvg: CaptureModule['captureDiagramAsSvg'] = async (...args) =>
+  (await loadCaptureModule()).captureDiagramAsSvg(...args);
 
 const nodeTypes = {
   azureNode: AzureNode,
@@ -1217,6 +1223,7 @@ function App() {
   const exportAsDrawio = useCallback(async () => {
     try {
       const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      const { exportAndDownloadDrawio } = await import('./services/drawioExporter');
       const fileName = await exportAndDownloadDrawio(nodes, edges, diagramName);
       recordExport('drawio', fileName);
       trackExport('drawio', nodes.filter(n => n.type === 'azureNode').length);
@@ -1233,6 +1240,7 @@ function App() {
     }
     try {
       const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      const { buildVsdxBlob } = await import('./services/visioVsdxExporter');
       const blob = await buildVsdxBlob(nodes, edges, diagramName);
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -1249,9 +1257,10 @@ function App() {
     }
   }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
-  const exportAsHtml = useCallback(() => {
+  const exportAsHtml = useCallback(async () => {
     try {
       const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      const { exportDiagramAsHtml } = await import('./services/htmlDiagramExporter');
       exportDiagramAsHtml(nodes, edges, diagramName);
       const fileName = `${diagramName.replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-').toLowerCase()}.html`;
       recordExport('html', fileName);
@@ -1275,6 +1284,7 @@ function App() {
           exportBackground,
         });
 
+        const { exportDiagramAsPptx } = await import('./services/pptxExporter');
         const fileName = await exportDiagramAsPptx(imageDataUrl, {
           diagramName: titleBlockData.architectureName || 'Azure Architecture',
           author: titleBlockData.author || 'Azure Architect',
@@ -1419,6 +1429,7 @@ function App() {
           regions,
         } : null;
 
+        const { exportArchitectureDeck } = await import('./services/pptxExporter');
         const fileName = await exportArchitectureDeck(imageDataUrl, {
           diagramName: titleBlockData.architectureName || 'Azure Architecture',
           author: titleBlockData.author || 'Azure Architect',
@@ -1718,6 +1729,7 @@ function App() {
 
 
     // Build ZIP
+    const { default: JSZip } = await import('jszip');
     const zip = new JSZip();
     const baseName = generateModelFilename('azure-cost', 'zip').replace('.zip', '');
     const fileBase = `${baseName}-${region}`;
@@ -2218,6 +2230,7 @@ function App() {
     let positionedGroups: any[];
 
     if (layoutEngine === 'elk') {
+      const { layoutArchitecture: elkLayoutArchitecture } = await import('./utils/elkLayoutEngine');
       const result = await elkLayoutArchitecture(
         services,
         connections,
@@ -2894,6 +2907,7 @@ function App() {
             .map(child => child.data.label || child.data.serviceName || 'Unknown'),
         }));
 
+      const { generateDeploymentGuide } = await import('./services/deploymentGuideGenerator');
       const guide = await generateDeploymentGuide(
         services,
         connections,
@@ -3218,10 +3232,12 @@ function App() {
                         onClick={() => {
                           setIsExportMenuOpen(false);
                           if (!lastReferenceArchitecture) return;
-                          exportReferenceArchitectureAsPng(lastReferenceArchitecture).catch((err) => {
-                            console.error('Editorial PNG export failed:', err);
-                            alert('Editorial PNG export failed. See console for details.');
-                          });
+                          void import('./utils/exportReferencePng')
+                            .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
+                            .catch((err) => {
+                              console.error('Editorial PNG export failed:', err);
+                              alert('Editorial PNG export failed. See console for details.');
+                            });
                         }}
                         title={
                           lastReferenceArchitecture
@@ -3244,10 +3260,12 @@ function App() {
                             savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
                               ? (savedLegend as 'bottom' | 'right' | 'auto')
                               : 'auto';
-                          exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }).catch((err) => {
-                            console.error('Blueprint PNG export failed:', err);
-                            alert('Blueprint PNG export failed. See console for details.');
-                          });
+                          void import('./utils/exportBlueprintPng')
+                            .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
+                            .catch((err) => {
+                              console.error('Blueprint PNG export failed:', err);
+                              alert('Blueprint PNG export failed. See console for details.');
+                            });
                         }}
                         title={
                           lastBlueprintArchitecture

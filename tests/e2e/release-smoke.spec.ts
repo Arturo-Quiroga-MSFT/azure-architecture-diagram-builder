@@ -93,5 +93,19 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(1);
   await expect(page.locator('.workflow-panel')).toContainText('2 steps');
   await expect(page.getByRole('button', { name: 'Validate Architecture' })).toBeEnabled();
+
+  const elkChunk = page.waitForResponse((response) =>
+    response.url().includes('/assets/elkLayoutEngine-') && response.ok(),
+  );
+  await page.getByRole('button', { name: 'Layout' }).click();
+  await page.locator('#layoutEngine').selectOption('elk');
+  await page.getByRole('menuitem', { name: 'Apply Layout' }).click();
+  await elkChunk;
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'App Service' })).toHaveCount(1);
+
+  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  const htmlDownload = page.waitForEvent('download');
+  await page.getByRole('menuitem', { name: 'Export Interactive HTML' }).click();
+  await expect.poll(async () => (await htmlDownload).suggestedFilename()).toMatch(/\.html$/);
   expect(pageErrors).toEqual([]);
 });
