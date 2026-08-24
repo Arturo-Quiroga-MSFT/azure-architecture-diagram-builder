@@ -928,11 +928,19 @@ azure-diagrams/
 - **[Regional Pricing](DOCS/REGIONAL_PRICING_IMPLEMENTATION.md)** - Cost estimation details
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
 - **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
-- **[Release Notes: v1.1.0–v1.5.0](DOCS/RELEASE-NOTES-V1.1-V1.5.md)** - Recent features, fixes, operations, and verification
+- **[Release Notes](DOCS/RELEASE-NOTES.md)** - Recent features, fixes, operations, and verification
 
 ---
 
 ## 🌟 What's New
+
+### August 24, 2026 — AADB v1.6.0 Guided Chat Refinement Guard
+
+- **Minimal-diff refinements** — Guided Chat treats the latest request as the only authorization to change an existing diagram; optional best-practice ideas remain suggestions rather than silent topology changes.
+- **Deterministic topology review** — newly introduced service types are compared with the live canvas and matched against canonical Azure names and aliases in the user's request.
+- **Explicit approval for extras** — unsolicited services pause before snapshot or canvas mutation. Users can keep the current architecture, apply only requested changes, or approve all proposed services.
+- **Transparent change summaries** — chat reports every added, removed, or replaced service with its reason, plus connection and group change counts.
+- **Regression coverage** — deterministic fixtures cover SQL geo-replication with unsolicited Redis, explicit Redis, Key Vault, monitoring, replacement, and cold start; Chromium covers all three review actions.
 
 ### August 24, 2026 — AADB v1.5.0 Canvas Layout Guidance
 

@@ -2,14 +2,19 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Sparkles, X, Send, Loader2, AlertCircle, MessageSquare, ChevronDown, ChevronUp, Shield, Activity, DollarSign, Wrench, Zap, Lightbulb, type LucideIcon } from 'lucide-react';
+import { Sparkles, X, Send, Loader2, AlertCircle, AlertTriangle, MessageSquare, ChevronDown, ChevronUp, Shield, Activity, DollarSign, Wrench, Zap, Lightbulb, type LucideIcon } from 'lucide-react';
 import { generateArchitectureWithAI, generateFollowUpSuggestions, isAzureOpenAIConfigured } from '../services/azureOpenAI';
 import { useModelSettings, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import {
   buildModificationPrompt,
-  summarizeArchitectureChange,
   CurrentArchitecture,
 } from '../services/modificationPrompt';
+import {
+  removeUnrequestedServices,
+  reviewRefinement,
+  summarizeRefinementReview,
+  type RefinementReview,
+} from '../services/refinementGuard';
 import './ArchitectureChatPanel.css';
 
 interface ChatMessage {
@@ -17,6 +22,14 @@ interface ChatMessage {
   role: 'user' | 'assistant' | 'error';
   text: string;
   ts: number;
+}
+
+interface PendingRefinement {
+  before: CurrentArchitecture;
+  result: any;
+  request: string;
+  recentRequests: string[];
+  review: RefinementReview;
 }
 
 interface ArchitectureChatPanelProps {
@@ -139,6 +152,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   // "What would you add?" single-best-recommendation button.
   const [followUpsLoading, setFollowUpsLoading] = useState(false);
   const [askingBest, setAskingBest] = useState(false);
+  const [pendingRefinement, setPendingRefinement] = useState<PendingRefinement | null>(null);
   const [modelSettings] = useModelSettings();
 
   const threadRef = useRef<HTMLDivElement>(null);
@@ -181,6 +195,38 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
     }
   }, [isOpen]);
 
+  const applyReviewedResult = useCallback(async (
+    before: CurrentArchitecture,
+    result: any,
+    request: string,
+    recentRequests: string[],
+    approvedProposals: boolean,
+  ) => {
+    await onApply(result, request, true);
+
+    const review = reviewRefinement(before, result, request);
+    const summary = summarizeRefinementReview(review, approvedProposals);
+    const asstId = uid();
+    setMessages((prev) => [
+      ...prev,
+      { id: asstId, role: 'assistant', text: summary, ts: Date.now() },
+    ]);
+
+    const nextServices = Array.isArray(result?.services)
+      ? result.services
+          .map((service: any) => String(service?.label ?? service?.name ?? service?.service ?? '').trim())
+          .filter(Boolean)
+      : [];
+    setModelFollowUps(null);
+    setFollowUpsLoading(true);
+    void generateFollowUpSuggestions({ services: nextServices, lastChange: summary, recentRequests })
+      .then((items) => {
+        if (items.length) setModelFollowUps({ forMsgId: asstId, items });
+      })
+      .catch(() => { /* fall back to static chips */ })
+      .finally(() => setFollowUpsLoading(false));
+  }, [onApply]);
+
   const send = useCallback(
     async (raw: string) => {
       const text = raw.trim();
@@ -207,32 +253,12 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       try {
         const prompt = buildModificationPrompt(before, text, recentRequests.slice(0, -1));
         const result = await generateArchitectureWithAI(prompt);
-
-        await onApply(result, text, true);
-
-        const summary = summarizeArchitectureChange(before, result);
-        const asstId = uid();
-        setMessages((prev) => [
-          ...prev,
-          { id: asstId, role: 'assistant', text: summary, ts: Date.now() },
-        ]);
-
-        // Tier 3: fetch change-specific follow-ups in the background (non-blocking).
-        // The static rule-based chips render immediately; these replace them when
-        // they arrive. Uses result.services (post-change) to avoid stale state.
-        const nextServices = Array.isArray((result as any)?.services)
-          ? (result as any).services
-              .map((s: any) => String(s?.label ?? s?.name ?? s?.service ?? '').trim())
-              .filter(Boolean)
-          : [];
-        setModelFollowUps(null);
-        setFollowUpsLoading(true);
-        void generateFollowUpSuggestions({ services: nextServices, lastChange: summary, recentRequests })
-          .then((items) => {
-            if (items.length) setModelFollowUps({ forMsgId: asstId, items });
-          })
-          .catch(() => { /* fall back to static chips */ })
-          .finally(() => setFollowUpsLoading(false));
+        const review = reviewRefinement(before, result, text);
+        if (review.isRefinement && review.unrequestedAdditions.length > 0) {
+          setPendingRefinement({ before, result, request: text, recentRequests, review });
+        } else {
+          await applyReviewedResult(before, result, text, recentRequests, false);
+        }
       } catch (err: any) {
         setMessages((prev) => [
           ...prev,
@@ -247,8 +273,54 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
         setIsSending(false);
       }
     },
-    [isSending, messages, currentArchitecture, onApply],
+    [isSending, messages, currentArchitecture, applyReviewedResult],
   );
+
+  const keepCurrentArchitecture = () => {
+    if (!pendingRefinement) return;
+    const proposed = pendingRefinement.review.unrequestedAdditions.map((change) => change.name).join(', ');
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        role: 'assistant',
+        text: `No changes applied. The AI proposed service types outside your request: ${proposed}.`,
+        ts: Date.now(),
+      },
+    ]);
+    setPendingRefinement(null);
+  };
+
+  const applyPendingRefinement = async (includeProposals: boolean) => {
+    if (!pendingRefinement) return;
+    const pending = pendingRefinement;
+    setPendingRefinement(null);
+    setIsSending(true);
+    try {
+      const result = includeProposals
+        ? pending.result
+        : removeUnrequestedServices(pending.result, pending.review);
+      await applyReviewedResult(
+        pending.before,
+        result,
+        pending.request,
+        pending.recentRequests,
+        includeProposals,
+      );
+    } catch (err: any) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          role: 'error',
+          text: err?.message || 'Something went wrong updating the diagram. Please try again.',
+          ts: Date.now(),
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   // Tier 4: "What would you add?" — ask the model for the single highest-impact
   // next step (from the current canvas) and apply it like a chip click.
@@ -424,6 +496,43 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
         )}
       </div>
 
+      {pendingRefinement && (
+        <div className="arch-chat-review-backdrop">
+          <div className="arch-chat-review" role="dialog" aria-modal="true" aria-labelledby="arch-chat-review-title">
+            <div className="arch-chat-review-heading">
+              <AlertTriangle size={20} />
+              <div>
+                <h2 id="arch-chat-review-title">Review extra services</h2>
+                <p>The diagram has not changed. AI proposed services that were not part of your request.</p>
+              </div>
+            </div>
+            <div className="arch-chat-review-request">
+              <strong>Requested change</strong>
+              <span>{pendingRefinement.request}</span>
+            </div>
+            <ul className="arch-chat-review-services">
+              {pendingRefinement.review.unrequestedAdditions.map((change) => (
+                <li key={change.canonicalName}>
+                  <strong>{change.name}</strong>
+                  <span>AI-proposed; not explicitly requested</span>
+                </li>
+              ))}
+            </ul>
+            <div className="arch-chat-review-actions">
+              <button type="button" className="arch-chat-review-keep" onClick={keepCurrentArchitecture} autoFocus>
+                Keep current architecture
+              </button>
+              <button type="button" onClick={() => void applyPendingRefinement(false)}>
+                Apply requested changes only
+              </button>
+              <button type="button" className="arch-chat-review-all" onClick={() => void applyPendingRefinement(true)}>
+                Apply all changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="arch-chat-composer">
         {!configured && (
           <div className="arch-chat-warning">
@@ -439,12 +548,12 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
-            disabled={isSending || !configured}
+            disabled={isSending || !configured || pendingRefinement !== null}
           />
           <button
             className="arch-chat-send"
             onClick={() => send(input)}
-            disabled={isSending || !configured || !input.trim()}
+            disabled={isSending || !configured || pendingRefinement !== null || !input.trim()}
             title="Send (Enter)"
             aria-label="Send"
           >

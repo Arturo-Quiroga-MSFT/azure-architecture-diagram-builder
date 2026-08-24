@@ -1,17 +1,58 @@
-# AADB Release Notes: v1.1.0–v1.5.0
+# AADB Release Notes
 
-This document summarizes the user-facing enhancements, reliability fixes, operational improvements, and verified release evidence shipped from AADB `v1.1.0` through `v1.5.0`.
+This document summarizes the user-facing enhancements, reliability fixes, operational improvements, and verified release evidence shipped from AADB `v1.1.0` onward.
 
 ## Release Summary
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Release candidate |
 | `v1.5.0` | 2026-08-24 | Human layout guidance | Deployed |
 | `v1.4.1` | 2026-08-24 | GPT-5.6 Luna default-model correction | Deployed |
 | `v1.4.0` | 2026-08-24 | Error containment, correlated diagnostics, maintainability | Deployed |
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v1.6.0: Guided Chat Refinement Guard
+
+### Minimal-diff contract
+
+- For an existing diagram, the latest Guided Chat request is the only authorization to change topology.
+- Existing services, groups, and connections remain the source of truth.
+- New service types may be added only when the latest request names the service or a catalog alias.
+- Optional security, reliability, observability, caching, and performance improvements remain follow-up suggestions rather than silent additions.
+- The system prompt and modification prompt enforce the same refinement contract.
+
+### Deterministic topology review
+
+- The generated result is compared with the live canvas before any snapshot or canvas mutation.
+- Services are canonicalized through the Azure service catalog, including keys, display names, and aliases.
+- Newly introduced service types absent from the current diagram are classified as explicitly requested or AI-proposed.
+- Additional instances of an existing service type remain allowed for replication and multi-region scenarios.
+- Generic monitoring intent authorizes monitoring services; explicit aliases such as Redis, Cache, Key Vault, and WAF are recognized.
+
+### User confirmation
+
+When an unrequested service type is detected, Guided Chat pauses and shows a review dialog. The safe action receives initial keyboard focus. The user can:
+
+- **Keep current architecture** — apply nothing.
+- **Apply requested changes only** — remove unrequested services and their connections/workflow references, then apply the remaining refinement.
+- **Apply all changes** — explicitly approve the complete AI proposal.
+
+### Transparent summaries
+
+- Every applied service addition and removal is listed with a reason.
+- Explicit replacement requests are summarized as replacements rather than unrelated add/remove operations.
+- AI-proposed additions are labeled as such only after the user approves them.
+- Connection additions/removals and group additions/removals are counted.
+
+### Verification
+
+- Six deterministic scenarios cover SQL geo-replication with unsolicited Redis, requested-only sanitization, explicit Key Vault, generic monitoring, explicit Redis, cold-start behavior, and service replacement.
+- Production-build Chromium coverage verifies that the canvas does not change before approval.
+- Browser coverage exercises Keep Current, Apply Requested Only, and Apply All.
+- The review dialog was visually checked in the desktop Guided Chat rail; Redis remained absent from the canvas while review was pending and focus landed on Keep Current.
 
 ## v1.5.0: Canvas Layout Guidance
 
@@ -165,19 +206,19 @@ These are measured bundle/transfer results, not a claim about population-level p
 
 ## Current Release Validation
 
-For `v1.5.0`, the verified release gate includes:
+For `v1.6.0`, the verified release gate includes:
 
 - Application and Vite TypeScript checks
 - Full ESLint with zero warnings
 - Production build
 - Initial-bundle budget
-- 12 deterministic regression checks
+- 13 deterministic regression checks
 - Version contract
-- Two Chromium smoke tests, including deterministic generation, canvas guidance, lazy features, and root error containment
+- Two Chromium smoke tests, including deterministic generation, canvas guidance, refinement review decisions, lazy features, and root error containment
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production `v1.5.0` is served by a healthy, provisioned immutable Container Apps revision with the previous `v1.4.1` revision retained as the rollback target.
+Production remains on `v1.5.0` until `v1.6.0` completes Azure validation and staged rollout.
 
 ## Remaining Boundaries
 

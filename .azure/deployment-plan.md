@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — v1.5.0 canvas layout guidance
+> **Status:** Validated — v1.6.0 Guided Chat refinement guard; production remains on v1.5.0
 
 Generated: 2026-08-21
 
@@ -396,6 +396,24 @@ Production deployment proof:
 | Runtime surfaces | Root returned HTTP 200; health, readiness, and version endpoints reported `1.5.0` |
 | First-use browser check | A deterministic mocked generation on the deployed UI displayed the exact guidance, rendered four React Flow nodes, showed no alerts, dismissed the note, and persisted the seen marker |
 | Later-occurrence browser check | A second deterministic generation in the same browser profile displayed the reminder and hid it after 10 seconds while preserving the seen marker; no alerts were present |
+
+### v1.6.0 Guided Chat Refinement Guard
+
+Implemented locally on 2026-08-24. Guided Chat now enforces a minimal-diff contract, reviews newly introduced service types against the live canvas and canonical catalog aliases, pauses before mutation when unrequested services appear, and offers Keep Current, Apply Requested Only, or Apply All. Applied changes receive service-level reasons plus connection/group counts.
+
+Local evidence:
+
+| Check | Exact result |
+| --- | --- |
+| Deterministic guard | Six scenarios passed, including SQL geo-replication with unsolicited Redis, sanitization, explicit Redis, Key Vault, monitoring, cold start, and replacement summary |
+| Browser decision paths | Production-build Chromium passed Keep Current, Apply Requested Only, and Apply All; the canvas remained unchanged while approval was pending |
+| Desktop visual check | Dialog remained contained in the Guided Chat rail, listed Azure Cache for Redis as unrequested, showed zero Redis canvas nodes, and focused Keep Current |
+| Unified gate | `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 13 deterministic checks, version contract, and two Chromium tests |
+| Azure context | Subscription `7a28b21e-0d3e-4435-a686-d92889d4ee96`, tenant `a172a259-b1c7-4944-b2e1-6d551f954711`, state `Enabled` |
+| Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
+| Infrastructure boundary | Application-only change; Bicep, effective policy inputs, and previously verified resource-scoped RBAC definitions are unchanged |
+
+Production deployment remains pending.
 
 #### Increment 3 final production state
 

@@ -36,6 +36,40 @@ const architecture = {
   ],
 };
 
+const geoReplicationWithUnrequestedRedis = {
+  architectureName: 'Release Smoke Architecture',
+  groups: architecture.groups,
+  services: [
+    ...architecture.services,
+    {
+      id: 'database-secondary',
+      name: 'SQL Database',
+      type: 'SQL Database',
+      category: 'databases',
+      description: 'Geo-replicated secondary database',
+      groupId: 'data',
+    },
+    {
+      id: 'redis',
+      name: 'Azure Cache for Redis',
+      type: 'Azure Cache for Redis',
+      category: 'databases',
+      description: 'Caches application reads',
+      groupId: 'data',
+    },
+  ],
+  connections: [
+    ...architecture.connections,
+    { from: 'database', to: 'database-secondary', label: 'Geo-replicate application data', type: 'async' },
+    { from: 'web-app', to: 'redis', label: 'Cache application reads', type: 'sync' },
+  ],
+  workflow: [
+    ...architecture.workflow,
+    { step: 3, description: 'The primary database replicates data.', services: ['database', 'database-secondary'] },
+    { step: 4, description: 'The application caches reads.', services: ['web-app', 'redis'] },
+  ],
+};
+
 test('release-critical workflow renders a deterministic architecture', async ({ page }) => {
   const pageErrors: string[] = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -47,9 +81,18 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
 
   let proxyCalls = 0;
   await page.route('**/api/openai', async (route) => {
-    proxyCalls += 1;
     const request = route.request().postDataJSON();
     expect(route.request().headers()['x-correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
+    if (request.apiFormat === 'chat-completions') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ choices: [{ message: { content: '[]' } }] }),
+      });
+      return;
+    }
+
+    proxyCalls += 1;
     expect(request.apiFormat).toBe('responses');
     expect(request.deployment).toBe('smoke-gpt-5-6-luna');
     expect(request.body.model).toBe('smoke-gpt-5-6-luna');
@@ -62,7 +105,10 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
         output: [
           {
             type: 'message',
-            content: [{ type: 'output_text', text: JSON.stringify(architecture) }],
+            content: [{
+              type: 'output_text',
+              text: JSON.stringify(proxyCalls === 1 ? architecture : geoReplicationWithUnrequestedRedis),
+            }],
           },
         ],
         usage: { input_tokens: 100, output_tokens: 200, total_tokens: 300 },
@@ -114,6 +160,38 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   const htmlDownload = page.waitForEvent('download');
   await page.getByRole('menuitem', { name: 'Export Interactive HTML' }).click();
   await expect.poll(async () => (await htmlDownload).suggestedFilename()).toMatch(/\.html$/);
+
+  await page.getByRole('button', { name: 'Guided Chat', exact: true }).click();
+  const chatInput = page.locator('.arch-chat-input');
+  await chatInput.fill('Enable Azure SQL geo-replication');
+  await page.getByRole('button', { name: 'Send' }).click();
+
+  const reviewDialog = page.getByRole('dialog', { name: 'Review extra services' });
+  await expect(reviewDialog).toBeVisible();
+  await expect(reviewDialog).toContainText('Azure Cache for Redis');
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Azure Cache for Redis' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Keep current architecture' }).click();
+  await expect(reviewDialog).toBeHidden();
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'No changes applied.' })).toBeVisible();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(1);
+
+  await chatInput.fill('Enable Azure SQL geo-replication');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(reviewDialog).toBeVisible();
+  await page.getByRole('button', { name: 'Apply requested changes only' }).click();
+  await expect(reviewDialog).toBeHidden();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(2);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Azure Cache for Redis' })).toHaveCount(0);
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'Added SQL Database' })).toBeVisible();
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'Connections:' })).toBeVisible();
+
+  await chatInput.fill('Enable Azure SQL geo-replication');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(reviewDialog).toBeVisible();
+  await page.getByRole('button', { name: 'Apply all changes' }).click();
+  await expect(reviewDialog).toBeHidden();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Azure Cache for Redis' })).toHaveCount(1);
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'AI-proposed; approved by you' })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 

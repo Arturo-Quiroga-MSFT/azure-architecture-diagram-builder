@@ -14,6 +14,7 @@ const tests = [
   'test:service-names',
   'test:pricing-mode',
   'test:correlation',
+  'test:refinement-guard',
 ];
 
 for (const testName of tests) {

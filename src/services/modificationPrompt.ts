@@ -77,7 +77,12 @@ ${connections.length > 0 ? `Connections: ${connections.join('; ')}` : ''}${recen
 
 CHANGE REQUESTED: ${request}
 
-IMPORTANT: Return the COMPLETE architecture JSON (all services, groups, connections, workflow). Keep everything unchanged EXCEPT what the user requested. Only add, modify, or remove what was asked.`;
+REFINEMENT MODE — MINIMAL-DIFF CONTRACT:
+1. The latest CHANGE REQUESTED is the only authorization to change the diagram. Recent requests provide conversational context, not permission to add more services.
+2. Preserve every existing service, group, and connection unless changing it is necessary for the latest request.
+3. Add a new Azure service type ONLY when the latest request explicitly names that service or a direct alias. Do not silently add best-practice, security, reliability, observability, caching, or performance services.
+4. Optional improvements belong in follow-up suggestions, not in the returned architecture.
+5. Return the COMPLETE architecture JSON (all services, groups, connections, workflow), with only the requested minimal change applied.`;
 }
 
 /**
