@@ -116,3 +116,7 @@ ContainerAppConsoleLogs_CL
 `scripts/llm-cost-report.py` joins `AI_Model_Usage` with Azure Cost Management and now includes all current model deployment variables. It reports cost per call, anonymous browser, browser session, workflow, and one million tokens.
 
 Cost attribution remains an allocation estimate when a Foundry deployment is shared with other applications. Azure Cost Management is the billing source of truth; telemetry is the usage-allocation source.
+
+## Production State
+
+Production `v1.7.1` sends custom model spans to `aadb-usage-analytics-insights` and retained structured/proxy logs to `workspace-azurediagramsrgbuvF`. Incoming HTTP auto-spans are disabled. The previous `v1.7.0` revision was deactivated because its older instrumentation emitted readiness spans; `v1.6.0` remains the active-at-zero rollback target.

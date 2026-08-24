@@ -6,7 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Release candidate |
+| `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Deployed |
 | `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Deployed |
 | `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Deployed |
 | `v1.5.0` | 2026-08-24 | Human layout guidance | Deployed |
@@ -26,6 +26,8 @@ Production verification of `v1.7.0` proved that authoritative events reached Log
 The patch disables incoming HTTP auto-spans and console duplication, keeps custom model spans, replaces nginx combined access records with a privacy-safe method/path/status/bytes/duration/correlation format, and limits nginx error retention to critical process failures. Application and upstream errors remain represented by privacy-safe structured Node events.
 
 The real production image was exercised with unique user-agent and query-string markers. Neither marker nor the container-network IP appeared in retained runtime logs, while the sanitized route/status record remained. Static contracts enforce these settings.
+
+Production verification sent one bounded Luna request. The retained event and custom Application Insights span agreed on 12 input, 7 output, and 19 total tokens and carried the same correlation ID. The new revision emitted zero incoming HTTP spans. The old `v1.7.0` rollback replica was the sole source of post-cutover readiness spans and was deactivated; healthy `v1.6.0` remains active at 0% as rollback.
 
 ## v1.7.0: Authoritative Server Telemetry
 
@@ -58,7 +60,7 @@ The real production image was exercised with unique user-agent and query-string 
 - Joined reports include sessions, workflows, cost per session, and cost per workflow.
 - `DOCS/SERVER-TELEMETRY.md` contains KQL for model volume/tokens, concurrency, client bursts, and failure classification.
 
-### Verification
+### Server telemetry verification
 
 - The authoritative contract validates token parsing, cached tokens, concurrency overlap, 429 classification, correlation, legacy callers, client hashing, probe suppression, and absence of body/raw-client markers.
 - The real Alpine/nginx/Node production image built successfully with zero server-package vulnerabilities.
@@ -98,7 +100,7 @@ When an unrequested service type is detected, Guided Chat pauses and shows a rev
 - AI-proposed additions are labeled as such only after the user approves them.
 - Connection additions/removals and group additions/removals are counted.
 
-### Verification
+### Refinement guard verification
 
 - Six deterministic scenarios cover SQL geo-replication with unsolicited Redis, requested-only sanitization, explicit Key Vault, generic monitoring, explicit Redis, cold-start behavior, and service replacement.
 - Production-build Chromium coverage verifies that the canvas does not change before approval.
@@ -269,7 +271,7 @@ For `v1.7.1`, the verified release gate includes:
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production remains on `v1.7.0` until `v1.7.1` completes validation and staged rollout.
+Production `v1.7.1` is Healthy and Provisioned at 100% traffic with retained authoritative telemetry. Healthy `v1.6.0` remains active at 0% as rollback.
 
 ## Remaining Boundaries
 

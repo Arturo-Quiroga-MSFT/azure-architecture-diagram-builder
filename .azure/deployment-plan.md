@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — v1.7.1 telemetry privacy/noise correction; production is on v1.7.0
+> **Status:** Deployed — v1.7.1 authoritative server telemetry and privacy controls
 
 Generated: 2026-08-21
 
@@ -446,7 +446,7 @@ Local evidence:
 | Bicep validation | Compilation and subscription deployment validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0 |
 | Policy/RBAC boundary | Existing effective policies evaluated successfully by what-if; no resource type, role assignment, or identity-scope change |
 
-`v1.7.0` production deployment completed; the `v1.7.1` correction remains pending.
+`v1.7.0` production deployment completed and established the authoritative telemetry path; `v1.7.1` completed the privacy/noise correction.
 
 #### v1.7.0 deployment and v1.7.1 correction
 
@@ -456,7 +456,21 @@ A bounded Luna request (`prod-v170-telemetry-20260824152717`) returned 19 tokens
 
 Production verification then found readiness auto-spans and nginx raw access/error fields outside the structured event. `v1.7.1` disables incoming HTTP auto-spans, applies a privacy-safe nginx access format, and limits nginx errors to critical process failures. A real container test proved marker user-agent/query/IP values absent while the sanitized route record remained.
 
-`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 13 deterministic checks, version contract, and two Chromium tests. Bicep compilation and subscription validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0. Azure resources, policy inputs, and role assignments are unchanged from validated `v1.7.0`. Production rollout remains pending.
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 13 deterministic checks, version contract, and two Chromium tests. Bicep compilation and subscription validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0. Azure resources, policy inputs, and role assignments are unchanged from validated `v1.7.0`.
+
+`v1.7.1` production proof:
+
+| Check | Exact result |
+| --- | --- |
+| Immutable image | ACR run `ch70` pushed `v1.7.1-289aa844dcc4` with digest `sha256:85c65f6e119a4042c81f7157aa93933d096ba00e4860ca5cfa7d66dfd38a533e` |
+| Active revision | `azure-diagram-builder-vnet--v1-7-1-289aa844dcc4`; Healthy, Provisioned, one replica, 100% traffic |
+| Rollback revision | `azure-diagram-builder-vnet--v1-6-0-3da2c48e317e`; Healthy, Provisioned, one replica, 0% traffic |
+| Telemetry resources | Environment uses `log-analytics` with customer ID for `workspace-azurediagramsrgbuvF`; App Insights/HMAC runtime values are secret references with null plaintext values |
+| Retained model event | Request `prod-v171-telemetry-20260824154703` recorded 12 input, 7 output, 19 total tokens, 2,671 ms duration, concurrency 1, correlation/revision/version, and a 24-character client key |
+| Custom model span | `aadb.openai.proxy` reached dedicated Application Insights with model, deployment, operation, token, duration, concurrency, error, client-key, and correlation dimensions |
+| Privacy verification | Marker user-agent/query count 0 and raw IPv4-like count 0 in retained `v1.7.1` logs; access record contained only timestamp, method, path, status, bytes, duration, and correlation |
+| Probe suppression | Structured ready/health events 0. All incoming probe spans were attributed to the old `v1.7.0` replica; it was deactivated after verification. `v1.7.1` emitted zero incoming spans |
+| Runtime surfaces | Health, readiness, and version reported `1.7.1`; production traffic remained 100% on `v1.7.1` after rollback cleanup |
 
 #### Increment 3 final production state
 
