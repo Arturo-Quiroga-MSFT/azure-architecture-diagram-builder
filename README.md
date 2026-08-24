@@ -189,6 +189,7 @@ A built-in feedback widget captures a rating, category, and free-text comment. S
 - **12 AI layout rules** for clean, readable diagrams (directional flow, hub-and-spoke monitoring, connection caps)
 - **Automatic group overlap resolution** — post-processing that detects and separates overlapping groups
 - **Resizable group nodes** — drag handles to adjust group boundaries
+- **Human layout guidance** — after AI generation or refinement, a dismissible canvas note encourages users to adjust grouping, spacing, and emphasis to match their preferred visual story
 
 ### 📸 Auto-Snapshot & Version History
 - Automatically saves a version snapshot before each AI regeneration
@@ -926,11 +927,32 @@ azure-diagrams/
 - **[Layout Engines: Dagre vs ELK](DOCS/LAYOUT_ENGINES_COMPARISON.md)** - Comparison, pros/cons, and best fit analysis
 - **[Regional Pricing](DOCS/REGIONAL_PRICING_IMPLEMENTATION.md)** - Cost estimation details
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
-- **[Icon Mapping](DOCS/ICON_MAPPING.md)** - Service to icon reference
+- **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
+- **[Release Notes: v1.1.0–v1.5.0](DOCS/RELEASE-NOTES-V1.1-V1.5.md)** - Recent features, fixes, operations, and verification
 
 ---
 
 ## 🌟 What's New
+
+### August 24, 2026 — AADB v1.5.0 Canvas Layout Guidance
+
+- **“Make this layout yours” guidance** — after AI generation, regeneration, or refinement, the canvas explains that visual grouping and spacing are subjective and invites users to reposition services and groups.
+- **Non-blocking reminder behavior** — the first notice remains until dismissed; later notices disappear after 10 seconds. The seen preference persists, Start Fresh clears only the active notice, and Focus mode suppresses it.
+- **Deployed behavior verified** — production browser checks covered the first-use and later-reminder paths without consuming model capacity.
+
+### August 24, 2026 — AADB v1.4.1 Default-Model Fix
+
+- **Luna remains the default** — fresh sessions now select GPT-5.6 Luna with medium reasoning when multiple deployments are configured, rather than selecting the first configured model.
+- **Safe fallback** — the app selects the first available model only when Luna is unavailable.
+- **Regression coverage** — the release smoke configures GPT-5.1 and Luna together and asserts the Luna default.
+
+### August 24, 2026 — AADB v1.4.0 Diagnostics & Maintainability
+
+- **Root error containment** — unexpected React render failures produce a recoverable Reload application screen and report through the existing Application Insights integration.
+- **Correlated diagnostics** — frontend OpenAI requests carry a UUID; the server preserves valid IDs, replaces malformed IDs, returns the effective ID, and includes it in structured request-completion logs and user-facing failure diagnostics.
+- **Privacy-conscious logs** — structured request logs contain operational metadata, not prompts, request bodies, model responses, credentials, or tokens.
+- **First `App.tsx` extraction** — generation lineage, workflow, model metadata, generated artifacts, and session lifecycle operations moved into `useGenerationSession` without a broad rewrite.
+- **Stronger release smoke** — browser coverage now includes a real root-boundary render failure and the frontend correlation header.
 
 ### August 24, 2026 — AADB v1.3.0 Performance Foundation
 
