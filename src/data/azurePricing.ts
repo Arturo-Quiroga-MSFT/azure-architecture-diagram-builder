@@ -14,15 +14,15 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // App Services (handle both singular and plural)
   'App Service': 'Azure App Service',
   'App Services': 'Azure App Service',
-  'App Service Certificates': 'Azure Functions',
+  'App Service Certificates': 'Functions',
   'Static Web Apps': 'Static Web Apps',
   'Azure Static Web Apps': 'Static Web Apps',
   'Azure Static Web App': 'Static Web Apps',
   'Static Web App': 'Static Web Apps',
-  'Function App': 'Azure Functions',
-  'Function Apps': 'Azure Functions',
-  'Azure Functions': 'Azure Functions',
-  'Functions': 'Azure Functions',
+  'Function App': 'Functions',
+  'Function Apps': 'Functions',
+  'Azure Functions': 'Functions',
+  'Functions': 'Functions',
   'Logic Apps': 'Logic Apps',
   'Logic App': 'Logic Apps',
   'API Management': 'API Management',
@@ -61,10 +61,10 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'MySQL': 'Azure Database for MySQL',
   'PostgreSQL': 'Azure Database for PostgreSQL',
   'Azure Database for PostgreSQL': 'Azure Database for PostgreSQL',
-  'Redis': 'Azure Cache for Redis',
-  'Redis Cache': 'Azure Cache for Redis',
-  'Cache Redis': 'Azure Cache for Redis',
-  'Azure Cache for Redis': 'Azure Cache for Redis',
+  'Redis': 'Redis Cache',
+  'Redis Cache': 'Redis Cache',
+  'Cache Redis': 'Redis Cache',
+  'Azure Cache for Redis': 'Redis Cache',
   
   // Storage
   'Storage Account': 'Storage',
@@ -81,8 +81,9 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Application Gateway': 'Application Gateway',
   'Application Gateways': 'Application Gateway',
   'Application Gateway Containers': 'Application Gateway',
-  'Load Balancer': 'Azure Load Balancer',
-  'Load Balancers': 'Azure Load Balancer',
+  'Load Balancer': 'Load Balancer',
+  'Load Balancers': 'Load Balancer',
+  'Azure Load Balancer': 'Load Balancer',
   'VPN Gateway': 'VPN Gateway',
   'ExpressRoute': 'ExpressRoute',
   'Express Route': 'ExpressRoute',
@@ -104,13 +105,13 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // Analytics
   'Power BI Embedded': 'Power BI Embedded',
   'Power BI': 'Power BI Embedded',
-  'Stream Analytics': 'Azure Stream Analytics',
-  'Azure Stream Analytics': 'Azure Stream Analytics',
+  'Stream Analytics': 'Stream Analytics',
+  'Azure Stream Analytics': 'Stream Analytics',
   'Data Factory': 'Azure Data Factory',
   'Azure Data Factory': 'Azure Data Factory',
   'Synapse Analytics': 'Azure Synapse Analytics',
-  'Event Hubs': 'Azure Event Hubs',
-  'Azure Event Hubs': 'Azure Event Hubs',
+  'Event Hubs': 'Event Hubs',
+  'Azure Event Hubs': 'Event Hubs',
   'Data Lake': 'Azure Data Lake Storage',
   'Data Lake Storage': 'Azure Data Lake Storage',
   'Data Lake Storage Gen2': 'Azure Data Lake Storage',
@@ -119,6 +120,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   // AI & Machine Learning
   'Machine Learning': 'Azure Machine Learning',
   'Azure Machine Learning': 'Azure Machine Learning',
+  'AML Managed Compute': 'Azure Machine Learning',
   'Foundry Tools': 'Cognitive Services',
   'Azure AI Services': 'Cognitive Services',
   'Azure Cognitive Services': 'Cognitive Services',
@@ -197,10 +199,10 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Container App': 'Azure Container Apps',
   
   // Integration
-  'Service Bus': 'Azure Service Bus',
-  'Azure Service Bus': 'Azure Service Bus',
-  'Event Grid': 'Azure Event Grid',
-  'Azure Event Grid': 'Azure Event Grid',
+  'Service Bus': 'Service Bus',
+  'Azure Service Bus': 'Service Bus',
+  'Event Grid': 'Event Grid',
+  'Azure Event Grid': 'Event Grid',
   'SignalR': 'SignalR',
   'SignalR Service': 'SignalR',
   'Azure SignalR Service': 'SignalR',
@@ -370,6 +372,8 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Azure Event Hubs': 'Standard',
   'Machine Learning': 'Standard',
   'Azure Machine Learning': 'Standard',
+  // Power BI Embedded sells A-series capacity nodes; there is no Standard SKU.
+  'Power BI Embedded': 'A1',
   'Container Registry': 'Standard',
   'Azure Container Registry': 'Standard',
   'Data Lake Storage Gen2': 'Hot LRS',
@@ -1285,7 +1289,7 @@ export function getFabricCapacityMonthly(
  * The `npm run pricing:refresh` script bumps this automatically after a
  * successful fetch so cost exports can show an accurate "Prices as of" stamp.
  */
-export const PRICING_DATA_AS_OF = '2026-08-15';
+export const PRICING_DATA_AS_OF = '2026-08-25';
 
 /**
  * Check if service has pricing data available

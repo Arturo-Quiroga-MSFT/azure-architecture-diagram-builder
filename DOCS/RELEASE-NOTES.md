@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v1.9.0` | 2026-08-25 | Prompt refresh and pricing accuracy | Deployed |
 | `v1.8.0` | 2026-08-25 | Semantic relationships and private connectivity | Deployed |
 | `v1.7.2` | 2026-08-24 | Guided Chat helper model correction | Deployed |
 | `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Deployed |
@@ -17,6 +18,40 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v1.9.0: Prompt Refresh and Pricing Accuracy
+
+### Guided Chat sample prompts
+
+The chat prompts had not been reviewed against the current catalog. Microsoft Fabric accounted for 20 of 95 supported services and Microsoft Foundry was in the catalog, yet no prompt mentioned either, and IoT had no coverage at all.
+
+Starters now include a Fabric analytics pipeline and a private Foundry assistant that exercises VNet Integration with per-resource private endpoints. Advanced patterns add a zero-trust data platform, a connected-factory IoT pipeline, and a Fabric medallion lakehouse. Every service named in a prompt was verified to resolve in the icon catalog.
+
+Refinement chips were corrected where they taught Azure behavior the app now models properly: a WAF is offered as a policy for the application tier rather than a hop in front of it. Context-aware suggestions gained VNet Integration when endpoints exist without a virtual network, Azure DNS private zones when endpoints cannot resolve, and Azure Backup for data tiers.
+
+### Icon resolution
+
+The generation prompt advertises catalog display names, but six entries did not resolve through their own lookup because their catalog key and aliases differed: Azure Functions, Azure Kubernetes Service, Azure Cache for Redis, Content Delivery Network, Azure Data Factory, and Azure Data Lake Storage. Those names skipped exact icon mapping and fell through to fuzzy category search. Lookup now accepts display names, and a regression asserts all 95 entries resolve by key and display name without shadowing.
+
+### Pricing service names
+
+Pricing snapshots are stored under the Azure Retail Prices `serviceName`. Six services pointed at a name the API does not publish, so they loaded an empty snapshot and silently degraded to a documented estimate. The Retail API returns zero items for `Azure Cache for Redis` and 89 for `Redis Cache`; the same mismatch affected Functions, Stream Analytics, Event Hubs, Service Bus, and Event Grid.
+
+Load Balancer and Traffic Manager publish only Global and edge-zone meters, so the per-region refresh filter returned nothing for them; both are now fetched as global services. AML Managed Compute had no mapping to `Azure Machine Learning`, and Power BI Embedded had no snapshot stem at all.
+
+### Meter selection
+
+Two meter families produced confidently wrong prices. Redis prices one SKU as both `C1 Cache` and `C1 Cache Instance`, the latter being a single node at half the rate. Load Balancer, SignalR, SQL Database, Storage, and Foundry Tools each publish a promotional `- Free` meter beside a real one, and “cheapest wins” always selected the free variant.
+
+Tier selection now demotes a meter that only restates another with an ` Instance` or ` - Free` suffix. The rule is confined to that exact shape, so Azure Backup, Key Vault, and Microsoft Defender keep their `Instance` meters, and standalone free SKUs such as PostgreSQL `Compute - Free` are unaffected. Power BI Embedded sells A-series capacity nodes rather than a `Standard` SKU, so its default tier is now `A1`. Traffic Manager publishes only per-query and per-endpoint rates, so it defers to its documented range like other services without a resource meter.
+
+### Data and honesty
+
+All 14 regional snapshots were re-fetched from the Azure Retail Prices API on 2026-08-25. Services resolving to real pricing rose from 35 to 45 with no remaining gaps. Azure Managed Grafana and Batch Compute Pool publish no Retail API meters under any name, so both now declare that they have no pricing data and display their documented range instead of implying a measured price.
+
+### Verification
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. Live generations confirmed the Fabric starter renders seven official Fabric icons with capacity-consumption costs, the zero-trust starter produces three per-resource private endpoints with no invalid virtual-network endpoint, and Load Balancer, SignalR, SQL Database, App Service, and Storage all resolve to real meters with no zero-priced tiers.
 
 ## v1.8.0: Semantic Relationships and Private Connectivity
 

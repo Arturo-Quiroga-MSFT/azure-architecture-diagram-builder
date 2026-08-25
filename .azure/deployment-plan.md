@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — v1.8.0 semantic relationships and private connectivity
+> **Status:** Deployed — v1.9.0 prompt refresh and pricing accuracy
 
 Generated: 2026-08-21
 
@@ -485,6 +485,16 @@ Deployed on 2026-08-24 as a separate operational workbook for the authoritative 
 | Coverage | Server overview, models/operations/tokens, failures/429s, concurrency, burst thresholds, revision/system health, completeness/privacy, custom-span health, recent correlations, and cost-allocation guidance |
 | Deployment | Update-in-place script verifies subscription/tenant, resource sources, stored version, and stored KQL panel count |
 | Portal | `https://portal.azure.com/#@a172a259-b1c7-4944-b2e1-6d551f954711/resource/subscriptions/7a28b21e-0d3e-4435-a686-d92889d4ee96/resourceGroups/azure-diagrams-rg/providers/microsoft.insights/workbooks/2e389b56-22db-43a1-87ba-d5e206bd8102/workbook` |
+
+### v1.9.0 Prompt Refresh and Pricing Accuracy
+
+Guided Chat sample prompts had not been reviewed against the current catalog: Microsoft Fabric accounted for 20 of 95 supported services and Microsoft Foundry was present, yet no prompt referenced either. Starters and advanced patterns now cover Fabric, Foundry, IoT, and the v1.8.0 private connectivity model, and every service named in a prompt was verified to resolve in the icon catalog.
+
+Reviewing that coverage exposed three defects. Six catalog entries whose display name differed from their key did not resolve through their own lookup, so names the generation prompt advertises skipped exact icon mapping. Six services pointed at a Retail Prices `serviceName` the API does not publish and silently loaded empty snapshots, degrading to documented estimates. Two meter families — Redis `Cache Instance` and promotional `- Free` meters on Load Balancer, SignalR, SQL Database, Storage, and Foundry Tools — outranked the real resource meter and produced confidently wrong prices.
+
+All 14 regional pricing snapshots were re-fetched from the Azure Retail Prices API on 2026-08-25. Load Balancer and Traffic Manager are now fetched as global services because they publish only Global and edge-zone meters. Services resolving to real pricing rose from 35 to 45 with no remaining gaps. Azure Managed Grafana and Batch Compute Pool publish no Retail API meters under any name and now declare that honestly rather than implying a measured price.
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. Infrastructure, policies, roles, and runtime secrets are unchanged; this release is application code and bundled pricing data only.
 
 ### v1.8.0 Semantic Relationships and Private Connectivity
 

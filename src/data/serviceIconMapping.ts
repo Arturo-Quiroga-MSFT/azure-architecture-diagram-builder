@@ -228,8 +228,9 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     aliases: ['Batch Pool', 'AML Batch Compute', 'Batch Compute', 'Dedicated Batch Compute', 'Batch Compute (auto-scale)'],
     iconFile: '10031-icon-service-Batch-Accounts',
     category: 'compute',
-    hasPricingData: true,
-    pricingServiceName: 'Batch',
+    // Batch itself is free; the Retail API publishes no meters for it because
+    // cost comes from the underlying VMs.
+    hasPricingData: false,
     isUsageBased: true,
     costRange: '$0-2000/mo (scale-to-zero capable)'
   },
@@ -547,8 +548,8 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     aliases: ['Managed Grafana', 'Grafana', 'Azure Grafana'],
     iconFile: '02905-icon-service-Azure-Managed-Grafana',
     category: 'other',
-    hasPricingData: true,
-    pricingServiceName: 'Azure Managed Grafana',
+    // The Retail Prices API publishes no meters under any Grafana service name.
+    hasPricingData: false,
     isUsageBased: false,
     costRange: '$10-300/mo'
   },
@@ -1118,8 +1119,17 @@ export function getServiceIconMapping(serviceName: string): ServiceIconMapping |
     return SERVICE_ICON_MAP[normalizedName];
   }
   
-  // Search by alias (case-insensitive)
   const lowerName = normalizedName.toLowerCase();
+
+  // Display names are what the generation prompt advertises, so they must
+  // resolve even when the catalog key or aliases differ.
+  for (const mapping of Object.values(SERVICE_ICON_MAP)) {
+    if (mapping.displayName.toLowerCase() === lowerName) {
+      return mapping;
+    }
+  }
+
+  // Search by alias (case-insensitive)
   for (const mapping of Object.values(SERVICE_ICON_MAP)) {
     if (mapping.aliases.some(alias => alias.toLowerCase() === lowerName)) {
       return mapping;

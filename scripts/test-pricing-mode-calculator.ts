@@ -82,4 +82,31 @@ assert.deepEqual(
   { cost: 200, source: 'custom-unchanged' },
 );
 
+// Tier selection demotes a meter that only shadows another with an " Instance"
+// or " - Free" suffix. Redis and Load Balancer need it; Key Vault, Backup, and
+// standalone free SKUs price the resource that way.
+const meterNames = (file: string, sku: string): string[] => {
+  const items = JSON.parse(
+    readFileSync(`src/data/pricing/regions/eastus2/${file}.json`, 'utf8'),
+  ).Items ?? [];
+  return items
+    .filter((item: any) => (item.skuName || item.armSkuName) === sku)
+    .map((item: any) => String(item.meterName || '').trim());
+};
+const shadowsBase = (names: string[]) =>
+  names.some((name) => {
+    const base = name.replace(/(\s+Instance|\s+-\s+Free)$/i, '');
+    return base !== name && names.includes(base);
+  });
+
+assert.equal(shadowsBase(meterNames('redis_cache', 'C1')), true, 'Redis C1 should expose both "C1 Cache" and "C1 Cache Instance"');
+assert.equal(shadowsBase(meterNames('load_balancer', 'Standard')), true, 'Load Balancer Standard should expose a promotional "- Free" meter');
+assert.equal(shadowsBase(meterNames('key_vault', 'Standard')), false, 'Key Vault Standard Instance must stay the resource meter');
+assert.equal(shadowsBase(meterNames('backup', 'Azure Blob')), false, 'Azure Backup Protected Instance must stay the resource meter');
+assert.equal(
+  shadowsBase(meterNames('azure_database_for_postgresql', 'Compute - Free')),
+  false,
+  'a standalone free SKU has no priced sibling and must keep its own meter',
+);
+
 console.log('Pricing-mode calculator contracts passed.');
