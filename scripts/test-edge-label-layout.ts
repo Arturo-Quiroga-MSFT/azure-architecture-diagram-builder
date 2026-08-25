@@ -79,4 +79,22 @@ const soloOffset = deconflictEdgeLabels([
 ], [{ id: 'only', source: 'a', target: 'b', label: 'Single link', data: { pathStyle: 'orthogonal' } }]);
 assert.equal((soloOffset[0].data as any).pathOffset, 0, 'an unpaired edge should keep its direct path');
 
+const containmentFanout = deconflictEdgeLabels([
+  { id: 'vnet', type: 'azureNode', position: { x: 0, y: 900 }, data: {} },
+  { id: 'sql-endpoint', type: 'azureNode', position: { x: 900, y: 300 }, data: {} },
+  { id: 'vault-endpoint', type: 'azureNode', position: { x: 900, y: 650 }, data: {} },
+  { id: 'storage-endpoint', type: 'azureNode', position: { x: 900, y: 1000 }, data: {} },
+], [
+  { id: 'contains-sql', source: 'vnet', target: 'sql-endpoint', label: 'Contains private endpoint for SQL Database', data: { pathStyle: 'orthogonal', connectionType: 'containment' } },
+  { id: 'contains-vault', source: 'vnet', target: 'vault-endpoint', label: 'Contains private endpoint for Key Vault', data: { pathStyle: 'orthogonal', connectionType: 'containment' } },
+  { id: 'contains-storage', source: 'vnet', target: 'storage-endpoint', label: 'Contains private endpoint for Storage Account', data: { pathStyle: 'orthogonal', connectionType: 'containment' } },
+]);
+const containmentPathOffsets = containmentFanout.map(edge => (edge.data as any).pathOffset);
+assert.equal(new Set(containmentPathOffsets).size, 3, 'containment fanout should use distinct routed lanes');
+assert.equal(
+  containmentPathOffsets.reduce((sum, offset) => sum + offset, 0),
+  0,
+  'containment lanes should straddle the original route evenly',
+);
+
 console.log('Edge-label layout tests passed.');

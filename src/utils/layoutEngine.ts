@@ -69,10 +69,105 @@ function edgeLabelBox(connection: LayoutConnection): Record<string, unknown> {
     : {};
 }
 
+function isSemanticRelationship(connection: LayoutConnection): boolean {
+  return connection.type === 'association' || connection.type === 'containment';
+}
+
+function dagreEdgeOptions(connection: LayoutConnection): Record<string, unknown> {
+  return isSemanticRelationship(connection)
+    ? { ...edgeLabelBox(connection), minlen: 1, weight: 0 }
+    : edgeLabelBox(connection);
+}
+
 interface GroupSubLayout {
   positions: Map<string, { x: number; y: number }>;
   width: number;
   height: number;
+}
+
+function isPrivateEndpointService(service: LayoutService): boolean {
+  return /^private endpoint\b/i.test(String(service.name ?? ''));
+}
+
+function isAppService(service: LayoutService): boolean {
+  return /\bapp service\b/i.test(String(service.name ?? ''));
+}
+
+function layoutPrivateEndpointPairs(
+  members: LayoutService[],
+  connections: LayoutConnection[],
+  options: LayoutOptions,
+): GroupSubLayout | null {
+  const memberById = new Map(members.map(member => [member.id, member]));
+  const pairs: Array<{ endpoint: LayoutService; target: LayoutService }> = [];
+  const pairedIds = new Set<string>();
+
+  for (const connection of connections) {
+    if (connection.type !== 'association') continue;
+    const source = memberById.get(connection.from);
+    const target = memberById.get(connection.to);
+    if (!source || !target) continue;
+    const endpoint = isPrivateEndpointService(source)
+      ? source
+      : isPrivateEndpointService(target)
+        ? target
+        : null;
+    if (!endpoint) continue;
+    const protectedResource = endpoint.id === source.id ? target : source;
+    if (isAppService(protectedResource)) continue;
+    pairs.push({ endpoint, target: protectedResource });
+    pairedIds.add(endpoint.id);
+    pairedIds.add(protectedResource.id);
+  }
+
+  if (pairs.length === 0) return null;
+
+  const pairGap = Math.max(220, EDGE_LABEL_WIDTH + 30);
+  const rowGap = Math.max(90, Math.round(options.nodeSpacing * 0.45));
+  const pairWidth = NODE_WIDTH * 2 + pairGap;
+  const containmentSourceIds = new Set(
+    connections
+      .filter(connection => (
+        connection.type === 'containment'
+        && memberById.has(connection.from)
+        && pairs.some(pair => pair.endpoint.id === connection.to)
+      ))
+      .map(connection => connection.from),
+  );
+  const unpaired = members.filter(member => !pairedIds.has(member.id));
+  const headerMembers = [
+    ...unpaired.filter(member => containmentSourceIds.has(member.id)),
+    ...unpaired.filter(member => !containmentSourceIds.has(member.id)),
+  ];
+  const positions = new Map<string, { x: number; y: number }>();
+  let currentY = 0;
+
+  if (headerMembers.length > 0) {
+    const headerGap = Math.max(80, Math.round(options.nodeSpacing * 0.4));
+    const headerWidth = headerMembers.length * NODE_WIDTH + Math.max(0, headerMembers.length - 1) * headerGap;
+    const headerStartX = Math.max(0, (pairWidth - headerWidth) / 2);
+    headerMembers.forEach((member, index) => {
+      positions.set(member.id, { x: headerStartX + index * (NODE_WIDTH + headerGap), y: currentY });
+    });
+    currentY += NODE_HEIGHT + rowGap;
+  }
+
+  const memberOrder = new Map(members.map((member, index) => [member.id, index]));
+  pairs.sort((left, right) => (
+    (memberOrder.get(left.target.id) ?? 0) - (memberOrder.get(right.target.id) ?? 0)
+  ));
+  pairs.forEach((pair, index) => {
+    const y = currentY + index * (NODE_HEIGHT + rowGap);
+    positions.set(pair.target.id, { x: 0, y });
+    positions.set(pair.endpoint.id, { x: NODE_WIDTH + pairGap, y });
+  });
+
+  const pairRowsHeight = pairs.length * NODE_HEIGHT + Math.max(0, pairs.length - 1) * rowGap;
+  return {
+    positions,
+    width: pairWidth,
+    height: currentY + pairRowsHeight,
+  };
 }
 
 function layoutGroupMembers(
@@ -82,6 +177,8 @@ function layoutGroupMembers(
   options: LayoutOptions
 ): GroupSubLayout {
   const memberIds = new Set(members.map(member => member.id));
+  const privateEndpointLayout = layoutPrivateEndpointPairs(members, connections, options);
+  if (privateEndpointLayout) return privateEndpointLayout;
   const graph = new dagre.graphlib.Graph();
   graph.setGraph({
     rankdir: direction,
@@ -95,8 +192,8 @@ function layoutGroupMembers(
 
   members.forEach(member => graph.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT }));
   connections.forEach(connection => {
-    if (connection.from !== connection.to && memberIds.has(connection.from) && memberIds.has(connection.to)) {
-      graph.setEdge(connection.from, connection.to, edgeLabelBox(connection));
+    if (!isSemanticRelationship(connection) && connection.from !== connection.to && memberIds.has(connection.from) && memberIds.has(connection.to)) {
+      graph.setEdge(connection.from, connection.to, dagreEdgeOptions(connection));
     }
   });
   dagre.layout(graph);
@@ -203,14 +300,18 @@ function layoutGroupedArchitecture(
       : `service:${service.id}`;
   };
   const seenMetaEdges = new Set<string>();
+  const directionalMetaIds = new Set<string>();
   connections.forEach(connection => {
+    if (isSemanticRelationship(connection)) return;
     const source = metaId(connection.from);
     const target = metaId(connection.to);
     if (!source || !target || source === target || !metaGraph.hasNode(source) || !metaGraph.hasNode(target)) return;
     const key = `${source}\u0000${target}`;
     if (seenMetaEdges.has(key)) return;
     seenMetaEdges.add(key);
-    metaGraph.setEdge(source, target, edgeLabelBox(connection));
+    directionalMetaIds.add(source);
+    directionalMetaIds.add(target);
+    metaGraph.setEdge(source, target, dagreEdgeOptions(connection));
   });
   dagre.layout(metaGraph);
 
@@ -230,6 +331,36 @@ function layoutGroupedArchitecture(
     positionedGroups as Array<PositionedGroup & { rankCentre: number }>,
     options.direction,
   );
+
+  const positionedGroupByMetaId = new Map(
+    positionedGroups.map(group => [`group:${group.id}`, group]),
+  );
+  const semanticPairs = connections
+    .filter(isSemanticRelationship)
+    .map(connection => [metaId(connection.from), metaId(connection.to)] as const)
+    .filter((pair): pair is readonly [string, string] => Boolean(pair[0] && pair[1] && pair[0] !== pair[1]));
+  const semanticAnchorCounts = new Map<string, number>();
+  for (const group of positionedGroups) {
+    const groupMetaId = `group:${group.id}`;
+    if (directionalMetaIds.has(groupMetaId)) continue;
+    const pair = semanticPairs.find(([source, target]) => (
+      (source === groupMetaId && directionalMetaIds.has(target))
+      || (target === groupMetaId && directionalMetaIds.has(source))
+    ));
+    if (!pair) continue;
+    const anchorMetaId = pair[0] === groupMetaId ? pair[1] : pair[0];
+    const anchor = positionedGroupByMetaId.get(anchorMetaId);
+    if (!anchor) continue;
+    const anchorIndex = semanticAnchorCounts.get(anchorMetaId) ?? 0;
+    semanticAnchorCounts.set(anchorMetaId, anchorIndex + 1);
+    if (options.direction === 'LR' || options.direction === 'RL') {
+      group.position.x = anchor.position.x + anchorIndex * (group.width + GROUP_GAP);
+      group.position.y = anchor.position.y + anchor.height + GROUP_GAP;
+    } else {
+      group.position.x = anchor.position.x + anchor.width + GROUP_GAP;
+      group.position.y = anchor.position.y + anchorIndex * (group.height + GROUP_GAP);
+    }
+  }
 
   const positionedServices: PositionedService[] = services.map(service => {
     if (service.groupId && subLayouts.has(service.groupId)) {
@@ -418,7 +549,8 @@ export function layoutArchitecture(
   
   // Add edges to graph
   connections.forEach(conn => {
-    g.setEdge(conn.from, conn.to);
+    if (isSemanticRelationship(conn)) return;
+    g.setEdge(conn.from, conn.to, dagreEdgeOptions(conn));
   });
   
   // Run layout algorithm

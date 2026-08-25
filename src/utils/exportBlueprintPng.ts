@@ -134,7 +134,7 @@ async function preloadIconMap(
     Array.from(names).map(async (name) => {
       const mapping = resolveServiceIconLoose(name) || getServiceIconMapping(name);
       if (!mapping) return [name, ''] as const;
-      const path = `/Azure_Public_Service_Icons/Icons/${mapping.category}/${mapping.iconFile}.svg`;
+      const path = `/Azure_Public_Service_Icons/Icons/${mapping.iconCategory ?? mapping.category}/${mapping.iconFile}.svg`;
       try {
         const url = await loadIcon(path);
         if (!url) return [name, ''] as const;

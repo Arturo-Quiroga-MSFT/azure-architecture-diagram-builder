@@ -23,7 +23,7 @@ export interface HardenService extends ServiceInput {
 }
 export interface HardenConnection extends ConnectionInput {
   id?: string;
-  type?: 'sync' | 'async' | 'optional';
+  type?: 'sync' | 'async' | 'optional' | 'association' | 'containment';
 }
 export interface HardenGroup {
   id: string;

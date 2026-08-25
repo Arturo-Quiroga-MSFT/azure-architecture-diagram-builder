@@ -259,7 +259,9 @@ async function rasterizeSvgToPng(iconPath: string, sizePx = 96): Promise<Uint8Ar
  * points). Drawn with absolute local geometry (no rotation) so multi-segment
  * routes render correctly. Arrowhead on the final point.
  */
-function orthConnectorXml(id: number, pts: Array<[number, number]>): string {
+function orthConnectorXml(id: number, pts: Array<[number, number]>, relationshipType?: string): string {
+  const semanticRelationship = relationshipType === 'association' || relationshipType === 'containment';
+  const lineColor = relationshipType === 'containment' ? '#0F766E' : '#6B7280';
   const xs = pts.map((p) => p[0]);
   const ys = pts.map((p) => p[1]);
   const minX = Math.min(...xs);
@@ -282,9 +284,10 @@ function orthConnectorXml(id: number, pts: Array<[number, number]>): string {
       <Cell N="LocPinX" V="${f(w / 2)}"/>
       <Cell N="LocPinY" V="${f(h / 2)}"/>
       <Cell N="Angle" V="0"/>
-      <Cell N="LineColor" V="#6B7280"/>
+      <Cell N="LineColor" V="${lineColor}"/>
       <Cell N="LineWeight" V="0.01"/>
-      <Cell N="EndArrow" V="4"/>
+      <Cell N="LinePattern" V="${semanticRelationship ? 2 : 1}"/>
+      <Cell N="EndArrow" V="${semanticRelationship ? 0 : 4}"/>
       <Section N="Geometry" IX="0">
         <Cell N="NoFill" V="1"/>
         <Cell N="NoLine" V="0"/>
@@ -475,7 +478,7 @@ export async function buildVsdxBlob(nodes: Node[], edges: Edge[], diagramName = 
       lcy = midY;
     }
 
-    shapes.push(orthConnectorXml(nextId++, pts));
+    shapes.push(orthConnectorXml(nextId++, pts, e.data?.connectionType));
     const label = typeof e.label === 'string' ? esc(e.label) : '';
     if (label) shapes.push(labelShapeXml(nextId++, lcx, lcy, label));
   }

@@ -388,7 +388,7 @@ IMPORTANT: Extract and describe:
 1. **All services/components visible** - Identify each Azure service, third-party service, or component shown
 2. **Service relationships and connections** - How services connect to each other, data flow direction
 3. **Groupings and tiers** - Any logical groupings (e.g., "Web Tier", "Data Layer", "Security")
-4. **Connection types** - Whether connections appear to be synchronous (solid lines), asynchronous (dashed), or optional (dotted)
+4. **Connection types** - Distinguish directional traffic (sync/async/optional) from arrowless resource associations and containment inside network boundaries
 5. **Labels and annotations** - PRESERVE THE EXACT TEXT of any labels on connections or services - these are critical!
 6. **Data flow** - The overall flow of data through the system
 7. **Security components** - Identity, authentication, firewalls, etc.
@@ -579,7 +579,7 @@ const IAC_SHARED_OUTPUT_SCHEMA = `Return ONLY a valid JSON object (no markdown, 
       "from": "service-id",
       "to": "service-id",
       "label": "connection type",
-      "type": "sync|async|optional",
+      "type": "sync|async|optional|association|containment",
       "sourcePosition": "right|bottom|left|top",
       "targetPosition": "top|left|right|bottom"
     }
@@ -635,7 +635,7 @@ Instructions:
 3. Use dependsOn arrays to infer connections between resources
 4. Group related resources logically (e.g., web tier, data tier, networking)
 5. Create realistic connection labels based on resource relationships
-6. Use sync/async/optional connection types appropriately
+6. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries
 7. Extract meaningful names from resource names (remove template expressions)`;
 }
 
@@ -693,7 +693,7 @@ Instructions:
 4. Infer connections from: dependsOn, parameter passing between modules, property references (e.g., storageAccount.properties.primaryEndpoints)
 5. Group related resources logically by module or by tier (web, data, networking, etc.)
 6. Extract meaningful display names from resource symbolic names
-7. Use sync/async/optional connection types appropriately based on the relationship`;
+7. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries`;
 }
 
 function buildTerraformHCLSystemPrompt(): string {
@@ -754,7 +754,7 @@ Instructions:
 5. Group related resources by tier (web, data, networking) or by resource group
 6. Extract meaningful display names from resource labels (the second string in resource declarations)
 7. Collapse child resources with their parents (e.g., storage_container inside storage_account)
-8. Use sync/async/optional connection types based on the relationship`;
+8. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries`;
 }
 
 function buildTerraformStateSystemPrompt(): string {
@@ -779,7 +779,7 @@ Instructions:
 3. Infer connections from attribute values that reference other resource IDs
 4. Group resources by resource group (look for resource_group_name attribute in instances)
 5. Extract display names from the name field or from instance attributes
-6. Use sync/async/optional connection types appropriately`;
+6. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries`;
 }
 
 function buildARMUserMessage(armTemplate: any): string {

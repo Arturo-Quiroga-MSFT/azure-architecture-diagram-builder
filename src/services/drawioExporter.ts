@@ -156,6 +156,10 @@ function getEdgeStyle(edgeType?: string): string {
       return 'dashed=1;dashPattern=8 8;';
     case 'optional':
       return 'dashed=1;dashPattern=4 4;strokeColor=#9ca3af;';
+    case 'association':
+      return 'dashed=1;dashPattern=3 4;strokeColor=#64748b;endArrow=none;endFill=0;';
+    case 'containment':
+      return 'dashed=1;dashPattern=2 5;strokeColor=#0f766e;endArrow=none;endFill=0;';
     case 'sync':
     default:
       return 'dashed=0;';
@@ -281,7 +285,9 @@ function createEdgeCell(
   // architecture connectors.
   // - edgeStyle=orthogonalEdgeStyle routes with right angles
   // - curved=0 + rounded=0 keeps corners square (no smooth/curved bends)
-  const style = `edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;${dashStyle}strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;`;
+  const semanticRelationship = edgeType === 'association' || edgeType === 'containment';
+  const arrowStyle = semanticRelationship ? '' : 'endArrow=classic;endFill=1;';
+  const style = `edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#6b7280;${dashStyle}${arrowStyle}`;
   
   // The line carries no inline label; instead a child edgeLabel cell holds the
   // text with whiteSpace=wrap + a fixed width so long labels wrap into a compact

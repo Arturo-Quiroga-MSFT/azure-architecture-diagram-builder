@@ -70,6 +70,34 @@ const geoReplicationWithUnrequestedRedis = {
   ],
 };
 
+const misleadingSemanticArchitecture = {
+  architectureName: 'Semantic Relationship Check',
+  groups: [
+    { id: 'edge', label: 'Ingress / Edge' },
+    { id: 'app', label: 'Application' },
+    { id: 'data', label: 'Data' },
+  ],
+  services: [
+    { id: 'waf', name: 'Web Application Firewall', type: 'Web Application Firewall', category: 'security', description: 'Inspects requests', groupId: 'edge' },
+    { id: 'front-door', name: 'Azure Front Door', type: 'Azure Front Door', category: 'networking', description: 'Global entry point', groupId: 'edge' },
+    { id: 'web', name: 'App Service', type: 'App Service', category: 'app services', description: 'Hosts the app', groupId: 'app' },
+    { id: 'vnet', name: 'Virtual Network', type: 'Virtual Network', category: 'networking', description: 'Private application network', groupId: 'app' },
+    { id: 'private-link-app', name: 'Azure Private Link', type: 'Azure Private Link', category: 'networking', description: 'Private Front Door origin', groupId: 'app' },
+    { id: 'private-link-sql', name: 'Azure Private Link', type: 'Azure Private Link', category: 'networking', description: 'Private database access', groupId: 'data' },
+    { id: 'sql', name: 'SQL Database', type: 'SQL Database', category: 'databases', description: 'Stores data', groupId: 'data' },
+  ],
+  connections: [
+    { from: 'waf', to: 'front-door', label: 'Inspect customer requests', type: 'sync' },
+    { from: 'front-door', to: 'web', label: 'Route permitted HTTPS requests through Private Link', type: 'sync' },
+    { from: 'web', to: 'sql', label: 'Read and write application data privately', type: 'sync' },
+    { from: 'web', to: 'private-link-app', label: 'Private Front Door origin', type: 'sync' },
+    { from: 'vnet', to: 'private-link-app', label: 'Place in private network', type: 'sync' },
+    { from: 'sql', to: 'private-link-sql', label: 'Private database access', type: 'sync' },
+    { from: 'vnet', to: 'private-link-sql', label: 'Place in private network', type: 'sync' },
+  ],
+  workflow: [{ step: 1, description: 'Route and read data.', services: ['waf', 'front-door', 'web', 'vnet', 'private-link-app', 'private-link-sql', 'sql'] }],
+};
+
 test('release-critical workflow renders a deterministic architecture', async ({ page }) => {
   const pageErrors: string[] = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -221,4 +249,59 @@ test('root error boundary contains render failures', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('Something interrupted the workspace');
   await expect(page.getByRole('button', { name: 'Reload application' })).toBeVisible();
   await expect(page.locator('.react-flow')).toHaveCount(0);
+});
+
+test('semantic policies and private endpoints do not render as traffic hops', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.route('**/api/openai', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        model: 'smoke-gpt-5-6-luna',
+        output: [{
+          type: 'message',
+          content: [{ type: 'output_text', text: JSON.stringify(misleadingSemanticArchitecture) }],
+        }],
+        usage: { input_tokens: 50, output_tokens: 100, total_tokens: 150 },
+      }),
+    });
+  });
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.locator('button.btn-generate-ai').first().click();
+  await page.locator('#architecture-description').fill('Create a secure customer web app.');
+  await page.getByRole('button', { name: 'Generate Architecture' }).click();
+  await page.getByRole('heading', { name: 'Diagram created — review it before validation' }).waitFor();
+  await page.getByRole('button', { name: 'Review on Canvas' }).click();
+
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Front Door WAF Policy' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Endpoint -/ })).toHaveCount(2);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Endpoint - Virtual Network' })).toHaveCount(0);
+  await expect(page.getByText('WAF policy associated with Front Door route')).toBeVisible();
+  await expect(page.getByText('VNet Integration for outbound private access')).toBeVisible();
+  await expect(page.getByText('Contains private endpoint for SQL Database')).toBeVisible();
+
+  const associationPaths = page.locator('path[id^="semantic-association-"]');
+  await expect(associationPaths).toHaveCount(4);
+  const associationAttributes = await associationPaths.evaluateAll((paths) => paths.map((path) => ({
+    markerEnd: path.getAttribute('marker-end'),
+    markerStart: path.getAttribute('marker-start'),
+    dash: (path as SVGPathElement).style.strokeDasharray,
+    animation: (path as SVGPathElement).style.animation,
+  })));
+  expect(associationAttributes.every((path) => !path.markerEnd && !path.markerStart)).toBe(true);
+  expect(associationAttributes.every((path) => path.dash.includes('3'))).toBe(true);
+  expect(associationAttributes.every((path) => !path.animation)).toBe(true);
+
+  const containmentPaths = page.locator('path[id^="semantic-containment-"]');
+  await expect(containmentPaths).toHaveCount(1);
+  await expect(containmentPaths).not.toHaveAttribute('marker-end', /.+/);
+  await expect(containmentPaths).toHaveCSS('stroke-dasharray', /2px, 5px|2, 5/);
+
+  await expect(page.locator('.react-flow__edge-path:not([id^="semantic-"])')).toHaveCount(2);
+  await expect(page.locator('.react-flow__edge-path:not([id^="semantic-"])').first()).toHaveAttribute('marker-end', /arrowclosed/);
 });

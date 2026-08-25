@@ -2124,7 +2124,7 @@ function App() {
         }
         if (mapping) {
           console.log(`  🎯 Found mapping for "${service.name}" (type: ${service.type}): ${mapping.iconFile}`);
-          const iconPath = `/Azure_Public_Service_Icons/Icons/${mapping.category}/${mapping.iconFile}.svg`;
+          const iconPath = `/Azure_Public_Service_Icons/Icons/${mapping.iconCategory ?? mapping.category}/${mapping.iconFile}.svg`;
           return { 
             serviceId: service.id, 
             icon: {
@@ -2380,7 +2380,7 @@ function App() {
       const positions = getConnectionPositions(conn.from, conn.to, conn);
       
       // Determine edge direction based on label
-      const edgeDirection = determineEdgeDirection(conn.label || '');
+      let edgeDirection = determineEdgeDirection(conn.label || '');
       
       // Determine edge style based on connection type
       const connectionType = conn.type || 'sync';
@@ -2398,6 +2398,26 @@ function App() {
           edgeStyle = { strokeDasharray: '2, 4', opacity: 0.6 };
           baseFlowAnimated = false;
           break;
+        case 'association':
+          edgeStyle = { stroke: '#64748b', strokeDasharray: '3, 4', opacity: 0.8 };
+          baseFlowAnimated = false;
+          edgeDirection = {
+            direction: 'forward',
+            markerStart: undefined,
+            markerEnd: undefined,
+            flowMode: 'directional',
+          };
+          break;
+        case 'containment':
+          edgeStyle = { stroke: '#0f766e', strokeDasharray: '2, 5', opacity: 0.75 };
+          baseFlowAnimated = false;
+          edgeDirection = {
+            direction: 'forward',
+            markerStart: undefined,
+            markerEnd: undefined,
+            flowMode: 'directional',
+          };
+          break;
         case 'sync':
         default:
           // Solid line for synchronous (default)
@@ -2407,6 +2427,9 @@ function App() {
       }
 
       const flowAnimated = baseFlowAnimated;
+      const isSemanticRelationship = connectionType === 'association' || connectionType === 'containment';
+      const semanticTextColor = connectionType === 'containment' ? '#0f766e' : '#475569';
+      const semanticBorderColor = connectionType === 'containment' ? '#5eead4' : '#94a3b8';
       
       return {
         id: `edge-${index}`,
@@ -2419,8 +2442,18 @@ function App() {
         label: conn.label || '',
         markerEnd: edgeDirection.markerEnd,
         markerStart: edgeDirection.markerStart,
-        labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
-        labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
+        labelStyle: {
+          fontSize: isSemanticRelationship ? 12 : 14,
+          fill: isSemanticRelationship ? semanticTextColor : '#333',
+          fontWeight: isSemanticRelationship ? 600 : 'bold',
+          fontStyle: isSemanticRelationship ? 'italic' : 'normal',
+        },
+        labelBgStyle: {
+          fill: 'white',
+          fillOpacity: 0.9,
+          stroke: isSemanticRelationship ? semanticBorderColor : '#000',
+          strokeWidth: isSemanticRelationship ? 1 : 1.5,
+        },
         style: edgeStyle,
         data: {
           connectionType,
@@ -2521,6 +2554,7 @@ function App() {
       orphanCount: aiIntegrity.orphanCount,
       repairedEdges: aiIntegrity.repairedEdges,
       droppedEdges: aiIntegrity.droppedEdges,
+      semanticRepairs: aiIntegrity.semanticRepairs,
     });
 
     // ── Success-moment feedback ask ──────────────────────────────────────
@@ -4251,7 +4285,7 @@ When a recommendation involves multi-region, failover, geo-redundancy, or disast
 - Target 14-18 services total for multi-region architectures (roughly double the region-scoped services).
 
 SERVICE MAPPING — CRITICAL:
-- When adding private endpoints or Private Link, add "Azure Private Link" as an explicit service node AND "Azure DNS" for private DNS resolution. Connect source services → Azure Private Link → target PaaS services.
+- When adding private connectivity, keep application traffic connected directly to the protected PaaS service. Add one "Private Endpoint - <resource>" node (type "Private Endpoint") per protected resource, associate it to that resource, and contain customer-owned endpoints in the Virtual Network. Model App Service outbound access with a separate VNet Integration association. Never place Azure Private Link between workload services as middleware.
 - When adding WAF capabilities, add "Web Application Firewall" as a service node if not already covered by Application Gateway or Azure Front Door.
 - When adding SIEM/security monitoring, add "Microsoft Sentinel" as a service node.
 - Always use exact service names from the known services list in the system prompt.

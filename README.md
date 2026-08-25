@@ -936,6 +936,16 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### August 25, 2026 — AADB v1.8.0 Semantic Relationships & Private Connectivity
+
+- **Traffic, association, and containment are distinct** — connections now carry `association` (policy and resource relationships) and `containment` (placement inside a network boundary) in addition to `sync`, `async`, and `optional`. Semantic relationships render arrowless and unanimated so they never read as request hops.
+- **Front Door WAF is a policy, not a hop** — a WAF is modeled as `Front Door WAF Policy` associated with Azure Front Door while traffic continues to flow Front Door → origin.
+- **One private endpoint per protected resource** — generic `Azure Private Link` middleware between application and data services is replaced by a `Private Endpoint - <resource>` node per protected service, and the real application traffic edge is preserved.
+- **Virtual networks contain, they are not endpoints** — customer-owned private endpoints are contained by the Virtual Network; a VNet is never treated as a private endpoint target.
+- **App Service VNet Integration is explicit** — outbound private access is modeled as a separate App Service → Virtual Network association, distinct from an inbound private endpoint.
+- **Dedicated Private Endpoint icon** — private endpoints use the official Private Endpoints icon instead of the generic Private Link icon.
+- **Pair-aware automatic layout** — protected resources and their private endpoints are packed side by side with a shared containment corridor, replacing tall single-column resource towers.
+
 ### August 24, 2026 — AADB v1.7.2 Guided Chat Helper Model Fix
 
 - **Approved helper model** — automatic Guided Chat suggestions and “What would you add?” now use GPT-5.6 Sol with low reasoning instead of Grok 4.1 Fast.

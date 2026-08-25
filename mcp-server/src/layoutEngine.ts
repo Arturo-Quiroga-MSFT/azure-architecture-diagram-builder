@@ -26,7 +26,7 @@ export interface DiagramConnection {
   from: string;
   to: string;
   label?: string;
-  type?: 'sync' | 'async' | 'optional';
+  type?: 'sync' | 'async' | 'optional' | 'association' | 'containment';
 }
 
 export interface DiagramGroup {
@@ -255,10 +255,11 @@ function computeFlatLayout(
   // Add edges
   const serviceNames = new Set(services.map(s => s.name));
   for (const conn of connections) {
-    if (serviceNames.has(conn.from) && serviceNames.has(conn.to)) {
+    if (conn.type !== 'association' && conn.type !== 'containment' && serviceNames.has(conn.from) && serviceNames.has(conn.to)) {
       g.setEdge(conn.from, conn.to, {
         label: conn.label ?? '',
         minlen: 1,
+        weight: 1,
       });
     }
   }
@@ -366,7 +367,7 @@ function subLayoutGroup(
 ): { pos: Map<string, { x: number; y: number }>; width: number; height: number } {
   const memberSet = new Set(members.map(m => m.name));
   const internalConnections = connections.filter(
-    connection => memberSet.has(connection.from) && memberSet.has(connection.to) && connection.from !== connection.to,
+    connection => connection.type !== 'association' && connection.type !== 'containment' && memberSet.has(connection.from) && memberSet.has(connection.to) && connection.from !== connection.to,
   );
   const g = new dagre.graphlib.Graph();
   g.setGraph({
@@ -450,6 +451,7 @@ function computeGroupedLayout(
   for (const svc of ungrouped) mg.setNode(`n:${svc.name}`, { width: NODE_WIDTH, height: NODE_HEIGHT });
   const seenMeta = new Set<string>();
   for (const c of connections) {
+    if (c.type === 'association' || c.type === 'containment') continue;
     const a = metaKey(c.from), b = metaKey(c.to);
     if (a === b) continue;
     const key = `${a}\u0000${b}`;

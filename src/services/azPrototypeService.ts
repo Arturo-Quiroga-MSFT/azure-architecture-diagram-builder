@@ -37,7 +37,7 @@ export interface AzPrototypeConnection {
   from: string;
   to: string;
   label: string;
-  type: 'sync' | 'async' | 'optional';
+  type: 'sync' | 'async' | 'optional' | 'association' | 'containment';
 }
 
 /** A logical service group (e.g. "Frontend", "Data Tier"). */
@@ -143,7 +143,7 @@ export function exportToAzPrototype(
     from: e.source,
     to: e.target,
     label: (typeof e.label === 'string' ? e.label : '') || '',
-    type: (e.data?.connectionType as 'sync' | 'async' | 'optional') || 'sync',
+    type: (e.data?.connectionType as 'sync' | 'async' | 'optional' | 'association' | 'containment') || 'sync',
   }));
 
   // -- Cost estimates --

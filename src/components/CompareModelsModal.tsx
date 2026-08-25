@@ -283,13 +283,15 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       const syncCount = r.architecture?.connections?.filter((c: any) => !c.type || c.type === 'sync').length || 0;
       const asyncCount = r.architecture?.connections?.filter((c: any) => c.type === 'async').length || 0;
       const optionalCount = r.architecture?.connections?.filter((c: any) => c.type === 'optional').length || 0;
+      const associationCount = r.architecture?.connections?.filter((c: any) => c.type === 'association').length || 0;
+      const containmentCount = r.architecture?.connections?.filter((c: any) => c.type === 'containment').length || 0;
       const workflowLines = r.architecture?.workflow
         ?.map((w: any) => `  ${w.step}. ${w.description}`).join('\n') || '';
       return [
         `### ${name}`,
         `Services (${r.serviceCount}): ${services}`,
         `Groups (${r.groupCount}): ${groups}`,
-        `Connections: ${r.connectionCount} total (${syncCount} sync, ${asyncCount} async, ${optionalCount} optional)`,
+        `Connections: ${r.connectionCount} total (${syncCount} sync, ${asyncCount} async, ${optionalCount} optional, ${associationCount} association, ${containmentCount} containment)`,
         `Workflow:`,
         workflowLines,
       ].join('\n');

@@ -189,6 +189,41 @@ assert.match(presentationHtml, /window\.addEventListener\('resize', fitView\)/);
 assert.match(costHtml, /data-render-profile="cost"/);
 assert.match(costHtml, /const showCosts = true;/);
 
+const associationLayout = computeLayout(
+  [
+    { name: 'Virtual Network', type: 'Virtual Network', groupId: 'data' },
+    { name: 'Private Endpoint - SQL', type: 'Private Endpoint', groupId: 'data' },
+    { name: 'SQL Database', type: 'SQL Database', groupId: 'data' },
+  ],
+  [
+    {
+      from: 'Virtual Network',
+      to: 'Private Endpoint - SQL',
+      label: 'Contains private endpoint for SQL Database',
+      type: 'containment',
+    },
+    {
+      from: 'Private Endpoint - SQL',
+      to: 'SQL Database',
+      label: 'Private endpoint associated with SQL Database',
+      type: 'association',
+    },
+  ],
+  [{ id: 'data', label: 'Data' }],
+  'LR',
+);
+const associationSvg = renderSvg(associationLayout, 'Association Semantics', { profile: 'technical' });
+const associationGroup = associationSvg.match(/<g class="edge edge-policy-association"[\s\S]*?<\/g>/)?.[0] ?? '';
+assert.match(associationGroup, /stroke-dasharray="3,4"/);
+assert.doesNotMatch(associationGroup, /<polygon/);
+assert.match(associationSvg, /Private endpoint/);
+assert.doesNotMatch(associationSvg, /WAF policy association/);
+const containmentGroup = associationSvg.match(/<g class="edge[^\"]*"[^>]*data-from="Virtual Network"[\s\S]*?<\/g>/)?.[0] ?? '';
+assert.match(containmentGroup, /stroke="#0F766E"/);
+assert.match(containmentGroup, /stroke-dasharray="2,5"/);
+assert.doesNotMatch(containmentGroup, /<polygon/);
+assert.match(associationSvg, /Contains private/);
+
 const compactConnections = [
   { from: 'Front Door', to: 'App Service', label: 'Route HTTPS requests' },
   { from: 'App Service', to: 'Key Vault', label: 'Retrieve application secrets' },

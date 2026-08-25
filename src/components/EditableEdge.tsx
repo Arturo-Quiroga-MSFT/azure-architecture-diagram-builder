@@ -149,6 +149,9 @@ const EditableEdge: React.FC<EdgeProps> = ({
     | 'pulse';
 
   const flowAnimated = Boolean(data?.flowAnimated);
+  const isAssociation = data?.connectionType === 'association';
+  const isContainment = data?.connectionType === 'containment';
+  const isSemanticRelationship = isAssociation || isContainment;
   const shouldDirectionalFlow = flowAnimated && flowMode === 'directional' && (direction === 'forward' || direction === 'reverse');
   const shouldPulseFlow = flowAnimated && flowMode === 'pulse' && direction === 'bidirectional';
   const dashArray = (style as any)?.strokeDasharray;
@@ -156,9 +159,10 @@ const EditableEdge: React.FC<EdgeProps> = ({
   return (
     <>
       <BaseEdge
+        id={isAssociation ? `semantic-association-${id}` : isContainment ? `semantic-containment-${id}` : undefined}
         path={edgePath}
-        markerEnd={markerEnd}
-        markerStart={markerStart}
+        markerEnd={isSemanticRelationship ? undefined : markerEnd}
+        markerStart={isSemanticRelationship ? undefined : markerStart}
         style={{
           ...style,
           ...(shouldPulseFlow

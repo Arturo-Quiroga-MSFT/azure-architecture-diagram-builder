@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v1.8.0` | 2026-08-25 | Semantic relationships and private connectivity | Deployed |
 | `v1.7.2` | 2026-08-24 | Guided Chat helper model correction | Deployed |
 | `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Deployed |
 | `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Deployed |
@@ -16,6 +17,49 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v1.8.0: Semantic Relationships and Private Connectivity
+
+Microsoft documentation review confirmed that a Front Door WAF is a standalone policy associated with Front Door rather than an upstream traffic hop, and that a private endpoint is associated with one protected resource rather than acting as middleware. Generated diagrams previously modeled both as request-flow hops.
+
+### Relationship model
+
+Connections now distinguish three kinds of meaning:
+
+- **Traffic** — `sync`, `async`, and `optional` remain directional and animated.
+- **Association** — policies, private endpoints, and VNet Integration render as neutral dashed, arrowless, unanimated relationships.
+- **Containment** — resource placement inside a network boundary renders as a teal dotted, arrowless relationship.
+
+Semantic relationships are excluded from directional ranking in both the Dagre and ELK layout paths, so they cannot reorder the request path.
+
+### Deterministic repairs
+
+Post-processing repairs model output before layout:
+
+- A WAF becomes `Front Door WAF Policy` associated with Azure Front Door, and any policy hop is redirected so Front Door → origin traffic is preserved.
+- A generic `Azure Private Link` connector becomes one `Private Endpoint - <resource>` node per protected resource, each associated with its resource.
+- When a Private Link connector previously sat between two services, the direct application traffic edge is reconstructed rather than dropped.
+- Virtual networks, subnets, DNS, and Front Door are excluded as protected-endpoint targets, so `Private Endpoint - Virtual Network` can no longer be produced.
+- Customer-owned endpoints receive Virtual Network containment; a Front Door-managed origin endpoint does not.
+- An App Service that privately reaches a protected resource receives an explicit VNet Integration association.
+
+### Generation and refinement contract
+
+The generation prompt and the Guided Chat minimal-diff contract now state that associations and containment are not traffic hops, that a Virtual Network is never a private endpoint target, that App Service outbound private access uses VNet Integration rather than an inbound endpoint, and that a standalone Private Link node is reserved for a provider-side Private Link Service.
+
+### Icon and interchange consistency
+
+`Private Endpoint` is a distinct catalog entry using the official Private Endpoints icon, while `Azure Private Link` retains the Private Link icon for Private Link Service. Icon lookup resolves the asset folder independently of the semantic category. Association and containment are preserved across the canvas, HTML, Draw.io, Visio, az prototype interchange, and the MCP tool schemas, layout, SVG renderer, HTML renderer, and React Flow scene export.
+
+### Layout refinement
+
+Four human before/after repositioning samples were compared. In every sample the topology was unchanged and only geometry moved, which isolated the defect to group packing rather than group placement or label placement. The samples showed protected-resource groups widened and each endpoint separated into a second column.
+
+Groups containing customer-owned endpoint associations now pack each protected resource and its endpoint as a horizontal pair, place shared network sources in a separate row, and leave a label corridor between columns. A Front Door-managed App Service endpoint keeps compact vertical packing. Containment edges fanning out from one Virtual Network receive distinct centered routing lanes.
+
+### Verification
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. Deterministic coverage asserts WAF association, per-resource endpoints, containment, VNet Integration, preserved traffic, prompt contract text, pair packing, managed-endpoint packing, and containment lane separation. A live measured rerender of a three-endpoint fixture reported zero containment label overlaps.
 
 ## v1.7.2: Guided Chat Helper Model Correction
 

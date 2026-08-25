@@ -58,7 +58,7 @@ export interface RefConnection {
   to: string;
   label?: string;
   band?: string;         // path band id (used for routing in Week 2)
-  type?: 'sync' | 'async' | 'optional';
+  type?: 'sync' | 'async' | 'optional' | 'association' | 'containment';
 }
 
 export interface RefWorkflowStep {

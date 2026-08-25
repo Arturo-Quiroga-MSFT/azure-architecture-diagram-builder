@@ -71,6 +71,7 @@ for (const property of serviceMapNode.properties) {
   const displayName = stringValue(propertyValue(entry, 'displayName'));
   const aliases = aliasesValue(propertyValue(entry, 'aliases'));
   const iconFile = stringValue(propertyValue(entry, 'iconFile'));
+  const iconCategory = stringValue(propertyValue(entry, 'iconCategory'));
   const category = stringValue(propertyValue(entry, 'category'));
   const hasPricingData = booleanValue(propertyValue(entry, 'hasPricingData'));
   const pricingServiceName = stringValue(propertyValue(entry, 'pricingServiceName'));
@@ -81,11 +82,12 @@ for (const property of serviceMapNode.properties) {
     throw new Error(`Incomplete canonical metadata for ${key}`);
   }
 
-  map[key] = { iconFile, category, aliases };
+  map[key] = { iconFile, category, aliases, ...(iconCategory ? { iconCategory } : {}) };
   catalog[key] = {
     displayName,
     aliases,
     iconFile,
+    ...(iconCategory ? { iconCategory } : {}),
     category,
     hasPricingData,
     ...(pricingServiceName ? { pricingServiceName } : {}),
@@ -136,10 +138,10 @@ let embedded = 0;
 let missing = 0;
 const seen = new Set();
 for (const entry of Object.values(map)) {
-  const { iconFile, category } = entry;
+  const { iconFile, category, iconCategory } = entry;
   if (seen.has(iconFile)) continue;
   seen.add(iconFile);
-  const svgPath = resolve(iconsRoot, category, `${iconFile}.svg`);
+  const svgPath = resolve(iconsRoot, iconCategory || category, `${iconFile}.svg`);
   try {
     let svg = readFileSync(svgPath, 'utf8');
     svg = svg

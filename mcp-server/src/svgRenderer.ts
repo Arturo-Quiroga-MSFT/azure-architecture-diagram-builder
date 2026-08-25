@@ -231,6 +231,8 @@ const EDGE_STYLES: Record<string, { color: string; dasharray: string }> = {
   sync: { color: '#0078D4', dasharray: '' },
   async: { color: '#8764B8', dasharray: '6,4' },
   optional: { color: '#A0A0A0', dasharray: '4,4' },
+  association: { color: '#64748B', dasharray: '3,4' },
+  containment: { color: '#0F766E', dasharray: '2,5' },
 };
 
 // ── Theming ────────────────────────────────────────────────────────────
@@ -649,10 +651,11 @@ function renderEdgePath(edge: PositionedEdge, direction: 'TB' | 'LR', obstacles:
     `${last.x - arrowLen * Math.cos(angle - 0.4)},${last.y - arrowLen * Math.sin(angle - 0.4)}`,
     `${last.x - arrowLen * Math.cos(angle + 0.4)},${last.y - arrowLen * Math.sin(angle + 0.4)}`,
   ].join(' ');
-  const dasharray = visual.policyAssociation ? '2,3' : style.dasharray;
+  const semanticRelationship = edge.type === 'association' || edge.type === 'containment';
+  const dasharray = visual.policyAssociation && !semanticRelationship ? '2,3' : style.dasharray;
   const className = visual.className ? ` ${visual.className}` : '';
   const opacity = visual.opacity == null ? '' : ` opacity="${visual.opacity}"`;
-  const arrow = visual.policyAssociation ? '' : `<polygon points="${arrowPoints}" fill="${style.color}" />`;
+  const arrow = visual.policyAssociation || semanticRelationship ? '' : `<polygon points="${arrowPoints}" fill="${style.color}" />`;
 
   return `
     <g class="edge${className}"${opacity} data-from="${escapeXml(edge.from)}" data-to="${escapeXml(edge.to)}">
@@ -680,6 +683,10 @@ function policyAssociationEdges(layout: LayoutResult): Set<string> {
   const nodes = new Map(layout.nodes.map(node => [node.name, node]));
   const associations = new Set<string>();
   for (const edge of layout.edges) {
+    if (edge.type === 'association') {
+      associations.add(`${edge.from}\u0000${edge.to}`);
+      continue;
+    }
     const fromRole = architectureRole(nodes.get(edge.from)!);
     const toRole = architectureRole(nodes.get(edge.to)!);
     if ((fromRole === 'policy' && toRole === 'edge') || (fromRole === 'edge' && toRole === 'policy')) {
@@ -942,7 +949,7 @@ export function renderSvg(layout: LayoutResult, title?: string, options: RenderS
     : {
         ...layout,
         edges: layout.edges.map(edge => associationKeys.has(`${edge.from}\u0000${edge.to}`)
-          ? { ...edge, label: 'WAF policy association' }
+          ? { ...edge, label: edge.type === 'association' ? edge.label : 'WAF policy association' }
           : edge),
       };
   const edgeDir: 'TB' | 'LR' = renderLayout.direction ?? 'TB';

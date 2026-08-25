@@ -72,11 +72,11 @@ import { importArchitecture, type ImportFormat } from './importer.js';
 // Loaded at runtime via fs to avoid Node ESM JSON-import-attribute issues.
 const __thisDir = dirname(fileURLToPath(import.meta.url));
 const DIAGRAM_APP_URI = 'ui://azure-diagram-builder/diagram.html';
-const iconMap: Record<string, { iconFile: string; category: string }> = JSON.parse(
+const iconMap: Record<string, { iconFile: string; category: string; iconCategory?: string }> = JSON.parse(
   readFileSync(resolvePath(__thisDir, 'iconMap.generated.json'), 'utf8'),
 );
 
-type IconEntry = { iconFile: string; category: string };
+type IconEntry = { iconFile: string; category: string; iconCategory?: string };
 const ICON_MAP = iconMap as Record<string, IconEntry>;
 
 // Shared guidance for connection/edge labels. Terse one-word labels ("data",
@@ -103,7 +103,7 @@ function resolveIconPath(serviceType: string): { iconPath: string; category: str
   const entry = canonical ? ICON_MAP[canonical] : undefined;
   if (entry) {
     return {
-      iconPath: `/Azure_Public_Service_Icons/Icons/${entry.category}/${entry.iconFile}.svg`,
+      iconPath: `/Azure_Public_Service_Icons/Icons/${entry.iconCategory ?? entry.category}/${entry.iconFile}.svg`,
       category: entry.category,
     };
   }
@@ -590,7 +590,7 @@ server.registerTool(
             type: z
               .string()
               .optional()
-              .describe('Connection type. Allowed values: sync, async, optional'),
+              .describe('Connection type. Allowed values: sync, async, optional, association, containment'),
           }),
         )
         .optional()
@@ -962,7 +962,7 @@ server.registerTool(
             from: z.string().describe('Source service name'),
             to: z.string().describe('Target service name'),
             label: z.string().optional().describe('Connection label'),
-            type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional'),
+            type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional, association, containment'),
           }),
         )
         .optional()
@@ -1002,7 +1002,7 @@ server.registerTool(
         from: z.string(),
         to: z.string(),
         label: z.string().optional(),
-        type: z.enum(['sync', 'async', 'optional']).optional(),
+        type: z.enum(['sync', 'async', 'optional', 'association', 'containment']).optional(),
       })),
       groups: z.array(z.object({ id: z.string(), label: z.string() })),
     },
@@ -1314,7 +1314,7 @@ registerAppTool(
           type: z
             .string()
             .optional()
-            .describe('Connection type. Allowed values: sync (solid), async (dashed purple), optional (dotted gray)'),
+            .describe('Connection type. Allowed values: sync (solid), async (dashed purple), optional (dotted gray), association (dashed neutral with no arrow), containment (dotted teal with no arrow)'),
         }),
       )
       .optional()
@@ -1447,7 +1447,7 @@ server.registerTool(
         from: z.string().describe('Source service name'),
         to: z.string().describe('Target service name'),
         label: z.string().optional().describe('Edge label'),
-        type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional'),
+        type: z.string().optional().describe('Connection type. Allowed values: sync, async, optional, association, containment'),
       })).optional().describe('Connections between services'),
       groups: z.array(z.object({
         id: z.string().describe('Group identifier (referenced by services\' groupId)'),
@@ -1498,7 +1498,7 @@ server.registerTool(
       from: c.from,
       to: c.to,
       label: c.label,
-      type: (c.type as 'sync' | 'async' | 'optional' | undefined),
+      type: (c.type as 'sync' | 'async' | 'optional' | 'association' | 'containment' | undefined),
     }));
     const grps = groups ?? [];
 
@@ -1701,16 +1701,18 @@ server.registerTool(
         animated: false,
         type: 'editableEdge',
         label: c.label ?? '',
-        markerEnd: { type: 'arrowclosed', color: '#0078d4' },
-        labelStyle: { fontSize: 13, fill: '#333', fontWeight: '600', opacity: 1 },
+        markerEnd: connectionType === 'association' || connectionType === 'containment' ? undefined : { type: 'arrowclosed', color: '#0078d4' },
+        labelStyle: { fontSize: connectionType === 'association' || connectionType === 'containment' ? 12 : 13, fill: connectionType === 'containment' ? '#0f766e' : connectionType === 'association' ? '#475569' : '#333', fontWeight: '600', opacity: 1 },
         labelBgStyle: { fill: 'white', fillOpacity: 0.95, stroke: '#000', strokeWidth: 1.5, rx: 6 },
-        style: { strokeWidth: 2 },
+        style: connectionType === 'association' || connectionType === 'containment'
+          ? { strokeWidth: 1.5, stroke: connectionType === 'containment' ? '#0f766e' : '#64748b', strokeDasharray: connectionType === 'containment' ? '2, 5' : '3, 4' }
+          : { strokeWidth: 2 },
         data: {
           ...(c.id ? { architectureId: c.id } : {}),
           connectionType,
           direction: 'forward',
-          baseFlowAnimated: connectionType !== 'optional',
-          flowAnimated: connectionType !== 'optional',
+          baseFlowAnimated: connectionType !== 'optional' && connectionType !== 'association' && connectionType !== 'containment',
+          flowAnimated: connectionType !== 'optional' && connectionType !== 'association' && connectionType !== 'containment',
           flowMode: connectionType === 'async' ? 'pulse' : 'directional',
           pathStyle: 'orthogonal',
           labelOffsetX: dx,
