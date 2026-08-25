@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v1.7.2` | 2026-08-24 | Guided Chat helper model correction | Release candidate |
 | `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Deployed |
 | `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Deployed |
 | `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Deployed |
@@ -15,6 +16,20 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v1.7.2: Guided Chat Helper Model Correction
+
+Commit `e1048df` introduced change-specific Guided Chat suggestions on 2026-07-14 and hard-coded Grok 4.1 Fast as the sole “cheap/fast” utility candidate. No model-quality evaluation or product decision was recorded with that choice. Because the call was automatic and independent of the user's selected architecture model, model dashboards made hidden helper traffic look like broad Grok adoption.
+
+Verified 30-day browser telemetry from the workspace connected to `aq-app-insights-001` showed:
+
+- 1,782 Grok `chat_followups` calls, 1,103,258 tokens, 466 anonymous browsers, and 628 sessions
+- 7 Grok architecture-generation calls and 8 validation calls
+- therefore 1,782 of 1,797 Grok calls (99.2%) were hidden utility traffic, not explicit model selection
+
+The helper policy now explicitly selects GPT-5.6 Sol with low reasoning. If Sol is not configured, dynamic suggestions fail soft to the existing static rule-based chips; the app does not silently choose another model. Telemetry separates automatic post-change suggestions (`chat_followups_auto`) from user-triggered “What would you add?” calls (`chat_followups_best`).
+
+Deterministic policy coverage asserts Sol/low, rejects Grok, and verifies both operation labels. Production-build Chromium asserts that follow-up requests use the Sol deployment, Responses API, and low reasoning body.
 
 ## v1.7.1: Telemetry Privacy and Noise Correction
 
@@ -259,7 +274,7 @@ These are measured bundle/transfer results, not a claim about population-level p
 
 ## Current Release Validation
 
-For `v1.7.1`, the verified release gate includes:
+For `v1.7.2`, the verified release gate includes:
 
 - Application and Vite TypeScript checks
 - Full ESLint with zero warnings
@@ -271,7 +286,7 @@ For `v1.7.1`, the verified release gate includes:
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production `v1.7.1` is Healthy and Provisioned at 100% traffic with retained authoritative telemetry. Healthy `v1.6.0` remains active at 0% as rollback.
+Production remains on `v1.7.1` until `v1.7.2` completes validation and staged rollout.
 
 ## Remaining Boundaries
 

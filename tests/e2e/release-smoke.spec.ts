@@ -83,6 +83,26 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await page.route('**/api/openai', async (route) => {
     const request = route.request().postDataJSON();
     expect(route.request().headers()['x-correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
+    if (request.operation === 'chat_followups_auto' || request.operation === 'chat_followups_best') {
+      expect(request.apiFormat).toBe('responses');
+      expect(request.deployment).toBe('smoke-gpt-5-6-sol');
+      expect(request.model).toBe('GPT-5.6 Sol');
+      expect(request.body.model).toBe('smoke-gpt-5-6-sol');
+      expect(request.body.reasoning).toEqual({ effort: 'low' });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          model: 'smoke-gpt-5-6-sol',
+          output: [{
+            type: 'message',
+            content: [{ type: 'output_text', text: '{"suggestions":[]}' }],
+          }],
+          usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15 },
+        }),
+      });
+      return;
+    }
     if (request.apiFormat === 'chat-completions') {
       await route.fulfill({
         status: 200,

@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — v1.7.1 authoritative server telemetry and privacy controls
+> **Status:** Validated — v1.7.2 Guided Chat helper model correction; production is on v1.7.1
 
 Generated: 2026-08-21
 
@@ -485,6 +485,16 @@ Deployed on 2026-08-24 as a separate operational workbook for the authoritative 
 | Coverage | Server overview, models/operations/tokens, failures/429s, concurrency, burst thresholds, revision/system health, completeness/privacy, custom-span health, recent correlations, and cost-allocation guidance |
 | Deployment | Update-in-place script verifies subscription/tenant, resource sources, stored version, and stored KQL panel count |
 | Portal | `https://portal.azure.com/#@a172a259-b1c7-4944-b2e1-6d551f954711/resource/subscriptions/7a28b21e-0d3e-4435-a686-d92889d4ee96/resourceGroups/azure-diagrams-rg/providers/microsoft.insights/workbooks/2e389b56-22db-43a1-87ba-d5e206bd8102/workbook` |
+
+### v1.7.2 Guided Chat Helper Model Correction
+
+The change-specific follow-up feature introduced in commit `e1048df` on 2026-07-14 hard-coded Grok 4.1 Fast as the sole cheap/fast utility candidate. The choice was independent of the user-selected model and had no recorded quality evaluation or approval.
+
+Verified 30-day browser telemetry showed 1,782 Grok `chat_followups` calls versus 7 architecture-generation and 8 validation calls. Thus 99.2% of measured Grok calls were hidden helper traffic rather than explicit user selection.
+
+`v1.7.2` replaces the helper with GPT-5.6 Sol at low reasoning. If Sol is not configured, the deterministic static chips remain; there is no silent model fallback. Automatic and user-triggered helper calls now use distinct operation names.
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 14 deterministic checks, version contract, and two Chromium tests. Browser smoke asserted the Sol deployment, GPT-5.6 Sol label, Responses API, and low reasoning body for follow-up requests. Bicep compilation and subscription validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0. Infrastructure, policies, roles, and runtime secrets are unchanged. Production deployment remains pending.
 
 #### Increment 3 final production state
 

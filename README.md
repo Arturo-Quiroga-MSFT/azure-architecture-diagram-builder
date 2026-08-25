@@ -936,6 +936,13 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### August 24, 2026 — AADB v1.7.2 Guided Chat Helper Model Fix
+
+- **Approved helper model** — automatic Guided Chat suggestions and “What would you add?” now use GPT-5.6 Sol with low reasoning instead of Grok 4.1 Fast.
+- **No silent fallback** — if Sol is unavailable, Guided Chat keeps deterministic static suggestion chips rather than silently using the user's main model or another hidden model.
+- **Transparent operations** — telemetry distinguishes automatic post-change suggestions (`chat_followups_auto`) from user-triggered recommendations (`chat_followups_best`).
+- **Historical correction** — 1,782 of 1,797 Grok calls measured over the prior 30 days were hidden follow-up utility calls, not user model selection; only 7 generation and 8 validation calls were explicit Grok use.
+
 ### August 24, 2026 — AADB v1.7.1 Telemetry Privacy & Noise Fix
 
 - **No readiness-probe spans** — incoming HTTP auto-instrumentation is disabled; retained structured route/model events remain the authoritative server source.

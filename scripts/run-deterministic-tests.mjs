@@ -15,6 +15,7 @@ const tests = [
   'test:pricing-mode',
   'test:correlation',
   'test:refinement-guard',
+  'test:follow-up-model',
 ];
 
 for (const testName of tests) {

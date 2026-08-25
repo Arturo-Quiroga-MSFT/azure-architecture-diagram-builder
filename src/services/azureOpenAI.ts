@@ -6,6 +6,7 @@ import { trackAIModelUsage } from './telemetryService';
 import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
 import { buildArchitectureGenerationSystemPrompt } from './architectureGenerationContract';
 import { postProcessArchitecture } from './architecturePostProcessing';
+import { FOLLOW_UP_MODEL_POLICY, getFollowUpOperation, type FollowUpSource } from './followUpModelPolicy';
 
 // Non-secret flag indicating the AI backend is wired up. The actual Azure OpenAI
 // endpoint and credentials live server-side in the token server; the browser
@@ -146,22 +147,15 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
 }
 
 // ── Tier 3: change-specific chat follow-up suggestions ──────────────────────
-// A lightweight, non-blocking helper that asks a fast model for 3 tailored
+// A non-blocking helper that asks the approved utility model for 3 tailored
 // "next step" refinements based on the current services and the last change.
 // Failures return [] so the caller falls back to the static (rule-based) chips.
-function pickFastFollowUpModel(): ModelOverride | undefined {
-  // Prefer a cheap/fast model when its deployment is configured; otherwise use
-  // the caller's current model (undefined = no override).
-  const candidates: ModelType[] = ['grok-4.1-fast'];
-  for (const m of candidates) {
-    try {
-      getDeploymentName(m);
-      return { model: m, reasoningEffort: 'none' };
-    } catch {
-      /* deployment not configured — try next */
-    }
-  }
-  return undefined;
+function getFollowUpModel(): ModelOverride {
+  // This helper policy is intentionally independent of the user's main model.
+  // If Sol is not deployed, the caller catches the configuration error and
+  // keeps the deterministic static suggestion chips instead of silently using
+  // another model.
+  return FOLLOW_UP_MODEL_POLICY;
 }
 
 export async function generateFollowUpSuggestions(input: {
@@ -169,6 +163,7 @@ export async function generateFollowUpSuggestions(input: {
   lastChange: string;
   recentRequests: string[];
   count?: number;
+  source: FollowUpSource;
 }): Promise<string[]> {
   const count = Math.min(Math.max(input.count ?? 3, 1), 5);
   try {
@@ -192,9 +187,9 @@ Return ONLY JSON: {"suggestions":["..."]}`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      pickFastFollowUpModel(),
+      getFollowUpModel(),
       true,
-      'chat_followups',
+      getFollowUpOperation(input.source),
     );
 
     const parsed = JSON.parse(content);

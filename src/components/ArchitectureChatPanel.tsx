@@ -219,7 +219,12 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       : [];
     setModelFollowUps(null);
     setFollowUpsLoading(true);
-    void generateFollowUpSuggestions({ services: nextServices, lastChange: summary, recentRequests })
+    void generateFollowUpSuggestions({
+      services: nextServices,
+      lastChange: summary,
+      recentRequests,
+      source: 'automatic_after_change',
+    })
       .then((items) => {
         if (items.length) setModelFollowUps({ forMsgId: asstId, items });
       })
@@ -338,6 +343,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
         lastChange: '',
         recentRequests: recent,
         count: 1,
+        source: 'what_would_you_add',
       });
       if (best[0]) {
         markUsed(best[0]);
