@@ -16,7 +16,9 @@ const tempManifestPath = join(pricingParent, `.snapshot-manifest-${process.pid}.
 const pricingSourcePath = join(repoRoot, 'src', 'data', 'azurePricing.ts');
 
 const regions = JSON.parse(readFileSync(join(here, 'pricing-regions.json'), 'utf8'));
-const globalStems = new Set(['azure_front_door_service', 'content_delivery_network', 'cdn', 'static_web_apps', 'azure_devops']);
+// Load Balancer and Traffic Manager publish only Global/edge-zone meters, so a
+// per-region filter returns nothing for them.
+const globalStems = new Set(['azure_front_door_service', 'content_delivery_network', 'cdn', 'static_web_apps', 'azure_devops', 'load_balancer', 'traffic_manager']);
 const emptyServiceNames = {
   azure_ai_document_intelligence: 'Azure AI Document Intelligence',
   azure_ai_language: 'Azure AI Language',
@@ -44,6 +46,7 @@ const emptyServiceNames = {
   computer_vision: 'Computer Vision',
   form_recognizer: 'Form Recognizer',
   load_balancer: 'Load Balancer',
+  power_bi_embedded: 'Power BI Embedded',
   site_recovery: 'Site Recovery',
   speech_services: 'Speech Services',
   static_web_apps: 'Static Web Apps',

@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { getAzureServiceName } from '../src/data/azurePricing';
 import {
@@ -126,5 +128,45 @@ const searchIcon = {
 assert.equal(matchesIconSearch(searchIcon, 'Azure AI Search'), true);
 assert.equal(matchesIconSearch(searchIcon, 'Cognitive Search'), true);
 assert.equal(matchesIconSearch(searchIcon, 'Form Recognizer'), false);
+
+// The generation prompt advertises display names, so each one must resolve to
+// its own entry rather than falling through to fuzzy icon search.
+for (const [key, mapping] of Object.entries(SERVICE_ICON_MAP)) {
+  const byKey = getServiceIconMapping(key);
+  const byDisplayName = getServiceIconMapping(mapping.displayName);
+  assert.ok(byKey, `catalog key "${key}" should resolve`);
+  assert.equal(byKey!.iconFile, mapping.iconFile, `catalog key "${key}" resolved to the wrong entry`);
+  assert.ok(byDisplayName, `display name "${mapping.displayName}" should resolve`);
+  assert.equal(
+    byDisplayName!.iconFile,
+    mapping.iconFile,
+    `display name "${mapping.displayName}" resolved to a different service`,
+  );
+}
+
+// Pricing snapshots are stored under the Azure Retail Prices `serviceName`, so a
+// mismatched mapping silently drops the service to a documented estimate.
+const pricingRegion = 'eastus2';
+const remappedForPricing = [
+  'Azure Cache for Redis',
+  'Azure Functions',
+  'Azure Stream Analytics',
+  'Event Hubs',
+  'Service Bus',
+  'Azure Event Grid',
+];
+for (const displayName of remappedForPricing) {
+  const apiServiceName = getAzureServiceName(displayName);
+  const stem = apiServiceName.toLowerCase().replace(/\s+/g, '_');
+  const snapshotPath = join('src/data/pricing/regions', pricingRegion, `${stem}.json`);
+  assert.ok(existsSync(snapshotPath), `${displayName} maps to missing snapshot ${stem}.json`);
+  const items = JSON.parse(readFileSync(snapshotPath, 'utf8')).Items ?? [];
+  assert.ok(items.length > 0, `${displayName} maps to empty snapshot ${stem}.json`);
+  assert.equal(
+    items[0].serviceName,
+    apiServiceName,
+    `${displayName} maps to "${apiServiceName}" but ${stem}.json holds "${items[0].serviceName}"`,
+  );
+}
 
 console.log('Service-name normalization checks passed.');

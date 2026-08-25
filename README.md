@@ -936,6 +936,15 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### August 25, 2026 — AADB v1.9.0 Prompt Refresh & Pricing Accuracy
+
+- **Prompts showcase the current app** — Guided Chat starters now cover Microsoft Fabric analytics and a private Microsoft Foundry assistant; advanced patterns add a zero-trust private connectivity platform, a connected-factory IoT pipeline, and a Fabric medallion lakehouse.
+- **Refinement chips match Azure behavior** — WAF is offered as a policy for the application tier rather than a hop in front of it, and private connectivity suggestions add VNet Integration and Azure DNS private zones when endpoints need them.
+- **Icons resolve by display name** — six services the generation prompt advertises (including Azure Functions and Azure Kubernetes Service) previously missed exact icon mapping and fell through to fuzzy search.
+- **Real pricing for ten more services** — Redis, Functions, Stream Analytics, Event Hubs, Service Bus, Event Grid, Load Balancer, Traffic Manager, Power BI Embedded, and AML Managed Compute now read live Retail Prices snapshots instead of documented estimates.
+- **Refreshed pricing corpus** — all 14 regions were re-fetched from the Azure Retail Prices API on 2026-08-25.
+- **Honest cost fallbacks** — Azure Managed Grafana and Batch Compute Pool have no Retail API meters, so they now state their documented range instead of implying a measured price.
+
 ### August 25, 2026 — AADB v1.8.0 Semantic Relationships & Private Connectivity
 
 - **Traffic, association, and containment are distinct** — connections now carry `association` (policy and resource relationships) and `containment` (placement inside a network boundary) in addition to `sync`, `async`, and `optional`. Semantic relationships render arrowless and unanimated so they never read as request hops.

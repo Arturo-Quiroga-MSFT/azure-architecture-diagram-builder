@@ -43,11 +43,12 @@ interface ArchitectureChatPanelProps {
 // Cold start: when the canvas is empty, offer complete starter architectures
 // so Chat works as a first-class entry point (not just a refinement tool).
 const STARTER_SUGGESTIONS = [
-  'Customer-facing web app on App Service with Azure SQL and Redis, fronted by Front Door with WAF and Application Insights',
+  'Customer-facing web app on App Service with Azure SQL and Redis, fronted by Azure Front Door with a WAF policy and Application Insights',
   'Order-processing pipeline: Service Bus queue to Azure Functions to Cosmos DB, with dead-lettering and secrets in Key Vault',
   'Internal REST API on Container Apps backed by Azure SQL, secured with Entra ID and API Management',
   'Document-processing workflow: Blob Storage triggers Functions to run Azure AI Document Intelligence, results in Cosmos DB',
-  'Secure AI assistant: Azure OpenAI behind private endpoints, exposed through API Management with managed identity',
+  'Private AI assistant on Microsoft Foundry: App Service uses VNet Integration to reach Azure OpenAI and Key Vault through their own private endpoints',
+  'Microsoft Fabric analytics: Eventstream lands telemetry in an Eventhouse and Lakehouse, modeled in a Warehouse and published as a Power BI Report',
 ];
 
 // Cold start (advanced): richer, enterprise-grade patterns revealed behind a
@@ -55,21 +56,24 @@ const STARTER_SUGGESTIONS = [
 // see the tool's ceiling.
 const ADVANCED_STARTER_SUGGESTIONS = [
   'Multi-region active-active e-commerce platform: Front Door, AKS in paired regions, geo-replicated Cosmos DB, and Service Bus for order events',
+  'Zero-trust data platform: App Service with VNet Integration reaching SQL Database, Key Vault, and Storage Account through one private endpoint each, with Azure DNS private zones',
   'HIPAA-compliant healthcare data platform: private-endpoint ingestion, AKS clinical workloads, Azure Health Data Services FHIR service, and Purview governance',
   'Enterprise landing zone: hub-and-spoke with Azure Firewall, Bastion, private DNS zones, and centralized Log Analytics',
-  'Real-time fraud detection: Event Hubs to Stream Analytics to Azure ML scoring to Cosmos DB, with Event Grid alerting',
-  'RAG knowledge platform: Azure OpenAI + AI Search + Cosmos DB, ingestion via Functions, all behind private endpoints with Entra ID',
+  'Real-time fraud detection: Event Hubs to Stream Analytics to Azure Machine Learning scoring to Cosmos DB, with Event Grid alerting',
+  'RAG knowledge platform: Microsoft Foundry with Azure OpenAI and AI Search over Cosmos DB, ingestion via Functions, all reached through private endpoints with Entra ID',
+  'Connected factory: IoT Hub ingestion, Azure Digital Twins modeling, Stream Analytics hot path, Data Lake Storage cold path, and Azure Managed Grafana dashboards',
+  'Fabric lakehouse medallion: Fabric Data Pipeline ingests to OneLake, Fabric Notebook and Spark Job curate the Lakehouse, and a Semantic Model drives a Real-Time Dashboard',
   'Event-driven microservices on AKS: KEDA autoscaling from Service Bus, Key Vault CSI driver, and private-link Container Registry',
 ];
 
 // Warm start: once a diagram exists, offer incremental refinements. Used as a
 // fallback when no context-aware "what's missing" suggestions apply.
 const REFINE_SUGGESTIONS = [
-  'Add Azure Front Door with WAF in front of the web tier',
+  'Add Azure Front Door with a WAF policy for the application tier',
   'Make it zone-redundant for high availability',
   'Add a Redis cache between the API and the database',
   'Add monitoring with Application Insights and Log Analytics',
-  'Put private endpoints on the data services',
+  'Give each data service its own private endpoint',
 ];
 
 // Context-aware refinement suggestions: inspect the services already on the
@@ -90,10 +94,15 @@ function computeRefineSuggestions(nodes: any[]): string[] {
     suggestions.push('Add Key Vault and use managed identities for secrets');
   }
   if (!has('private endpoint', 'private link')) {
-    suggestions.push('Put private endpoints on the data services');
+    suggestions.push('Give each data service its own private endpoint');
+  } else if (!has('virtual network', 'vnet')) {
+    suggestions.push('Add a Virtual Network and use VNet Integration for outbound private access');
+  } else if (!has('dns')) {
+    // Private endpoints only resolve to private IPs with a linked private DNS zone.
+    suggestions.push('Add Azure DNS private zones so private endpoints resolve correctly');
   }
   if (!has('front door', 'application gateway', 'firewall', 'waf')) {
-    suggestions.push('Add Azure Front Door with a WAF in front of the web tier');
+    suggestions.push('Add Azure Front Door with a WAF policy for the application tier');
   }
   // Observability
   if (!has('application insights', 'monitor', 'log analytics')) {
@@ -101,6 +110,9 @@ function computeRefineSuggestions(nodes: any[]): string[] {
   }
   // Reliability
   suggestions.push('Make it zone-redundant for high availability');
+  if (has('sql database', 'cosmos', 'storage account', 'postgresql', 'mysql') && !has('backup')) {
+    suggestions.push('Add Azure Backup for the data tier');
+  }
   if (!has('redis', 'cache')) {
     suggestions.push('Add a Redis cache between the API and the database');
   }

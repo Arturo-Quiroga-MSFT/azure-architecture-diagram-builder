@@ -331,6 +331,7 @@ const SERVICES_WITHOUT_RESOURCE_METER = new Set<string>([
   'Azure Monitor',
   'Log Analytics',
   'Network Watcher',
+  'Traffic Manager',
 ]);
 
 /**
@@ -338,6 +339,23 @@ const SERVICES_WITHOUT_RESOURCE_METER = new Set<string>([
  */
 function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
   const tierMap = new Map<string, PricingTier & { rank: number }>();
+
+  // A meter that only restates another with an " Instance" or " - Free" suffix
+  // prices a node or a promotion, not the resource: Redis lists "C1 Cache" and
+  // "C1 Cache Instance", Load Balancer lists its Standard rules meter twice.
+  const meterNamesBySku = new Map<string, Set<string>>();
+  items.forEach(item => {
+    const sku = item.skuName || item.armSkuName;
+    if (!sku) return;
+    const names = meterNamesBySku.get(sku) ?? new Set<string>();
+    names.add((item.meterName || '').trim());
+    meterNamesBySku.set(sku, names);
+  });
+  const shadowsBaseMeter = (sku: string, meterName: string): boolean => {
+    const name = (meterName || '').trim();
+    const base = name.replace(/(\s+Instance|\s+-\s+Free)$/i, '');
+    return base !== name && (meterNamesBySku.get(sku)?.has(base) ?? false);
+  };
 
   // Convert a per-unit rate into a monthly cost given the meter's unit-of-measure.
   // Returns null for units that measure consumption rather than elapsed time: a
@@ -374,7 +392,9 @@ function parsePricingTiers(items: AzureRetailPrice[]): PricingTier[] {
       if (spRate > 0) reserved1yrMonthly = toMonthly(spRate, unitOfMeasure) ?? undefined;
     }
 
-    const rank = meterRank(item.meterName || '');
+    const rank = shadowsBaseMeter(skuName, item.meterName || '')
+      ? 2
+      : meterRank(item.meterName || '');
     const existing = tierMap.get(skuName);
     // A resource meter always outranks an add-on; between peers, cheapest wins.
     const isBetter = !existing
