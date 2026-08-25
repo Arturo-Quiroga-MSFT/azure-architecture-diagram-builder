@@ -14,6 +14,7 @@ export interface ServiceInfo {
   displayName: string;
   aliases: string[];
   iconFile: string;
+  iconCategory?: string;
   category: string;
   hasPricingData: boolean;
   pricingServiceName?: string;

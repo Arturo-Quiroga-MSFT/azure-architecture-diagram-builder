@@ -16,6 +16,7 @@ const tests = [
   'test:correlation',
   'test:refinement-guard',
   'test:follow-up-model',
+  'test:semantic-relationships',
 ];
 
 for (const testName of tests) {

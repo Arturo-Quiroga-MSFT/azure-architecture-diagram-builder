@@ -748,7 +748,7 @@ const Node: React.FC<{
     }
     const mapping = resolveServiceIconLoose(node.name) || getServiceIconMapping(node.name);
     if (!mapping) return;
-    const path = `/Azure_Public_Service_Icons/Icons/${mapping.category}/${mapping.iconFile}.svg`;
+    const path = `/Azure_Public_Service_Icons/Icons/${mapping.iconCategory ?? mapping.category}/${mapping.iconFile}.svg`;
     loadIcon(path).then((url) => {
       if (mountedRef.current) setIconUrl(url);
     });

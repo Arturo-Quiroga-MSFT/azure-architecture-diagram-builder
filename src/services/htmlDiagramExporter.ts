@@ -26,7 +26,7 @@ interface DiagramConnection {
   from: string;
   to: string;
   label: string;
-  type: 'sync' | 'async' | 'optional';
+  type: 'sync' | 'async' | 'optional' | 'association' | 'containment';
 }
 
 interface DiagramGroup {
@@ -178,7 +178,7 @@ function extractDiagramData(nodes: Node[], edges: Edge[]): {
       from: nodeNameById.get(e.source)!,
       to: nodeNameById.get(e.target)!,
       label: typeof e.label === 'string' ? e.label : '',
-      type: (e.data?.connectionType as 'sync' | 'async' | 'optional') ?? 'sync',
+      type: (e.data?.connectionType as DiagramConnection['type']) ?? 'sync',
     }));
 
   const groups: DiagramGroup[] = nodes
@@ -246,6 +246,7 @@ function computeLayout(
       g.setEdge(conn.from, conn.to, {
         label: conn.label ?? '',
         minlen: 1,
+        weight: conn.type === 'association' || conn.type === 'containment' ? 0 : 1,
       });
     }
   }
@@ -439,7 +440,7 @@ const CATEGORY_ICONS = {
   'security': '\\ud83d\\udee1\\ufe0f', 'web': '\\ud83c\\udf0d', 'other': '\\u2601\\ufe0f',
 };
 
-const EDGE_COLORS = { sync: '#0078D4', async: '#8764B8', optional: '#A0A0A0' };
+const EDGE_COLORS = { sync: '#0078D4', async: '#8764B8', optional: '#A0A0A0', association: '#64748B', containment: '#0F766E' };
 const GROUP_COLORS = [
   { bg: '#F0F6FF08', border: '#0078D4' },
   { bg: '#F0FFF008', border: '#00B294' },
@@ -506,9 +507,11 @@ function render() {
     path.setAttribute('d', d);
     path.setAttribute('stroke', color);
     path.classList.add('edge-path');
-    path.setAttribute('marker-end', 'url(#arrow-' + eType + ')');
+    if (eType !== 'association' && eType !== 'containment') path.setAttribute('marker-end', 'url(#arrow-' + eType + ')');
     if (eType === 'async') path.setAttribute('stroke-dasharray', '6,4');
     if (eType === 'optional') path.setAttribute('stroke-dasharray', '4,4');
+    if (eType === 'association') path.setAttribute('stroke-dasharray', '3,4');
+    if (eType === 'containment') path.setAttribute('stroke-dasharray', '2,5');
     svg.appendChild(path);
 
     if (e.label) {

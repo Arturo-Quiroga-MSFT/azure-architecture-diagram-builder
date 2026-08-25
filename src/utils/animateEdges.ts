@@ -50,6 +50,7 @@ export function animateEdgeFlow(svgText: string, options: AnimateEdgeFlowOptions
 
   let i = 0;
   svg = svg.replace(EDGE_RE, (_full, open: string, close: string) => {
+    if (open.includes('id="semantic-')) return `${open}${close}`;
     const id = `rfflow-${i}`;
     // Prefer the arrowhead color encoded in marker-end (e.g. ...color=#0078d4...).
     const m = /color=#([0-9a-fA-F]{6})/.exec(open);

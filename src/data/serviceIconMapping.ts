@@ -14,6 +14,8 @@ export interface ServiceIconMapping {
   aliases: string[];
   /** Icon filename (without path or extension) */
   iconFile: string;
+  /** Physical icon-library folder when it differs from the service category */
+  iconCategory?: ServiceIconMapping['category'];
   /** Category/folder in icon library */
   category: 'ai + machine learning' | 'app services' | 'compute' | 'databases' | 'storage' | 'networking' | 'web' | 'analytics' | 'containers' | 'integration' | 'identity' | 'management + governance' | 'iot' | 'monitor' | 'security' | 'fabric' | 'other';
   /** Whether we have real pricing data for this service */
@@ -857,14 +859,25 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
     costRange: '$100-500/mo'
   },
   
-  'Private Link': {
-    displayName: 'Azure Private Link',
-    aliases: ['Azure Private Link', 'Private Endpoint', 'Private Endpoints', 'Azure Private Endpoint'],
-    iconFile: '00427-icon-service-Private-Link',
+  'Private Endpoint': {
+    displayName: 'Private Endpoint',
+    aliases: ['Private Endpoints', 'Azure Private Endpoint'],
+    iconFile: '02579-icon-service-Private-Endpoints',
+    iconCategory: 'other',
     category: 'networking',
     hasPricingData: false,
     isUsageBased: false,
     costRange: '$7.30/mo per endpoint'
+  },
+
+  'Private Link': {
+    displayName: 'Azure Private Link',
+    aliases: ['Azure Private Link', 'Private Link Service', 'Azure Private Link Service'],
+    iconFile: '00427-icon-service-Private-Link',
+    category: 'networking',
+    hasPricingData: false,
+    isUsageBased: false,
+    costRange: '$0 (private endpoints billed separately)'
   },
   
   'Azure DNS': {

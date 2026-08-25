@@ -647,14 +647,22 @@
       "Web Application Firewall Policy"
     ]
   },
+  "Private Endpoint": {
+    "iconFile": "02579-icon-service-Private-Endpoints",
+    "category": "networking",
+    "aliases": [
+      "Private Endpoints",
+      "Azure Private Endpoint"
+    ],
+    "iconCategory": "other"
+  },
   "Private Link": {
     "iconFile": "00427-icon-service-Private-Link",
     "category": "networking",
     "aliases": [
       "Azure Private Link",
-      "Private Endpoint",
-      "Private Endpoints",
-      "Azure Private Endpoint"
+      "Private Link Service",
+      "Azure Private Link Service"
     ]
   },
   "Azure DNS": {

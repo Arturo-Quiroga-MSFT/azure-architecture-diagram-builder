@@ -230,7 +230,7 @@ const CATEGORY_ICONS = {
   'security': '🛡️', 'web': '🌍', 'other': '☁️',
 };
 
-const EDGE_COLORS = { sync: '#0078D4', async: '#8764B8', optional: '#A0A0A0' };
+const EDGE_COLORS = { sync: '#0078D4', async: '#8764B8', optional: '#A0A0A0', association: '#64748B', containment: '#0F766E' };
 const GROUP_COLORS = [
   { bg: '#F0F6FF08', border: '#0078D4' },
   { bg: '#F0FFF008', border: '#00B294' },
@@ -473,15 +473,16 @@ function render() {
     const edgeKey = e.from + '\\u0000' + e.to;
     const isPrimary = primaryEdgeKeys.has(edgeKey);
     const isPolicyAssociation = policyAssociationKeys.has(edgeKey);
+    const isContainment = eType === 'containment';
     const route = orthogonalRoute(e, edgeDir, routeObstacles, routeCanvas);
     const d = roundedOrthoPathD(route);
     const path = document.createElementNS(svgNs, 'path');
     path.setAttribute('d', d);
     path.setAttribute('stroke', color);
     path.classList.add('edge-path');
-    if (isPolicyAssociation) {
+    if (isPolicyAssociation || isContainment) {
       path.classList.add('edge-policy-association');
-      path.setAttribute('stroke-dasharray', '2,3');
+      path.setAttribute('stroke-dasharray', isContainment ? '2,5' : eType === 'association' ? '3,4' : '2,3');
     } else {
       path.setAttribute('marker-end', 'url(#arrow-' + eType + ')');
       if (eType === 'async') path.setAttribute('stroke-dasharray', '6,4');
@@ -496,7 +497,7 @@ function render() {
 
     if (e.label && labeledEdgeKeys.has(edgeKey)) {
       const anchor = edgeLabelAnchor(route);
-      const displayLabel = isPolicyAssociation ? 'WAF policy association' : e.label;
+      const displayLabel = isPolicyAssociation && e.type !== 'association' ? 'WAF policy association' : e.label;
       const lines = wrapEdgeLabel(displayLabel);
       const boxWidth = Math.max(72, Math.max.apply(null, lines.map(function (line) { return line.length; })) * 6.2 + 16);
       const boxHeight = lines.length * 13 + 8;

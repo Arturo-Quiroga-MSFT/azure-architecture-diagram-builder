@@ -57,6 +57,26 @@ const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
                 <span>Conditional, fallback paths</span>
               </div>
             </div>
+
+            <div className="legend-item">
+              <svg width="40" height="16" className="legend-line">
+                <line x1="4" y1="8" x2="36" y2="8" stroke="#64748b" strokeWidth="2" strokeDasharray="3, 4" />
+              </svg>
+              <div className="legend-description">
+                <strong>Association</strong>
+                <span>Policy or private endpoint relationship, not traffic flow</span>
+              </div>
+            </div>
+
+            <div className="legend-item">
+              <svg width="40" height="16" className="legend-line">
+                <line x1="4" y1="8" x2="36" y2="8" stroke="#0f766e" strokeWidth="2" strokeDasharray="2, 5" />
+              </svg>
+              <div className="legend-description">
+                <strong>Containment</strong>
+                <span>Resource placement inside a network or boundary</span>
+              </div>
+            </div>
           </div>
 
           <div className="legend-section">

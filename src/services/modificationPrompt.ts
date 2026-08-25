@@ -59,7 +59,13 @@ export function buildModificationPrompt(
   const connections = current.edges.map((e) => {
     const fromNode = current.nodes.find((n) => n.id === e.source);
     const toNode = current.nodes.find((n) => n.id === e.target);
-    return `${fromNode?.data.label || e.source} → ${toNode?.data.label || e.target}${e.label ? ` (${e.label})` : ''}`;
+    const relationship = e.data?.connectionType === 'association'
+      ? 'associated with'
+      : e.data?.connectionType === 'containment'
+        ? 'contains'
+        : '→';
+    const type = e.data?.connectionType ? ` [${e.data.connectionType}]` : '';
+    return `${fromNode?.data.label || e.source} ${relationship} ${toNode?.data.label || e.target}${e.label ? ` (${e.label})` : ''}${type}`;
   });
 
   const servicesList = services
@@ -82,7 +88,12 @@ REFINEMENT MODE — MINIMAL-DIFF CONTRACT:
 2. Preserve every existing service, group, and connection unless changing it is necessary for the latest request.
 3. Add a new Azure service type ONLY when the latest request explicitly names that service or a direct alias. Do not silently add best-practice, security, reliability, observability, caching, or performance services.
 4. Optional improvements belong in follow-up suggestions, not in the returned architecture.
-5. Return the COMPLETE architecture JSON (all services, groups, connections, workflow), with only the requested minimal change applied.`;
+5. Return the COMPLETE architecture JSON (all services, groups, connections, workflow), with only the requested minimal change applied.
+6. Preserve semantic associations as connection type "association". A WAF policy associated with Front Door and a Private Endpoint associated with its resource are NOT directional request-flow hops.
+7. Preserve containment as connection type "containment". Use Virtual Network → Private Endpoint containment for customer-owned endpoints; never make a Virtual Network the endpoint's protected target.
+8. For App Service outbound private access, preserve the real App Service → PaaS traffic edge and add an App Service → Virtual Network association labeled "VNet Integration for outbound private access". An App Service private endpoint is inbound-only.
+9. Never add Azure Private Link as middleware between application and data services. Use one Private Endpoint per protected resource; reserve a standalone Private Link node for an explicitly requested provider-side Private Link Service.
+10. Interpret "add WAF in front of Front Door" as "associate a Front Door WAF Policy with Azure Front Door" while preserving Azure Front Door → origin traffic. If no ingress platform exists, do not guess between Front Door and Application Gateway; return the existing topology unchanged so the UI can ask which scope is intended.`;
 }
 
 /**

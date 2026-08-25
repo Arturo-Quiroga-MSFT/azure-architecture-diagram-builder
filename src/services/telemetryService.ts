@@ -154,6 +154,8 @@ export function trackArchitectureGeneration(params: {
   repairedEdges?: number;
   /** Edges discarded because an endpoint could not be resolved. */
   droppedEdges?: number;
+  /** Policy and private connectivity relationships repaired into associations. */
+  semanticRepairs?: number;
 }): void {
   trackEvent('Architecture_Generated', {
     model: params.model || 'unknown',
@@ -171,6 +173,7 @@ export function trackArchitectureGeneration(params: {
     orphanCount: params.orphanCount ?? 0,
     repairedEdges: params.repairedEdges ?? 0,
     droppedEdges: params.droppedEdges ?? 0,
+    semanticRepairs: params.semanticRepairs ?? 0,
   });
 }
 

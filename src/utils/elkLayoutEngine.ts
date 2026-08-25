@@ -186,6 +186,7 @@ export async function layoutArchitecture(
       })),
       edges: connections
         .filter(c => {
+          if (c.type === 'association' || c.type === 'containment') return false;
           const fromIn = members.some(m => m.id === c.from);
           const toIn = members.some(m => m.id === c.to);
           return fromIn && toIn;
@@ -207,6 +208,7 @@ export async function layoutArchitecture(
   // Build top-level edges (cross-group + from/to ungrouped)
   const topEdges: ElkExtendedEdge[] = connections
     .filter(c => {
+      if (c.type === 'association' || c.type === 'containment') return false;
       // Keep if at least one endpoint is top-level (ungrouped) OR endpoints are in different groups
       const fromGroup = services.find(s => s.id === c.from)?.groupId;
       const toGroup = services.find(s => s.id === c.to)?.groupId;

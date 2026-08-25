@@ -49,6 +49,20 @@ function parallelPathOffsets(edges: Edge[]): Map<string, number> {
       offsets.set(edge.id, (index - (group.length - 1) / 2) * gap);
     });
   });
+
+  const containmentFanout = new Map<string, Edge[]>();
+  edges.forEach(edge => {
+    if ((edge.data as any)?.connectionType !== 'containment') return;
+    const group = containmentFanout.get(edge.source);
+    if (group) group.push(edge); else containmentFanout.set(edge.source, [edge]);
+  });
+  containmentFanout.forEach(group => {
+    if (group.length < 2) return;
+    const gap = Math.max(...group.map(edge => labelSize(edge.label).height)) + LABEL_GAP * 2;
+    group.forEach((edge, index) => {
+      offsets.set(edge.id, (index - (group.length - 1) / 2) * gap);
+    });
+  });
   return offsets;
 }
 

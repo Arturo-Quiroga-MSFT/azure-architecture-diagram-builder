@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Deployed — v1.7.2 Guided Chat helper model correction
+> **Status:** Deployed — v1.8.0 semantic relationships and private connectivity
 
 Generated: 2026-08-21
 
@@ -485,6 +485,16 @@ Deployed on 2026-08-24 as a separate operational workbook for the authoritative 
 | Coverage | Server overview, models/operations/tokens, failures/429s, concurrency, burst thresholds, revision/system health, completeness/privacy, custom-span health, recent correlations, and cost-allocation guidance |
 | Deployment | Update-in-place script verifies subscription/tenant, resource sources, stored version, and stored KQL panel count |
 | Portal | `https://portal.azure.com/#@a172a259-b1c7-4944-b2e1-6d551f954711/resource/subscriptions/7a28b21e-0d3e-4435-a686-d92889d4ee96/resourceGroups/azure-diagrams-rg/providers/microsoft.insights/workbooks/2e389b56-22db-43a1-87ba-d5e206bd8102/workbook` |
+
+### v1.8.0 Semantic Relationships and Private Connectivity
+
+Microsoft documentation review established that a Front Door WAF policy is an associated resource rather than an upstream traffic hop, and that a private endpoint belongs to one protected resource rather than acting as middleware between services. Generated diagrams modeled both as request-flow hops, and a reported case produced two invalid `Private Endpoint - Virtual Network` nodes with a private-connectivity group disconnected from the workload.
+
+`v1.8.0` adds `association` and `containment` connection types beside the existing traffic types, repairs WAF and private-connectivity topology deterministically before layout, models App Service outbound access as an explicit VNet Integration association, and gives private endpoints their own official icon. Semantic relationships are excluded from directional ranking in the Dagre and ELK paths and render arrowless and unanimated across the canvas, HTML, Draw.io, Visio, az prototype interchange, and MCP renderers.
+
+Automatic layout was refined from four human before/after repositioning samples. In all four the topology was identical and only geometry changed, isolating the defect to semantic pair packing inside groups. Protected resources and their customer-owned endpoints now pack as horizontal pairs with a label corridor, shared network sources occupy a separate row, a Front Door-managed App Service endpoint keeps compact vertical packing, and containment fanout from one Virtual Network uses distinct centered lanes.
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. A live measured rerender of a three-endpoint fixture reported zero containment label overlaps. Infrastructure, policies, roles, and runtime secrets are unchanged; this release is application code only.
 
 ### v1.7.2 Guided Chat Helper Model Correction
 

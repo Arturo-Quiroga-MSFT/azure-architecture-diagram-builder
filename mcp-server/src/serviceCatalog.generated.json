@@ -979,19 +979,31 @@
     "isUsageBased": false,
     "costRange": "$100-500/mo"
   },
+  "Private Endpoint": {
+    "displayName": "Private Endpoint",
+    "aliases": [
+      "Private Endpoints",
+      "Azure Private Endpoint"
+    ],
+    "iconFile": "02579-icon-service-Private-Endpoints",
+    "iconCategory": "other",
+    "category": "networking",
+    "hasPricingData": false,
+    "isUsageBased": false,
+    "costRange": "$7.30/mo per endpoint"
+  },
   "Private Link": {
     "displayName": "Azure Private Link",
     "aliases": [
       "Azure Private Link",
-      "Private Endpoint",
-      "Private Endpoints",
-      "Azure Private Endpoint"
+      "Private Link Service",
+      "Azure Private Link Service"
     ],
     "iconFile": "00427-icon-service-Private-Link",
     "category": "networking",
     "hasPricingData": false,
     "isUsageBased": false,
-    "costRange": "$7.30/mo per endpoint"
+    "costRange": "$0 (private endpoints billed separately)"
   },
   "Azure DNS": {
     "displayName": "Azure DNS",
