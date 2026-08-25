@@ -1,6 +1,6 @@
 # Azure Deployment Plan
 
-> **Status:** Validated — v1.7.2 Guided Chat helper model correction; production is on v1.7.1
+> **Status:** Deployed — v1.7.2 Guided Chat helper model correction
 
 Generated: 2026-08-21
 
@@ -494,7 +494,19 @@ Verified 30-day browser telemetry showed 1,782 Grok `chat_followups` calls versu
 
 `v1.7.2` replaces the helper with GPT-5.6 Sol at low reasoning. If Sol is not configured, the deterministic static chips remain; there is no silent model fallback. Automatic and user-triggered helper calls now use distinct operation names.
 
-`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 14 deterministic checks, version contract, and two Chromium tests. Browser smoke asserted the Sol deployment, GPT-5.6 Sol label, Responses API, and low reasoning body for follow-up requests. Bicep compilation and subscription validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0. Infrastructure, policies, roles, and runtime secrets are unchanged. Production deployment remains pending.
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 14 deterministic checks, version contract, and two Chromium tests. Browser smoke asserted the Sol deployment, GPT-5.6 Sol label, Responses API, and low reasoning body for follow-up requests. Bicep compilation and subscription validation passed; isolated what-if reported Create 15 / Modify 0 / Delete 0. Infrastructure, policies, roles, and runtime secrets are unchanged.
+
+Production deployment proof:
+
+| Check | Exact result |
+| --- | --- |
+| Immutable image | ACR run `ch71` pushed `v1.7.2-f32ab699d480` with digest `sha256:16abb37f832beb0195e985e118f18091685ed7573ff161c675833ecb8dfeedae` |
+| Active revision | `azure-diagram-builder-vnet--v1-7-2-f32ab699d480`; Healthy, Provisioned, one replica, 100% traffic |
+| Rollback revision | `azure-diagram-builder-vnet--v1-7-1-289aa844dcc4`; Healthy, Provisioned, one replica, 0% traffic |
+| Automatic suggestions | Authoritative telemetry recorded GPT-5.6 Sol, deployment `gpt-5.6-sol`, Responses API, operation `chat_followups_auto`; five observed post-cutover calls totaling 1,874 tokens |
+| User-triggered suggestion | “What would you add?” recorded GPT-5.6 Sol, deployment `gpt-5.6-sol`, Responses API, operation `chat_followups_best`; one observed call totaling 271 tokens |
+| Reasoning | Browser `AI_Model_Usage` telemetry reported `reasoningEffort=low` for both operations |
+| Runtime | Production version reported `1.7.2`; both observed helper paths completed with no UI alerts |
 
 #### Increment 3 final production state
 

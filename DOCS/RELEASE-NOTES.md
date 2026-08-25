@@ -6,7 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v1.7.2` | 2026-08-24 | Guided Chat helper model correction | Release candidate |
+| `v1.7.2` | 2026-08-24 | Guided Chat helper model correction | Deployed |
 | `v1.7.1` | 2026-08-24 | Telemetry privacy and readiness-probe noise correction | Deployed |
 | `v1.7.0` | 2026-08-24 | Authoritative server telemetry and retained logs | Deployed |
 | `v1.6.0` | 2026-08-24 | Guided Chat minimal-diff refinement guard | Deployed |
@@ -30,6 +30,8 @@ Verified 30-day browser telemetry from the workspace connected to `aq-app-insigh
 The helper policy now explicitly selects GPT-5.6 Sol with low reasoning. If Sol is not configured, dynamic suggestions fail soft to the existing static rule-based chips; the app does not silently choose another model. Telemetry separates automatic post-change suggestions (`chat_followups_auto`) from user-triggered “What would you add?” calls (`chat_followups_best`).
 
 Deterministic policy coverage asserts Sol/low, rejects Grok, and verifies both operation labels. Production-build Chromium asserts that follow-up requests use the Sol deployment, Responses API, and low reasoning body.
+
+Production verification observed both paths after cutover. Authoritative telemetry recorded five `chat_followups_auto` calls and one `chat_followups_best` call, all using GPT-5.6 Sol via the Sol deployment and Responses API. Browser telemetry reported low reasoning for both operations. Production `v1.7.2` is Healthy and Provisioned at 100% traffic with `v1.7.1` retained at 0% as rollback.
 
 ## v1.7.1: Telemetry Privacy and Noise Correction
 
@@ -286,7 +288,7 @@ For `v1.7.2`, the verified release gate includes:
 - Subscription-scope Bicep validation and isolated what-if
 - Candidate-revision health and version checks before production traffic moves
 
-Production remains on `v1.7.1` until `v1.7.2` completes validation and staged rollout.
+Production `v1.7.2` is Healthy and Provisioned at 100% traffic. `v1.7.1` remains Healthy and Provisioned at 0% as rollback.
 
 ## Remaining Boundaries
 
