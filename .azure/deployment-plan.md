@@ -496,6 +496,20 @@ Automatic layout was refined from four human before/after repositioning samples.
 
 `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. A live measured rerender of a three-endpoint fixture reported zero containment label overlaps. Infrastructure, policies, roles, and runtime secrets are unchanged; this release is application code only.
 
+Production deployment proof:
+
+| Check | Exact result |
+| --- | --- |
+| Source | Merge commit `0137753` on `main`; tag `v1.8.0` |
+| Immutable image | ACR run `ch72` pushed `v1.8.0-0137753f6063` with digest `sha256:ed406cd8b7d9528028ed8df071766b8ac2407997c8a2fb3d30fc9f61496103f3` |
+| Active revision | `azure-diagram-builder-vnet--v1-8-0-0137753f6063`; Healthy, RunningAtMaxScale, one replica, 100% traffic |
+| Rollback revision | `azure-diagram-builder-vnet--v1-7-2-f32ab699d480`; Healthy, RunningAtMaxScale, one replica, 0% traffic |
+| Runtime version | `/version.json` and `/api/health` both reported `1.8.0` |
+| WAF repair | A deterministic deployed check renamed the WAF to `Front Door WAF Policy` and produced exactly one arrowless association to Azure Front Door |
+| Private endpoint repair | Two generic `Azure Private Link` connectors became `Private Endpoint - SQL Database` and `Private Endpoint - Key Vault`; zero `Private Endpoint - Virtual Network` nodes were produced |
+| Relationship counts | Four association paths, two containment paths, and three directional traffic paths rendered; no UI alerts |
+| Traffic preservation | Front Door to App Service and App Service to both data services remained directional after repair |
+
 ### v1.7.2 Guided Chat Helper Model Correction
 
 The change-specific follow-up feature introduced in commit `e1048df` on 2026-07-14 hard-coded Grok 4.1 Fast as the sole cheap/fast utility candidate. The choice was independent of the user-selected model and had no recorded quality evaluation or approval.
