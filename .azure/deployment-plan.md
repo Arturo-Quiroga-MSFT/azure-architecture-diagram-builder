@@ -496,6 +496,21 @@ All 14 regional pricing snapshots were re-fetched from the Azure Retail Prices A
 
 `npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. Infrastructure, policies, roles, and runtime secrets are unchanged; this release is application code and bundled pricing data only.
 
+Production deployment proof:
+
+| Check | Exact result |
+| --- | --- |
+| Source | Merge commit `523be1d` on `main`; tag `v1.9.0` |
+| Immutable image | `v1.9.0-523be1d5b93f` built and pushed to ACR |
+| Active revision | `azure-diagram-builder-vnet--v1-9-0-523be1d5b93f`; Healthy, RunningAtMaxScale, 100% traffic |
+| Rollback revision | `azure-diagram-builder-vnet--v1-8-0-0137753f6063`; Healthy, RunningAtMaxScale, 0% traffic |
+| Runtime version | `/version.json` and `/api/health` both reported `1.9.0` |
+| Redis pricing | Deployed check returned `$40.15/mo` from the `Redis Cache` snapshot instead of a documented estimate |
+| Free-meter demotion | Load Balancer returned `$18.25/mo` and SignalR `$48.30/mo` from their real meters rather than the promotional `- Free` variants |
+| Power BI Embedded | Returned `$735.91/mo` from its real A1 capacity SKU |
+| Honest fallback | Azure Managed Grafana displayed its documented `$10-300/mo` range with no implied measurement |
+| Runtime health | Six nodes rendered with no UI alerts |
+
 ### v1.8.0 Semantic Relationships and Private Connectivity
 
 Microsoft documentation review established that a Front Door WAF policy is an associated resource rather than an upstream traffic hop, and that a private endpoint belongs to one protected resource rather than acting as middleware between services. Generated diagrams modeled both as request-flow hops, and a reported case produced two invalid `Private Endpoint - Virtual Network` nodes with a private-connectivity group disconnected from the workload.
