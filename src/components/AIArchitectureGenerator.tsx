@@ -60,6 +60,24 @@ interface AIArchitectureGeneratorProps {
   };
 }
 
+/** Rough size of the diagram a prompt produces, so users can pick by effort. */
+type PromptSize = 'Compact' | 'Standard' | 'Large';
+
+interface ExamplePrompt {
+  title: string;
+  summary: string;
+  /** App capabilities this prompt is chosen to demonstrate. */
+  showcases: string[];
+  size: PromptSize;
+  prompt: string;
+}
+
+interface PromptCategory {
+  category: string;
+  color: string;
+  prompts: ExamplePrompt[];
+}
+
 const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
   onGenerate,
   openSignal,
@@ -177,6 +195,8 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
     localStorage.setItem('aiGenerator.blueprintLegendPosition', v);
   };
 
+  const [expandedExample, setExpandedExample] = useState<string | null>(null);
+
   // Save preference to localStorage when it changes
   const handleAutoSnapshotChange = (checked: boolean) => {
     setAutoSnapshot(checked);
@@ -198,71 +218,201 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
     return { description: result.description };
   };
 
-  const categorizedPrompts = [
+  const categorizedPrompts: PromptCategory[] = [
     {
-      category: 'Web & Microservices',
-      color: '#3b82f6',
+      category: 'Start here',
+      color: '#6366f1',
       prompts: [
-        "A web application with a React frontend, Node.js backend API, PostgreSQL database, and blob storage for images",
-        "A microservices architecture with container apps, API gateway, message queue, and Redis cache",
+        {
+          title: 'Three-tier web app',
+          summary: 'The classic starting point — fast to generate, easy to extend.',
+          showcases: ['Cost estimate', 'Auto-layout', 'Grouping'],
+          size: 'Compact',
+          prompt: "A three-tier web application on Azure App Service with a React front end, a .NET Web API, Azure SQL Database for relational data, Blob Storage for user uploads, Key Vault for secrets, and Application Insights for monitoring",
+        },
+        {
+          title: 'Serverless event processing',
+          summary: 'Event-driven functions with asynchronous messaging and dead-lettering.',
+          showcases: ['Async flows', 'Cost estimate'],
+          size: 'Compact',
+          prompt: "A serverless event processing pipeline where Event Grid receives events, Azure Functions process them asynchronously, results are written to Cosmos DB, large payloads are stored in Blob Storage, failures are routed to a Service Bus dead-letter queue, and Application Insights traces the whole flow",
+        },
       ],
     },
     {
-      category: 'Security & Networking',
+      category: 'Private connectivity & security',
       color: '#ef4444',
       prompts: [
-        "A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS services, Bastion for VM access, Microsoft Entra ID with Conditional Access, and Microsoft Defender for Cloud — segmented into DMZ, application, and data tiers",
-        "A security operations center architecture with Microsoft Sentinel for SIEM, Log Analytics, Microsoft Defender for Cloud, Azure Key Vault, Azure Monitor, automation playbooks with Logic Apps, and integration with Microsoft Entra ID for identity threat detection",
+        {
+          title: 'Private endpoints for PaaS',
+          summary: 'Each data service gets its own private endpoint inside the VNet.',
+          showcases: ['Private Endpoints', 'VNet Integration', 'Containment'],
+          size: 'Standard',
+          prompt: "An internal line-of-business application on App Service using VNet Integration for outbound traffic, reaching Azure SQL Database, Blob Storage, and Key Vault exclusively over private endpoints inside a virtual network, with Azure Private DNS zones for name resolution and public network access disabled on every data service",
+        },
+        {
+          title: 'Front Door with a WAF policy',
+          summary: 'The WAF attaches to Front Door as a policy rather than a network hop.',
+          showcases: ['WAF association', 'Multi-region'],
+          size: 'Compact',
+          prompt: "A public web application behind Azure Front Door with a WAF policy enforcing OWASP rules, origin traffic to App Service in two regions, Azure DNS for the custom domain, and Application Insights for end-to-end monitoring",
+        },
+        {
+          title: 'Zero trust enterprise network',
+          summary: 'Segmented DMZ, application, and data tiers with inspected egress.',
+          showcases: ['Segmentation', 'Private Link', 'Grouping'],
+          size: 'Large',
+          prompt: "A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS services, Bastion for VM access, Microsoft Entra ID with Conditional Access, and Microsoft Defender for Cloud — segmented into DMZ, application, and data tiers",
+        },
+        {
+          title: 'Security operations center',
+          summary: 'SIEM pipeline with automated response playbooks.',
+          showcases: ['SIEM pipeline', 'Automation'],
+          size: 'Standard',
+          prompt: "A security operations center architecture with Microsoft Sentinel for SIEM, Log Analytics, Microsoft Defender for Cloud, Azure Key Vault, Azure Monitor, automation playbooks with Logic Apps, and integration with Microsoft Entra ID for identity threat detection",
+        },
       ],
     },
     {
-      category: 'AI & Cognitive',
+      category: 'AI & agents',
       color: '#8b5cf6',
       prompts: [
-        "A machine learning pipeline with data ingestion, training, and inference endpoints",
-        "An intelligent customer service chatbot using Azure OpenAI for conversations, Language for sentiment analysis, Speech Services for voice input/output, and Translator for multi-language support, with chat history in Cosmos DB and API Management for external access",
-        "A smart document processing platform that uses Azure AI Vision to analyze uploaded images, Azure AI Document Intelligence to extract form data, Azure AI Language to classify and summarize content, all coordinated through Azure Functions with results stored in Cosmos DB and searchable via Azure AI Search",
-        "A content moderation system for social media using Computer Vision to scan images, Language for text analysis and content safety checks, Azure OpenAI for context understanding, with real-time processing via Event Hubs and results stored in SQL Database with API Management exposing moderation APIs",
+        {
+          title: 'Enterprise RAG application',
+          summary: 'Retrieval-augmented generation over your own documents.',
+          showcases: ['AI services', 'Async flows'],
+          size: 'Standard',
+          prompt: "An enterprise retrieval-augmented generation application where documents land in Blob Storage, Azure Functions chunk and embed them using Azure OpenAI, vectors are indexed in Azure AI Search, a chat API on App Service retrieves context and calls Azure OpenAI for answers, conversation history is kept in Cosmos DB, and API Management fronts the API with Key Vault holding credentials",
+        },
+        {
+          title: 'Private AI assistant on Foundry',
+          summary: 'Foundry and AI Search reached privately from the app tier.',
+          showcases: ['VNet Integration', 'Private Endpoints', 'Foundry'],
+          size: 'Standard',
+          prompt: "A private internal AI assistant where an App Service web front end uses VNet Integration to reach Microsoft Foundry and Azure AI Search over private endpoints, with source documents in Blob Storage, chat history in Cosmos DB, secrets in Key Vault, Azure Private DNS zones for resolution, and Microsoft Entra ID for user sign-in",
+        },
+        {
+          title: 'Document processing pipeline',
+          summary: 'Extract, classify, and index forms and scanned images.',
+          showcases: ['AI services', 'Search indexing'],
+          size: 'Standard',
+          prompt: "A smart document processing platform that uses Azure AI Vision to analyze uploaded images, Azure AI Document Intelligence to extract form data, Azure AI Language to classify and summarize content, all coordinated through Azure Functions with results stored in Cosmos DB and searchable via Azure AI Search",
+        },
+        {
+          title: 'Multilingual support bot',
+          summary: 'Voice and text conversations across languages.',
+          showcases: ['AI services', 'API fronting'],
+          size: 'Standard',
+          prompt: "An intelligent customer service chatbot using Azure OpenAI for conversations, Language for sentiment analysis, Speech Services for voice input and output, and Translator for multi-language support, with chat history in Cosmos DB and API Management for external access",
+        },
       ],
     },
     {
-      category: 'E-commerce',
-      color: '#f59e0b',
+      category: 'Apps & scale',
+      color: '#3b82f6',
       prompts: [
-        "A Black Friday-ready e-commerce platform handling 50,000 orders/hour peak with real-time inventory sync across 12 regional warehouses, ML-powered fraud detection scoring each transaction in under 200ms, personalized recommendations engine, multi-currency payment processing with PCI-DSS compliance, abandoned cart recovery workflows, using Azure Kubernetes Service for microservices, Cosmos DB for product catalog with global distribution, Redis Cache for session and cart state, Service Bus for order orchestration, Azure Functions for inventory webhooks, Azure AI Search for faceted product search, and CDN with dynamic site acceleration",
+        {
+          title: 'Microservices on AKS',
+          summary: 'Containerized services with a gateway, queue, and cache.',
+          showcases: ['Grouping', 'Async flows', 'Cost estimate'],
+          size: 'Standard',
+          prompt: "A microservices platform on Azure Kubernetes Service with API Management as the gateway, Service Bus for asynchronous messaging between services, Azure Cache for Redis for session state, Azure Container Registry for images, Azure SQL Database for transactional data, and Application Insights for distributed tracing",
+        },
+        {
+          title: 'Multi-region active-active',
+          summary: 'Try the region selector on this one to compare costs.',
+          showcases: ['Multi-region', 'Regional pricing', 'Traffic routing'],
+          size: 'Standard',
+          prompt: "An active-active multi-region web application with Azure Front Door routing users to App Service in two paired regions, Cosmos DB with multi-region writes for the data tier, Azure Cache for Redis in each region, geo-redundant Blob Storage for assets, and Azure Monitor with a shared Log Analytics workspace",
+        },
       ],
     },
     {
-      category: 'Healthcare',
-      color: '#22c55e',
-      prompts: [
-        "A HIPAA-compliant healthcare data platform integrating EHR systems via HL7 FHIR R4 APIs, medical imaging PACS with DICOM support storing 500TB of radiology images, real-time clinical decision support, patient portal with secure messaging, audit logging for all PHI access, disaster recovery with 15-minute RPO, using Azure Health Data Services FHIR service and DICOM service, Blob Storage with immutable retention for images, Cosmos DB for patient timelines, Azure Functions for HL7v2 to FHIR transformation, Logic Apps for clinical workflows, Key Vault for encryption key management, and Microsoft Defender for Cloud for continuous compliance monitoring",
-        "An eventing architecture for healthcare imaging with high throughput (50,000-75,000 events/sec), large payloads up to 10MB, strict message ordering, cloud-to-on-prem bridging via VPN Gateway, managed services only (no self-managed Kafka), 99.99% availability SLO, supporting 250M studies, 2.5M daily volume, 5M daily notifications, with Event Hubs for ingestion, Service Bus for routing, Azure Functions for processing, Cosmos DB for metadata, Blob Storage for images, and Log Analytics for monitoring",
-      ],
-    },
-    {
-      category: 'Data & Analytics',
+      category: 'Data & analytics',
       color: '#06b6d4',
       prompts: [
-        "A data lakehouse with Azure Data Lake Storage, Synapse Analytics for SQL and Spark queries, Data Factory for ETL pipelines, and Power BI for dashboards",
-        "A real-time analytics pipeline using Event Hubs for ingestion, Stream Analytics for windowed aggregations, Cosmos DB for serving layer, and Azure Monitor for pipeline health",
-        "A data warehouse with Azure SQL Database, Data Factory for scheduled imports from multiple sources, Purview for data governance and cataloging, and Power BI embedded reports",
+        {
+          title: 'Data lakehouse on Synapse',
+          summary: 'Lake storage with SQL and Spark, feeding Power BI.',
+          showcases: ['Grouping', 'Cost estimate'],
+          size: 'Compact',
+          prompt: "A data lakehouse with Azure Data Lake Storage, Synapse Analytics for SQL and Spark queries, Data Factory for ETL pipelines, and Power BI for dashboards",
+        },
+        {
+          title: 'Real-time analytics pipeline',
+          summary: 'Streaming ingestion with windowed aggregation and a serving layer.',
+          showcases: ['Async flows', 'Streaming'],
+          size: 'Compact',
+          prompt: "A real-time analytics pipeline using Event Hubs for ingestion, Stream Analytics for windowed aggregations, Cosmos DB as the serving layer, and Azure Monitor for pipeline health",
+        },
+        {
+          title: 'Governed data warehouse',
+          summary: 'Scheduled ingestion with cataloging and embedded reporting.',
+          showcases: ['Governance', 'Cost estimate'],
+          size: 'Compact',
+          prompt: "A data warehouse with Azure SQL Database, Data Factory for scheduled imports from multiple sources, Microsoft Purview for data governance and cataloging, and Power BI embedded reports",
+        },
       ],
     },
     {
       category: 'Microsoft Fabric',
       color: '#0d9488',
       prompts: [
-        "A Microsoft Fabric medallion lakehouse: Data Factory ingestion into OneLake, Bronze/Silver/Gold Lakehouses processed with Fabric Notebooks and Dataflow Gen2, a Warehouse for curated marts, and a Power BI Report via a Direct Lake Semantic Model, running on a Fabric Capacity F2",
-        "An end-to-end Microsoft Fabric analytics platform: ingest on-prem SQL via a Fabric Data Pipeline and Mirrored Database, stream IoT telemetry through an Eventstream into an Eventhouse with a KQL Database, land data in OneLake, build Bronze/Silver/Gold Lakehouses, expose a Semantic Model to a Power BI Report and a Real-Time Dashboard, and add a Fabric Data Agent for natural-language Q&A — on a Fabric Capacity F64",
-        "A real-time intelligence solution in Microsoft Fabric: Eventstream ingestion into an Eventhouse and KQL Database, a Real-Time Dashboard for live KPIs, and a Lakehouse plus Power BI Report for historical analysis, on a Fabric Capacity",
+        {
+          title: 'Medallion lakehouse (F2)',
+          summary: 'Bronze, Silver, and Gold layers with a Direct Lake semantic model.',
+          showcases: ['Fabric items', 'Capacity pricing'],
+          size: 'Standard',
+          prompt: "A Microsoft Fabric medallion lakehouse: Data Factory ingestion into OneLake, Bronze/Silver/Gold Lakehouses processed with Fabric Notebooks and Dataflow Gen2, a Warehouse for curated marts, and a Power BI Report via a Direct Lake Semantic Model, running on a Fabric Capacity F2",
+        },
+        {
+          title: 'End-to-end Fabric platform (F64)',
+          summary: 'Mirroring, streaming, lakehouse, and a Fabric Data Agent together.',
+          showcases: ['Fabric items', 'Streaming', 'Capacity pricing'],
+          size: 'Large',
+          prompt: "An end-to-end Microsoft Fabric analytics platform: ingest on-prem SQL via a Fabric Data Pipeline and Mirrored Database, stream IoT telemetry through an Eventstream into an Eventhouse with a KQL Database, land data in OneLake, build Bronze/Silver/Gold Lakehouses, expose a Semantic Model to a Power BI Report and a Real-Time Dashboard, and add a Fabric Data Agent for natural-language Q&A — on a Fabric Capacity F64",
+        },
+        {
+          title: 'Real-time intelligence',
+          summary: 'Live KPIs from an Eventhouse alongside historical analysis.',
+          showcases: ['Fabric items', 'Streaming'],
+          size: 'Compact',
+          prompt: "A real-time intelligence solution in Microsoft Fabric: Eventstream ingestion into an Eventhouse and KQL Database, a Real-Time Dashboard for live KPIs, and a Lakehouse plus Power BI Report for historical analysis, on a Fabric Capacity",
+        },
       ],
     },
     {
-      category: 'IoT',
-      color: '#14b8a6',
+      category: 'Industry scenarios',
+      color: '#f59e0b',
       prompts: [
-        "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling",
+        {
+          title: 'Peak-load e-commerce',
+          summary: 'Detailed brief with throughput and latency targets.',
+          showcases: ['Grouping', 'Async flows', 'Cost estimate'],
+          size: 'Large',
+          prompt: "A Black Friday-ready e-commerce platform handling 50,000 orders/hour peak with real-time inventory sync across 12 regional warehouses, ML-powered fraud detection scoring each transaction in under 200ms, personalized recommendations engine, multi-currency payment processing with PCI-DSS compliance, abandoned cart recovery workflows, using Azure Kubernetes Service for microservices, Cosmos DB for product catalog with global distribution, Redis Cache for session and cart state, Service Bus for order orchestration, Azure Functions for inventory webhooks, Azure AI Search for faceted product search, and CDN with dynamic site acceleration",
+        },
+        {
+          title: 'HIPAA healthcare data platform',
+          summary: 'FHIR and DICOM services with auditing and retention.',
+          showcases: ['Compliance', 'Grouping', 'Cost estimate'],
+          size: 'Large',
+          prompt: "A HIPAA-compliant healthcare data platform integrating EHR systems via HL7 FHIR R4 APIs, medical imaging PACS with DICOM support storing 500TB of radiology images, real-time clinical decision support, patient portal with secure messaging, audit logging for all PHI access, disaster recovery with 15-minute RPO, using Azure Health Data Services FHIR service and DICOM service, Blob Storage with immutable retention for images, Cosmos DB for patient timelines, Azure Functions for HL7v2 to FHIR transformation, Logic Apps for clinical workflows, Key Vault for encryption key management, and Microsoft Defender for Cloud for continuous compliance monitoring",
+        },
+        {
+          title: 'High-throughput imaging events',
+          summary: 'Ordering, large payloads, and cloud-to-on-prem bridging.',
+          showcases: ['Async flows', 'Hybrid connectivity'],
+          size: 'Large',
+          prompt: "An eventing architecture for healthcare imaging with high throughput (50,000-75,000 events/sec), large payloads up to 10MB, strict message ordering, cloud-to-on-prem bridging via VPN Gateway, managed services only (no self-managed Kafka), 99.99% availability SLO, supporting 250M studies, 2.5M daily volume, 5M daily notifications, with Event Hubs for ingestion, Service Bus for routing, Azure Functions for processing, Cosmos DB for metadata, Blob Storage for images, and Log Analytics for monitoring",
+        },
+        {
+          title: 'Industrial IoT predictive maintenance',
+          summary: 'Sensor telemetry with anomaly detection and long retention.',
+          showcases: ['Streaming', 'Segmentation', 'Cost estimate'],
+          size: 'Large',
+          prompt: "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling",
+        },
       ],
     },
   ];
@@ -657,7 +807,10 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
                 </button>
               </div>
               <div className="example-prompts">
-                <h3>Example Prompts</h3>
+                <div className="example-prompts-header">
+                  <h3>Example Prompts</h3>
+                  <span className="example-prompts-hint">Click to load, then edit before generating</span>
+                </div>
                 <div className="example-list">
                   {categorizedPrompts.map((group) => (
                     <div key={group.category} className="example-category">
@@ -665,17 +818,46 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
                         <span className="example-category-dot" style={{ backgroundColor: group.color }} />
                         {group.category}
                       </div>
-                      {group.prompts.map((prompt, idx) => (
-                        <button
-                          key={idx}
-                          className="example-button"
-                          style={{ borderLeftColor: group.color }}
-                          onClick={() => useExample(prompt)}
-                          disabled={isGenerating}
-                        >
-                          {prompt}
-                        </button>
-                      ))}
+                      {group.prompts.map((example) => {
+                        const isExpanded = expandedExample === example.title;
+                        return (
+                          <div
+                            key={example.title}
+                            className="example-card"
+                            style={{ borderLeftColor: group.color }}
+                          >
+                            <button
+                              className="example-button"
+                              onClick={() => useExample(example.prompt)}
+                              disabled={isGenerating}
+                              title="Load this prompt into the brief"
+                            >
+                              <span className="example-title-row">
+                                <span className="example-title">{example.title}</span>
+                                <span className={`example-size example-size-${example.size.toLowerCase()}`}>
+                                  {example.size}
+                                </span>
+                              </span>
+                              <span className="example-summary">{example.summary}</span>
+                              <span className="example-chips">
+                                {example.showcases.map((tag) => (
+                                  <span key={tag} className="example-chip">{tag}</span>
+                                ))}
+                              </span>
+                            </button>
+                            <button
+                              className="example-peek"
+                              onClick={() => setExpandedExample(isExpanded ? null : example.title)}
+                              disabled={isGenerating}
+                              aria-expanded={isExpanded}
+                              type="button"
+                            >
+                              {isExpanded ? 'Hide full prompt' : 'View full prompt'}
+                            </button>
+                            {isExpanded && <p className="example-full">{example.prompt}</p>}
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
                 </div>
