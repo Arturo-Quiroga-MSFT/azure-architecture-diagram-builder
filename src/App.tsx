@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -180,7 +180,9 @@ function App() {
     resetGenerationSession,
     restoreGenerationSession,
   } = useGenerationSession();
-  const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
+  // null until the banner is first dragged, so it stays centred by CSS. A
+  // numeric sentinel would misfire once x reaches the canvas's left edge.
+  const [promptBannerPosition, setPromptBannerPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -251,6 +253,10 @@ function App() {
   const [showCanvasHint, setShowCanvasHint] = useState<boolean>(() => localStorage.getItem(CANVAS_HINT_STORAGE_KEY) !== '1');
   const [showLayoutHint, setShowLayoutHint] = useState(false);
   const layoutHintTimeoutRef = useRef<number | null>(null);
+  // State-backed ref: the banner mounts conditionally, so the measurement effect
+  // must re-run when the element actually attaches.
+  const [promptBannerEl, setPromptBannerEl] = useState<HTMLDivElement | null>(null);
+  const [layoutHintTop, setLayoutHintTop] = useState(16);
   // Collapses the top toolbar rows to maximize canvas height. Independent of
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
@@ -289,6 +295,30 @@ function App() {
   // "Generated from" prompt banner and the "Generated with" model badge) so only
   // the diagram itself remains. Toggled by the Focus button.
   const [focusMode, setFocusMode] = useState(false);
+
+  // The prompt banner wraps to an arbitrary height and is draggable, so the
+  // layout hint tracks its measured bottom edge instead of a fixed offset.
+  useLayoutEffect(() => {
+    if (!showLayoutHint || !promptBannerEl) {
+      setLayoutHintTop(16);
+      return;
+    }
+    const update = () => {
+      const host = promptBannerEl.offsetParent as HTMLElement | null;
+      const hostTop = host ? host.getBoundingClientRect().top : 0;
+      const bottom = Math.round(promptBannerEl.getBoundingClientRect().bottom - hostTop) + 12;
+      // Once the banner is dragged well down the canvas, stop following it.
+      setLayoutHintTop(bottom > 360 ? 16 : Math.max(16, bottom));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(promptBannerEl);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [showLayoutHint, promptBannerEl, promptBannerPosition]);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [exportBackground, setExportBackground] = useState<ExportBackground>(() => {
@@ -3966,7 +3996,7 @@ function App() {
                 className="canvas-layout-hint"
                 role="note"
                 aria-label="Diagram layout guidance"
-                style={{ top: architecturePrompt ? 64 : 16 }}
+                style={{ top: layoutHintTop }}
               >
                 <Move size={18} aria-hidden="true" />
                 <div className="canvas-layout-hint-copy">
@@ -4080,28 +4110,26 @@ function App() {
             {architecturePrompt && !focusMode && (
               <div
                 className="prompt-banner draggable"
+                ref={setPromptBannerEl}
                 style={{
                   position: 'absolute',
-                  left: promptBannerPosition.x === 0 ? '50%' : `${promptBannerPosition.x}px`,
-                  top: promptBannerPosition.y === 0 ? '10px' : `${promptBannerPosition.y}px`,
-                  transform: promptBannerPosition.x === 0 ? 'translateX(-50%)' : 'none',
+                  left: promptBannerPosition ? `${promptBannerPosition.x}px` : '50%',
+                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : '10px',
+                  transform: promptBannerPosition ? 'none' : 'translateX(-50%)',
                   cursor: isDraggingBanner ? 'grabbing' : 'grab',
                   zIndex: 1000,
                 }}
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  // Calculate offset from mouse position to element's top-left corner
-                  setDragOffset({
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top,
-                  });
-                  // Store the current absolute position
-                  if (promptBannerPosition.x === 0) {
-                    // First time dragging - calculate initial center position
-                    const initialX = window.innerWidth / 2 - rect.width / 2;
-                    setPromptBannerPosition({ x: initialX, y: 10 });
-                  }
+                  const el = e.currentTarget;
+                  const rect = el.getBoundingClientRect();
+                  const parent = el.offsetParent?.getBoundingClientRect();
+                  const currentX = rect.left - (parent?.left ?? 0);
+                  const currentY = rect.top - (parent?.top ?? 0);
+                  // left/top resolve against the containing block, so the drag
+                  // offset has to map viewport coords into that same space.
+                  setDragOffset({ x: e.clientX - currentX, y: e.clientY - currentY });
+                  setPromptBannerPosition({ x: currentX, y: currentY });
                   setIsDraggingBanner(true);
                 }}
               >

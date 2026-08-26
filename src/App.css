@@ -630,20 +630,37 @@ body.dark-mode .toolbar-dropdown-separator {
 .canvas-layout-hint {
   position: absolute;
   left: 50%;
-  z-index: 7;
+  z-index: 1002;
   display: flex;
   align-items: flex-start;
   gap: 10px;
   width: min(560px, calc(100% - 32px));
   padding: 12px 12px 12px 14px;
   color: #172554;
-  background: rgba(239, 246, 255, 0.96);
+  background: rgba(239, 246, 255, 0.98);
   border: 1px solid #60a5fa;
   border-radius: 6px;
   box-shadow: 0 4px 16px rgba(30, 64, 175, 0.18);
   transform: translateX(-50%);
   backdrop-filter: blur(4px);
-  animation: canvas-layout-hint-in 0.35s ease-out;
+  animation:
+    canvas-layout-hint-in 0.35s ease-out,
+    canvas-layout-hint-pulse 1.6s ease-in-out 0.35s 4;
+}
+
+/* Attention pulse: runs a few cycles then settles, so a hint that stays open
+   for a first-time user does not keep flashing indefinitely. */
+@keyframes canvas-layout-hint-pulse {
+  0%, 100% {
+    border-color: #60a5fa;
+    box-shadow: 0 4px 16px rgba(30, 64, 175, 0.18);
+  }
+  50% {
+    border-color: #2563eb;
+    box-shadow:
+      0 4px 18px rgba(30, 64, 175, 0.3),
+      0 0 0 6px rgba(59, 130, 246, 0.22);
+  }
 }
 
 .canvas-layout-hint > svg {
@@ -697,6 +714,29 @@ body.dark-mode .canvas-layout-hint {
   background: rgba(15, 23, 42, 0.96);
   border-color: #3b82f6;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+  animation-name: canvas-layout-hint-in, canvas-layout-hint-pulse-dark;
+}
+
+@keyframes canvas-layout-hint-pulse-dark {
+  0%, 100% {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+  }
+  50% {
+    border-color: #93c5fd;
+    box-shadow:
+      0 4px 18px rgba(0, 0, 0, 0.4),
+      0 0 0 6px rgba(96, 165, 250, 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-layout-hint {
+    animation: canvas-layout-hint-in 0.35s ease-out;
+  }
+  body.dark-mode .canvas-layout-hint {
+    animation: canvas-layout-hint-in 0.35s ease-out;
+  }
 }
 
 body.dark-mode .canvas-layout-hint-copy strong,
@@ -714,7 +754,7 @@ body.dark-mode .canvas-layout-hint-close {
     left: 16px;
     width: auto;
     transform: none;
-    animation-name: canvas-layout-hint-in-narrow;
+    animation-name: canvas-layout-hint-in-narrow, canvas-layout-hint-pulse;
   }
 }
 
