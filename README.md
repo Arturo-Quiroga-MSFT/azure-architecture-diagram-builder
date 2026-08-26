@@ -58,14 +58,14 @@ architect.
 ### 🤖 AI-Powered Architecture Generation
 Describe your architecture in plain English and let any of **14 AI models** (GPT-5.1, GPT-5.2, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5, or Kimi K2.7 Code) automatically create a complete, professionally organized diagram with logical service groupings.
 
-**13 curated example prompts** included — from simple web apps to complex enterprise scenarios:
-- Zero Trust enterprise networks with security segmentation
-- Healthcare HIPAA-compliant platforms with FHIR APIs
-- Black Friday e-commerce handling 50K orders/hour
-- Industrial IoT with 5,000+ sensors and predictive maintenance
-- Global multiplayer gaming backends for 500K+ concurrent players
-- AI-powered chatbots, document processing, content moderation
-- And more...
+**22 curated example prompts** across 7 categories — each shown as a card with a short outcome summary, the app capabilities it demonstrates, and a size hint (Compact / Standard / Large) so you can pick by effort. Use **View full prompt** to read the brief before loading it:
+- **Start here** — three-tier web app, serverless event processing
+- **Private connectivity & security** — private endpoints, Front Door with a WAF policy, Zero Trust segmentation
+- **AI & agents** — enterprise RAG, private Foundry assistant, document processing
+- **Apps & scale** — microservices on AKS, multi-region active-active
+- **Data & analytics** — lakehouse, streaming, and warehouse patterns
+- **Microsoft Fabric** — Eventstream, Eventhouse, Lakehouse, and Real-Time Intelligence
+- **Industry scenarios** — HIPAA healthcare, e-commerce, industrial IoT
 
 ### 🖼️ Architecture Image Import
 Upload an existing architecture diagram image (screenshot, whiteboard photo, or exported PNG) and let AI analyze it to recreate the architecture as an editable, interactive diagram with proper Azure service mapping.
@@ -769,7 +769,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 
 #### Method 1: AI Generation (Recommended)
 1. Click **"Generate with AI"** in the toolbar
-2. Describe your architecture in natural language, or pick from **13 curated example prompts**
+2. Describe your architecture in natural language, or pick from **22 curated example prompts**
 3. Choose a **diagram mode** — Topology, Blueprint (BETA), or Both (BETA)
 4. Select any model configured by the app owner and choose its reasoning level when supported
 5. Click **Generate** — the architecture is created with auto-layout and workflow animation
@@ -1191,7 +1191,7 @@ All edge types now render correctly: solid sync edges, dashed async edges, dotte
 - **Microsoft Logo** — Added to header banner
 - **12 AI Layout Rules** — Directional flow, hub-and-spoke, connection caps, cross-group edge minimization
 - **Auto-Snapshot** — Automatic version save before AI regeneration
-- **13 Curated Example Prompts** — Security, healthcare, gaming, e-commerce, IoT, AI services
+- **22 Curated Example Prompts** — Start-here basics, private connectivity, AI & agents, scale, data & analytics, Microsoft Fabric, industry scenarios
 - **68 Mapped Azure Services** — Full icon resolution, categorization, and pricing
 - **Resizable Group Nodes** — Drag handles to adjust group boundaries
 - **Iterative Regeneration** — Regenerate with selected WAF improvements applied
