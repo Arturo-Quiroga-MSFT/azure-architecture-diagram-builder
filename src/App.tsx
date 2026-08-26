@@ -180,7 +180,9 @@ function App() {
     resetGenerationSession,
     restoreGenerationSession,
   } = useGenerationSession();
-  const [promptBannerPosition, setPromptBannerPosition] = useState({ x: 0, y: 0 });
+  // null until the banner is first dragged, so it stays centred by CSS. A
+  // numeric sentinel would misfire once x reaches the canvas's left edge.
+  const [promptBannerPosition, setPromptBannerPosition] = useState<{ x: number; y: number } | null>(null);
   const [isDraggingBanner, setIsDraggingBanner] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -4111,26 +4113,23 @@ function App() {
                 ref={setPromptBannerEl}
                 style={{
                   position: 'absolute',
-                  left: promptBannerPosition.x === 0 ? '50%' : `${promptBannerPosition.x}px`,
-                  top: promptBannerPosition.y === 0 ? '10px' : `${promptBannerPosition.y}px`,
-                  transform: promptBannerPosition.x === 0 ? 'translateX(-50%)' : 'none',
+                  left: promptBannerPosition ? `${promptBannerPosition.x}px` : '50%',
+                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : '10px',
+                  transform: promptBannerPosition ? 'none' : 'translateX(-50%)',
                   cursor: isDraggingBanner ? 'grabbing' : 'grab',
                   zIndex: 1000,
                 }}
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  // Calculate offset from mouse position to element's top-left corner
-                  setDragOffset({
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top,
-                  });
-                  // Store the current absolute position
-                  if (promptBannerPosition.x === 0) {
-                    // First time dragging - calculate initial center position
-                    const initialX = window.innerWidth / 2 - rect.width / 2;
-                    setPromptBannerPosition({ x: initialX, y: 10 });
-                  }
+                  const el = e.currentTarget;
+                  const rect = el.getBoundingClientRect();
+                  const parent = el.offsetParent?.getBoundingClientRect();
+                  const currentX = rect.left - (parent?.left ?? 0);
+                  const currentY = rect.top - (parent?.top ?? 0);
+                  // left/top resolve against the containing block, so the drag
+                  // offset has to map viewport coords into that same space.
+                  setDragOffset({ x: e.clientX - currentX, y: e.clientY - currentY });
+                  setPromptBannerPosition({ x: currentX, y: currentY });
                   setIsDraggingBanner(true);
                 }}
               >

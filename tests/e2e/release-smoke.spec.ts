@@ -211,6 +211,21 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await expect(layoutHint).toBeHidden();
   await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');
 
+  // Dragging the banner must keep the grabbed point under the cursor. Its
+  // left/top resolve against the canvas, not the viewport, so mixing the two
+  // spaces used to drop it by exactly the canvas offset.
+  const bannerBox = await page.locator('.prompt-banner').boundingBox();
+  expect(bannerBox).not.toBeNull();
+  const grabX = Math.round(bannerBox!.x + 40);
+  const grabY = Math.round(bannerBox!.y + 20);
+  await page.mouse.move(grabX, grabY);
+  await page.mouse.down();
+  await page.mouse.move(grabX + 120, grabY + 90, { steps: 8 });
+  const draggedBox = await page.locator('.prompt-banner').boundingBox();
+  await page.mouse.up();
+  expect(Math.abs(draggedBox!.x - (grabX + 120 - 40))).toBeLessThanOrEqual(1);
+  expect(Math.abs(draggedBox!.y - (grabY + 90 - 20))).toBeLessThanOrEqual(1);
+
   const elkChunk = page.waitForResponse((response) =>
     response.url().includes('/assets/elkLayoutEngine-') && response.ok(),
   );
