@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -251,6 +251,10 @@ function App() {
   const [showCanvasHint, setShowCanvasHint] = useState<boolean>(() => localStorage.getItem(CANVAS_HINT_STORAGE_KEY) !== '1');
   const [showLayoutHint, setShowLayoutHint] = useState(false);
   const layoutHintTimeoutRef = useRef<number | null>(null);
+  // State-backed ref: the banner mounts conditionally, so the measurement effect
+  // must re-run when the element actually attaches.
+  const [promptBannerEl, setPromptBannerEl] = useState<HTMLDivElement | null>(null);
+  const [layoutHintTop, setLayoutHintTop] = useState(16);
   // Collapses the top toolbar rows to maximize canvas height. Independent of
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
@@ -289,6 +293,30 @@ function App() {
   // "Generated from" prompt banner and the "Generated with" model badge) so only
   // the diagram itself remains. Toggled by the Focus button.
   const [focusMode, setFocusMode] = useState(false);
+
+  // The prompt banner wraps to an arbitrary height and is draggable, so the
+  // layout hint tracks its measured bottom edge instead of a fixed offset.
+  useLayoutEffect(() => {
+    if (!showLayoutHint || !promptBannerEl) {
+      setLayoutHintTop(16);
+      return;
+    }
+    const update = () => {
+      const host = promptBannerEl.offsetParent as HTMLElement | null;
+      const hostTop = host ? host.getBoundingClientRect().top : 0;
+      const bottom = Math.round(promptBannerEl.getBoundingClientRect().bottom - hostTop) + 12;
+      // Once the banner is dragged well down the canvas, stop following it.
+      setLayoutHintTop(bottom > 360 ? 16 : Math.max(16, bottom));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(promptBannerEl);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [showLayoutHint, promptBannerEl, promptBannerPosition]);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [exportBackground, setExportBackground] = useState<ExportBackground>(() => {
@@ -3966,7 +3994,7 @@ function App() {
                 className="canvas-layout-hint"
                 role="note"
                 aria-label="Diagram layout guidance"
-                style={{ top: architecturePrompt ? 64 : 16 }}
+                style={{ top: layoutHintTop }}
               >
                 <Move size={18} aria-hidden="true" />
                 <div className="canvas-layout-hint-copy">
@@ -4080,6 +4108,7 @@ function App() {
             {architecturePrompt && !focusMode && (
               <div
                 className="prompt-banner draggable"
+                ref={setPromptBannerEl}
                 style={{
                   position: 'absolute',
                   left: promptBannerPosition.x === 0 ? '50%' : `${promptBannerPosition.x}px`,

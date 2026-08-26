@@ -177,7 +177,7 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await page.locator('button.btn-generate-ai').first().click();
   await expect(page.getByRole('heading', { name: 'Generate Diagram' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Select AI model' })).toHaveValue('gpt-5.6-luna');
-  await page.locator('#architecture-description').fill('Create a web app backed by Azure SQL.');
+  await page.locator('#architecture-description').fill('Create a web app backed by Azure SQL, with Blob Storage for uploads, Key Vault for secrets, Application Insights for monitoring, and Azure Front Door with a WAF policy in front of the application tier so the prompt banner wraps onto several lines.');
   await page.getByRole('button', { name: 'Generate Architecture' }).click();
 
   await expect(page.getByRole('heading', { name: 'Diagram created — review it before validation' })).toBeVisible();
@@ -191,6 +191,22 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   const layoutHint = page.getByRole('note', { name: 'Diagram layout guidance' });
   await expect(layoutHint).toContainText('Make this layout yours');
   await expect(layoutHint).toContainText('Drag services and groups into the positions that best communicate your architecture.');
+
+  // The draggable "Generated from" banner wraps to an arbitrary height, so the
+  // hint must clear its measured bottom rather than a fixed offset.
+  const hintVsBanner = await page.evaluate(() => {
+    const banner = document.querySelector('.prompt-banner');
+    const hint = document.querySelector('.canvas-layout-hint');
+    if (!banner || !hint) return null;
+    const b = banner.getBoundingClientRect();
+    const h = hint.getBoundingClientRect();
+    return { bannerHeight: b.height, bannerBottom: b.bottom, hintTop: h.top };
+  });
+  expect(hintVsBanner).not.toBeNull();
+  // Guards the guard: a single-line banner would make the overlap check vacuous.
+  expect(hintVsBanner!.bannerHeight).toBeGreaterThan(60);
+  expect(hintVsBanner!.hintTop).toBeGreaterThanOrEqual(hintVsBanner!.bannerBottom);
+
   await page.getByRole('button', { name: 'Dismiss layout guidance' }).click();
   await expect(layoutHint).toBeHidden();
   await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');
