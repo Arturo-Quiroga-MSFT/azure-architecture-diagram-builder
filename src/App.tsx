@@ -22,6 +22,7 @@ import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
 import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
+import NavRail from './components/NavRail';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
@@ -61,6 +62,7 @@ import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
+import { useAppView } from './stores/appViewStore';
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
@@ -214,6 +216,10 @@ function App() {
   const [pricingPrefs, setPricingPrefs] = usePricingDisplayPrefs();
   // Node whose per-node cost editor is open (opened from its cost badge).
   const pricingEditorNodeId = useNodePricingEditor();
+  // Top-level shell pane. The canvas stays mounted when another pane is active
+  // so React Flow state, undo history and selection survive the switch.
+  const [activeView] = useAppView();
+  const isCanvasView = activeView === 'canvas';
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -3913,9 +3919,24 @@ function App() {
       </header>
       
       <div className="workspace">
-        <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
-        
-        <div className="canvas-container" ref={reactFlowWrapper}>
+        <NavRail />
+
+        {isCanvasView && (
+          <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
+        )}
+
+        {!isCanvasView && (
+          <div className="shell-pane-placeholder">
+            <h2>{activeView.charAt(0).toUpperCase() + activeView.slice(1)}</h2>
+            <p>
+              This pane is not built yet. Later steps of the app shell migration move
+              reports, exports and saved architectures here. Select Canvas to return to
+              your diagram — nothing has been lost.
+            </p>
+          </div>
+        )}
+
+        <div className={`canvas-container${isCanvasView ? '' : ' is-hidden'}`} ref={reactFlowWrapper}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -4169,7 +4190,7 @@ function App() {
             onAlign={handleAlign}
           />
         </div>
-        {workflow.length > 0 && (
+        {isCanvasView && workflow.length > 0 && (
           <WorkflowPanel 
             workflow={workflow}
             onServiceHover={(refs) => {

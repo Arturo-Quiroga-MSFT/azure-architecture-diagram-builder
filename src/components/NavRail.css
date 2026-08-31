@@ -1,0 +1,135 @@
+/* Copyright (c) Microsoft Corporation.
+   Licensed under the MIT License. */
+
+.nav-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  width: 76px;
+  padding: 0.5rem 0.375rem;
+  background: #f3f4f6;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+}
+
+.nav-rail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.25rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-rail-item:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.nav-rail-item.is-active {
+  background: #0078d4;
+  color: #ffffff;
+}
+
+.nav-rail-item:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}
+
+.nav-rail-item.is-active:focus-visible {
+  outline-color: #ffffff;
+}
+
+/* Panes not yet built. Muted rather than disabled so the roadmap is visible
+   and the placeholder pane is still reachable. */
+.nav-rail-item.is-pending:not(.is-active) {
+  color: #9ca3af;
+}
+
+.nav-rail-label {
+  font-size: 0.6875rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+/* Placeholder pane shown while the canvas stays mounted behind it. */
+.shell-pane-placeholder {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  background: #ffffff;
+  color: #6b7280;
+  text-align: center;
+}
+
+.shell-pane-placeholder h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.shell-pane-placeholder p {
+  margin: 0;
+  max-width: 32rem;
+  font-size: 0.875rem;
+}
+
+/* Keeps the canvas mounted (React Flow state, undo history, selection) while
+   another pane is showing. `display: none` would collapse the container to zero
+   size, which makes React Flow drop its viewport dimensions and warn; keeping it
+   laid out at full size but hidden avoids that. */
+.canvas-container.is-hidden {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+body.dark-mode .nav-rail {
+  background: #202020;
+  border-right-color: #2d2d2d;
+}
+
+body.dark-mode .nav-rail-item {
+  color: #9ca3af;
+}
+
+body.dark-mode .nav-rail-item:hover {
+  background: #2d2d2d;
+  color: #f3f4f6;
+}
+
+body.dark-mode .nav-rail-item.is-active {
+  background: #0078d4;
+  color: #ffffff;
+}
+
+body.dark-mode .nav-rail-item.is-pending:not(.is-active) {
+  color: #6b7280;
+}
+
+body.dark-mode .shell-pane-placeholder {
+  background: #1a1a1a;
+  color: #9ca3af;
+}
+
+body.dark-mode .shell-pane-placeholder h2 {
+  color: #e0e0e0;
+}

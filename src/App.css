@@ -589,6 +589,8 @@ body.dark-mode .toolbar-dropdown-separator {
   display: flex;
   flex: 1;
   overflow: hidden;
+  /* Containing block for the canvas while it is hidden behind another pane. */
+  position: relative;
 }
 
 .canvas-container {
