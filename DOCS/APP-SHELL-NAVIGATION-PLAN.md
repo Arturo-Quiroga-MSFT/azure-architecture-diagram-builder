@@ -227,26 +227,28 @@ callback rather than duplicated.
 `ids.length > 0 ? ids : refs` fallback, which would have silently broken workflow
 highlighting for MCP-exported scenes. Restored before commit.
 
-**Tested** — with a stubbed validation response (see caveat):
+**Tested** — end to end against a live model run (GPT-5.2, 646 in / 3070 out tokens,
+40.9s, 16 findings, overall score 42):
 
 | Check | Result |
 |---|---|
 | Panel docks beside canvas | canvas 1730px, panel 416px, side by side |
-| Nodes remain visible with panel open | 3 of 3 |
-| Hover finding → node glows | `Azure AI Search`, matching its `resources` |
+| Nodes survive validation | 3 before → 3 during → 3 after |
+| Hover finding → nodes glow | all 3 named resources glow, matched by label |
 | Mouse-leave → glow clears | yes |
-| Locate pins two nodes | `AI Studio`, `Azure AI Document Intelligence` |
+| Locate pins the set | yes |
 | Pin survives mouse-leave | yes |
 | Dark-mode heading contrast | `#e0e0e0` on `#1f1f1f` |
 
 `typecheck`, `lint`, `build`, `test:deterministic`, `test:bundle-budget` and
 `test:version` all pass.
 
-**Scope of that evidence — important.** The local Azure OpenAI proxy returned HTTP 500 for
-every model, so phase 2 of validation could not run for real. Phase 1 (deterministic WAF
-rules) did run and produced 4 findings. The panel rendering and cross-highlighting above
-were verified against a **stubbed** proxy response, not a live model result. What is
-proven is the panel and highlight wiring; what is *not* proven is the end-to-end validation
-path on this machine. That backend failure predates these changes and is unrelated to them.
+**Correction worth keeping.** An earlier attempt concluded "the Azure OpenAI backend
+returns 500 for every model". That was wrong: `npm run dev` starts Vite only, and the
+proxy target on port 3001 was never running — the dev log said `ECONNREFUSED
+127.0.0.1:3001`. `npm run dev:full` starts both. **Use `dev:full` for anything that
+exercises an AI path.** A separate scare — two canvas nodes appearing to vanish — was a
+race in the test harness's drop loop, not a regression; re-running with an assertion
+after each drop showed 3/3/3.
 
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.
