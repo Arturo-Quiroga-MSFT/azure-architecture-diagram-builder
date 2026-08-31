@@ -38,7 +38,7 @@ import EditableEdge from './components/EditableEdge';
 import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
-import ValidationModal from './components/ValidationModal';
+import ValidationPanel from './components/ValidationPanel';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
 import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
@@ -244,7 +244,7 @@ function App() {
   // Premium Features State
   const [validationResult, setValidationResult] = useState<ArchitectureValidation | null>(null);
   const [validationNeedsRefresh, setValidationNeedsRefresh] = useState(false);
-  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [isValidationPanelOpen, setIsValidationPanelOpen] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
@@ -2885,9 +2885,9 @@ function App() {
       }
     }
 
-    // Now show the modal and start validation
+    // Now show the panel and start validation
     setIsValidating(true);
-    setIsValidationModalOpen(true);
+    setIsValidationPanelOpen(true);
 
     try {
       // Extract services data
@@ -2948,7 +2948,7 @@ function App() {
     } catch (error: any) {
       console.error('Validation error:', error);
       alert(`Failed to validate architecture: ${error.message}`);
-      setIsValidationModalOpen(false);
+      setIsValidationPanelOpen(false);
     } finally {
       setIsValidating(false);
     }
@@ -3062,6 +3062,21 @@ function App() {
   };
 
   const azureNodeCount = nodes.filter(n => n.type === 'azureNode').length;
+
+  // Findings and workflow steps both name services by node id OR by label (scenes
+  // exported by the MCP server use labels). The glow CSS targets nodes by id.
+  const highlightServiceRefs = useCallback((refs: string[]) => {
+    const list = refs || [];
+    const ids = list.flatMap((ref) => {
+      const refLc = String(ref).toLowerCase();
+      return nodes
+        .filter((n) => n.type === 'azureNode'
+          && (n.id === ref || String(n.data?.label ?? '').toLowerCase() === refLc))
+        .map((n) => n.id);
+    });
+    // Fall back to the raw refs — they may already be node ids we failed to match.
+    setHighlightedServices(ids.length > 0 ? ids : list);
+  }, [nodes]);
 
   // Single definition per export, rendered by both the toolbar dropdown and the
   // Reports pane so the two lists cannot drift.
@@ -3847,7 +3862,7 @@ function App() {
                 </button>
                 {validationResult && (
                   <button
-                    onClick={() => setIsValidationModalOpen(true)}
+                    onClick={() => setIsValidationPanelOpen(true)}
                     className="btn btn-secondary"
                     title={validationNeedsRefresh
                       ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
@@ -4198,20 +4213,7 @@ function App() {
         {isCanvasView && workflow.length > 0 && (
           <WorkflowPanel 
             workflow={workflow}
-            onServiceHover={(refs) => {
-              // Workflow steps reference services by node id (app-generated) OR
-              // by label (e.g. scenes exported by the MCP server). The glow CSS
-              // targets nodes by id, so resolve each ref to matching node ids by
-              // id or case-insensitive label before highlighting.
-              const ids = (refs || []).flatMap((ref) => {
-                const refLc = String(ref).toLowerCase();
-                return nodes
-                  .filter((n) => n.type === 'azureNode'
-                    && (n.id === ref || String(n.data?.label ?? '').toLowerCase() === refLc))
-                  .map((n) => n.id);
-              });
-              setHighlightedServices(ids.length > 0 ? ids : (refs || []));
-            }}
+            onServiceHover={(refs) => highlightServiceRefs(refs || [])}
             onServiceLeave={() => setHighlightedServices([])}
             forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined}
           />
@@ -4258,21 +4260,21 @@ function App() {
             </div>
           </>
         )}
-      </div>
 
-      {/* Premium Feature Modals */}
-      <ValidationModal
+      {/* Docked inside the workspace so the canvas shrinks beside it and stays visible. */}
+      <ValidationPanel
         validation={validationResult}
-        isOpen={isValidationModalOpen}
-        onClose={() => setIsValidationModalOpen(false)}
+        isOpen={isValidationPanelOpen && isCanvasView}
+        onClose={() => setIsValidationPanelOpen(false)}
+        onHighlightResources={highlightServiceRefs}
         isLoading={isValidating}
         isStale={validationNeedsRefresh}
         onRevalidate={handleValidateArchitecture}
         onApplyRecommendations={async (selectedFindings) => {
           console.log('📝 User selected recommendations to apply:', selectedFindings);
           
-          // Close validation modal and show loading state
-          setIsValidationModalOpen(false);
+          // Close the validation panel and show loading state
+          setIsValidationPanelOpen(false);
           setIsApplyingRecommendations(true);
           
           // Get current architecture state
@@ -4387,6 +4389,8 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           }
         }}
       />
+      </div>
+
       <DeploymentGuideModal
         guide={deploymentGuide}
         isOpen={isDeploymentGuideModalOpen}
@@ -4460,7 +4464,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         onApply={(validation) => {
           setValidationResult(validation);
           setValidationNeedsRefresh(false);
-          setIsValidationModalOpen(true);
+          setIsValidationPanelOpen(true);
           setPanelsCollapsedSignal(prev => prev + 1);
         }}
         services={nodes

@@ -200,3 +200,53 @@ not a patch here.
 
 **Next:** step 3 — convert `ValidationModal` into a right-dock panel and wire
 finding → node cross-highlighting.
+
+### 2026-08-31 — Step 3 complete: validation as a dock panel
+
+`ValidationModal` is now `ValidationPanel`, a flex sibling of the canvas inside
+`.workspace`. The canvas shrinks beside it instead of being covered, which is what
+makes a finding able to point at the resource it is about.
+
+**Cross-highlighting.** Findings already carried `finding.resources`. Hovering a finding
+glows the matching nodes; the new *Locate* button pins them so the highlight survives
+mouse-leave and panning. This reuses the existing `highlightedServices` glow and the
+label-or-id resolver that `WorkflowPanel` used, now extracted to one `highlightServiceRefs`
+callback rather than duplicated.
+
+**Two traps found:**
+
+1. `.modal-overlay` and `.modal-content` are defined in `ValidationModal.css` but used by
+   **nine other modals**. Deleting `ValidationModal.tsx` would have dropped that import
+   and unstyled all of them. `ValidationPanel` imports the CSS explicitly, with a comment.
+2. The dark-mode header rule was scoped `.validation-modal .modal-header h2`. The panel is
+   not that class, so the title rendered dark-on-dark. Caught in a screenshot, not by any
+   automated check. The section headings had no dark rule at all — that one predates this
+   change; fixed here since it is the same surface.
+
+**Regression avoided:** the shared resolver initially dropped the original
+`ids.length > 0 ? ids : refs` fallback, which would have silently broken workflow
+highlighting for MCP-exported scenes. Restored before commit.
+
+**Tested** — with a stubbed validation response (see caveat):
+
+| Check | Result |
+|---|---|
+| Panel docks beside canvas | canvas 1730px, panel 416px, side by side |
+| Nodes remain visible with panel open | 3 of 3 |
+| Hover finding → node glows | `Azure AI Search`, matching its `resources` |
+| Mouse-leave → glow clears | yes |
+| Locate pins two nodes | `AI Studio`, `Azure AI Document Intelligence` |
+| Pin survives mouse-leave | yes |
+| Dark-mode heading contrast | `#e0e0e0` on `#1f1f1f` |
+
+`typecheck`, `lint`, `build`, `test:deterministic`, `test:bundle-budget` and
+`test:version` all pass.
+
+**Scope of that evidence — important.** The local Azure OpenAI proxy returned HTTP 500 for
+every model, so phase 2 of validation could not run for real. Phase 1 (deterministic WAF
+rules) did run and produced 4 findings. The panel rendering and cross-highlighting above
+were verified against a **stubbed** proxy response, not a live model result. What is
+proven is the panel and highlight wiring; what is *not* proven is the end-to-end validation
+path on this machine. That backend failure predates these changes and is unrelated to them.
+
+**Next:** step 4 — decompose the toolbar behind the seams now that they exist.
