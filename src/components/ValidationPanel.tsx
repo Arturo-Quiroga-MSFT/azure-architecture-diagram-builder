@@ -10,7 +10,7 @@
  * See DOCS/APP-SHELL-NAVIGATION-PLAN.md.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, AlertTriangle, CheckCircle, Info, Download, RefreshCw, Clock, Zap, Database, Cpu, Crosshair } from 'lucide-react';
 import { ArchitectureValidation, ValidationFinding, formatValidationReport } from '../services/architectureValidator';
 import { generateModelFilename } from '../utils/modelNaming';
@@ -48,6 +48,13 @@ const ValidationPanel: React.FC<ValidationPanelProps> = ({
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
   const [pinnedResources, setPinnedResources] = useState<string[]>([]);
   const [displayPrefs, setDisplayPrefs] = useValidationDisplayPrefs();
+
+  // Lets the right-anchored fixed elements (workflow panel, feedback and impact
+  // buttons) offset themselves instead of sitting on top of the dock.
+  useEffect(() => {
+    document.body.classList.toggle('has-validation-dock', isOpen);
+    return () => document.body.classList.remove('has-validation-dock');
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

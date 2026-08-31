@@ -252,3 +252,33 @@ race in the test harness's drop loop, not a regression; re-running with an asser
 after each drop showed 3/3/3.
 
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.
+
+### 2026-08-31 — Dock width and right-edge collisions
+
+Widened the dock from 26rem to 30rem (480px) via a `--validation-dock-w` custom property.
+
+Widening surfaced the real problem behind the clipped text reported from a live session:
+**three elements are `position: fixed` against the right edge and were sitting on top of
+the dock** — `.workflow-panel` (z-index 999), `.feedback-fab`, and `.impact-launcher`.
+The dock is in normal flow, so it slid underneath them. Measured, not guessed: the
+paragraph itself had `scrollWidth === clientWidth`, so it was never overflowing.
+
+`ValidationPanel` now toggles `body.has-validation-dock`, and those three offset
+themselves by the same variable.
+
+**Self-inflicted bug caught in verification:** the first fix offset
+`.workflow-panel.collapsed` too, which moved the collapsed body from a fully hidden
+`right: -400px` to `right: 80px` — directly over the dock. Only the collapsed *header*
+tab needs offsetting. Measured before/after in both states:
+
+| State | Element | Overlaps dock |
+|---|---|---|
+| Collapsed | workflow body (`right` 2735→3135, off-screen) | no |
+| Collapsed | workflow tab (right edge 2255 = dock left) | no |
+| Expanded | workflow panel (1855→2255) | no |
+| Either | feedback FAB, impact launcher (right edge 2235) | no |
+
+Pre-existing and unchanged: the feedback/impact buttons overlap the *expanded* workflow
+panel. They did before this work too.
+
+**Next:** step 4 — decompose the toolbar behind the seams now that they exist.

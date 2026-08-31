@@ -5,11 +5,15 @@
    .modal-* class names so ValidationModal.css still applies; only the outer
    container changes from a centred overlay to a canvas-adjacent panel. */
 
+:root {
+  --validation-dock-w: 30rem;
+}
+
 .validation-panel {
   position: relative;
   z-index: 2;
-  flex: 0 0 26rem;
-  max-width: 40vw;
+  flex: 0 0 var(--validation-dock-w);
+  max-width: 45vw;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -17,6 +21,22 @@
   background: #ffffff;
   border-left: 1px solid #e5e7eb;
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.06);
+}
+
+/* These three are position:fixed against the right edge, so the dock slides
+   under them unless they are offset by its width. The collapsed panel body is
+   deliberately not offset — it must stay fully off-screen at right: -400px. */
+body.has-validation-dock .workflow-panel:not(.collapsed) {
+  right: var(--validation-dock-w);
+}
+
+body.has-validation-dock .workflow-panel.collapsed .workflow-header {
+  right: var(--validation-dock-w);
+}
+
+body.has-validation-dock .feedback-fab,
+body.has-validation-dock .impact-launcher {
+  right: calc(var(--validation-dock-w) + 20px);
 }
 
 /* The panel is narrower than the modal was, so tighten the inherited padding. */
