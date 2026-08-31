@@ -3091,7 +3091,7 @@ function App() {
     return [
       {
         id: 'png',
-        label: 'PNG',
+        label: 'Export PNG',
         group: 'images',
         icon: Download,
         description: 'Raster image of the current canvas.',
@@ -3099,7 +3099,7 @@ function App() {
       },
       {
         id: 'editorial-png',
-        label: 'Editorial PNG',
+        label: 'Export Editorial PNG',
         group: 'images',
         icon: Download,
         description: 'Publication-style reference-architecture render.',
@@ -3118,7 +3118,7 @@ function App() {
       },
       {
         id: 'blueprint-png',
-        label: 'Blueprint PNG',
+        label: 'Export Blueprint PNG',
         group: 'images',
         icon: Download,
         description: 'Hand-drawn whiteboard-style render.',
@@ -3142,7 +3142,7 @@ function App() {
       },
       {
         id: 'svg',
-        label: 'SVG',
+        label: 'Export SVG',
         group: 'images',
         icon: Download,
         description: 'Vector image that scales without quality loss.',
@@ -3150,7 +3150,7 @@ function App() {
       },
       {
         id: 'animated-svg',
-        label: 'Animated SVG',
+        label: 'Export Animated SVG',
         group: 'images',
         icon: Download,
         description: 'Flowing data-flow arrows. Open in a browser to see motion.',
@@ -3158,7 +3158,7 @@ function App() {
       },
       {
         id: 'workflow-animation',
-        label: 'Workflow Animation',
+        label: 'Export Workflow Animation',
         group: 'images',
         icon: Download,
         description: 'Plays the workflow step-by-step with captions.',
@@ -3167,7 +3167,7 @@ function App() {
       },
       {
         id: 'workflow-md',
-        label: 'Workflow (Markdown)',
+        label: 'Export Workflow (Markdown)',
         group: 'documents',
         icon: FileText,
         description: 'Services, step-by-step flow and connections as Markdown.',
@@ -3176,7 +3176,7 @@ function App() {
       },
       {
         id: 'pptx-slide',
-        label: 'PPTX Slide',
+        label: 'Export PPTX Slide',
         group: 'documents',
         icon: Presentation,
         description: 'The current diagram as a single PowerPoint slide.',
@@ -3184,7 +3184,7 @@ function App() {
       },
       {
         id: 'pptx-deck',
-        label: 'Customer Deck (PPTX)',
+        label: 'Export Customer Deck (PPTX)',
         group: 'documents',
         icon: Presentation,
         description: 'Title, diagram and services, plus WAF review and cost estimate when available.',
@@ -3193,7 +3193,7 @@ function App() {
       },
       {
         id: 'drawio',
-        label: 'Draw.io',
+        label: 'Export Draw.io',
         group: 'interchange',
         icon: Download,
         description: 'Editable diagram for Draw.io / diagrams.net.',
@@ -3201,7 +3201,7 @@ function App() {
       },
       {
         id: 'vsdx',
-        label: 'Visio (VSDX)',
+        label: 'Export Visio (VSDX)',
         group: 'interchange',
         icon: Download,
         description: 'Native Visio drawing with editable shapes and connectors.',
@@ -3210,7 +3210,7 @@ function App() {
       },
       {
         id: 'html',
-        label: 'Interactive HTML',
+        label: 'Export Interactive HTML',
         group: 'interchange',
         icon: FileCode,
         description: 'Self-contained page with pan, zoom and tooltips.',
@@ -3219,7 +3219,7 @@ function App() {
       },
       {
         id: 'costs-csv',
-        label: 'Costs (CSV)',
+        label: 'Export Costs (CSV)',
         group: 'cost',
         icon: DollarSign,
         description: 'Per-service cost breakdown as a spreadsheet.',
@@ -3228,7 +3228,7 @@ function App() {
       },
       {
         id: 'costs-all',
-        label: 'Costs (All Formats)',
+        label: 'Export Costs (All Formats)',
         group: 'cost',
         icon: DollarSign,
         description: 'CSV, JSON, summary and intelligent analysis as a ZIP.',
