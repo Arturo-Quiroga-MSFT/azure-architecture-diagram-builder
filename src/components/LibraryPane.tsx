@@ -1,53 +1,70 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useEffect } from 'react';
-import { X, Clock, ExternalLink, Trash2, Copy } from 'lucide-react';
+/**
+ * Library pane
+ *
+ * Saved versions and snapshots. A gallery, not a canvas — by the placement rules
+ * in DOCS/APP-SHELL-NAVIGATION-PLAN.md it earns a pane, which is why History and
+ * Snapshot no longer sit in the canvas toolbar.
+ *
+ * Converted from VersionHistoryModal; the inner markup keeps its class names so
+ * VersionHistoryModal.css still applies.
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Clock, ExternalLink, Trash2, Copy, Camera, RefreshCw } from 'lucide-react';
 import { DiagramVersion, getAllVersions, deleteVersion, getVersion } from '../services/versionStorageService';
 import './VersionHistoryModal.css';
+import './LibraryPane.css';
 
-interface VersionHistoryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface LibraryPaneProps {
   onRestoreVersion: (version: DiagramVersion) => void;
-  currentDiagramName?: string; // For future filtering feature
+  /** Opens the snapshot form; disabled when there is nothing to snapshot. */
+  onSaveSnapshot: () => void;
+  canSnapshot: boolean;
+  /** Restoring replaces the canvas, so the caller switches back to it. */
+  onGoToCanvas: () => void;
+  /** Bumped by the caller after a snapshot is saved elsewhere. */
+  reloadToken?: number;
 }
 
-const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
-  isOpen,
-  onClose,
-  onRestoreVersion,
-  currentDiagramName: _currentDiagramName
-}) => {
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function formatTimeAgo(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return formatDate(timestamp);
+}
+
+const LibraryPane: React.FC<LibraryPaneProps> = ({ onRestoreVersion, onSaveSnapshot, canSnapshot, onGoToCanvas, reloadToken }) => {
   const [versions, setVersions] = useState<DiagramVersion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadVersions();
-    }
-  }, [isOpen]);
-
-  const loadVersions = async () => {
+  const loadVersions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const allVersions = await getAllVersions();
-      setVersions(allVersions);
+      setVersions(await getAllVersions());
     } catch (error) {
       console.error('Failed to load versions:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => { void loadVersions(); }, [loadVersions, reloadToken]);
 
   const handleDelete = async (versionId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    
-    if (!confirm('Are you sure you want to delete this version? This cannot be undone.')) {
-      return;
-    }
-
+    if (!confirm('Are you sure you want to delete this version? This cannot be undone.')) return;
     try {
       await deleteVersion(versionId);
       await loadVersions();
@@ -59,33 +76,20 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
 
   const handleOpenInNewTab = async (versionId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    
     try {
       const version = await getVersion(versionId);
-      if (!version) {
-        alert('Version not found');
-        return;
-      }
-
-      // Create a temporary diagram data object
+      if (!version) { alert('Version not found'); return; }
       const diagramData = {
         nodes: version.nodes,
         edges: version.edges,
         metadata: version.metadata,
         workflow: version.workflow,
         architecturePrompt: version.architecturePrompt,
-        titleBlockData: version.titleBlockData
+        titleBlockData: version.titleBlockData,
       };
-
-      // Encode diagram data as base64
       const encodedData = btoa(JSON.stringify(diagramData));
-      
-      // Open in new tab with diagram data in URL hash
       const newTab = window.open(window.location.origin + window.location.pathname + '#version-' + encodedData, '_blank');
-      
-      if (!newTab) {
-        alert('Please allow pop-ups to open versions in new tabs');
-      }
+      if (!newTab) alert('Please allow pop-ups to open versions in new tabs');
     } catch (error) {
       console.error('Failed to open version:', error);
       alert('Failed to open version in new tab');
@@ -95,14 +99,10 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
   const handleRestore = async (versionId: string) => {
     try {
       const version = await getVersion(versionId);
-      if (!version) {
-        alert('Version not found');
-        return;
-      }
-
+      if (!version) { alert('Version not found'); return; }
       if (confirm(`Restore this version? Your current diagram will be replaced.\n\nVersion: ${version.diagramName}\nCreated: ${formatDate(version.timestamp)}`)) {
         onRestoreVersion(version);
-        onClose();
+        onGoToCanvas();
       }
     } catch (error) {
       console.error('Failed to restore version:', error);
@@ -110,58 +110,51 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
     }
   };
 
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatTimeAgo = (timestamp: number): string => {
-    const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-    return formatDate(timestamp);
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content version-history-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>
-            <Clock size={24} />
-            Version History
-          </h2>
-          <button className="modal-close" onClick={onClose} title="Close">
-            <X size={24} />
-          </button>
-        </div>
+    <div className="library-pane">
+      <div className="library-pane-inner">
+        <header className="library-pane-header">
+          <div>
+            <h2>Library</h2>
+            <p>Saved versions and snapshots of your architectures.</p>
+          </div>
+          <div className="library-header-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onSaveSnapshot}
+              disabled={!canSnapshot}
+              title={canSnapshot ? 'Save the current diagram as a snapshot' : 'Create a diagram first'}
+            >
+              <Camera size={16} />
+              Save snapshot
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => void loadVersions()} title="Reload the list">
+              <RefreshCw size={16} />
+              Refresh
+            </button>
+          </div>
+        </header>
 
-        <div className="modal-body">
-          {isLoading ? (
-            <div className="version-loading">
-              <div className="spinner"></div>
-              <p>Loading versions...</p>
+        {isLoading ? (
+          <div className="version-loading">
+            <div className="spinner"></div>
+            <p>Loading versions...</p>
+          </div>
+        ) : versions.length === 0 ? (
+          <div className="version-empty">
+            <Clock size={48} style={{ opacity: 0.3 }} />
+            <p>No versions saved yet</p>
+            <p className="version-empty-hint">
+              Versions are created automatically when you regenerate an architecture with AI,
+              or you can save a snapshot yourself.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="version-count">
+              {versions.length} {versions.length === 1 ? 'version' : 'versions'} saved
             </div>
-          ) : versions.length === 0 ? (
-            <div className="version-empty">
-              <Clock size={48} style={{ opacity: 0.3 }} />
-              <p>No versions saved yet</p>
-              <p className="version-empty-hint">
-                Versions are automatically created when you regenerate architecture with AI,
-                or you can manually create snapshots.
-              </p>
-            </div>
-          ) : (
             <div className="version-list">
               {versions.map((version, index) => (
                 <div
@@ -202,16 +195,8 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
                       <Clock size={14} />
                       {formatTimeAgo(version.timestamp)}
                     </span>
-                    {version.nodes && (
-                      <span className="version-stat">
-                        {version.nodes.length} services
-                      </span>
-                    )}
-                    {version.edges && (
-                      <span className="version-stat">
-                        {version.edges.length} connections
-                      </span>
-                    )}
+                    {version.nodes && <span className="version-stat">{version.nodes.length} services</span>}
+                    {version.edges && <span className="version-stat">{version.edges.length} connections</span>}
                   </div>
 
                   {version.architecturePrompt && (
@@ -236,16 +221,11 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
                   )}
 
                   {version.notes && (
-                    <div className="version-notes">
-                      <strong>Notes:</strong> {version.notes}
-                    </div>
+                    <div className="version-notes"><strong>Notes:</strong> {version.notes}</div>
                   )}
 
                   <div className="version-footer">
-                    <button
-                      className="btn-restore"
-                      onClick={() => handleRestore(version.versionId)}
-                    >
+                    <button className="btn-restore" onClick={() => handleRestore(version.versionId)}>
                       <Copy size={16} />
                       Restore This Version
                     </button>
@@ -253,20 +233,11 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        <div className="modal-actions">
-          <div className="version-count">
-            {versions.length} {versions.length === 1 ? 'version' : 'versions'} saved
-          </div>
-          <button className="btn-secondary" onClick={onClose}>
-            Close
-          </button>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-export default VersionHistoryModal;
+export default LibraryPane;

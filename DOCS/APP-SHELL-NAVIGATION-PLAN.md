@@ -281,4 +281,57 @@ tab needs offsetting. Measured before/after in both states:
 Pre-existing and unchanged: the feedback/impact buttons overlap the *expanded* workflow
 panel. They did before this work too.
 
+### 2026-08-31 — Step 4: context-aware toolbar and the Library pane
+
+Two changes, both applying the placement rules rather than inventing new UI.
+
+**The toolbar is a canvas toolbar, so it only renders on the Canvas pane.** This closes
+the wart logged in step 2, where Layout, Select, Focus, Collapse Groups and Validate
+appeared on Reports where they did nothing. Measured: 20 controls on Canvas, 0 elsewhere.
+The journey strip is hidden off-canvas for the same reason.
+
+**Version history became the Library pane.** Saved versions and snapshots are a gallery,
+not an annotation of the diagram, so by the rules they earn a pane. `VersionHistoryModal`
+was converted the same way `ValidationModal` was — inner `.version-*` markup kept so
+`VersionHistoryModal.css` still applies — and deleted. History and Snapshot left the
+toolbar permanently.
+
+**Bug found in verification, not in review:** saving a snapshot from the pane left the
+list stale, because the pane loads once on mount and the save happens in a modal outside
+it. Added a `reloadToken` the caller bumps after a successful save.
+
+Also fixed: `SaveSnapshotModal` still told users snapshots are restored "from Version
+History", which no longer exists. Version cards had no dark-mode rules at all — they were
+light inside a dark modal before too; scoped dark rules added since nothing else uses
+those classes now.
+
+**Tested** — snapshot saved from the pane, listed, then restored:
+
+| Check | Result |
+|---|---|
+| Header controls, Canvas vs Library | 20 → 0 |
+| Toolbar + journey strip hidden off-canvas | yes |
+| Snapshot saved from pane appears without manual refresh | yes, `2 versions saved` |
+| Notes, service and connection counts render | yes |
+| Restore switches back to Canvas, toolbar returns | yes |
+| Dark mode card contrast | `#242424` card on `#1a1a1a` pane |
+
+`typecheck`, `lint`, `build`, `test:deterministic`, `test:bundle-budget` and
+`test:version` all pass. `src/App.tsx` is 4,594 lines, roughly flat versus the 4,570 at
+the start — two panes' worth of markup left while pane wiring arrived.
+
+**Still outstanding — the toolbar is 20 controls on Canvas.** Remaining reductions, in
+rough value order:
+
+1. Merge `Import Template` + `Import from Azure` into one Import menu, and
+   `Compare Models` + `Compare Validation` into one Compare menu (−2).
+2. Move Layout / Select / Style / Focus / Collapse Groups to a floating canvas toolbar
+   (−5). Deferred deliberately: the canvas edges are already occupied by the legend,
+   minimap, React Flow controls, nav hint, title block and prompt banner, so a floating
+   bar needs a placement study rather than a guess.
+3. Fill the Settings pane with model configuration and dark mode.
+
+**Known gap introduced here:** the dark-mode toggle and model selector live in the canvas
+toolbar, so they are unreachable from Reports, Library and Settings. Item 3 is the fix.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

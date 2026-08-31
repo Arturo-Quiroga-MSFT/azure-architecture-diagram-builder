@@ -20,10 +20,11 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
 import ReportsPane from './components/ReportsPane';
+import LibraryPane from './components/LibraryPane';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
@@ -40,7 +41,6 @@ import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
 import ValidationPanel from './components/ValidationPanel';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
-import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
 import AzureImportModal from './components/AzureImportModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
@@ -251,8 +251,10 @@ function App() {
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
 
   // Version History State
-  const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
+  // Snapshots are saved from a modal outside the Library pane, so the pane needs
+  // a nudge to reload its list.
+  const [libraryReloadToken, setLibraryReloadToken] = useState(0);
   const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeliverChooserOpen, setIsDeliverChooserOpen] = useState(false);
@@ -2017,6 +2019,7 @@ function App() {
       );
       console.log('✅ Manual snapshot saved successfully');
       trackVersionOperation('save');
+      setLibraryReloadToken(t => t + 1);
     } catch (error) {
       console.error('Failed to save manual snapshot:', error);
       throw error;
@@ -3252,6 +3255,9 @@ function App() {
               <span className="app-version">v{APP_VERSION}</span>
             </div>
           </div>
+          {/* The toolbar and journey strip act on the diagram, so they are canvas-only. */}
+          {isCanvasView && (
+          <>
           <div className="header-actions-wrapper">
             {/* Row 1: Project-level actions */}
             <div className="header-actions">
@@ -3557,26 +3563,6 @@ function App() {
 
             {/* Row 2: Canvas tools & AI settings */}
             <div className="header-actions">
-              <div className="toolbar-group">
-                <button 
-                  onClick={() => setIsVersionHistoryModalOpen(true)} 
-                  className="btn btn-secondary" 
-                  title="View version history"
-                >
-                  <Clock size={18} />
-                  History
-                </button>
-                <button 
-                  onClick={() => setIsSaveSnapshotModalOpen(true)} 
-                  className="btn btn-secondary" 
-                  title="Save current diagram as snapshot"
-                  disabled={nodes.length === 0}
-                >
-                  <Camera size={18} />
-                  Snapshot
-                </button>
-              </div>
-
               <div className="toolbar-group">
                 <div className="toolbar-dropdown" ref={layoutMenuRef}>
                   <button
@@ -3912,7 +3898,10 @@ function App() {
             {isHeaderCollapsed ? <PanelTopOpen size={18} /> : <PanelTopClose size={18} />}
             <span>{isHeaderCollapsed ? 'Show Toolbar' : 'Hide Toolbar'}</span>
           </button>
+          </>
+          )}
         </div>
+        {isCanvasView && (
         <JourneyStrip
           hasDiagram={nodes.some(node => node.type === 'azureNode')}
           hasValidation={validationResult !== null}
@@ -3921,6 +3910,7 @@ function App() {
           isGeneratingGuide={isGeneratingGuide}
           onStep={handleJourneyStep}
         />
+        )}
       </header>
       
       <div className="workspace">
@@ -3945,7 +3935,17 @@ function App() {
           />
         )}
 
-        {!isCanvasView && activeView !== 'reports' && (
+        {activeView === 'library' && (
+          <LibraryPane
+            onRestoreVersion={restoreVersion}
+            onSaveSnapshot={() => setIsSaveSnapshotModalOpen(true)}
+            canSnapshot={nodes.length > 0}
+            onGoToCanvas={() => setActiveView('canvas')}
+            reloadToken={libraryReloadToken}
+          />
+        )}
+
+        {!isCanvasView && activeView !== 'reports' && activeView !== 'library' && (
           <div className="shell-pane-placeholder">
             <h2>{activeView.charAt(0).toUpperCase() + activeView.slice(1)}</h2>
             <p>
@@ -4396,12 +4396,6 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         isOpen={isDeploymentGuideModalOpen}
         onClose={() => setIsDeploymentGuideModalOpen(false)}
         isLoading={isGeneratingGuide}
-      />
-      <VersionHistoryModal
-        isOpen={isVersionHistoryModalOpen}
-        onClose={() => setIsVersionHistoryModalOpen(false)}
-        onRestoreVersion={restoreVersion}
-        currentDiagramName={titleBlockData.architectureName}
       />
       <SaveSnapshotModal
         isOpen={isSaveSnapshotModalOpen}

@@ -83,7 +83,7 @@ const SaveSnapshotModal: React.FC<SaveSnapshotModalProps> = ({
           </div>
 
           <div className="snapshot-hint">
-            💡 Snapshots are saved locally and can be restored from Version History
+            💡 Snapshots are saved locally and can be restored from the Library
           </div>
         </div>
 
