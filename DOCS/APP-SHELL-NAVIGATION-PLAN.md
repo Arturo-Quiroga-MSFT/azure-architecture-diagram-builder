@@ -334,4 +334,43 @@ rough value order:
 **Known gap introduced here:** the dark-mode toggle and model selector live in the canvas
 toolbar, so they are unreachable from Reports, Library and Settings. Item 3 is the fix.
 
+### 2026-08-31 — Step 5: Settings pane
+
+Closes the gap above. The model settings body was extracted from
+`ModelSettingsPopover` into `ModelSettingsControls`, used by both the toolbar popover and
+the pane — the same one-definition-two-surfaces pattern as the export actions. All state
+already lived in `modelSettingsStore`, so the two surfaces stay in sync with no extra
+wiring.
+
+Settings holds appearance (dark mode), validation display (`showNumericScore`, which was
+previously only reachable from the validation panel header) and AI models.
+
+Every rail item now has a real pane, so the `pending` state and
+`.shell-pane-placeholder` were removed rather than left as dead code.
+
+**Bug I introduced and caught in a screenshot:** both the Settings and Library panes used
+`className="btn btn-secondary"`. That class is `color: white` on a translucent white
+background — built for the **blue header**. On a white pane the buttons were invisible.
+Added a `.pane-btn` class for light pane surfaces. Worth remembering: header-scoped
+styling does not transfer to panes, and this is the second time that class-scoping
+assumption has bitten during this migration.
+
+**Tested:**
+
+| Check | Result |
+|---|---|
+| Change model in pane → toolbar trigger updates | GPT-5.2 → GPT-5.1, reflected |
+| Change model in toolbar → pane updates | GPT-5.2, reflected |
+| Dark mode toggled from pane | `body.dark-mode` off, `localStorage.darkMode` `"false"` |
+| Numeric score toggle persists | `{"showNumericScore":true}` |
+| Pane button contrast, light mode | `#374151` on `#ffffff`, 1px `#d1d5db` border |
+
+`typecheck`, `lint`, `build`, `test:deterministic`, `test:bundle-budget` and
+`test:version` all pass.
+
+**Remaining, deliberately not done:** the toolbar is still ~20 controls on Canvas.
+Merging Import/Compare into menus is −2 for real nesting cost. The floating canvas
+toolbar (−5) needs a placement decision from a human, because the canvas edges are
+already occupied.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

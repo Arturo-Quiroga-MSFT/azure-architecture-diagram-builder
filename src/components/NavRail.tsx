@@ -22,15 +22,13 @@ interface NavItem {
   view: AppView;
   label: string;
   icon: LucideIcon;
-  /** Panes still to be built by later migration steps. */
-  pending?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { view: 'canvas', label: 'Canvas', icon: LayoutGrid },
-  { view: 'library', label: 'Library', icon: FolderOpen, pending: true },
-  { view: 'reports', label: 'Reports', icon: FileBarChart, pending: true },
-  { view: 'settings', label: 'Settings', icon: Settings, pending: true },
+  { view: 'library', label: 'Library', icon: FolderOpen },
+  { view: 'reports', label: 'Reports', icon: FileBarChart },
+  { view: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export function NavRail() {
@@ -38,15 +36,15 @@ export function NavRail() {
 
   return (
     <nav className="nav-rail" aria-label="Main">
-      {NAV_ITEMS.map(({ view, label, icon: Icon, pending }) => {
+      {NAV_ITEMS.map(({ view, label, icon: Icon }) => {
         const isActive = view === activeView;
         return (
           <button
             key={view}
             type="button"
-            className={`nav-rail-item${isActive ? ' is-active' : ''}${pending ? ' is-pending' : ''}`}
+            className={`nav-rail-item${isActive ? ' is-active' : ''}`}
             onClick={() => setActiveView(view)}
-            title={pending ? `${label} — coming soon` : label}
+            title={label}
             aria-current={isActive ? 'page' : undefined}
           >
             <Icon size={20} aria-hidden="true" />

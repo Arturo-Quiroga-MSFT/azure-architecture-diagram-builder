@@ -121,7 +121,7 @@ const LibraryPane: React.FC<LibraryPaneProps> = ({ onRestoreVersion, onSaveSnaps
           <div className="library-header-actions">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="pane-btn"
               onClick={onSaveSnapshot}
               disabled={!canSnapshot}
               title={canSnapshot ? 'Save the current diagram as a snapshot' : 'Create a diagram first'}
@@ -129,7 +129,7 @@ const LibraryPane: React.FC<LibraryPaneProps> = ({ onRestoreVersion, onSaveSnaps
               <Camera size={16} />
               Save snapshot
             </button>
-            <button type="button" className="btn btn-secondary" onClick={() => void loadVersions()} title="Reload the list">
+            <button type="button" className="pane-btn" onClick={() => void loadVersions()} title="Reload the list">
               <RefreshCw size={16} />
               Refresh
             </button>

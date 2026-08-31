@@ -25,6 +25,7 @@ import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
 import ReportsPane from './components/ReportsPane';
 import LibraryPane from './components/LibraryPane';
+import SettingsPane from './components/SettingsPane';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
@@ -3945,15 +3946,8 @@ function App() {
           />
         )}
 
-        {!isCanvasView && activeView !== 'reports' && activeView !== 'library' && (
-          <div className="shell-pane-placeholder">
-            <h2>{activeView.charAt(0).toUpperCase() + activeView.slice(1)}</h2>
-            <p>
-              This pane is not built yet. Later steps of the app shell migration move
-              reports, exports and saved architectures here. Select Canvas to return to
-              your diagram — nothing has been lost.
-            </p>
-          </div>
+        {activeView === 'settings' && (
+          <SettingsPane isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />
         )}
 
         <div className={`canvas-container${isCanvasView ? '' : ' is-hidden'}`} ref={reactFlowWrapper}>
