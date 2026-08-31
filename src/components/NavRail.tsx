@@ -13,7 +13,7 @@
  * DOCS/APP-SHELL-NAVIGATION-PLAN.md.
  */
 
-import { LayoutGrid, FolderOpen, FileBarChart, Settings } from 'lucide-react';
+import { LayoutGrid, FolderOpen, FileBarChart, Settings, GitCompare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAppView, type AppView } from '../stores/appViewStore';
 import './NavRail.css';
@@ -27,6 +27,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { view: 'canvas', label: 'Canvas', icon: LayoutGrid },
   { view: 'library', label: 'Library', icon: FolderOpen },
+  { view: 'compare', label: 'Compare', icon: GitCompare },
   { view: 'reports', label: 'Reports', icon: FileBarChart },
   { view: 'settings', label: 'Settings', icon: Settings },
 ];

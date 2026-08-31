@@ -373,4 +373,47 @@ Merging Import/Compare into menus is −2 for real nesting cost. The floating ca
 toolbar (−5) needs a placement decision from a human, because the canvas edges are
 already occupied.
 
+### 2026-08-31 — Step 6: Compare pane
+
+`CompareValidationModal` became `CompareValidationPane` behind a fifth rail item.
+
+**Why a pane and not the right dock.** The results grid is
+`repeat(auto-fill, minmax(320px, 1fr))` and the pillar breakdown is `repeat(5, 1fr)`,
+for up to 15 models. The dock is 480px — that yields one column and destroys the only
+thing the feature exists for. It is a report, it does not annotate the diagram, so by the
+placement rules it earns a pane.
+
+`.compare-modal` is shared with `CompareModelsModal`, which is still a modal, so its
+sizing is overridden inside `.compare-pane` rather than changed at source.
+
+**Mounted lazily, then kept mounted.** A comparison across models is long-running, and a
+pane that unmounts would kill it. The pane is not rendered until the first visit (it is a
+large component), and from then on it stays mounted and is hidden with the same
+absolute + `visibility: hidden` trick as the canvas. The avatar connection still drops
+when the pane is not active, since that is a live speech session.
+
+**Tested** — the central claim, measured directly rather than inferred:
+
+| Check | Result |
+|---|---|
+| Mounted before first visit | 0 panes on 3 consecutive fresh loads |
+| Mounted after first visit, hidden when away | yes |
+| Two-model run started, then navigated to Canvas | — |
+| Results while `hidden: true`, view never left Canvas | 0 → 1 (~30s) → 2 (~110s) |
+| Run completed without returning to the pane | yes |
+
+`npm run verify:release` passes, including all 3 Playwright e2e tests.
+
+**Two measurement mistakes worth recording**, both from reading the DOM in the same
+synchronous `page.evaluate` that had just clicked:
+
+1. "Pane is mounted before first visit" — not reproducible; 3 clean loads showed 0.
+2. "Deselecting models did not take" — it had; the readout was pre-re-render.
+
+Both would have become false claims if the first reading had been trusted.
+
+**Note:** an earlier run only established that state *survived* navigating away, not that
+work *progressed* while hidden. The table above is from a second run built specifically to
+show progression, because the weaker evidence did not support the claim being made.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

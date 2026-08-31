@@ -46,7 +46,7 @@ import SaveSnapshotModal from './components/SaveSnapshotModal';
 import AzureImportModal from './components/AzureImportModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
 import CompareModelsModal from './components/CompareModelsModal';
-import CompareValidationModal from './components/CompareValidationModal';
+import CompareValidationPane from './components/CompareValidationPane';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
@@ -228,6 +228,10 @@ function App() {
   // so React Flow state, undo history and selection survive the switch.
   const [activeView, setActiveView] = useAppView();
   const isCanvasView = activeView === 'canvas';
+
+  useEffect(() => {
+    if (activeView === 'compare') setHasOpenedCompare(true);
+  }, [activeView]);
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -277,7 +281,9 @@ function App() {
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(() => localStorage.getItem(HEADER_COLLAPSED_STORAGE_KEY) === '1');
-  const [isCompareValidationOpen, setIsCompareValidationOpen] = useState(false);
+  // Mounted on first visit and kept mounted after, so a multi-model comparison
+  // survives navigating away. Not mounted up-front: it is a large component.
+  const [hasOpenedCompare, setHasOpenedCompare] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isImpactModalOpen, setIsImpactModalOpen] = useState(false);
   const [isFeedbackToastOpen, setIsFeedbackToastOpen] = useState(false);
@@ -3840,7 +3846,7 @@ function App() {
                 </button>
                 <button
                   className="btn btn-compare-models"
-                  onClick={() => setIsCompareValidationOpen(true)}
+                  onClick={() => setActiveView('compare')}
                   title="Compare WAF validation results across multiple AI models"
                   disabled={nodes.length === 0}
                 >
@@ -3948,6 +3954,40 @@ function App() {
 
         {activeView === 'settings' && (
           <SettingsPane isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />
+        )}
+
+        {hasOpenedCompare && (
+          <CompareValidationPane
+            isActive={activeView === 'compare'}
+            onExit={() => setActiveView('canvas')}
+            onApply={(validation) => {
+              setValidationResult(validation);
+              setValidationNeedsRefresh(false);
+              setIsValidationPanelOpen(true);
+              setPanelsCollapsedSignal(prev => prev + 1);
+            }}
+            services={nodes
+              .filter(n => n.type === 'azureNode')
+              .map(n => ({
+                name: n.data.label || n.data.serviceName || 'Unknown Service',
+                type: n.data.serviceName || n.data.label || 'Unknown',
+                category: n.data.category || 'General',
+              }))}
+            connections={edges.map(e => ({
+              from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+              to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+              label: String(e.label || ''),
+            }))}
+            groups={nodes
+              .filter(n => n.type === 'groupNode')
+              .map(n => ({
+                name: n.data.label || 'Group',
+                services: nodes
+                  .filter(child => child.parentNode === n.id)
+                  .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+              }))}
+            architectureDescription={architecturePrompt || titleBlockData.architectureName}
+          />
         )}
 
         <div className={`canvas-container${isCanvasView ? '' : ' is-hidden'}`} ref={reactFlowWrapper}>
@@ -4445,37 +4485,6 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
             }
           }
         }}
-      />
-      <CompareValidationModal
-        isOpen={isCompareValidationOpen}
-        onClose={() => setIsCompareValidationOpen(false)}
-        onApply={(validation) => {
-          setValidationResult(validation);
-          setValidationNeedsRefresh(false);
-          setIsValidationPanelOpen(true);
-          setPanelsCollapsedSignal(prev => prev + 1);
-        }}
-        services={nodes
-          .filter(n => n.type === 'azureNode')
-          .map(n => ({
-            name: n.data.label || n.data.serviceName || 'Unknown Service',
-            type: n.data.serviceName || n.data.label || 'Unknown',
-            category: n.data.category || 'General',
-          }))}
-        connections={edges.map(e => ({
-          from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
-          to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
-          label: String(e.label || ''),
-        }))}
-        groups={nodes
-          .filter(n => n.type === 'groupNode')
-          .map(n => ({
-            name: n.data.label || 'Group',
-            services: nodes
-              .filter(child => child.parentNode === n.id)
-              .map(child => child.data.label || child.data.serviceName || 'Unknown'),
-          }))}
-        architectureDescription={architecturePrompt || titleBlockData.architectureName}
       />
 
       {ImpactModal && (

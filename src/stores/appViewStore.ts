@@ -14,7 +14,7 @@
 
 import { useState, useEffect } from 'react';
 
-export type AppView = 'canvas' | 'library' | 'reports' | 'settings';
+export type AppView = 'canvas' | 'library' | 'compare' | 'reports' | 'settings';
 
 export const DEFAULT_VIEW: AppView = 'canvas';
 
