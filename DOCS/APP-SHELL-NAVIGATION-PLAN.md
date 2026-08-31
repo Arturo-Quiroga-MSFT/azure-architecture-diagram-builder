@@ -154,3 +154,49 @@ real content into a pane.
 collapsed/expanded toggle resets on return. Accepted — it is a UI toggle, not work.
 
 **Next:** step 2 — move Reports/Exports into the Reports pane.
+
+### 2026-08-31 — Step 2 complete: Reports pane
+
+The Export dropdown held 14 actions, a settings row and a history list. Those are
+documents, not annotations, so they moved to a pane.
+
+**One list, two renderers.** Each export is now an `ExportAction` descriptor
+(`src/types/exportActions.ts`) built once in `App.tsx`. The toolbar dropdown and
+`ReportsPane` both render that array, so they cannot drift. This removed ~210 lines of
+duplicated JSX from `App.tsx`.
+
+`disabledReason` replaces a separate `disabled` flag — the presence of the string is
+what disables the action, so a disabled export can never exist without an explanation.
+The pane prints that reason on the card instead of burying it in a `title` tooltip,
+which was the main reason to move these out of a dropdown.
+
+**Regression caught during verification.** The first pass dropped the `azureNodeCount === 0`
+guard on *Workflow (Markdown)*, so it was clickable on an empty diagram. Found by
+diffing the rendered toolbar list against the original JSX, not by reading the code.
+Restored.
+
+**Tested** — toolbar list vs pane list compared programmatically:
+
+| Check | Result |
+|---|---|
+| Actions in toolbar dropdown | 14 |
+| Cards in Reports pane | 14 |
+| Labels + disabled states identical | yes |
+| Disabled states on empty diagram | match pre-refactor JSX |
+| Export runs from the pane | Draw.io export produced a file and appeared in Recent exports |
+| Dark mode | verified |
+
+`typecheck`, `lint`, `build`, `test:deterministic` (15 checks) and `test:bundle-budget`
+all pass.
+
+**Scope of that evidence:** one export (Draw.io) was executed end-to-end. The other 13
+were verified as *present and correctly enabled*, not run. They call the same handlers as
+before, but that is inference, not a test.
+
+**Known wart, deferred to step 4:** the full canvas toolbar still renders above the
+Reports pane, so canvas-only controls (Layout, Select, Focus, Collapse Groups, Validate)
+show on a pane where they do nothing. Fixing this properly is the toolbar decomposition,
+not a patch here.
+
+**Next:** step 3 — convert `ValidationModal` into a right-dock panel and wire
+finding → node cross-highlighting.

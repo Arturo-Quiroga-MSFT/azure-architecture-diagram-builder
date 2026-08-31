@@ -1,0 +1,288 @@
+/* Copyright (c) Microsoft Corporation.
+   Licensed under the MIT License. */
+
+.reports-pane {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.reports-pane-inner {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 1.75rem 2rem 3rem;
+}
+
+.reports-pane-header h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.reports-pane-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.reports-empty-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  font-size: 0.875rem;
+  color: #92400e;
+}
+
+.reports-link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: #0078d4;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.reports-section {
+  margin-top: 1.75rem;
+}
+
+.reports-section h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.reports-settings {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.reports-settings select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+}
+
+.reports-settings-hint {
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.reports-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.75rem;
+}
+
+.reports-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reports-card:hover:not(:disabled) {
+  border-color: #0078d4;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.12);
+}
+
+.reports-card:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}
+
+.reports-card:disabled {
+  cursor: not-allowed;
+  background: #f9fafb;
+  border-style: dashed;
+}
+
+.reports-card-icon {
+  flex-shrink: 0;
+  color: #0078d4;
+  margin-top: 0.1rem;
+}
+
+.reports-card:disabled .reports-card-icon {
+  color: #9ca3af;
+}
+
+.reports-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.reports-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.reports-card:disabled .reports-card-title {
+  color: #6b7280;
+}
+
+.reports-card-desc {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+/* The reason an export cannot run, stated in the card rather than hidden in a
+   tooltip — the whole point of moving these out of the dropdown. */
+.reports-card-blocked {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.reports-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.reports-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.reports-history li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.reports-history li:last-child {
+  border-bottom: none;
+}
+
+.reports-history-file {
+  font-size: 0.875rem;
+  color: #111827;
+  overflow-wrap: anywhere;
+}
+
+.reports-history-meta {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+body.dark-mode .reports-pane {
+  background: #1a1a1a;
+}
+
+body.dark-mode .reports-pane-header h2 {
+  color: #e5e7eb;
+}
+
+body.dark-mode .reports-pane-header p,
+body.dark-mode .reports-section h3,
+body.dark-mode .reports-card-desc,
+body.dark-mode .reports-history-meta,
+body.dark-mode .reports-settings-hint,
+body.dark-mode .reports-empty {
+  color: #9ca3af;
+}
+
+body.dark-mode .reports-empty-banner {
+  border-color: #78350f;
+  background: #2a1f0a;
+  color: #fcd34d;
+}
+
+body.dark-mode .reports-link-btn {
+  color: #60a5fa;
+}
+
+body.dark-mode .reports-settings,
+body.dark-mode .reports-card,
+body.dark-mode .reports-history {
+  background: #242424;
+  border-color: #2d2d2d;
+}
+
+body.dark-mode .reports-settings {
+  color: #e0e0e0;
+}
+
+body.dark-mode .reports-settings select {
+  background: #1a1a1a;
+  border-color: #3d3d3d;
+  color: #e0e0e0;
+}
+
+body.dark-mode .reports-card:disabled {
+  background: #1f1f1f;
+}
+
+body.dark-mode .reports-card-title {
+  color: #e5e7eb;
+}
+
+body.dark-mode .reports-card-icon {
+  color: #60a5fa;
+}
+
+body.dark-mode .reports-card-blocked {
+  color: #fbbf24;
+}
+
+body.dark-mode .reports-history li {
+  border-bottom-color: #2d2d2d;
+}
+
+body.dark-mode .reports-history-file {
+  color: #e5e7eb;
+}

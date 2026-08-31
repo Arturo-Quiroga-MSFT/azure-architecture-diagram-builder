@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -23,6 +23,7 @@ import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
 import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
+import ReportsPane from './components/ReportsPane';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
@@ -63,6 +64,12 @@ import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } 
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
 import { useAppView } from './stores/appViewStore';
+import {
+  EXPORT_GROUP_LABELS,
+  EXPORT_GROUP_ORDER,
+  isExportDisabled,
+  type ExportAction,
+} from './types/exportActions';
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
@@ -218,7 +225,7 @@ function App() {
   const pricingEditorNodeId = useNodePricingEditor();
   // Top-level shell pane. The canvas stays mounted when another pane is active
   // so React Flow state, undo history and selection survive the switch.
-  const [activeView] = useAppView();
+  const [activeView, setActiveView] = useAppView();
   const isCanvasView = activeView === 'canvas';
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
@@ -3054,6 +3061,171 @@ function App() {
     setIsDeliverChooserOpen(true);
   };
 
+  const azureNodeCount = nodes.filter(n => n.type === 'azureNode').length;
+
+  // Single definition per export, rendered by both the toolbar dropdown and the
+  // Reports pane so the two lists cannot drift.
+  const exportActions: ExportAction[] = useMemo(() => {
+    const needsDiagram = azureNodeCount === 0 ? 'Add services to the diagram first' : undefined;
+    const needsCost = totalMonthlyCost === 0 ? 'Add services to estimate costs first' : undefined;
+
+    return [
+      {
+        id: 'png',
+        label: 'PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Raster image of the current canvas.',
+        run: exportDiagram,
+      },
+      {
+        id: 'editorial-png',
+        label: 'Editorial PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Publication-style reference-architecture render.',
+        disabledReason: lastReferenceArchitecture
+          ? undefined
+          : 'Generate a diagram in Reference Architecture mode to enable this',
+        run: () => {
+          if (!lastReferenceArchitecture) return;
+          void import('./utils/exportReferencePng')
+            .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
+            .catch((err) => {
+              console.error('Editorial PNG export failed:', err);
+              alert('Editorial PNG export failed. See console for details.');
+            });
+        },
+      },
+      {
+        id: 'blueprint-png',
+        label: 'Blueprint PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Hand-drawn whiteboard-style render.',
+        disabledReason: lastBlueprintArchitecture
+          ? undefined
+          : 'Generate a diagram in Blueprint mode to enable this',
+        run: () => {
+          if (!lastBlueprintArchitecture) return;
+          const savedLegend = localStorage.getItem('aiGenerator.blueprintLegendPosition');
+          const legendPosition =
+            savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
+              ? (savedLegend as 'bottom' | 'right' | 'auto')
+              : 'auto';
+          void import('./utils/exportBlueprintPng')
+            .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
+            .catch((err) => {
+              console.error('Blueprint PNG export failed:', err);
+              alert('Blueprint PNG export failed. See console for details.');
+            });
+        },
+      },
+      {
+        id: 'svg',
+        label: 'SVG',
+        group: 'images',
+        icon: Download,
+        description: 'Vector image that scales without quality loss.',
+        run: exportAsSvg,
+      },
+      {
+        id: 'animated-svg',
+        label: 'Animated SVG',
+        group: 'images',
+        icon: Download,
+        description: 'Flowing data-flow arrows. Open in a browser to see motion.',
+        run: exportAsAnimatedSvg,
+      },
+      {
+        id: 'workflow-animation',
+        label: 'Workflow Animation',
+        group: 'images',
+        icon: Download,
+        description: 'Plays the workflow step-by-step with captions.',
+        disabledReason: workflow.length === 0 ? 'No workflow steps in this diagram to animate' : undefined,
+        run: exportWorkflowAnimation,
+      },
+      {
+        id: 'workflow-md',
+        label: 'Workflow (Markdown)',
+        group: 'documents',
+        icon: FileText,
+        description: 'Services, step-by-step flow and connections as Markdown.',
+        disabledReason: needsDiagram,
+        run: exportWorkflowMarkdown,
+      },
+      {
+        id: 'pptx-slide',
+        label: 'PPTX Slide',
+        group: 'documents',
+        icon: Presentation,
+        description: 'The current diagram as a single PowerPoint slide.',
+        run: exportAsPptx,
+      },
+      {
+        id: 'pptx-deck',
+        label: 'Customer Deck (PPTX)',
+        group: 'documents',
+        icon: Presentation,
+        description: 'Title, diagram and services, plus WAF review and cost estimate when available.',
+        disabledReason: needsDiagram,
+        run: exportCustomerDeck,
+      },
+      {
+        id: 'drawio',
+        label: 'Draw.io',
+        group: 'interchange',
+        icon: Download,
+        description: 'Editable diagram for Draw.io / diagrams.net.',
+        run: exportAsDrawio,
+      },
+      {
+        id: 'vsdx',
+        label: 'Visio (VSDX)',
+        group: 'interchange',
+        icon: Download,
+        description: 'Native Visio drawing with editable shapes and connectors.',
+        disabledReason: needsDiagram,
+        run: exportAsVsdx,
+      },
+      {
+        id: 'html',
+        label: 'Interactive HTML',
+        group: 'interchange',
+        icon: FileCode,
+        description: 'Self-contained page with pan, zoom and tooltips.',
+        disabledReason: needsDiagram,
+        run: exportAsHtml,
+      },
+      {
+        id: 'costs-csv',
+        label: 'Costs (CSV)',
+        group: 'cost',
+        icon: DollarSign,
+        description: 'Per-service cost breakdown as a spreadsheet.',
+        disabledReason: needsCost,
+        run: exportCostBreakdown,
+      },
+      {
+        id: 'costs-all',
+        label: 'Costs (All Formats)',
+        group: 'cost',
+        icon: DollarSign,
+        description: 'CSV, JSON, summary and intelligent analysis as a ZIP.',
+        disabledReason: needsCost,
+        run: exportCostBreakdownZip,
+      },
+    ];
+  }, [
+    azureNodeCount, totalMonthlyCost, workflow.length,
+    lastReferenceArchitecture, lastBlueprintArchitecture,
+    exportDiagram, exportAsSvg, exportAsAnimatedSvg, exportWorkflowAnimation,
+    exportWorkflowMarkdown, exportAsPptx, exportCustomerDeck,
+    exportAsDrawio, exportAsVsdx, exportAsHtml,
+    exportCostBreakdown, exportCostBreakdownZip,
+  ]);
+
   return (
     <div className="app">
       <header className={`app-header${isHeaderCollapsed ? ' header-collapsed' : ''}`}>
@@ -3266,7 +3438,7 @@ function App() {
 
                   {isExportMenuOpen && (
                     <div className="toolbar-dropdown-menu toolbar-dropdown-menu--export" role="menu" aria-label="Export options">
-                      <div className="toolbar-dropdown-heading">Presentation</div>
+                      <div className="toolbar-dropdown-heading">Capture settings</div>
                       <div className="toolbar-dropdown-row">
                         <label className="toolbar-dropdown-label" htmlFor="export-background">Export background</label>
                         <select
@@ -3289,213 +3461,31 @@ function App() {
                         Affects PNG, SVG, animated SVG, and PowerPoint captures. The editing canvas stays dotted.
                       </div>
                       <div className="toolbar-dropdown-separator" />
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportDiagram();
-                        }}
-                        title="Export as PNG"
-                      >
-                        <Download size={18} />
-                        Export PNG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={!lastReferenceArchitecture}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          if (!lastReferenceArchitecture) return;
-                          void import('./utils/exportReferencePng')
-                            .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
-                            .catch((err) => {
-                              console.error('Editorial PNG export failed:', err);
-                              alert('Editorial PNG export failed. See console for details.');
-                            });
-                        }}
-                        title={
-                          lastReferenceArchitecture
-                            ? 'Re-download the publication-style reference-architecture PNG'
-                            : 'Generate a diagram in Reference Architecture mode to enable this export'
-                        }
-                      >
-                        <Download size={18} />
-                        Export Editorial PNG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={!lastBlueprintArchitecture}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          if (!lastBlueprintArchitecture) return;
-                          const savedLegend = localStorage.getItem('aiGenerator.blueprintLegendPosition');
-                          const legendPosition =
-                            savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
-                              ? (savedLegend as 'bottom' | 'right' | 'auto')
-                              : 'auto';
-                          void import('./utils/exportBlueprintPng')
-                            .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
-                            .catch((err) => {
-                              console.error('Blueprint PNG export failed:', err);
-                              alert('Blueprint PNG export failed. See console for details.');
-                            });
-                        }}
-                        title={
-                          lastBlueprintArchitecture
-                            ? 'Re-download the hand-drawn whiteboard-style blueprint PNG'
-                            : 'Generate a diagram in Blueprint mode to enable this export'
-                        }
-                      >
-                        <Download size={18} />
-                        Export Blueprint PNG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsSvg();
-                        }}
-                        title="Export as SVG (vector format)"
-                      >
-                        <Download size={18} />
-                        Export SVG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsAnimatedSvg();
-                        }}
-                        title="Export as Animated SVG — flowing data-flow arrows (open in a browser to see motion)"
-                      >
-                        <Download size={18} />
-                        Export Animated SVG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={workflow.length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportWorkflowAnimation();
-                        }}
-                        title={
-                          workflow.length > 0
-                            ? 'Export an animated SVG that plays the workflow step-by-step with captions'
-                            : 'No workflow steps in this diagram to animate'
-                        }
-                      >
-                        <Download size={18} />
-                        Export Workflow Animation
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportWorkflowMarkdown();
-                        }}
-                        title="Export the workflow narrative (services, step-by-step flow, connections) as a Markdown file"
-                      >
-                        <FileText size={18} />
-                        Export Workflow (Markdown)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsPptx();
-                        }}
-                        title="Export current diagram as a PowerPoint slide (.pptx)"
-                      >
-                        <Presentation size={18} />
-                        Export PPTX Slide
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportCustomerDeck();
-                        }}
-                        title="Export a customer-ready PowerPoint deck: title, diagram, services, plus WAF review and cost estimate when available"
-                      >
-                        <Presentation size={18} />
-                        Export Customer Deck (PPTX)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsDrawio();
-                        }}
-                        title="Export for Draw.io / diagrams.net (editable diagram format)"
-                      >
-                        <Download size={18} />
-                        Export Draw.io
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsVsdx();
-                        }}
-                        title="Export a native Visio drawing (.vsdx). Opens in desktop Visio and Visio for the web; also importable into diagrams.net. Generic editable shapes + connectors."
-                      >
-                        <Download size={18} />
-                        Export Visio (VSDX)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsHtml();
-                        }}
-                        title="Export as interactive HTML with pan, zoom, and tooltips"
-                      >
-                        <FileCode size={18} />
-                        Export Interactive HTML
-                      </button>
-                      <div className="toolbar-dropdown-separator" role="separator" />
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={totalMonthlyCost === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportCostBreakdown();
-                        }}
-                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown as CSV'}
-                      >
-                        <DollarSign size={18} />
-                        Export Costs (CSV)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={totalMonthlyCost === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportCostBreakdownZip();
-                        }}
-                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export CSV, JSON, summary and intelligent analysis as a ZIP'}
-                      >
-                        <DollarSign size={18} />
-                        Export Costs (All Formats)
-                      </button>
+                      {EXPORT_GROUP_ORDER.map((group) => {
+                        const actions = exportActions.filter((action) => action.group === group);
+                        if (actions.length === 0) return null;
+                        return (
+                          <Fragment key={group}>
+                            <div className="toolbar-dropdown-heading">{EXPORT_GROUP_LABELS[group]}</div>
+                            {actions.map((action) => (
+                              <button
+                                key={action.id}
+                                className="toolbar-dropdown-item"
+                                role="menuitem"
+                                disabled={isExportDisabled(action)}
+                                onClick={() => {
+                                  setIsExportMenuOpen(false);
+                                  action.run();
+                                }}
+                                title={action.disabledReason ?? action.description}
+                              >
+                                <action.icon size={18} />
+                                {action.label}
+                              </button>
+                            ))}
+                          </Fragment>
+                        );
+                      })}
 
                       <div className="toolbar-dropdown-separator" role="separator" />
 
@@ -3925,7 +3915,22 @@ function App() {
           <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
         )}
 
-        {!isCanvasView && (
+        {activeView === 'reports' && (
+          <ReportsPane
+            actions={exportActions}
+            history={exportHistory}
+            formatTimeAgo={formatTimeAgo}
+            exportBackground={exportBackground}
+            onExportBackgroundChange={(next) => {
+              setExportBackground(next);
+              try { localStorage.setItem(EXPORT_BACKGROUND_STORAGE_KEY, next); } catch { /* ignore */ }
+            }}
+            hasDiagram={azureNodeCount > 0}
+            onGoToCanvas={() => setActiveView('canvas')}
+          />
+        )}
+
+        {!isCanvasView && activeView !== 'reports' && (
           <div className="shell-pane-placeholder">
             <h2>{activeView.charAt(0).toUpperCase() + activeView.slice(1)}</h2>
             <p>
