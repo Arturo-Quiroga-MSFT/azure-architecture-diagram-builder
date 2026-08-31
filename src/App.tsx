@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -20,8 +20,12 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Clock, Camera, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
+import NavRail from './components/NavRail';
+import ReportsPane from './components/ReportsPane';
+import LibraryPane from './components/LibraryPane';
+import SettingsPane from './components/SettingsPane';
 import AzureNode from './components/AzureNode';
 import GroupNode from './components/GroupNode';
 import AIArchitectureGenerator from './components/AIArchitectureGenerator';
@@ -36,9 +40,8 @@ import EditableEdge from './components/EditableEdge';
 import AlignmentToolbar from './components/AlignmentToolbar';
 import WorkflowPanel from './components/WorkflowPanel';
 import RegionSelector from './components/RegionSelector';
-import ValidationModal from './components/ValidationModal';
+import ValidationPanel from './components/ValidationPanel';
 import DeploymentGuideModal from './components/DeploymentGuideModal';
-import VersionHistoryModal from './components/VersionHistoryModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
 import AzureImportModal from './components/AzureImportModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
@@ -61,6 +64,13 @@ import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
+import { useAppView } from './stores/appViewStore';
+import {
+  EXPORT_GROUP_LABELS,
+  EXPORT_GROUP_ORDER,
+  isExportDisabled,
+  type ExportAction,
+} from './types/exportActions';
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
@@ -214,6 +224,10 @@ function App() {
   const [pricingPrefs, setPricingPrefs] = usePricingDisplayPrefs();
   // Node whose per-node cost editor is open (opened from its cost badge).
   const pricingEditorNodeId = useNodePricingEditor();
+  // Top-level shell pane. The canvas stays mounted when another pane is active
+  // so React Flow state, undo history and selection survive the switch.
+  const [activeView, setActiveView] = useAppView();
+  const isCanvasView = activeView === 'canvas';
   const [titleBlockData, setTitleBlockData] = useState({
     architectureName: 'Untitled Architecture',
     author: 'Azure Architect',
@@ -231,15 +245,17 @@ function App() {
   // Premium Features State
   const [validationResult, setValidationResult] = useState<ArchitectureValidation | null>(null);
   const [validationNeedsRefresh, setValidationNeedsRefresh] = useState(false);
-  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [isValidationPanelOpen, setIsValidationPanelOpen] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
 
   // Version History State
-  const [isVersionHistoryModalOpen, setIsVersionHistoryModalOpen] = useState(false);
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
+  // Snapshots are saved from a modal outside the Library pane, so the pane needs
+  // a nudge to reload its list.
+  const [libraryReloadToken, setLibraryReloadToken] = useState(0);
   const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeliverChooserOpen, setIsDeliverChooserOpen] = useState(false);
@@ -2004,6 +2020,7 @@ function App() {
       );
       console.log('✅ Manual snapshot saved successfully');
       trackVersionOperation('save');
+      setLibraryReloadToken(t => t + 1);
     } catch (error) {
       console.error('Failed to save manual snapshot:', error);
       throw error;
@@ -2872,9 +2889,9 @@ function App() {
       }
     }
 
-    // Now show the modal and start validation
+    // Now show the panel and start validation
     setIsValidating(true);
-    setIsValidationModalOpen(true);
+    setIsValidationPanelOpen(true);
 
     try {
       // Extract services data
@@ -2935,7 +2952,7 @@ function App() {
     } catch (error: any) {
       console.error('Validation error:', error);
       alert(`Failed to validate architecture: ${error.message}`);
-      setIsValidationModalOpen(false);
+      setIsValidationPanelOpen(false);
     } finally {
       setIsValidating(false);
     }
@@ -3048,6 +3065,186 @@ function App() {
     setIsDeliverChooserOpen(true);
   };
 
+  const azureNodeCount = nodes.filter(n => n.type === 'azureNode').length;
+
+  // Findings and workflow steps both name services by node id OR by label (scenes
+  // exported by the MCP server use labels). The glow CSS targets nodes by id.
+  const highlightServiceRefs = useCallback((refs: string[]) => {
+    const list = refs || [];
+    const ids = list.flatMap((ref) => {
+      const refLc = String(ref).toLowerCase();
+      return nodes
+        .filter((n) => n.type === 'azureNode'
+          && (n.id === ref || String(n.data?.label ?? '').toLowerCase() === refLc))
+        .map((n) => n.id);
+    });
+    // Fall back to the raw refs — they may already be node ids we failed to match.
+    setHighlightedServices(ids.length > 0 ? ids : list);
+  }, [nodes]);
+
+  // Single definition per export, rendered by both the toolbar dropdown and the
+  // Reports pane so the two lists cannot drift.
+  const exportActions: ExportAction[] = useMemo(() => {
+    const needsDiagram = azureNodeCount === 0 ? 'Add services to the diagram first' : undefined;
+    const needsCost = totalMonthlyCost === 0 ? 'Add services to estimate costs first' : undefined;
+
+    return [
+      {
+        id: 'png',
+        label: 'Export PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Raster image of the current canvas.',
+        run: exportDiagram,
+      },
+      {
+        id: 'editorial-png',
+        label: 'Export Editorial PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Publication-style reference-architecture render.',
+        disabledReason: lastReferenceArchitecture
+          ? undefined
+          : 'Generate a diagram in Reference Architecture mode to enable this',
+        run: () => {
+          if (!lastReferenceArchitecture) return;
+          void import('./utils/exportReferencePng')
+            .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
+            .catch((err) => {
+              console.error('Editorial PNG export failed:', err);
+              alert('Editorial PNG export failed. See console for details.');
+            });
+        },
+      },
+      {
+        id: 'blueprint-png',
+        label: 'Export Blueprint PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Hand-drawn whiteboard-style render.',
+        disabledReason: lastBlueprintArchitecture
+          ? undefined
+          : 'Generate a diagram in Blueprint mode to enable this',
+        run: () => {
+          if (!lastBlueprintArchitecture) return;
+          const savedLegend = localStorage.getItem('aiGenerator.blueprintLegendPosition');
+          const legendPosition =
+            savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
+              ? (savedLegend as 'bottom' | 'right' | 'auto')
+              : 'auto';
+          void import('./utils/exportBlueprintPng')
+            .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
+            .catch((err) => {
+              console.error('Blueprint PNG export failed:', err);
+              alert('Blueprint PNG export failed. See console for details.');
+            });
+        },
+      },
+      {
+        id: 'svg',
+        label: 'Export SVG',
+        group: 'images',
+        icon: Download,
+        description: 'Vector image that scales without quality loss.',
+        run: exportAsSvg,
+      },
+      {
+        id: 'animated-svg',
+        label: 'Export Animated SVG',
+        group: 'images',
+        icon: Download,
+        description: 'Flowing data-flow arrows. Open in a browser to see motion.',
+        run: exportAsAnimatedSvg,
+      },
+      {
+        id: 'workflow-animation',
+        label: 'Export Workflow Animation',
+        group: 'images',
+        icon: Download,
+        description: 'Plays the workflow step-by-step with captions.',
+        disabledReason: workflow.length === 0 ? 'No workflow steps in this diagram to animate' : undefined,
+        run: exportWorkflowAnimation,
+      },
+      {
+        id: 'workflow-md',
+        label: 'Export Workflow (Markdown)',
+        group: 'documents',
+        icon: FileText,
+        description: 'Services, step-by-step flow and connections as Markdown.',
+        disabledReason: needsDiagram,
+        run: exportWorkflowMarkdown,
+      },
+      {
+        id: 'pptx-slide',
+        label: 'Export PPTX Slide',
+        group: 'documents',
+        icon: Presentation,
+        description: 'The current diagram as a single PowerPoint slide.',
+        run: exportAsPptx,
+      },
+      {
+        id: 'pptx-deck',
+        label: 'Export Customer Deck (PPTX)',
+        group: 'documents',
+        icon: Presentation,
+        description: 'Title, diagram and services, plus WAF review and cost estimate when available.',
+        disabledReason: needsDiagram,
+        run: exportCustomerDeck,
+      },
+      {
+        id: 'drawio',
+        label: 'Export Draw.io',
+        group: 'interchange',
+        icon: Download,
+        description: 'Editable diagram for Draw.io / diagrams.net.',
+        run: exportAsDrawio,
+      },
+      {
+        id: 'vsdx',
+        label: 'Export Visio (VSDX)',
+        group: 'interchange',
+        icon: Download,
+        description: 'Native Visio drawing with editable shapes and connectors.',
+        disabledReason: needsDiagram,
+        run: exportAsVsdx,
+      },
+      {
+        id: 'html',
+        label: 'Export Interactive HTML',
+        group: 'interchange',
+        icon: FileCode,
+        description: 'Self-contained page with pan, zoom and tooltips.',
+        disabledReason: needsDiagram,
+        run: exportAsHtml,
+      },
+      {
+        id: 'costs-csv',
+        label: 'Export Costs (CSV)',
+        group: 'cost',
+        icon: DollarSign,
+        description: 'Per-service cost breakdown as a spreadsheet.',
+        disabledReason: needsCost,
+        run: exportCostBreakdown,
+      },
+      {
+        id: 'costs-all',
+        label: 'Export Costs (All Formats)',
+        group: 'cost',
+        icon: DollarSign,
+        description: 'CSV, JSON, summary and intelligent analysis as a ZIP.',
+        disabledReason: needsCost,
+        run: exportCostBreakdownZip,
+      },
+    ];
+  }, [
+    azureNodeCount, totalMonthlyCost, workflow.length,
+    lastReferenceArchitecture, lastBlueprintArchitecture,
+    exportDiagram, exportAsSvg, exportAsAnimatedSvg, exportWorkflowAnimation,
+    exportWorkflowMarkdown, exportAsPptx, exportCustomerDeck,
+    exportAsDrawio, exportAsVsdx, exportAsHtml,
+    exportCostBreakdown, exportCostBreakdownZip,
+  ]);
+
   return (
     <div className="app">
       <header className={`app-header${isHeaderCollapsed ? ' header-collapsed' : ''}`}>
@@ -3059,6 +3256,9 @@ function App() {
               <span className="app-version">v{APP_VERSION}</span>
             </div>
           </div>
+          {/* The toolbar and journey strip act on the diagram, so they are canvas-only. */}
+          {isCanvasView && (
+          <>
           <div className="header-actions-wrapper">
             {/* Row 1: Project-level actions */}
             <div className="header-actions">
@@ -3260,7 +3460,7 @@ function App() {
 
                   {isExportMenuOpen && (
                     <div className="toolbar-dropdown-menu toolbar-dropdown-menu--export" role="menu" aria-label="Export options">
-                      <div className="toolbar-dropdown-heading">Presentation</div>
+                      <div className="toolbar-dropdown-heading">Capture settings</div>
                       <div className="toolbar-dropdown-row">
                         <label className="toolbar-dropdown-label" htmlFor="export-background">Export background</label>
                         <select
@@ -3283,213 +3483,31 @@ function App() {
                         Affects PNG, SVG, animated SVG, and PowerPoint captures. The editing canvas stays dotted.
                       </div>
                       <div className="toolbar-dropdown-separator" />
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportDiagram();
-                        }}
-                        title="Export as PNG"
-                      >
-                        <Download size={18} />
-                        Export PNG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={!lastReferenceArchitecture}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          if (!lastReferenceArchitecture) return;
-                          void import('./utils/exportReferencePng')
-                            .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
-                            .catch((err) => {
-                              console.error('Editorial PNG export failed:', err);
-                              alert('Editorial PNG export failed. See console for details.');
-                            });
-                        }}
-                        title={
-                          lastReferenceArchitecture
-                            ? 'Re-download the publication-style reference-architecture PNG'
-                            : 'Generate a diagram in Reference Architecture mode to enable this export'
-                        }
-                      >
-                        <Download size={18} />
-                        Export Editorial PNG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={!lastBlueprintArchitecture}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          if (!lastBlueprintArchitecture) return;
-                          const savedLegend = localStorage.getItem('aiGenerator.blueprintLegendPosition');
-                          const legendPosition =
-                            savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
-                              ? (savedLegend as 'bottom' | 'right' | 'auto')
-                              : 'auto';
-                          void import('./utils/exportBlueprintPng')
-                            .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
-                            .catch((err) => {
-                              console.error('Blueprint PNG export failed:', err);
-                              alert('Blueprint PNG export failed. See console for details.');
-                            });
-                        }}
-                        title={
-                          lastBlueprintArchitecture
-                            ? 'Re-download the hand-drawn whiteboard-style blueprint PNG'
-                            : 'Generate a diagram in Blueprint mode to enable this export'
-                        }
-                      >
-                        <Download size={18} />
-                        Export Blueprint PNG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsSvg();
-                        }}
-                        title="Export as SVG (vector format)"
-                      >
-                        <Download size={18} />
-                        Export SVG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsAnimatedSvg();
-                        }}
-                        title="Export as Animated SVG — flowing data-flow arrows (open in a browser to see motion)"
-                      >
-                        <Download size={18} />
-                        Export Animated SVG
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={workflow.length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportWorkflowAnimation();
-                        }}
-                        title={
-                          workflow.length > 0
-                            ? 'Export an animated SVG that plays the workflow step-by-step with captions'
-                            : 'No workflow steps in this diagram to animate'
-                        }
-                      >
-                        <Download size={18} />
-                        Export Workflow Animation
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportWorkflowMarkdown();
-                        }}
-                        title="Export the workflow narrative (services, step-by-step flow, connections) as a Markdown file"
-                      >
-                        <FileText size={18} />
-                        Export Workflow (Markdown)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsPptx();
-                        }}
-                        title="Export current diagram as a PowerPoint slide (.pptx)"
-                      >
-                        <Presentation size={18} />
-                        Export PPTX Slide
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportCustomerDeck();
-                        }}
-                        title="Export a customer-ready PowerPoint deck: title, diagram, services, plus WAF review and cost estimate when available"
-                      >
-                        <Presentation size={18} />
-                        Export Customer Deck (PPTX)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsDrawio();
-                        }}
-                        title="Export for Draw.io / diagrams.net (editable diagram format)"
-                      >
-                        <Download size={18} />
-                        Export Draw.io
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsVsdx();
-                        }}
-                        title="Export a native Visio drawing (.vsdx). Opens in desktop Visio and Visio for the web; also importable into diagrams.net. Generic editable shapes + connectors."
-                      >
-                        <Download size={18} />
-                        Export Visio (VSDX)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={nodes.filter(n => n.type === 'azureNode').length === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportAsHtml();
-                        }}
-                        title="Export as interactive HTML with pan, zoom, and tooltips"
-                      >
-                        <FileCode size={18} />
-                        Export Interactive HTML
-                      </button>
-                      <div className="toolbar-dropdown-separator" role="separator" />
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={totalMonthlyCost === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportCostBreakdown();
-                        }}
-                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export cost breakdown as CSV'}
-                      >
-                        <DollarSign size={18} />
-                        Export Costs (CSV)
-                      </button>
-                      <button
-                        className="toolbar-dropdown-item"
-                        role="menuitem"
-                        disabled={totalMonthlyCost === 0}
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          exportCostBreakdownZip();
-                        }}
-                        title={totalMonthlyCost === 0 ? 'Add services to estimate costs first' : 'Export CSV, JSON, summary and intelligent analysis as a ZIP'}
-                      >
-                        <DollarSign size={18} />
-                        Export Costs (All Formats)
-                      </button>
+                      {EXPORT_GROUP_ORDER.map((group) => {
+                        const actions = exportActions.filter((action) => action.group === group);
+                        if (actions.length === 0) return null;
+                        return (
+                          <Fragment key={group}>
+                            <div className="toolbar-dropdown-heading">{EXPORT_GROUP_LABELS[group]}</div>
+                            {actions.map((action) => (
+                              <button
+                                key={action.id}
+                                className="toolbar-dropdown-item"
+                                role="menuitem"
+                                disabled={isExportDisabled(action)}
+                                onClick={() => {
+                                  setIsExportMenuOpen(false);
+                                  action.run();
+                                }}
+                                title={action.disabledReason ?? action.description}
+                              >
+                                <action.icon size={18} />
+                                {action.label}
+                              </button>
+                            ))}
+                          </Fragment>
+                        );
+                      })}
 
                       <div className="toolbar-dropdown-separator" role="separator" />
 
@@ -3546,26 +3564,6 @@ function App() {
 
             {/* Row 2: Canvas tools & AI settings */}
             <div className="header-actions">
-              <div className="toolbar-group">
-                <button 
-                  onClick={() => setIsVersionHistoryModalOpen(true)} 
-                  className="btn btn-secondary" 
-                  title="View version history"
-                >
-                  <Clock size={18} />
-                  History
-                </button>
-                <button 
-                  onClick={() => setIsSaveSnapshotModalOpen(true)} 
-                  className="btn btn-secondary" 
-                  title="Save current diagram as snapshot"
-                  disabled={nodes.length === 0}
-                >
-                  <Camera size={18} />
-                  Snapshot
-                </button>
-              </div>
-
               <div className="toolbar-group">
                 <div className="toolbar-dropdown" ref={layoutMenuRef}>
                   <button
@@ -3851,7 +3849,7 @@ function App() {
                 </button>
                 {validationResult && (
                   <button
-                    onClick={() => setIsValidationModalOpen(true)}
+                    onClick={() => setIsValidationPanelOpen(true)}
                     className="btn btn-secondary"
                     title={validationNeedsRefresh
                       ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
@@ -3901,7 +3899,10 @@ function App() {
             {isHeaderCollapsed ? <PanelTopOpen size={18} /> : <PanelTopClose size={18} />}
             <span>{isHeaderCollapsed ? 'Show Toolbar' : 'Hide Toolbar'}</span>
           </button>
+          </>
+          )}
         </div>
+        {isCanvasView && (
         <JourneyStrip
           hasDiagram={nodes.some(node => node.type === 'azureNode')}
           hasValidation={validationResult !== null}
@@ -3910,12 +3911,46 @@ function App() {
           isGeneratingGuide={isGeneratingGuide}
           onStep={handleJourneyStep}
         />
+        )}
       </header>
       
       <div className="workspace">
-        <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
-        
-        <div className="canvas-container" ref={reactFlowWrapper}>
+        <NavRail />
+
+        {isCanvasView && (
+          <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
+        )}
+
+        {activeView === 'reports' && (
+          <ReportsPane
+            actions={exportActions}
+            history={exportHistory}
+            formatTimeAgo={formatTimeAgo}
+            exportBackground={exportBackground}
+            onExportBackgroundChange={(next) => {
+              setExportBackground(next);
+              try { localStorage.setItem(EXPORT_BACKGROUND_STORAGE_KEY, next); } catch { /* ignore */ }
+            }}
+            hasDiagram={azureNodeCount > 0}
+            onGoToCanvas={() => setActiveView('canvas')}
+          />
+        )}
+
+        {activeView === 'library' && (
+          <LibraryPane
+            onRestoreVersion={restoreVersion}
+            onSaveSnapshot={() => setIsSaveSnapshotModalOpen(true)}
+            canSnapshot={nodes.length > 0}
+            onGoToCanvas={() => setActiveView('canvas')}
+            reloadToken={libraryReloadToken}
+          />
+        )}
+
+        {activeView === 'settings' && (
+          <SettingsPane isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />
+        )}
+
+        <div className={`canvas-container${isCanvasView ? '' : ' is-hidden'}`} ref={reactFlowWrapper}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -4169,23 +4204,10 @@ function App() {
             onAlign={handleAlign}
           />
         </div>
-        {workflow.length > 0 && (
+        {isCanvasView && workflow.length > 0 && (
           <WorkflowPanel 
             workflow={workflow}
-            onServiceHover={(refs) => {
-              // Workflow steps reference services by node id (app-generated) OR
-              // by label (e.g. scenes exported by the MCP server). The glow CSS
-              // targets nodes by id, so resolve each ref to matching node ids by
-              // id or case-insensitive label before highlighting.
-              const ids = (refs || []).flatMap((ref) => {
-                const refLc = String(ref).toLowerCase();
-                return nodes
-                  .filter((n) => n.type === 'azureNode'
-                    && (n.id === ref || String(n.data?.label ?? '').toLowerCase() === refLc))
-                  .map((n) => n.id);
-              });
-              setHighlightedServices(ids.length > 0 ? ids : (refs || []));
-            }}
+            onServiceHover={(refs) => highlightServiceRefs(refs || [])}
             onServiceLeave={() => setHighlightedServices([])}
             forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined}
           />
@@ -4232,21 +4254,21 @@ function App() {
             </div>
           </>
         )}
-      </div>
 
-      {/* Premium Feature Modals */}
-      <ValidationModal
+      {/* Docked inside the workspace so the canvas shrinks beside it and stays visible. */}
+      <ValidationPanel
         validation={validationResult}
-        isOpen={isValidationModalOpen}
-        onClose={() => setIsValidationModalOpen(false)}
+        isOpen={isValidationPanelOpen && isCanvasView}
+        onClose={() => setIsValidationPanelOpen(false)}
+        onHighlightResources={highlightServiceRefs}
         isLoading={isValidating}
         isStale={validationNeedsRefresh}
         onRevalidate={handleValidateArchitecture}
         onApplyRecommendations={async (selectedFindings) => {
           console.log('📝 User selected recommendations to apply:', selectedFindings);
           
-          // Close validation modal and show loading state
-          setIsValidationModalOpen(false);
+          // Close the validation panel and show loading state
+          setIsValidationPanelOpen(false);
           setIsApplyingRecommendations(true);
           
           // Get current architecture state
@@ -4361,17 +4383,13 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           }
         }}
       />
+      </div>
+
       <DeploymentGuideModal
         guide={deploymentGuide}
         isOpen={isDeploymentGuideModalOpen}
         onClose={() => setIsDeploymentGuideModalOpen(false)}
         isLoading={isGeneratingGuide}
-      />
-      <VersionHistoryModal
-        isOpen={isVersionHistoryModalOpen}
-        onClose={() => setIsVersionHistoryModalOpen(false)}
-        onRestoreVersion={restoreVersion}
-        currentDiagramName={titleBlockData.architectureName}
       />
       <SaveSnapshotModal
         isOpen={isSaveSnapshotModalOpen}
@@ -4434,7 +4452,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         onApply={(validation) => {
           setValidationResult(validation);
           setValidationNeedsRefresh(false);
-          setIsValidationModalOpen(true);
+          setIsValidationPanelOpen(true);
           setPanelsCollapsedSignal(prev => prev + 1);
         }}
         services={nodes

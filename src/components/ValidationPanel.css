@@ -1,0 +1,154 @@
+/* Copyright (c) Microsoft Corporation.
+   Licensed under the MIT License. */
+
+/* Docked shell for the validation report. The inner markup keeps its original
+   .modal-* class names so ValidationModal.css still applies; only the outer
+   container changes from a centred overlay to a canvas-adjacent panel. */
+
+:root {
+  --validation-dock-w: 30rem;
+}
+
+.validation-panel {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 var(--validation-dock-w);
+  max-width: 45vw;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #ffffff;
+  border-left: 1px solid #e5e7eb;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.06);
+}
+
+/* These three are position:fixed against the right edge, so the dock slides
+   under them unless they are offset by its width. The collapsed panel body is
+   deliberately not offset — it must stay fully off-screen at right: -400px. */
+body.has-validation-dock .workflow-panel:not(.collapsed) {
+  right: var(--validation-dock-w);
+}
+
+body.has-validation-dock .workflow-panel.collapsed .workflow-header {
+  right: var(--validation-dock-w);
+}
+
+body.has-validation-dock .feedback-fab,
+body.has-validation-dock .impact-launcher {
+  right: calc(var(--validation-dock-w) + 20px);
+}
+
+/* The panel is narrower than the modal was, so tighten the inherited padding. */
+.validation-panel .modal-header {
+  padding: 0.875rem 1rem;
+  gap: 0.5rem;
+}
+
+.validation-panel .modal-header h2 {
+  font-size: 1rem;
+}
+
+.validation-panel .modal-body {
+  padding: 1rem;
+}
+
+.validation-panel .modal-actions {
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.validation-panel .score-toggle {
+  font-size: 0.75rem;
+}
+
+/* Stack the score circle above its summary — side by side does not fit. */
+.validation-panel .validation-score {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.validation-panel .pillar-header {
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Cross-highlighting: pin a finding to keep its resources glowing on canvas. */
+.finding-locate {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid #93c5fd;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  vertical-align: baseline;
+}
+
+.finding-locate:hover {
+  background: #dbeafe;
+}
+
+.finding-locate:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
+}
+
+.finding-locate.is-pinned {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.finding-item.pinned {
+  box-shadow: inset 3px 0 0 #1d4ed8;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+body.dark-mode .validation-panel {
+  background: #1f1f1f;
+  border-left-color: #2d2d2d;
+}
+
+/* ValidationModal.css scopes these to .validation-modal, which the panel no
+   longer is. The section headings had no dark rule at all — dark grey on a dark
+   surface in the old modal too. */
+body.dark-mode .validation-panel .modal-header h2,
+body.dark-mode .validation-panel .pillars-section h3,
+body.dark-mode .validation-panel .quickwins-section h3 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .validation-panel .modal-header {
+  border-bottom-color: #444;
+}
+
+body.dark-mode .finding-locate {
+  background: #1e3a5f;
+  border-color: #2563eb;
+  color: #93c5fd;
+}
+
+body.dark-mode .finding-locate:hover {
+  background: #24466f;
+}
+
+body.dark-mode .finding-locate.is-pinned {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+body.dark-mode .finding-item.pinned {
+  box-shadow: inset 3px 0 0 #60a5fa;
+}

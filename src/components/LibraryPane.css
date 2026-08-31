@@ -1,0 +1,121 @@
+/* Copyright (c) Microsoft Corporation.
+   Licensed under the MIT License. */
+
+/* Pane shell for the version library. Inner .version-* markup keeps its class
+   names so VersionHistoryModal.css still applies. */
+
+.library-pane {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.library-pane-inner {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 1.75rem 2rem 3rem;
+}
+
+.library-pane-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.library-pane-header h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.library-pane-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.library-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.library-pane .version-count {
+  margin-bottom: 0.75rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+/* The modal constrained these; the pane is wider, so let them breathe. */
+.library-pane .version-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+  gap: 0.75rem;
+}
+
+.library-pane .version-empty,
+.library-pane .version-loading {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+body.dark-mode .library-pane {
+  background: #1a1a1a;
+}
+
+body.dark-mode .library-pane-header h2 {
+  color: #e5e7eb;
+}
+
+body.dark-mode .library-pane-header p,
+body.dark-mode .library-pane .version-count,
+body.dark-mode .library-pane .version-empty,
+body.dark-mode .library-pane .version-loading {
+  color: #9ca3af;
+}
+
+/* VersionHistoryModal.css has no dark rules — the cards were light inside a dark
+   modal too. Scoped here rather than globally since nothing else uses them now. */
+body.dark-mode .library-pane .version-item {
+  background: #242424;
+  border-color: #2d2d2d;
+}
+
+body.dark-mode .library-pane .version-item.selected {
+  border-color: #0078d4;
+}
+
+body.dark-mode .library-pane .version-title h4,
+body.dark-mode .library-pane .version-improvements strong {
+  color: #e5e7eb;
+}
+
+body.dark-mode .library-pane .version-action-btn,
+body.dark-mode .library-pane .version-stat,
+body.dark-mode .library-pane .version-prompt,
+body.dark-mode .library-pane .version-notes {
+  background: #1a1a1a;
+  border-color: #3d3d3d;
+  color: #d1d5db;
+}
+
+body.dark-mode .library-pane .version-improvements {
+  background: #16283a;
+  border-color: #1e4976;
+}
+
+body.dark-mode .library-pane .version-improvements ul,
+body.dark-mode .library-pane .version-meta,
+body.dark-mode .library-pane .version-time {
+  color: #9ca3af;
+}
