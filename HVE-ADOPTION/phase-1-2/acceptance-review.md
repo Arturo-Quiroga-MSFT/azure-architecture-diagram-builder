@@ -50,7 +50,7 @@ The raw independent review contained three statements that are not adopted:
 
 ## Disposition
 
-Source implementation is accepted for a draft pull request. Merge remains
+Source implementation is in [draft PR #25](https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder/pull/25). Merge remains
 blocked on independent human R3 review and explicit merge approval. Repository
 rules and the production environment are post-merge operational tasks. Production
 deployment is not requested or authorized.

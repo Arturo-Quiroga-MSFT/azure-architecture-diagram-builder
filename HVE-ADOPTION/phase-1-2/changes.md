@@ -53,3 +53,9 @@
 - No branch ruleset or production environment setting applied before PR review.
 - No dependency remediation; root audit findings are recorded in the control
   inventory for separate security triage.
+
+## Review Handoff
+
+- Draft PR: [#25](https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder/pull/25)
+- Posted PR evidence passes `validate-pr-governance.mjs` as R3 across 38 changed files.
+- Independent human R3 review and explicit merge approval remain pending.
