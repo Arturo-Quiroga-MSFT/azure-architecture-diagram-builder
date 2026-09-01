@@ -66,7 +66,7 @@ https://azure-diagram-mcp.yellowmushroom-f11e57c2.eastus2.azurecontainerapps.io/
 
 ## 2. Deploy (script-based, no azd)
 
-Preferred path — mirrors `deploy_aca.sh` / `deploy-mcp-instance.sh`:
+Preferred path — mirrors `scripts/legacy/deploy_aca.sh` / `deploy-mcp-instance.sh`:
 
 ```bash
 ./scripts/deploy-mcp.sh

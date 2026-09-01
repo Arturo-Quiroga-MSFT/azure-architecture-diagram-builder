@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# ⚠️  LEGACY — NOT the production deploy. Use ./scripts/production/deploy-webapp.sh
+#
+# This is the original one-shot bootstrap. It CREATES A NEW ACR each run
+# (ACR_NAME below is timestamped) and targets the old non-VNet app. Running it
+# by mistake provisions resources; it does not update production.
 
 # Variables - customize these
 RESOURCE_GROUP="azure-diagrams-rg"

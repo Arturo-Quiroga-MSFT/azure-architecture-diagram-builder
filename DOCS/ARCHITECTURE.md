@@ -356,8 +356,8 @@ azure-diagrams/
 │   ├── download-pricing.js            # Node.js pricing fetcher
 │   ├── rename-icons.sh                # Icon file management
 │   ├── deploy.sh                      # Local deployment
-│   ├── deploy_aca.sh                  # ACA initial deployment (manual)
-│   └── update_aca.sh                  # ACA build & update (ACR + Container App, manual)
+│   ├── production/                    # THE production deploy (deploy-webapp.sh) + one-time provisioning
+│   └── legacy/                        # Superseded deploy scripts, kept for reference and rollback
 ├── DOCS/                              # Documentation
 │   ├── ARCHITECTURE.md                # This file
 │   └── getting-started-guide.md       # Step-by-step feature walkthrough

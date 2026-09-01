@@ -14,7 +14,7 @@
 # This hook runs automatically before 'azd package' (which invokes docker build).
 # It is safe to run multiple times; each run overwrites the previous output.
 #
-# Manual deployments (scripts/update_aca.sh) continue to use .env directly and
+# Manual deployments (scripts/production/deploy-webapp.sh) continue to use .env directly and
 # do not call this script.
 
 set -e

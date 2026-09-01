@@ -13,7 +13,7 @@
 # NON-DISRUPTIVE: creates only new resources; does not touch the running apps.
 # Idempotent: safe to re-run (each create is guarded by an existence check).
 #
-# Usage:  ./scripts/vnet-migration/01-network.sh
+# Usage:  ./scripts/production/01-network.sh
 # ============================================================================
 set -euo pipefail
 

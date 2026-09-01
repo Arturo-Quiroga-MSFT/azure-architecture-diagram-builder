@@ -22,7 +22,7 @@ Generated: 2026-08-18
 | Registry | `acrazurediagrams1767583743` |
 | Image | `azure-diagram-builder:vnet` |
 | Ingress target port | `80` |
-| Deployment method | Existing `scripts/vnet-migration/03-deploy-webapp.sh` |
+| Deployment method | Existing `scripts/production/deploy-webapp.sh` |
 | Rollback boundary | Existing healthy ACA revision remains available; legacy non-VNet app is untouched |
 
 The standalone MCP Container App and the private `aadb-usage-analytics` Container App are out of scope and must not be changed.
@@ -97,7 +97,7 @@ Validated at `2026-08-18T16:16:37Z` against subscription `7a28b21e-0d3e-4435-a68
 | Functional regressions | grouped layout, edge labels, layout preservation, service names, pricing mode, ARM import, AADB v2 contract | 7/7 pass |
 | Changed-file lint | ESLint on changed modules; `git diff --check` | Pass. Whole-file `App.tsx` lint still reports pre-existing `_ungroupNode` from commit `d70f4765` (2026-01-30); unrelated to this deployment change. |
 | Effective policy | Azure Policy MCP at `azure-diagrams-rg` scope | 8 enforced assignments reviewed: management-group deploy/modify, deny, audit, MFA write/delete, and subscription Defender assignments; no scope expansion is required for the image-only revision update |
-| ACR validation image | `BUILD_ONLY=true TAG=validation-no-impact-fixed-20260818123225 ./scripts/vnet-migration/03-deploy-webapp.sh` | ACR run `ch66` succeeded; digest `sha256:92d644007c53e3a2f9752e29ca88e727d3ad1e20be92dce9da13b959c30e6147` |
+| ACR validation image | `BUILD_ONLY=true TAG=validation-no-impact-fixed-20260818123225 ./scripts/production/deploy-webapp.sh` | ACR run `ch66` succeeded; digest `sha256:92d644007c53e3a2f9752e29ca88e727d3ad1e20be92dce9da13b959c30e6147` |
 | Image filesystem inspection | ACR run `ch67` against the exact validation image | `IMAGE_EXCLUSION_PASS`: impact route/record files absent and no prohibited client markers |
 | Server dependency audit | `npm audit --omit=dev` after non-breaking lock update | 0 vulnerabilities. An intermediate ACR build (`ch65`) failed because npm rewrote resolved URLs to the managed feed; URLs were normalized to public npm coordinates, integrity hashes retained, and `npm ci` plus ACR build then passed. |
 | Validation-only mutation check | `az containerapp show` after ACR build | Live ACA remained on revision `v20260815122621`, 100% traffic; no ACA mutation occurred during validation |

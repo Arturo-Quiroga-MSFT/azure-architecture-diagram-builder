@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# 03-deploy-webapp.sh — Build and safely roll out the web app in the
-# VNet-integrated ACA environment.
+# deploy-webapp.sh — THE production deploy for the web app. Build and safely
+# roll out to the VNet-integrated ACA environment.
 # ============================================================================
 # - Builds an immutable image tag from the app version and Git commit.
 # - Uses managed identity with AcrPull instead of stored ACR admin credentials.
@@ -9,11 +9,11 @@
 #   current healthy revision, then switches traffic only after direct smoke tests.
 # - Keeps the previous revision active at 0% traffic for an explicit rollback.
 #
-# The OLD app keeps running untouched. Cutover (repoint redirect + delete old)
-# is a separate manual step after verification.
+# Bump the version in package.json first — the image tag, the revision suffix
+# and the post-deploy check all read it, and the script refuses a dirty worktree.
 #
-# Prereqs: 01-network.sh + 02-aca-env.sh done; .env present at repo root.
-# Usage:   ./scripts/vnet-migration/03-deploy-webapp.sh
+# Prereqs: 01-network.sh + 02-aca-env.sh done (one-time); .env present at repo root.
+# Usage:   ./scripts/production/deploy-webapp.sh
 # ============================================================================
 set -euo pipefail
 
@@ -272,7 +272,7 @@ CANDIDATE_FILE="$(mktemp)"
 trap 'rm -f "$CANDIDATE_FILE"' EXIT
 az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$PREVIOUS_REVISION" \
   --query properties.template -o json \
-  | node "$SOURCE_DIR/scripts/vnet-migration/render-webapp-revision.mjs" \
+  | node "$SOURCE_DIR/scripts/production/render-webapp-revision.mjs" \
       "$ACR_IMAGE" "$REV_SUFFIX" "$APP_VERSION" "https://$FQDN" \
   > "$CANDIDATE_FILE"
 

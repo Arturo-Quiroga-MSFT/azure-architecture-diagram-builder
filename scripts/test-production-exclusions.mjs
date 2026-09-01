@@ -35,7 +35,7 @@ assert.match(dockerfile, /ARG ENABLE_ADOPTION_IMPACT=false/);
 assert.match(dockerfile, /rm -f impact-routes\.js impact-records\.js/);
 
 const deployScript = fs.readFileSync(
-  path.join(root, 'scripts/vnet-migration/03-deploy-webapp.sh'),
+  path.join(root, 'scripts/production/deploy-webapp.sh'),
   'utf8',
 );
 assert.match(deployScript, /VITE_ENABLE_ADOPTION_IMPACT=false/);
@@ -45,7 +45,7 @@ assert.match(deployScript, /telemetry-hash-secret/);
 assert.match(deployScript, /--logs-destination log-analytics/);
 
 const revisionRenderer = fs.readFileSync(
-  path.join(root, 'scripts/vnet-migration/render-webapp-revision.mjs'),
+  path.join(root, 'scripts/production/render-webapp-revision.mjs'),
   'utf8',
 );
 assert.match(revisionRenderer, /setSecretRef\('APPLICATIONINSIGHTS_CONNECTION_STRING', 'server-appinsights-connection-string'\)/);

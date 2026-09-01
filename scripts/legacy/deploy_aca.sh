@@ -1,5 +1,10 @@
 #!/bin/bash
 #
+# ⚠️  LEGACY — NOT the production deploy. Use ./scripts/production/deploy-webapp.sh
+#
+# Kept as a portable, .env-driven example for someone standing the app up in
+# their own subscription. It has no blue/green rollout and no version checks.
+#
 # Azure Container App Deployment Script (Configurable)
 # =====================================================
 #
@@ -24,8 +29,8 @@
 #   VITE_AZURE_OPENAI_DEPLOYMENT_*   - Model deployment names (at least one)
 #
 # Usage:
-#   chmod +x scripts/deploy_aca.sh
-#   ./scripts/deploy_aca.sh
+#   chmod +x scripts/legacy/deploy_aca.sh
+#   ./scripts/legacy/deploy_aca.sh
 #
 
 set -euo pipefail

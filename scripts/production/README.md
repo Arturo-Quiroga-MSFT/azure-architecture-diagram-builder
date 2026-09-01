@@ -2,6 +2,10 @@
 
 This project runs **two** Azure Container Apps. Deploy to the correct one.
 
+`deploy-webapp.sh` in this directory is the production deploy. `01-network.sh`
+and `02-aca-env.sh` are one-time provisioning and have already been run.
+Anything under `scripts/legacy/` is not a production path.
+
 ## NEW app — VNet-integrated (current primary)
 
 - **App:** `azure-diagram-builder-vnet`
@@ -13,7 +17,7 @@ This project runs **two** Azure Container Apps. Deploy to the correct one.
   ```bash
   npm version patch --no-git-tag-version  # choose patch, minor, or major
   npm run build
-  ./scripts/vnet-migration/03-deploy-webapp.sh
+  ./scripts/production/deploy-webapp.sh
   ```
 
   Builds an immutable `v<version>-<git-sha>` image in ACR
@@ -34,7 +38,7 @@ This project runs **two** Azure Container Apps. Deploy to the correct one.
 - **Deploy / update with:**
 
   ```bash
-  ./scripts/update_aca.sh
+  ./scripts/legacy/update_aca.sh
   ```
 
 - Kept as a rollback target for ~1 month after cutover — **do not delete yet.**

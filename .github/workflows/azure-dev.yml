@@ -6,7 +6,7 @@ name: Azure Diagram Builder — provision & deploy (azd)
 #   Variables: AZURE_ENV_NAME, AZURE_LOCATION, AZURE_SPEECH_REGION
 # Optional additional model deployments can be supplied as AZURE_OPENAI_DEPLOYMENT_*
 # variables. The default GPT-5.6 Luna endpoint/deployment is created by Bicep.
-# Until those exist, run deployments locally with scripts/update_aca.sh.
+# Until those exist, run deployments locally with scripts/production/deploy-webapp.sh.
 # To re-enable automatic deploys on push, restore the `push:` trigger below.
 on:
   workflow_dispatch:

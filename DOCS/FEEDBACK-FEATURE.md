@@ -81,7 +81,7 @@ GET /api/feedback/list?limit=50   # cap results (default 200, max 1000)
 ```
 
 Protected by the `FEEDBACK_ADMIN_TOKEN` env var (a secret on the container app; generated
-into `.env` by `scripts/vnet-migration/03-deploy-webapp.sh`). Pass it as a bearer token or
+into `.env` by `scripts/production/deploy-webapp.sh`). Pass it as a bearer token or
 the `X-Admin-Token` header. The endpoint returns `503` when the token is unset and `401`
 on mismatch.
 
@@ -194,7 +194,7 @@ az deployment group create \
   > Security note: public network access is the dev/test-grade path. The hardened
   > option is a private endpoint + VNet-integrated Container Apps environment.
 
-- **Deploy** is via `./scripts/update_aca.sh` (ACR build + container app update), which
+- **Deploy** is via `./scripts/production/deploy-webapp.sh` (ACR build + container app update), which
   injects `COSMOS_FEEDBACK_CONTAINER_ID` (and the other Cosmos vars) from `.env`.
   This is the production path — not `azd`/Bicep.
 
@@ -273,8 +273,8 @@ union
 Option 2 below was implemented on 2026-07-14: the web app runs in a
 **VNet-integrated Container Apps environment** and reaches Cosmos via a
 **private endpoint**, so writes succeed with public access disabled. Scripts live in
-[../scripts/vnet-migration/](../scripts/vnet-migration/) (`01-network.sh`,
-`02-aca-env.sh`, `03-deploy-webapp.sh`).
+[../scripts/production/](../scripts/production/) (`01-network.sh`,
+`02-aca-env.sh`, `deploy-webapp.sh`).
 
 1. **Policy exemption** — exempt `aqcosmosdb007` from the policy that disables
    public access (not used; the MCAPS policy reverts it), or
@@ -292,5 +292,5 @@ Option 2 below was implemented on 2026-07-14: the web app runs in a
 | [../src/services/telemetryService.ts](../src/services/telemetryService.ts) | `trackFeedback()` + `trackFeedbackPersistFailed()` → App Insights |
 | [../server/token-server.js](../server/token-server.js) | `POST /api/feedback` → Cosmos; `GET /api/feedback/list` admin read (token-protected) |
 | [../server/read-feedback.js](../server/read-feedback.js) | Legacy CLI read utility (only works when Cosmos is publicly reachable) |
-| [../scripts/vnet-migration/](../scripts/vnet-migration/) | VNet + private-endpoint migration scripts (durable fix) |
+| [../scripts/production/](../scripts/production/) | Production deploy plus the one-time VNet + private-endpoint provisioning |
 | [../infra/feedback-workbook.json](../infra/feedback-workbook.json) | Trends workbook (ARM) |

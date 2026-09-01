@@ -10,7 +10,7 @@
 # NON-DISRUPTIVE: creates a new empty environment; the old env/apps keep running.
 # This step can take 5–15 minutes (VNet environments provision slowly).
 #
-# Usage:  ./scripts/vnet-migration/02-aca-env.sh
+# Usage:  ./scripts/production/02-aca-env.sh
 # ============================================================================
 set -euo pipefail
 

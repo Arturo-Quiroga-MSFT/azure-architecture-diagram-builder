@@ -317,6 +317,6 @@ az rest --method GET \
 
 ## Related Files
 
-- Deployment script: [`scripts/update_aca.sh`](../scripts/update_aca.sh)
+- Deployment script: [`scripts/production/deploy-webapp.sh`](../scripts/production/deploy-webapp.sh)
 - Architecture overview: [`DOCS/ARCHITECTURE.md`](./ARCHITECTURE.md)
 - Environment variables template: [`.env.example`](../.env.example)

@@ -727,7 +727,7 @@ docker run -p 80:80 \
 cp .env.example .env
 
 # 2. Deploy (reads all config from .env)
-./scripts/deploy_aca.sh
+./scripts/legacy/deploy_aca.sh
 ```
 
 See `.env.example` for all required variables including `ACR_NAME`, `ACA_APP_NAME`, `RESOURCE_GROUP`, and model deployments.
@@ -907,8 +907,8 @@ azure-diagrams/
 ├── server/                   # Token server (co-located with nginx in the container)
 │   └── token-server.js       # Express.js: /api/speech-token + /api/ice-token + /api/openai + /api/docs-search + /api/feedback (Managed Identity, keyless)
 ├── scripts/                  # Deployment & data scripts
-│   ├── deploy_aca.sh         # Configurable ACA deployment (reads from .env)
-│   ├── update_aca.sh         # Author's ACA deployment (hardcoded resources)
+│   ├── production/           # THE production deploy: deploy-webapp.sh (+ one-time 01/02 provisioning)
+│   ├── legacy/               # Superseded: deploy.sh, deploy_aca.sh, update_aca.sh
 │   ├── deploy-mcp-instance.sh  # Deploy the isolated MCP server ACA instance
 │   └── fetch-multi-region-pricing.sh  # Refresh per-region pricing (npm run pricing:refresh)
 ├── Azure_Public_Service_Icons/  # 714 official Azure icons (29 categories)
@@ -1115,7 +1115,7 @@ The same token server also brokers Azure OpenAI so credentials never reach the b
 - `server/token-server.js` — new Express.js token server started by `start.sh` before nginx
 - `src/services/avatarPresenter.ts` — Speech SDK avatar session, ICE relay, word-boundary callback
 - `Dockerfile` — extended build stage with `ARG/ENV VITE_SPEECH_REGION`; production stage installs token server deps
-- `scripts/update_aca.sh` — adds `VITE_SPEECH_REGION` build arg and `AZURE_SPEECH_REGION` / `AZURE_SPEECH_RESOURCE_ID` runtime env vars
+- `scripts/legacy/update_aca.sh` — adds `VITE_SPEECH_REGION` build arg and `AZURE_SPEECH_REGION` / `AZURE_SPEECH_RESOURCE_ID` runtime env vars
 - ACA managed identity assigned `Cognitive Services Speech User` role on the Speech resource (no stored credentials)
 
 ---
@@ -1159,7 +1159,7 @@ All edge types now render correctly: solid sync edges, dashed async edges, dotte
 
 ### February 14, 2026 — UI Polish, Auth & Deployment
 - **Entra ID Authentication** — ACA built-in auth with per-user assignment (no code changes needed)
-- **Configurable Deploy Script** — New `scripts/deploy_aca.sh` reads all config from `.env` — clone, configure, deploy
+- **Configurable Deploy Script** — New `scripts/legacy/deploy_aca.sh` reads all config from `.env` — clone, configure, deploy
 - **GPT-5.2 Codex Deployment Support** — Added to Dockerfile and deploy pipeline
 - **Compare Models Button Styling** — Amber gradient with pulse animation, dark mode compatible
 - **Remove Share Feature** — Removed broken Share button, Express server, and Cosmos DB backend

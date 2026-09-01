@@ -1,5 +1,9 @@
 #!/bin/bash
 #
+# ⚠️  LEGACY — NOT the production deploy. Use ./scripts/production/deploy-webapp.sh
+#
+# Updates the OLD non-VNet app, which is retained only as a rollback target.
+#
 # Azure Container App Deployment Script
 # ======================================
 #
@@ -58,7 +62,7 @@
 #   The file is gitignored since it's auto-generated at deploy time.
 #
 # Usage:
-#   ./scripts/update_aca.sh
+#   ./scripts/legacy/update_aca.sh
 #
 
 set -euo pipefail

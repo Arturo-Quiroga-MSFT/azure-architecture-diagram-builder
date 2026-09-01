@@ -75,7 +75,7 @@ ENV VITE_ENABLE_ADOPTION_IMPACT=$VITE_ENABLE_ADOPTION_IMPACT
 # App Insights connection string workaround:
 # The connection string contains semicolons (e.g. "InstrumentationKey=...;IngestionEndpoint=...")
 # which cannot be passed via `az acr build --build-arg` because ACR Tasks interprets them
-# as shell command separators. Instead, the deploy script (scripts/update_aca.sh) extracts
+# as shell command separators. Instead, the deploy script (scripts/production/deploy-webapp.sh) extracts
 # the value into .env.appinsights, which is COPY'd here and sourced at build time.
 # The glob pattern (appinsights*) ensures the build doesn't fail if the file is absent.
 # .env.build  — written by scripts/azd-prepackage.sh before 'azd package';
