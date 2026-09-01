@@ -261,6 +261,7 @@ function App() {
   // a nudge to reload its list.
   const [libraryReloadToken, setLibraryReloadToken] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatResetSignal, setChatResetSignal] = useState(0);
   const [isDeliverChooserOpen, setIsDeliverChooserOpen] = useState(false);
   const [generatorOpenSignal, setGeneratorOpenSignal] = useState(0);
   const generatorOpenSourceRef = useRef<'first-start' | 'journey-strip' | 'toolbar'>('toolbar');
@@ -1986,6 +1987,30 @@ function App() {
     reader.readAsText(file);
   }, [applyFlowObject]);
 
+  // Should leave the app in the same state a browser refresh would: everything
+  // about *this* diagram gone, saved preferences and export history kept.
+  const startFreshSession = useCallback(() => {
+    trackStartFresh();
+    setNodes([]);
+    setEdges([]);
+    resetGenerationSession();
+    clearSourceModel();
+    setReferenceImageUrl(null);
+    setPromptBannerPosition(null);
+    setHighlightedServices([]);
+    setShowLayoutHint(false);
+    setValidationResult(null);
+    setValidationNeedsRefresh(false);
+    setIsValidationPanelOpen(false);
+    setDeploymentGuide(null);
+    setIsDeploymentGuideModalOpen(false);
+    setIsChatOpen(false);
+    setChatResetSignal(v => v + 1);
+    setFocusMode(false);
+    setAllGroupsCollapsed(false);
+    setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+  }, [resetGenerationSession]);
+
   // Restore a version from history
   const restoreVersion = useCallback((version: DiagramVersion) => {
     try {
@@ -3525,6 +3550,15 @@ function App() {
                     </div>
                   )}
                 </div>
+                {/* Signpost, not a menu — the Reports pane owns the export list. */}
+                <button
+                  onClick={() => setActiveView('reports')}
+                  className="btn btn-primary"
+                  title="Open the Reports pane to export this architecture"
+                >
+                  <Download size={18} />
+                  Export
+                </button>
               </div>
 
               <div className="toolbar-group">
@@ -3546,30 +3580,10 @@ function App() {
               </div>
 
               <div className="toolbar-group">
-                {/* Signpost, not a menu — the Reports pane owns the export list. */}
-                <button
-                  onClick={() => setActiveView('reports')}
-                  className="btn btn-primary"
-                  title="Open the Reports pane to export this architecture"
-                >
-                  <Download size={18} />
-                  Export
-                </button>
-              </div>
-
-              <div className="toolbar-group">
                 <button
                   onClick={() => {
                     if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
-                      trackStartFresh();
-                      setNodes([]);
-                      setEdges([]);
-                      resetGenerationSession();
-                      setShowLayoutHint(false);
-                      setValidationResult(null);
-                      setValidationNeedsRefresh(false);
-                      setDeploymentGuide(null);
-                      setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+                      startFreshSession();
                     }
                   }}
                   className="btn btn-secondary"
@@ -4443,6 +4457,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
       </button>
       <ArchitectureChatPanel
         isOpen={isChatOpen}
+        resetSignal={chatResetSignal}
         onClose={() => setIsChatOpen(false)}
         currentArchitecture={{
           nodes,

@@ -677,3 +677,59 @@ under it. The stack is now bar → banner → hint, and it holds at every width 
 `npm run verify:release` passes, including all 3 e2e tests.
 
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.
+
+### 2026-09-01 — Export beside Import, and "Start fresh" was not starting fresh
+
+Export now sits directly right of Import, in the same group. They are the two ends of the
+same idea and were three groups apart.
+
+**The reset was the real find.** Arturo suspected the reset button did not clear the
+session the way a browser refresh does. It did not. There is no autosave anywhere in the
+app, so a refresh means an empty canvas with only saved preferences surviving — that is
+the bar the button has to meet, and it was clearing nodes, edges, the generation session,
+validation, the deployment guide and the title block, but leaving eight other things
+behind:
+
+| Left behind | What you would have seen |
+|---|---|
+| Guided Chat conversation and draft | Yesterday's conversation waiting in a "fresh" session |
+| Source model name | Exports still filenamed after the model that built the old diagram |
+| Reference image | Old sketch still attached |
+| Prompt banner position | Next banner appears wherever you dragged the last one |
+| Highlighted services | Stale glow with nothing to point at |
+| Focus mode | Panels still hidden |
+| Collapse-groups toggle | Button stuck reading "Expand Groups" with no groups |
+| Validation dock / guide modal open | Dock open over an empty canvas |
+
+The chat one is the subtle one. The panel returns `null` when closed, so it vanishes from
+the DOM — but the element is always rendered by `App`, so the **component stays mounted
+and keeps its state**. Measured: typed a draft, closed the panel (confirmed gone from the
+DOM), reopened it, and the draft was still there. Clearing on close would have been wrong
+too, so the panel now takes a `resetSignal` that only the reset bumps.
+
+All of it moved into one `startFreshSession` callback with the standard it has to meet
+written above it, rather than a growing list inside an `onClick`.
+
+| Check after reset | Result |
+|---|---|
+| Nodes | 0, empty-state chooser shown |
+| Prompt banner | gone |
+| Chat draft after reopening | empty, back to cold-start starters |
+| Focus | back to "Focus" |
+| Collapse Groups | back to default label, disabled |
+| Validate Architecture | disabled |
+| Title block | absent |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Measurement note.** The first two attempts to test this reported "reset does nothing" —
+both were wrong. Playwright auto-dismisses dialogs, so the confirm was being answered
+"no", and the handler has to be registered in the same call as the click. Then a real
+click was silently intercepted by the chat panel. Neither was an app bug; both looked
+exactly like one.
+
+**Found while testing, not fixed:** the Guided Chat panel is `position: fixed; top: 0` at
+`z-index: 1100`, so it covers the right end of the header. With chat open, **Load and the
+reset button cannot be clicked** — a genuine real click is intercepted, which is how it
+surfaced. The `body.has-validation-dock` offset pattern already in this codebase would fix
+it; left for a placement decision.
