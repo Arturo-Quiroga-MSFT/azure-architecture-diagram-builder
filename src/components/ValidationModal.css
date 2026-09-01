@@ -705,14 +705,6 @@ body.dark-mode .validation-dismiss-hint strong {
   color: #8ab4e0;
 }
 
-body.dark-mode .validation-modal .modal-header h2 {
-  color: #e0e0e0;
-}
-
-body.dark-mode .validation-modal .modal-header {
-  border-bottom-color: #444;
-}
-
 body.dark-mode .validation-score {
   background: #2a2a2a;
 }

@@ -120,9 +120,13 @@ body.dark-mode .validation-panel {
   border-left-color: #2d2d2d;
 }
 
-/* ValidationModal.css scopes these to .validation-modal, which the panel no
+/* ValidationModal.css scoped these to .validation-modal, which the panel no
    longer is. The section headings had no dark rule at all — dark grey on a dark
    surface in the old modal too. */
+body.dark-mode .validation-panel .modal-header {
+  border-bottom-color: #444;
+}
+
 body.dark-mode .validation-panel .modal-header h2,
 body.dark-mode .validation-panel .pillars-section h3,
 body.dark-mode .validation-panel .quickwins-section h3 {

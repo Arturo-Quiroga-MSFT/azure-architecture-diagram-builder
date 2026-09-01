@@ -277,7 +277,7 @@ function App() {
   // must re-run when the element actually attaches.
   const [promptBannerEl, setPromptBannerEl] = useState<HTMLDivElement | null>(null);
   const [layoutHintTop, setLayoutHintTop] = useState(16);
-  // Collapses the top toolbar rows to maximize canvas height. Independent of
+  // Collapses the top toolbar to maximize canvas height. Independent of
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(() => localStorage.getItem(HEADER_COLLAPSED_STORAGE_KEY) === '1');
@@ -1987,8 +1987,12 @@ function App() {
     reader.readAsText(file);
   }, [applyFlowObject]);
 
-  // Should leave the app in the same state a browser refresh would: everything
-  // about *this* diagram gone, saved preferences and export history kept.
+  // Should leave the app as a browser refresh would: everything about *this*
+  // diagram gone, and with it the layout/style choices the app deliberately
+  // does not persist. Genuine preferences (dark mode, edge style, export
+  // background) and export history are read from localStorage, so they stay.
+  // Deliberate exception: a model comparison is its own workspace and may be
+  // mid-run, so it is left alone.
   const startFreshSession = useCallback(() => {
     trackStartFresh();
     setNodes([]);
@@ -1998,6 +2002,7 @@ function App() {
     setReferenceImageUrl(null);
     setPromptBannerPosition(null);
     setHighlightedServices([]);
+    setEdgeContextMenu(null);
     setShowLayoutHint(false);
     setValidationResult(null);
     setValidationNeedsRefresh(false);
@@ -2008,6 +2013,11 @@ function App() {
     setChatResetSignal(v => v + 1);
     setFocusMode(false);
     setAllGroupsCollapsed(false);
+    setStylePreset('detailed');
+    setLayoutPreset('flow-lr');
+    setLayoutSpacing('comfortable');
+    setLayoutEngine('dagre');
+    setLayoutEmphasizePrimaryPath(false);
     setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
   }, [resetGenerationSession]);
 
@@ -3352,7 +3362,6 @@ function App() {
           {isCanvasView && (
           <>
           <div className="header-actions-wrapper">
-            {/* Row 1: Project-level actions */}
             <div className="header-actions">
               <div className="toolbar-group">
                 <RegionSelector onRegionChange={handleRegionChange} />

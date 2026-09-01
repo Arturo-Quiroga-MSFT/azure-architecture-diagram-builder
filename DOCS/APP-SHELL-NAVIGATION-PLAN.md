@@ -731,5 +731,54 @@ exactly like one.
 **Found while testing, not fixed:** the Guided Chat panel is `position: fixed; top: 0` at
 `z-index: 1100`, so it covers the right end of the header. With chat open, **Load and the
 reset button cannot be clicked** — a genuine real click is intercepted, which is how it
-surfaced. The `body.has-validation-dock` offset pattern already in this codebase would fix
-it; left for a placement decision.
+surfaced.
+
+**Decision (Arturo, 2026-09-01): leave it, and watch for feedback.** It blocks exactly two
+buttons, only while chat is open, and it is not new. If it starts to bite people, the fix
+is to make chat an in-flow flex child of `.workspace` the way the validation dock already
+is — the workspace begins below the header, so "below the header" costs nothing and needs
+no measured height. Note for whoever picks it up: the `body.has-validation-dock` rules are
+*not* the pattern to copy. The validation dock is in-flow; those rules exist to push other
+`position: fixed` elements out of its way, which is the opposite problem.
+
+### 2026-09-01 — Cleanup pass over the whole migration
+
+A deliberate sweep for leftovers after a lot of moving, renaming and deleting.
+
+**Clean.** No orphaned stylesheets, no unused imports, no `useState` with an unused setter,
+no dead top-level classes in the new pane stylesheets, and no references left to the four
+deleted components other than the intentional CSS imports, each of which carries a comment
+saying why.
+
+**Three orphaned components** — `AzPrototypeExportModal`, `AzPrototypeImportModal`,
+`ModelSelector` (636 lines) — are imported by nothing. Checked against the branch point:
+they were already orphaned before this work started, so they are someone else's decision to
+make, not fallout from it.
+
+**Duplicate `.modal-overlay` / `.modal-content` / `.modal-header` / `.modal-body` /
+`.modal-close`** are defined in both `ValidationModal.css` and `AIArchitectureGenerator.css`.
+Also pre-existing and unchanged — but worth knowing about, because which one wins depends on
+bundle import order.
+
+**Four things fixed:**
+
+1. **The reset comment overclaimed.** It said the button leaves the app "as a browser refresh
+   would … saved preferences kept", but `stylePreset`, `layoutPreset`, `layoutSpacing`,
+   `layoutEngine` and `layoutEmphasizePrimaryPath` are *not* saved — a refresh resets them and
+   the button did not. `stylePreset` is the one that bites: leave it on `presentation` and the
+   next diagram silently renders differently than it would in a fresh app. The app's own
+   persistence choices are the tell — it saves dark mode, edge style and export background, and
+   pointedly does not save these. They now reset too, so the comment is true rather than nearly
+   true. The one deliberate exception, a model comparison, is named in the comment.
+2. **Two dead rules in `ValidationModal.css`** scoped to `.validation-modal`, a class no longer
+   in any markup. One was already superseded in `ValidationPanel.css`; the other,
+   `border-bottom-color: #444`, was not — so the panel header's dark-mode border had quietly
+   been dropped. Deleted both, carried the border over.
+3. **Two dead rules in `VersionHistoryModal.css`** scoped to `.version-history-modal`, plus a
+   heading that still called it a modal. The file is now labelled for what it is: version-list
+   styles that `LibraryPane` imports alongside its own stylesheet.
+4. **Stale comments** describing the header as having rows, and the canvas-tools comment still
+   listing the prompt banner as sharing its band — it stacks below now. Added a note on
+   `.canvas-container` recording *why* it must not be `position: relative`, since that mistake
+   cost a release-gate failure and would look like a harmless change to anyone who did not
+   know.
