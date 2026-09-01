@@ -642,6 +642,93 @@
   word-wrap: break-word;
 }
 
+/* ==========================================================================
+   DARK MODE
+   The stylesheet had none, so headings were #1f2937 on the #1e1e1e modal
+   surface, and the light content cards kept a light background while their text
+   inherited a light colour. Scoped to .deployment-modal so nothing else shifts.
+   ========================================================================== */
+
+body.dark-mode .deployment-modal .modal-header h2,
+body.dark-mode .deployment-modal .guide-section h4,
+body.dark-mode .deployment-modal .config-key,
+body.dark-mode .deployment-modal .configuration-table th {
+  color: #e5e7eb;
+}
+
+body.dark-mode .deployment-modal .modal-header {
+  border-bottom-color: #333;
+}
+
+body.dark-mode .deployment-modal .step-card,
+body.dark-mode .deployment-modal .prerequisites-list li,
+body.dark-mode .deployment-modal .validation-list li,
+body.dark-mode .deployment-modal .troubleshooting-item,
+body.dark-mode .deployment-modal .best-practices-list li,
+body.dark-mode .deployment-modal .bicep-template-card,
+body.dark-mode .deployment-modal .configuration-table table {
+  background: #242424;
+  border-color: #333;
+  color: #d1d5db;
+}
+
+/* The collapsed step rows are .step-header, not .step-card — they carry their
+   own white background, which left the title invisible. */
+body.dark-mode .deployment-modal .step-header {
+  background: #242424;
+  color: #e5e7eb;
+}
+
+body.dark-mode .deployment-modal .step-header:hover {
+  background: #2d2d2d;
+}
+
+body.dark-mode .deployment-modal .step-title,
+body.dark-mode .deployment-modal .step-title span {
+  color: #e5e7eb;
+}
+
+body.dark-mode .deployment-modal .modal-actions {
+  background: #242424;
+  border-top-color: #333;
+}
+
+body.dark-mode .deployment-modal .step-description,
+body.dark-mode .deployment-modal .configuration-table thead,
+body.dark-mode .deployment-modal .configuration-table tbody tr:hover,
+body.dark-mode .deployment-modal .validation-list li:hover {
+  background: #2a2a2a;
+  color: #d1d5db;
+}
+
+body.dark-mode .deployment-modal .config-description,
+body.dark-mode .deployment-modal .commands-header span,
+body.dark-mode .deployment-modal .troubleshooting-solution,
+body.dark-mode .deployment-modal .bicep-description {
+  color: #9ca3af;
+}
+
+body.dark-mode .deployment-modal .configuration-table td,
+body.dark-mode .deployment-modal .configuration-table th {
+  border-color: #333;
+}
+
+body.dark-mode .deployment-modal .troubleshooting-problem {
+  color: #fca5a5;
+}
+
+/* Amber note keeps its meaning but needs a dark-surface tint. */
+body.dark-mode .deployment-modal .step-notes {
+  background: #2a1f0a;
+  border-color: #78350f;
+  color: #fcd34d;
+}
+
+body.dark-mode .deployment-modal .modal-loading,
+body.dark-mode .deployment-modal .modal-loading p {
+  color: #d1d5db;
+}
+
 /* Microsoft Learn grounding (Phase 1) */
 .grounding-section .grounding-note {
   margin: 0 0 0.5rem;
