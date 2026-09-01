@@ -56,7 +56,7 @@ const NODE_WIDTH = 180;   // Standard node width
 // under-reserved every vertical gap and every group height.
 const NODE_HEIGHT = 136;
 const GROUP_GAP = 40;     // Minimum gap between groups after overlap resolution
-const GROUP_HEADER_HEIGHT = 50;
+const GROUP_HEADER_HEIGHT = 64; // label row + optional note row (e.g. Private Connectivity)
 
 // Dagre only reserves rank space for an edge when that edge declares a label
 // box, so labelled connections get a corridor instead of sharing the node gap.

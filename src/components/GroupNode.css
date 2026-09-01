@@ -39,6 +39,16 @@
   justify-content: space-between;
 }
 
+.group-note {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .fit-to-content-button {
   background: transparent;
   border: none;

@@ -2381,6 +2381,7 @@ function App() {
           position: group.position,
           data: {
             label: group.label || group.id || 'Unnamed Group',
+            note: group.note,
           },
           style: {
             width: group.width,
@@ -4404,7 +4405,7 @@ When a recommendation involves multi-region, failover, geo-redundancy, or disast
 - Target 14-18 services total for multi-region architectures (roughly double the region-scoped services).
 
 SERVICE MAPPING — CRITICAL:
-- When adding private connectivity, keep application traffic connected directly to the protected PaaS service. Add one "Private Endpoint - <resource>" node (type "Private Endpoint") per protected resource, associate it to that resource, and contain customer-owned endpoints in the Virtual Network. Model App Service outbound access with a separate VNet Integration association. Never place Azure Private Link between workload services as middleware.
+- When adding private connectivity, keep application traffic connected directly to the protected PaaS service. Do NOT add a "Private Endpoint - <resource>" node, a Virtual Network → Private Endpoint containment edge, or an App Service → Virtual Network "VNet Integration" edge per resource. Include exactly one "Virtual Network" node and, when DNS resolution matters, one "Private DNS Zone" node; the application groups both into a single "Private Connectivity" boundary and annotates it with the protected resource names — you do not need to connect them to each resource. Never place Azure Private Link between workload services as middleware.
 - When adding WAF capabilities, add "Web Application Firewall" as a service node if not already covered by Application Gateway or Azure Front Door.
 - When adding SIEM/security monitoring, add "Microsoft Sentinel" as a service node.
 - Always use exact service names from the known services list in the system prompt.

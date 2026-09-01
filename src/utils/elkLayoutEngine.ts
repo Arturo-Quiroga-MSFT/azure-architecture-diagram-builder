@@ -175,7 +175,8 @@ export async function layoutArchitecture(
     return {
       id: group.id,
       layoutOptions: {
-        'elk.padding': `[top=${pad + 40}, left=${pad + 20}, bottom=${pad + 20}, right=${pad + 20}]`,
+        // +54 (not +40) reserves room for a group's optional note row.
+        'elk.padding': `[top=${pad + 54}, left=${pad + 20}, bottom=${pad + 20}, right=${pad + 20}]`,
         'elk.spacing.nodeNode': String(Math.max(opts.nodeSpacing * 0.6, 80)),
         'elk.layered.spacing.nodeNodeBetweenLayers': String(Math.max(opts.rankSpacing * 0.6, 120)),
       },

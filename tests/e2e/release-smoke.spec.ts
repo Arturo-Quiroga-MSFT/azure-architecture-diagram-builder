@@ -314,14 +314,21 @@ test('semantic policies and private endpoints do not render as traffic hops', as
   await page.getByRole('button', { name: 'Review on Canvas' }).click();
 
   await expect(page.locator('.react-flow__node').filter({ hasText: 'Front Door WAF Policy' })).toHaveCount(1);
-  await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Endpoint -/ })).toHaveCount(2);
-  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Endpoint - Virtual Network' })).toHaveCount(0);
+  await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Endpoint -/ })).toHaveCount(0);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private DNS Zone' })).toHaveCount(1);
   await expect(page.getByText('WAF policy associated with Front Door route')).toBeVisible();
-  await expect(page.getByText('VNet Integration for outbound private access')).toBeVisible();
-  await expect(page.getByText('Contains private endpoint for SQL Database')).toBeVisible();
+  // No per-resource Private Endpoint node/edges — the group's note carries the
+  // relationship, reusing the group the Virtual Network already belonged to.
+  // A named "Private Link - <resource>" node per protected resource sits in
+  // the same group, visible detail alongside the note, with zero edges.
+  await expect(page.getByText('Private endpoints: App Service and SQL Database')).toBeVisible();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - App Service' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - SQL Database' })).toHaveCount(1);
+  await expect(page.getByText('Contains private endpoint for SQL Database')).toHaveCount(0);
+  await expect(page.getByText('VNet Integration for outbound private access')).toHaveCount(0);
 
   const associationPaths = page.locator('path[id^="semantic-association-"]');
-  await expect(associationPaths).toHaveCount(4);
+  await expect(associationPaths).toHaveCount(1);
   const associationAttributes = await associationPaths.evaluateAll((paths) => paths.map((path) => ({
     markerEnd: path.getAttribute('marker-end'),
     markerStart: path.getAttribute('marker-start'),
@@ -332,10 +339,7 @@ test('semantic policies and private endpoints do not render as traffic hops', as
   expect(associationAttributes.every((path) => path.dash.includes('3'))).toBe(true);
   expect(associationAttributes.every((path) => !path.animation)).toBe(true);
 
-  const containmentPaths = page.locator('path[id^="semantic-containment-"]');
-  await expect(containmentPaths).toHaveCount(1);
-  await expect(containmentPaths).not.toHaveAttribute('marker-end', /.+/);
-  await expect(containmentPaths).toHaveCSS('stroke-dasharray', /2px, 5px|2, 5/);
+  await expect(page.locator('path[id^="semantic-containment-"]')).toHaveCount(0);
 
   await expect(page.locator('.react-flow__edge-path:not([id^="semantic-"])')).toHaveCount(2);
   await expect(page.locator('.react-flow__edge-path:not([id^="semantic-"])').first()).toHaveAttribute('marker-end', /arrowclosed/);
