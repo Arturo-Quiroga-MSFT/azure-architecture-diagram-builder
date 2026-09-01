@@ -46,6 +46,7 @@ PR, CI, approval, release, and rollback controls as authoritative.
 | [phase-1-2/plan-critique.md](phase-1-2/plan-critique.md) | Independent plan critique and re-review | Pass |
 | [phase-1-2/changes.md](phase-1-2/changes.md) | Material changes, divergences, validation and checks not run | Ready for review |
 | [phase-1-2/control-inventory.md](phase-1-2/control-inventory.md) | Automated, documented, setting-dependent and reviewer-dependent controls | Ready for review |
+| [phase-1-2/acceptance-review.md](phase-1-2/acceptance-review.md) | Read-only acceptance review and evidence corrections | Conformant with justified divergence |
 | [decisions/0002-use-hve-rpi-with-selective-spec-kit.md](decisions/0002-use-hve-rpi-with-selective-spec-kit.md) | HVE-primary and selective-Spec-Kit decision | Accepted |
 
 ## Evidence Language

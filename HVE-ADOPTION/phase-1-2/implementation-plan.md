@@ -1,6 +1,6 @@
 # HVE Phase 1 and Phase 2 Implementation Plan
 
-- Status: Implementation complete; acceptance review pending
+- Status: Acceptance review passed; draft PR pending
 - Date: 2026-09-01
 - Owner: Arturo Quiroga
 - Branch: `engineering/hve-sdlc-phase-1-2`
