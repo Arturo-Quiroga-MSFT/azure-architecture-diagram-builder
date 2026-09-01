@@ -581,4 +581,48 @@ state; the guide took several minutes to return, matching the slow model respons
 during the Compare work. Waiting for completion rather than trusting the first reading
 turned two false bug reports into a clean pass.
 
+### 2026-08-31 — Tier 3: floating canvas toolbar, and a single-row header
+
+Layout, Select, Style, Focus and Collapse Groups act on canvas objects, so they moved onto
+the canvas. **Row 2 then held only Validate Architecture, which merged into row 1 — the
+header is now a single row.**
+
+**Placement was measured, not guessed.** On a 2689 × 1110 canvas the bottom ~300px is
+occupied across its full width by the zoom controls, title block, legend and minimap. The
+top edge is free apart from transient occupants: the nav hint (top-right) and prompt
+banner (top-centre). Top-left it is; verified no overlap with any of them, and the bar
+still fits at a 1091px canvas.
+
+**Portalled, not moved.** The five controls are ~260 lines of dropdown markup with
+outside-click wiring. `createPortal` puts them on the canvas while the JSX and all its
+handlers stay put, so the change is two edits at the boundary rather than a risky cut.
+
+**Side effect caught by the e2e suite, not by my own check.** The first attempt made
+`.canvas-container` the positioned ancestor. That silently re-parented the prompt banner's
+coordinate space and broke its drag by exactly the rail + palette width.
+
+My "no side effects" verification had compared the overlays before and after and found
+them byte-identical — but the prompt banner only appears after a generation, so it was
+never in the sample. **Comparing what happens to be on screen is not the same as comparing
+what exists.**
+
+Fixed by hosting the portal target inside React Flow's own container, which is already
+positioned, and reverting `.canvas-container`.
+
+| Check | Result |
+|---|---|
+| Header rows | 2 → **1** |
+| Header controls | 17 → 12, plus 5 on the canvas |
+| Bar position | top 12, left 12 |
+| Overlap with legend / minimap / controls / title block | none |
+| Fits at 1091px canvas | yes |
+| Layout ▸ Apply Layout from the bar | node positions changed |
+| Dropdown direction | opens downward, stays inside the canvas |
+| Light and dark | both verified |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Toolbar across the whole exercise: 22 → 12 in the header**, with five relocated to the
+canvas and the rest reachable from the panes that own them.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

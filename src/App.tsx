@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -341,6 +342,9 @@ function App() {
   });
 
   const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  // Portal target for the canvas object tools; state rather than a ref so the
+  // portal renders once the node exists.
+  const [canvasToolsHost, setCanvasToolsHost] = useState<HTMLDivElement | null>(null);
   const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
   const importMenuRef = useRef<HTMLDivElement | null>(null);
   const layoutMenuRef = useRef<HTMLDivElement | null>(null);
@@ -3552,11 +3556,38 @@ function App() {
                   <RefreshCw size={18} />
                 </button>
               </div>
-            </div>
 
-            {/* Row 2: Canvas tools & AI settings */}
-            <div className="header-actions">
               <div className="toolbar-group">
+                <button 
+                  onClick={handleValidateArchitecture} 
+                  className="btn btn-premium" 
+                  title="Validate architecture against Azure Well-Architected Framework"
+                  disabled={nodes.length === 0}
+                >
+                  <Shield size={18} />
+                  Validate Architecture
+                </button>
+                {validationResult && (
+                  <button
+                    onClick={() => setIsValidationPanelOpen(true)}
+                    className="btn btn-secondary"
+                    title={validationNeedsRefresh
+                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
+                      : 'Open last validation results'}
+                  >
+                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
+                    {validationNeedsRefresh
+                      ? 'Revalidate Needed'
+                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
+                  </button>
+                )}
+              </div>
+
+              {/* Object tools act on canvas items, so they render over the canvas.
+                  Portalled rather than moved so the dropdown markup and its
+                  outside-click wiring stay exactly as they were. */}
+              {canvasToolsHost && createPortal(
+                <div className="canvas-tools">
                 <div className="toolbar-dropdown" ref={layoutMenuRef}>
                   <button
                     onClick={() => setIsLayoutMenuOpen((v) => !v)}
@@ -3818,33 +3849,9 @@ function App() {
                   {allGroupsCollapsed ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
                   {allGroupsCollapsed ? 'Expand Groups' : 'Collapse Groups'}
                 </button>
-              </div>
-
-              <div className="toolbar-group">
-                <button 
-                  onClick={handleValidateArchitecture} 
-                  className="btn btn-premium" 
-                  title="Validate architecture against Azure Well-Architected Framework"
-                  disabled={nodes.length === 0}
-                >
-                  <Shield size={18} />
-                  Validate Architecture
-                </button>
-                {validationResult && (
-                  <button
-                    onClick={() => setIsValidationPanelOpen(true)}
-                    className="btn btn-secondary"
-                    title={validationNeedsRefresh
-                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
-                      : 'Open last validation results'}
-                  >
-                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
-                    {validationNeedsRefresh
-                      ? 'Revalidate Needed'
-                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
-                  </button>
-                )}
-              </div>
+                </div>,
+                canvasToolsHost,
+              )}
             </div>
           </div>
           <button
@@ -4204,6 +4211,10 @@ function App() {
                 onDismiss={() => setReferenceImageUrl(null)}
               />
             )}
+            {/* Inside ReactFlow because its container is already the positioned
+                ancestor. Making .canvas-container relative instead re-parented
+                the prompt banner's coordinates and broke its drag. */}
+            <div className="canvas-tools-host" ref={setCanvasToolsHost} />
           </ReactFlow>
           <AlignmentToolbar 
             selectedNodes={nodes.filter(n => n.selected)}
