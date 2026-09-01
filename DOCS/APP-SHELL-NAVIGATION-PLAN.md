@@ -552,4 +552,33 @@ three corners while a pane is open, and that clicking back to Canvas works.
 in. Prefer `opacity: 0` over `visibility: hidden`, and force `pointer-events` on
 descendants, wherever a third-party library controls child styles.
 
+### 2026-08-31 — Tier 2 toolbar reduction, 19 controls to 17
+
+**Import Template + Import from Azure → one `Import ▾`.** Both mean "start from something
+that already exists". The file input moved inside the menu item, so template upload still
+works without a separate control.
+
+**Deployment Guide → the Reports pane.** It produces a document, so by the placement rules
+it belongs with the other artifacts. Added a `deployment` group to the shared
+`ExportAction` list rather than inventing a parallel mechanism, so the toolbar and pane
+still cannot drift.
+
+**Tested end to end**, including the slow path:
+
+| Check | Result |
+|---|---|
+| Toolbar controls | 19 → 17 |
+| Import menu | `Template file` + `From Azure`, file input intact |
+| Reports sections | images, documents, editable, cost, **Deployment**, recent |
+| Generate from the pane | real run; card became `Generating guide…`, disabled `Already generating` |
+| After completion | `View Last Deployment Guide` went from blocked to enabled |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Measurement caution worth recording:** mid-run readings looked like two bugs — the
+Generate card "disappearing" and View staying blocked. Both were simply the in-progress
+state; the guide took several minutes to return, matching the slow model responses seen
+during the Compare work. Waiting for completion rather than trusting the first reading
+turned two false bug reports into a clean pass.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

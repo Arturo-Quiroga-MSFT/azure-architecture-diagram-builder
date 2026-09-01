@@ -341,6 +341,8 @@ function App() {
   });
 
   const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
+  const importMenuRef = useRef<HTMLDivElement | null>(null);
   const layoutMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>('flow-lr');
@@ -451,9 +453,13 @@ function App() {
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen && !isImportMenuOpen) return;
       const target = e.target as unknown as globalThis.Node | null;
       if (!target) return;
+
+      if (isImportMenuOpen && importMenuRef.current && !importMenuRef.current.contains(target)) {
+        setIsImportMenuOpen(false);
+      }
 
       if (isLayoutMenuOpen && layoutMenuRef.current && !layoutMenuRef.current.contains(target)) {
         setIsLayoutMenuOpen(false);
@@ -473,8 +479,9 @@ function App() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen && !isImportMenuOpen) return;
       if (e.key === 'Escape') {
+        setIsImportMenuOpen(false);
         setIsLayoutMenuOpen(false);
         setIsBulkSelectMenuOpen(false);
         setIsStylePresetMenuOpen(false);
@@ -488,7 +495,7 @@ function App() {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen]);
+  }, [isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen, isImportMenuOpen]);
 
   // Keyboard shortcuts: Delete and Ctrl+D (duplicate)
   useEffect(() => {
@@ -3265,6 +3272,26 @@ function App() {
         disabledReason: needsCost,
         run: exportCostBreakdownZip,
       },
+      {
+        id: 'deployment-guide',
+        label: isGeneratingGuide ? 'Generating guide…' : 'Generate Deployment Guide',
+        group: 'deployment',
+        icon: FileText,
+        description: 'Step-by-step deployment steps and Bicep for this architecture.',
+        disabledReason: isGeneratingGuide ? 'Already generating' : needsDiagram,
+        isGenerate: true,
+        run: handleGenerateDeploymentGuide,
+      },
+      {
+        id: 'deployment-guide-view',
+        label: 'View Last Deployment Guide',
+        group: 'deployment',
+        icon: FileText,
+        description: 'Reopen the guide generated for this session.',
+        disabledReason: deploymentGuide ? undefined : 'Generate a deployment guide first',
+        isGenerate: true,
+        run: () => setIsDeploymentGuideModalOpen(true),
+      },
     ];
   }, [
     azureNodeCount, totalMonthlyCost, workflow.length,
@@ -3273,6 +3300,7 @@ function App() {
     exportWorkflowMarkdown, exportAsPptx, exportCustomerDeck,
     exportAsDrawio, exportAsVsdx, exportAsHtml,
     exportCostBreakdown, exportCostBreakdownZip,
+    isGeneratingGuide, deploymentGuide, handleGenerateDeploymentGuide,
   ]);
 
   return (
@@ -3425,27 +3453,52 @@ function App() {
                   <HelpCircle size={18} />
                   Help
                 </button>
-                <label className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`} title="Import Bicep, Terraform, or ARM template to generate diagram">
-                  {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <FileCode size={18} />}
-                  {isImportingTemplate ? 'Parsing...' : 'Import Template'}
-                  <input
-                    ref={templateInputRef}
-                    type="file"
-                    accept=".json,.bicep,.tf"
-                    multiple
-                    onChange={uploadTemplate}
-                    style={{ display: 'none' }}
-                    disabled={isImportingTemplate}
-                  />
-                </label>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setIsAzureImportOpen(true)}
-                  title="Reverse-engineer a live Azure resource group into a diagram (local / self-host)"
-                >
-                  <DownloadCloud size={18} />
-                  Import from Azure
-                </button>
+                <div className="toolbar-dropdown" ref={importMenuRef}>
+                  <button
+                    onClick={() => setIsImportMenuOpen((v) => !v)}
+                    className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`}
+                    title="Start from an existing template or a live Azure resource group"
+                    aria-haspopup="menu"
+                    aria-expanded={isImportMenuOpen}
+                  >
+                    {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <DownloadCloud size={18} />}
+                    {isImportingTemplate ? 'Parsing...' : 'Import'}
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isImportMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Import options">
+                      <label className="toolbar-dropdown-item" role="menuitem">
+                        <FileCode size={18} />
+                        Template file
+                        <input
+                          ref={templateInputRef}
+                          type="file"
+                          accept=".json,.bicep,.tf"
+                          multiple
+                          onChange={(e) => { setIsImportMenuOpen(false); uploadTemplate(e); }}
+                          style={{ display: 'none' }}
+                          disabled={isImportingTemplate}
+                        />
+                      </label>
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
+                        Bicep, Terraform or ARM
+                      </div>
+                      <div className="toolbar-dropdown-separator" role="separator" />
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => { setIsImportMenuOpen(false); setIsAzureImportOpen(true); }}
+                      >
+                        <DownloadCloud size={18} />
+                        From Azure
+                      </button>
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
+                        Reverse-engineer a live resource group
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="toolbar-group">
@@ -3789,25 +3842,6 @@ function App() {
                     {validationNeedsRefresh
                       ? 'Revalidate Needed'
                       : `Validation: ${bandLabel(validationResult.overallScore)}`}
-                  </button>
-                )}
-                <button 
-                  onClick={handleGenerateDeploymentGuide} 
-                  className="btn btn-premium" 
-                  title="Generate comprehensive deployment guide"
-                  disabled={nodes.length === 0}
-                >
-                  <FileText size={18} />
-                  Deployment Guide
-                </button>
-                {deploymentGuide && (
-                  <button
-                    onClick={() => setIsDeploymentGuideModalOpen(true)}
-                    className="btn btn-secondary"
-                    title="Open last deployment guide"
-                  >
-                    <FileText size={18} />
-                    View Guide
                   </button>
                 )}
               </div>
