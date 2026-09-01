@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.0.4` | 2026-09-01 | Right-click no longer discards the diagram; diagram autosave and restore | Deployed |
 | `v2.0.3` | 2026-09-01 | Private Connectivity group replaces per-resource Private Endpoint nodes | Deployed |
 | `v2.0.2` | 2026-09-01 | Fixed blank exports triggered from the Reports pane | Deployed |
 | `v1.9.0` | 2026-08-25 | Prompt refresh and pricing accuracy | Deployed |
@@ -20,6 +21,39 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.0.4: Right-Click Data Loss and Diagram Autosave
+
+Reported symptom: generate a diagram, make edits, right-click, let go, and the diagram is gone as though the app had refreshed, losing all work.
+
+### The trigger
+
+The canvas hint actively teaches "Right-click + drag to pan". Dispatching a real right-click and reading whether the app suppressed the resulting native menu showed the guard was incomplete:
+
+| Right-click target | Native browser menu suppressed |
+| --- | --- |
+| Empty pane | Yes, but only incidentally, as a side effect of right-drag panning |
+| Edge | Yes, explicitly, so the app's own Edge Direction menu can open |
+| Group box | **No** |
+| Service node | **No** |
+
+On a node or group the browser's own menu opened instead. Its top entries in Chrome and Edge are Back, Forward and Reload, and a press-drag-release gesture activates whatever sits under the cursor on release. Group boxes are large — in a small four-service diagram they covered 15% of the visible canvas, and far more when zoomed in to edit — so aiming at empty canvas frequently landed on one. Nodes, groups and multi-selections now suppress the native menu; the intentional Edge Direction menu is unaffected.
+
+This was not a recent regression. Right-drag panning dates to the first commit, and the hint teaching the gesture shipped on 2026-07-02.
+
+### Why it destroyed the work
+
+Separately from the trigger, nothing about a diagram was persisted. Only preferences were written to browser storage — dark mode, export history, hints, model settings. Services and connections were saved nowhere, and there was no unsaved-work prompt, so any reload discarded everything silently. Suppressing one menu removes one trigger; keyboard reload, a trackpad back-swipe, closing the tab and a crash all remained.
+
+### Autosave and restore
+
+The working diagram is now written to a dedicated IndexedDB database a second after the last change, debounced so dragging a node writes once on release rather than once per frame. IndexedDB rather than local storage because a diagram carrying pricing metadata on every node is large, and a 5MB ceiling would fail on exactly the diagrams most worth recovering. A dedicated database rather than a new store inside version history, so a record overwritten constantly can never put deliberately saved snapshots at risk.
+
+Restore is offered rather than applied. Reloading to obtain a clean canvas is a legitimate intent, so the canvas opens empty and a banner offers the autosaved diagram by name and save time. Clearing the diagram clears the autosaved copy with it, so a deliberate discard is never undone, and the banner is suppressed when a diagram arrives from a shared version link. Restore returns services, connections, groups, title block, workflow and the originating prompt; validation results and Guided Chat history are not restored.
+
+### Verification
+
+`npm run verify:release` passed with type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, and three Chromium tests. Both fixes were measured in a browser rather than reviewed from the diff. After the context-menu change, group, service node and pane all reported the native menu suppressed while the Edge Direction menu still opened. Autosave was exercised end to end: a six-node diagram produced a stored record of six nodes and two edges under the correct name, a reload presented the restore banner, restoring returned all six nodes, two edges and the title block, and clearing the diagram removed the record so a later reload offered nothing. The user separately confirmed both behaviors by hand across the right-click and autosave cases.
 
 ## v2.0.3: Private Connectivity Group
 

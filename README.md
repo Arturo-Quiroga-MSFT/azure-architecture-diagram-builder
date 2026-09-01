@@ -936,6 +936,13 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### September 1, 2026 — AADB v2.0.4 Your Work Survives a Reload
+
+- **Right-clicking the canvas no longer loses your diagram** — the canvas hint teaches "Right-click + drag to pan", but the browser's own menu was only suppressed on empty canvas and on edges, not on service nodes or group boxes. Right-clicking those opened the native menu, whose top entries are Back, Forward and Reload; a press-drag-release gesture could land on one and navigate away. Nodes, groups and multi-selections now suppress it too.
+- **The diagram autosaves** — previously nothing about a diagram survived a reload, so any accidental navigation, tab close or crash discarded it silently. The working diagram is now saved to local browser storage a second after each change.
+- **Restore is offered, not forced** — after a reload the canvas opens clean, with a banner offering the autosaved diagram by name and save time. Reloading to get a fresh canvas remains a valid way to start over, and clearing the diagram deliberately also clears the autosaved copy, so a discarded diagram is never handed back.
+- **Scope** — restore returns services, connections, groups, title block, workflow and the originating prompt. Validation results and Guided Chat history are not restored.
+
 ### September 1, 2026 — AADB v2.0.3 Private Connectivity Group
 
 - **One Private Connectivity group replaces per-resource Private Endpoint nodes** — the v1.8.0 model correctly gave each protected resource its own `Private Endpoint - <resource>` node, but at 4-8+ protected resources this produced enough nodes and edges to dominate the diagram. A single Virtual Network + Private DNS Zone group now carries a note listing every protected resource, plus one named `Private Link - <resource>` node per resource for at-a-glance identification, with zero edges into the group — membership plus the note already convey the relationship.
