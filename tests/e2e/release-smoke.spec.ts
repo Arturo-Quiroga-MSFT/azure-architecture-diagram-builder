@@ -235,10 +235,14 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await elkChunk;
   await expect(page.locator('.react-flow__node').filter({ hasText: 'App Service' })).toHaveCount(1);
 
+  // Export is a signpost to the Reports pane now, not a dropdown. The toolbar is
+  // canvas-only, so return to the canvas before using it again.
   await page.getByRole('button', { name: 'Export', exact: true }).click();
   const htmlDownload = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Export Interactive HTML' }).click();
+  await page.locator('.reports-card').filter({ hasText: 'Export Interactive HTML' }).click();
   await expect.poll(async () => (await htmlDownload).suggestedFilename()).toMatch(/\.html$/);
+  await page.locator('.nav-rail-item[title="Canvas"]').click();
+  await expect(page.locator('.canvas-container')).not.toHaveClass(/is-hidden/);
 
   await page.getByRole('button', { name: 'Guided Chat', exact: true }).click();
   const chatInput = page.locator('.arch-chat-input');

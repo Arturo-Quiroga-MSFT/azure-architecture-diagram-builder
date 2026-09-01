@@ -512,4 +512,117 @@ Compare wrapper, and two tab bodies. Each needs an explicit owner for its hidden
 and this is the second bug caused by one lacking it. If a fifth appears, extract a shared
 hideable wrapper rather than repeating the class dance again.
 
+### 2026-08-31 — Tier 1 toolbar reduction, 22 controls to 19
+
+Removed only what a pane now owns outright:
+
+| Removed | Now reachable at |
+|---|---|
+| Compare Models | rail → Compare → Generation |
+| Compare Validation | rail → Compare → Validation |
+| Dark mode toggle | Settings → Appearance |
+| Export **dropdown** (14 items) | Reports pane |
+
+Export stayed as a *signpost* — one button, same word, same place, navigating to Reports
+instead of opening a menu. Deleting a long-used entry point outright is the part of this
+that annoys without looking broken.
+
+Also caught: the guided journey's *Share or Build → Share* called `setIsExportMenuOpen(true)`
+on a menu that no longer exists, which would have been a silent dead end. It routes to
+Reports now, verified end to end.
+
+**The e2e suite found a real bug, not a test break.** After the change, clicking the
+Canvas rail item timed out — a React Flow node inside `.canvas-container.is-hidden` was
+intercepting the click.
+
+Root cause is sharper than the earlier hide-state notes suggested: the container had
+*both* `visibility: hidden` and `pointer-events: none`, and React Flow defeats both by
+setting `visibility: visible` and `pointer-events: all` on every node. A descendant can
+override either guard. Because the hidden canvas is `position: absolute; inset: 0` inside
+`.workspace`, and the rail is also inside `.workspace`, those invisible-but-live nodes sat
+over the rail.
+
+Fixed with `opacity: 0` — which a child cannot undo, unlike visibility — plus
+`pointer-events: none !important` on descendants. Verified the rail is hit-testable at
+three corners while a pane is open, and that clicking back to Canvas works.
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Revised standing note:** hiding a subtree is only safe when the child cannot opt back
+in. Prefer `opacity: 0` over `visibility: hidden`, and force `pointer-events` on
+descendants, wherever a third-party library controls child styles.
+
+### 2026-08-31 — Tier 2 toolbar reduction, 19 controls to 17
+
+**Import Template + Import from Azure → one `Import ▾`.** Both mean "start from something
+that already exists". The file input moved inside the menu item, so template upload still
+works without a separate control.
+
+**Deployment Guide → the Reports pane.** It produces a document, so by the placement rules
+it belongs with the other artifacts. Added a `deployment` group to the shared
+`ExportAction` list rather than inventing a parallel mechanism, so the toolbar and pane
+still cannot drift.
+
+**Tested end to end**, including the slow path:
+
+| Check | Result |
+|---|---|
+| Toolbar controls | 19 → 17 |
+| Import menu | `Template file` + `From Azure`, file input intact |
+| Reports sections | images, documents, editable, cost, **Deployment**, recent |
+| Generate from the pane | real run; card became `Generating guide…`, disabled `Already generating` |
+| After completion | `View Last Deployment Guide` went from blocked to enabled |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Measurement caution worth recording:** mid-run readings looked like two bugs — the
+Generate card "disappearing" and View staying blocked. Both were simply the in-progress
+state; the guide took several minutes to return, matching the slow model responses seen
+during the Compare work. Waiting for completion rather than trusting the first reading
+turned two false bug reports into a clean pass.
+
+### 2026-08-31 — Tier 3: floating canvas toolbar, and a single-row header
+
+Layout, Select, Style, Focus and Collapse Groups act on canvas objects, so they moved onto
+the canvas. **Row 2 then held only Validate Architecture, which merged into row 1 — the
+header is now a single row.**
+
+**Placement was measured, not guessed.** On a 2689 × 1110 canvas the bottom ~300px is
+occupied across its full width by the zoom controls, title block, legend and minimap. The
+top edge is free apart from transient occupants: the nav hint (top-right) and prompt
+banner (top-centre). Top-left it is; verified no overlap with any of them, and the bar
+still fits at a 1091px canvas.
+
+**Portalled, not moved.** The five controls are ~260 lines of dropdown markup with
+outside-click wiring. `createPortal` puts them on the canvas while the JSX and all its
+handlers stay put, so the change is two edits at the boundary rather than a risky cut.
+
+**Side effect caught by the e2e suite, not by my own check.** The first attempt made
+`.canvas-container` the positioned ancestor. That silently re-parented the prompt banner's
+coordinate space and broke its drag by exactly the rail + palette width.
+
+My "no side effects" verification had compared the overlays before and after and found
+them byte-identical — but the prompt banner only appears after a generation, so it was
+never in the sample. **Comparing what happens to be on screen is not the same as comparing
+what exists.**
+
+Fixed by hosting the portal target inside React Flow's own container, which is already
+positioned, and reverting `.canvas-container`.
+
+| Check | Result |
+|---|---|
+| Header rows | 2 → **1** |
+| Header controls | 17 → 12, plus 5 on the canvas |
+| Bar position | top 12, left 12 |
+| Overlap with legend / minimap / controls / title block | none |
+| Fits at 1091px canvas | yes |
+| Layout ▸ Apply Layout from the bar | node positions changed |
+| Dropdown direction | opens downward, stays inside the canvas |
+| Light and dark | both verified |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Toolbar across the whole exercise: 22 → 12 in the header**, with five relocated to the
+canvas and the rest reachable from the panes that own them.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

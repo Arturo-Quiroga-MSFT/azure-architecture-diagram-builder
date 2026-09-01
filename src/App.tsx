@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -20,7 +21,7 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
 import ReportsPane from './components/ReportsPane';
@@ -63,13 +64,8 @@ import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
-import { useAppView, setAppView, getAppView, setCompareTab } from './stores/appViewStore';
-import {
-  EXPORT_GROUP_LABELS,
-  EXPORT_GROUP_ORDER,
-  isExportDisabled,
-  type ExportAction,
-} from './types/exportActions';
+import { useAppView, setAppView, getAppView } from './stores/appViewStore';
+import { type ExportAction } from './types/exportActions';
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
@@ -340,14 +336,17 @@ function App() {
     };
   }, [showLayoutHint, promptBannerEl, promptBannerPosition]);
 
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [exportBackground, setExportBackground] = useState<ExportBackground>(() => {
     const saved = localStorage.getItem(EXPORT_BACKGROUND_STORAGE_KEY);
     return saved === 'dots' || saved === 'grid' ? saved : 'plain';
   });
-  const exportMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  // Portal target for the canvas object tools; state rather than a ref so the
+  // portal renders once the node exists.
+  const [canvasToolsHost, setCanvasToolsHost] = useState<HTMLDivElement | null>(null);
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
+  const importMenuRef = useRef<HTMLDivElement | null>(null);
   const layoutMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>('flow-lr');
@@ -458,12 +457,12 @@ function App() {
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen && !isImportMenuOpen) return;
       const target = e.target as unknown as globalThis.Node | null;
       if (!target) return;
 
-      if (isExportMenuOpen && exportMenuRef.current && !exportMenuRef.current.contains(target)) {
-        setIsExportMenuOpen(false);
+      if (isImportMenuOpen && importMenuRef.current && !importMenuRef.current.contains(target)) {
+        setIsImportMenuOpen(false);
       }
 
       if (isLayoutMenuOpen && layoutMenuRef.current && !layoutMenuRef.current.contains(target)) {
@@ -484,9 +483,9 @@ function App() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen && !isImportMenuOpen) return;
       if (e.key === 'Escape') {
-        setIsExportMenuOpen(false);
+        setIsImportMenuOpen(false);
         setIsLayoutMenuOpen(false);
         setIsBulkSelectMenuOpen(false);
         setIsStylePresetMenuOpen(false);
@@ -500,7 +499,7 @@ function App() {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isExportMenuOpen, isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen]);
+  }, [isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen, isImportMenuOpen]);
 
   // Keyboard shortcuts: Delete and Ctrl+D (duplicate)
   useEffect(() => {
@@ -3277,6 +3276,26 @@ function App() {
         disabledReason: needsCost,
         run: exportCostBreakdownZip,
       },
+      {
+        id: 'deployment-guide',
+        label: isGeneratingGuide ? 'Generating guide…' : 'Generate Deployment Guide',
+        group: 'deployment',
+        icon: FileText,
+        description: 'Step-by-step deployment steps and Bicep for this architecture.',
+        disabledReason: isGeneratingGuide ? 'Already generating' : needsDiagram,
+        isGenerate: true,
+        run: handleGenerateDeploymentGuide,
+      },
+      {
+        id: 'deployment-guide-view',
+        label: 'View Last Deployment Guide',
+        group: 'deployment',
+        icon: FileText,
+        description: 'Reopen the guide generated for this session.',
+        disabledReason: deploymentGuide ? undefined : 'Generate a deployment guide first',
+        isGenerate: true,
+        run: () => setIsDeploymentGuideModalOpen(true),
+      },
     ];
   }, [
     azureNodeCount, totalMonthlyCost, workflow.length,
@@ -3285,6 +3304,7 @@ function App() {
     exportWorkflowMarkdown, exportAsPptx, exportCustomerDeck,
     exportAsDrawio, exportAsVsdx, exportAsHtml,
     exportCostBreakdown, exportCostBreakdownZip,
+    isGeneratingGuide, deploymentGuide, handleGenerateDeploymentGuide,
   ]);
 
   return (
@@ -3437,35 +3457,52 @@ function App() {
                   <HelpCircle size={18} />
                   Help
                 </button>
-                <button
-                  className="btn btn-compare-models"
-                  onClick={() => { setCompareTab('models'); setActiveView('compare'); }}
-                  title="Compare architecture output across multiple AI models"
-                >
-                  <GitCompare size={18} />
-                  Compare Models
-                </button>
-                <label className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`} title="Import Bicep, Terraform, or ARM template to generate diagram">
-                  {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <FileCode size={18} />}
-                  {isImportingTemplate ? 'Parsing...' : 'Import Template'}
-                  <input
-                    ref={templateInputRef}
-                    type="file"
-                    accept=".json,.bicep,.tf"
-                    multiple
-                    onChange={uploadTemplate}
-                    style={{ display: 'none' }}
-                    disabled={isImportingTemplate}
-                  />
-                </label>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setIsAzureImportOpen(true)}
-                  title="Reverse-engineer a live Azure resource group into a diagram (local / self-host)"
-                >
-                  <DownloadCloud size={18} />
-                  Import from Azure
-                </button>
+                <div className="toolbar-dropdown" ref={importMenuRef}>
+                  <button
+                    onClick={() => setIsImportMenuOpen((v) => !v)}
+                    className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`}
+                    title="Start from an existing template or a live Azure resource group"
+                    aria-haspopup="menu"
+                    aria-expanded={isImportMenuOpen}
+                  >
+                    {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <DownloadCloud size={18} />}
+                    {isImportingTemplate ? 'Parsing...' : 'Import'}
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isImportMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Import options">
+                      <label className="toolbar-dropdown-item" role="menuitem">
+                        <FileCode size={18} />
+                        Template file
+                        <input
+                          ref={templateInputRef}
+                          type="file"
+                          accept=".json,.bicep,.tf"
+                          multiple
+                          onChange={(e) => { setIsImportMenuOpen(false); uploadTemplate(e); }}
+                          style={{ display: 'none' }}
+                          disabled={isImportingTemplate}
+                        />
+                      </label>
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
+                        Bicep, Terraform or ARM
+                      </div>
+                      <div className="toolbar-dropdown-separator" role="separator" />
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => { setIsImportMenuOpen(false); setIsAzureImportOpen(true); }}
+                      >
+                        <DownloadCloud size={18} />
+                        From Azure
+                      </button>
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
+                        Reverse-engineer a live resource group
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="toolbar-group">
@@ -3487,101 +3524,18 @@ function App() {
               </div>
 
               <div className="toolbar-group">
-                <div className="toolbar-dropdown" ref={exportMenuRef}>
-                  <button
-                    onClick={() => setIsExportMenuOpen((v) => !v)}
-                    className="btn btn-primary"
-                    title="Export"
-                    aria-haspopup="menu"
-                    aria-expanded={isExportMenuOpen}
-                  >
-                    <Download size={18} />
-                    Export
-                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
-                  </button>
-
-                  {isExportMenuOpen && (
-                    <div className="toolbar-dropdown-menu toolbar-dropdown-menu--export" role="menu" aria-label="Export options">
-                      <div className="toolbar-dropdown-heading">Capture settings</div>
-                      <div className="toolbar-dropdown-row">
-                        <label className="toolbar-dropdown-label" htmlFor="export-background">Export background</label>
-                        <select
-                          id="export-background"
-                          className="toolbar-dropdown-select"
-                          value={exportBackground}
-                          onChange={(event) => {
-                            const next = event.target.value as ExportBackground;
-                            setExportBackground(next);
-                            try { localStorage.setItem(EXPORT_BACKGROUND_STORAGE_KEY, next); } catch { /* ignore */ }
-                          }}
-                          aria-label="Export background"
-                        >
-                          <option value="plain">Plain (recommended)</option>
-                          <option value="dots">Dots</option>
-                          <option value="grid">Grid</option>
-                        </select>
-                      </div>
-                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
-                        Affects PNG, SVG, animated SVG, and PowerPoint captures. The editing canvas stays dotted.
-                      </div>
-                      <div className="toolbar-dropdown-separator" />
-                      {EXPORT_GROUP_ORDER.map((group) => {
-                        const actions = exportActions.filter((action) => action.group === group);
-                        if (actions.length === 0) return null;
-                        return (
-                          <Fragment key={group}>
-                            <div className="toolbar-dropdown-heading">{EXPORT_GROUP_LABELS[group]}</div>
-                            {actions.map((action) => (
-                              <button
-                                key={action.id}
-                                className="toolbar-dropdown-item"
-                                role="menuitem"
-                                disabled={isExportDisabled(action)}
-                                onClick={() => {
-                                  setIsExportMenuOpen(false);
-                                  action.run();
-                                }}
-                                title={action.disabledReason ?? action.description}
-                              >
-                                <action.icon size={18} />
-                                {action.label}
-                              </button>
-                            ))}
-                          </Fragment>
-                        );
-                      })}
-
-                      <div className="toolbar-dropdown-separator" role="separator" />
-
-                      <div className="toolbar-dropdown-heading">Recent exports</div>
-                      {exportHistory.length === 0 ? (
-                        <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
-                      ) : (
-                        <div className="toolbar-dropdown-history">
-                          {exportHistory.slice(0, 6).map((item) => (
-                            <div key={item.id} className="toolbar-dropdown-history-item">
-                              <div className="toolbar-dropdown-history-file">{item.fileName}</div>
-                              <div className="toolbar-dropdown-history-meta">
-                                {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                {/* Signpost, not a menu — the Reports pane owns the export list. */}
+                <button
+                  onClick={() => setActiveView('reports')}
+                  className="btn btn-primary"
+                  title="Open the Reports pane to export this architecture"
+                >
+                  <Download size={18} />
+                  Export
+                </button>
               </div>
 
               <div className="toolbar-group">
-                <button 
-                  onClick={() => setIsDarkMode(!isDarkMode)} 
-                  className="btn btn-secondary" 
-                  title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                  style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
-                >
-                  {isDarkMode ? '☀️' : '🌙'}
-                </button>
                 <button
                   onClick={() => {
                     if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
@@ -3602,11 +3556,38 @@ function App() {
                   <RefreshCw size={18} />
                 </button>
               </div>
-            </div>
 
-            {/* Row 2: Canvas tools & AI settings */}
-            <div className="header-actions">
               <div className="toolbar-group">
+                <button 
+                  onClick={handleValidateArchitecture} 
+                  className="btn btn-premium" 
+                  title="Validate architecture against Azure Well-Architected Framework"
+                  disabled={nodes.length === 0}
+                >
+                  <Shield size={18} />
+                  Validate Architecture
+                </button>
+                {validationResult && (
+                  <button
+                    onClick={() => setIsValidationPanelOpen(true)}
+                    className="btn btn-secondary"
+                    title={validationNeedsRefresh
+                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
+                      : 'Open last validation results'}
+                  >
+                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
+                    {validationNeedsRefresh
+                      ? 'Revalidate Needed'
+                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
+                  </button>
+                )}
+              </div>
+
+              {/* Object tools act on canvas items, so they render over the canvas.
+                  Portalled rather than moved so the dropdown markup and its
+                  outside-click wiring stay exactly as they were. */}
+              {canvasToolsHost && createPortal(
+                <div className="canvas-tools">
                 <div className="toolbar-dropdown" ref={layoutMenuRef}>
                   <button
                     onClick={() => setIsLayoutMenuOpen((v) => !v)}
@@ -3868,61 +3849,9 @@ function App() {
                   {allGroupsCollapsed ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
                   {allGroupsCollapsed ? 'Expand Groups' : 'Collapse Groups'}
                 </button>
-              </div>
-
-              <div className="toolbar-group">
-                <button 
-                  onClick={handleValidateArchitecture} 
-                  className="btn btn-premium" 
-                  title="Validate architecture against Azure Well-Architected Framework"
-                  disabled={nodes.length === 0}
-                >
-                  <Shield size={18} />
-                  Validate Architecture
-                </button>
-                <button
-                  className="btn btn-compare-models"
-                  onClick={() => { setCompareTab('validation'); setActiveView('compare'); }}
-                  title="Compare WAF validation results across multiple AI models"
-                  disabled={nodes.length === 0}
-                >
-                  <GitCompare size={18} />
-                  Compare Validation
-                </button>
-                {validationResult && (
-                  <button
-                    onClick={() => setIsValidationPanelOpen(true)}
-                    className="btn btn-secondary"
-                    title={validationNeedsRefresh
-                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
-                      : 'Open last validation results'}
-                  >
-                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
-                    {validationNeedsRefresh
-                      ? 'Revalidate Needed'
-                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
-                  </button>
-                )}
-                <button 
-                  onClick={handleGenerateDeploymentGuide} 
-                  className="btn btn-premium" 
-                  title="Generate comprehensive deployment guide"
-                  disabled={nodes.length === 0}
-                >
-                  <FileText size={18} />
-                  Deployment Guide
-                </button>
-                {deploymentGuide && (
-                  <button
-                    onClick={() => setIsDeploymentGuideModalOpen(true)}
-                    className="btn btn-secondary"
-                    title="Open last deployment guide"
-                  >
-                    <FileText size={18} />
-                    View Guide
-                  </button>
-                )}
-              </div>
+                </div>,
+                canvasToolsHost,
+              )}
             </div>
           </div>
           <button
@@ -4282,6 +4211,10 @@ function App() {
                 onDismiss={() => setReferenceImageUrl(null)}
               />
             )}
+            {/* Inside ReactFlow because its container is already the positioned
+                ancestor. Making .canvas-container relative instead re-parented
+                the prompt banner's coordinates and broke its drag. */}
+            <div className="canvas-tools-host" ref={setCanvasToolsHost} />
           </ReactFlow>
           <AlignmentToolbar 
             selectedNodes={nodes.filter(n => n.selected)}
@@ -4558,7 +4491,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           onShare={() => {
             trackGuidedJourney({ action: 'path-selected', step: 'deliver', path: 'export', source: 'journey-strip', hasDiagram: true });
             setIsDeliverChooserOpen(false);
-            setIsExportMenuOpen(true);
+            setActiveView('reports');
           }}
           onBuild={() => {
             trackGuidedJourney({ action: 'path-selected', step: 'deliver', path: 'deployment-guide', source: 'journey-strip', hasDiagram: true });

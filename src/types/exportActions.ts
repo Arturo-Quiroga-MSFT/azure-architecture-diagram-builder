@@ -10,16 +10,17 @@
 
 import type { LucideIcon } from 'lucide-react';
 
-export type ExportActionGroup = 'images' | 'documents' | 'interchange' | 'cost';
+export type ExportActionGroup = 'images' | 'documents' | 'interchange' | 'cost' | 'deployment';
 
 export const EXPORT_GROUP_LABELS: Record<ExportActionGroup, string> = {
   images: 'Diagram images',
   documents: 'Documents & decks',
   interchange: 'Editable formats',
   cost: 'Cost',
+  deployment: 'Deployment',
 };
 
-export const EXPORT_GROUP_ORDER: ExportActionGroup[] = ['images', 'documents', 'interchange', 'cost'];
+export const EXPORT_GROUP_ORDER: ExportActionGroup[] = ['images', 'documents', 'interchange', 'cost', 'deployment'];
 
 export interface ExportAction {
   id: string;
@@ -30,6 +31,8 @@ export interface ExportAction {
   description: string;
   /** Why it cannot run right now. Presence of this string is what disables it. */
   disabledReason?: string;
+  /** Generates rather than downloads, so the card reads as an action. */
+  isGenerate?: boolean;
   run: () => void;
 }
 
