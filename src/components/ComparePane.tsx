@@ -22,6 +22,9 @@ import { useCompareTab, type CompareTab } from '../stores/appViewStore';
 import './ComparePane.css';
 
 interface ComparePaneProps {
+  /** The Compare pane is the visible view. Stays mounted when false so runs
+     survive navigating away. */
+  isActive: boolean;
   onExit: () => void;
   onApplyArchitecture: (architecture: any, prompt: string, sourceModel?: ModelType, sourceReasoningEffort?: ReasoningEffort) => void;
   onApplyValidation: (validation: ArchitectureValidation) => void;
@@ -38,6 +41,7 @@ const TABS: Array<{ id: CompareTab; label: string; hint: string; icon: typeof Gi
 ];
 
 export function ComparePane({
+  isActive,
   onExit,
   onApplyArchitecture,
   onApplyValidation,
@@ -55,7 +59,7 @@ export function ComparePane({
   const handleValidationRunning = useCallback((r: boolean) => setValidationRunning(r), []);
 
   return (
-    <div className="compare-pane">
+    <div className={`compare-pane${isActive ? '' : ' is-hidden'}`}>
       <div className="compare-tabs" role="tablist" aria-label="Comparison type">
         {TABS.map(({ id, label, hint, icon: Icon }) => {
           const running = id === 'models' ? modelsRunning : validationRunning;
@@ -78,7 +82,7 @@ export function ComparePane({
       </div>
 
       <CompareModelsPane
-        isActive={tab === 'models'}
+        isActive={isActive && tab === 'models'}
         onExit={onExit}
         onApply={onApplyArchitecture}
         onCaptureBatch={onCaptureBatch}
@@ -87,7 +91,7 @@ export function ComparePane({
       />
 
       <CompareValidationPane
-        isActive={tab === 'validation'}
+        isActive={isActive && tab === 'validation'}
         onExit={onExit}
         onApply={onApplyValidation}
         otherRunBlocked={modelsRunning}

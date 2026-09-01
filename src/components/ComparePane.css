@@ -16,6 +16,15 @@
   background: #f9fafb;
 }
 
+/* Kept mounted so a run survives navigating away, but taken out of the workspace
+   flex row — otherwise it keeps its width and squeezes the canvas. */
+.compare-pane.is-hidden {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .compare-tabs {
   display: flex;
   gap: 0.25rem;

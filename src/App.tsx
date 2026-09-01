@@ -3994,6 +3994,7 @@ function App() {
 
         {hasOpenedCompare && (
           <ComparePane
+            isActive={activeView === 'compare'}
             onExit={() => setActiveView('canvas')}
             onApplyArchitecture={(architecture, prompt, sourceModel, sourceReasoningEffort) => {
               trackModelComparison({ selectedModel: sourceModel });
