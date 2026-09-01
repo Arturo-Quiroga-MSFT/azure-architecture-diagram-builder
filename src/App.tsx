@@ -45,8 +45,7 @@ import DeploymentGuideModal from './components/DeploymentGuideModal';
 import SaveSnapshotModal from './components/SaveSnapshotModal';
 import AzureImportModal from './components/AzureImportModal';
 import ModelSettingsPopover from './components/ModelSettingsPopover';
-import CompareModelsModal from './components/CompareModelsModal';
-import CompareValidationPane from './components/CompareValidationPane';
+import ComparePane from './components/ComparePane';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
@@ -64,7 +63,7 @@ import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
-import { useAppView } from './stores/appViewStore';
+import { useAppView, setAppView, getAppView, setCompareTab } from './stores/appViewStore';
 import {
   EXPORT_GROUP_LABELS,
   EXPORT_GROUP_ORDER,
@@ -260,7 +259,6 @@ function App() {
   // Snapshots are saved from a modal outside the Library pane, so the pane needs
   // a nudge to reload its list.
   const [libraryReloadToken, setLibraryReloadToken] = useState(0);
-  const [isCompareModelsOpen, setIsCompareModelsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDeliverChooserOpen, setIsDeliverChooserOpen] = useState(false);
   const [generatorOpenSignal, setGeneratorOpenSignal] = useState(0);
@@ -3073,6 +3071,44 @@ function App() {
 
   const azureNodeCount = nodes.filter(n => n.type === 'azureNode').length;
 
+  // Renders each architecture on the real canvas to capture it, so the canvas has
+  // to be the visible pane — it is only `visibility: hidden` behind Compare, and a
+  // hidden subtree captures blank.
+  const handleCaptureBatch = useCallback(async (
+    items: Array<{ architecture: any; prompt: string; filename: string }>,
+  ) => {
+    const returnTo = getAppView();
+    setAppView('canvas');
+    await new Promise(res => setTimeout(res, 250));
+    try {
+      for (const item of items) {
+        try {
+          // No auto-snapshot: avoids spamming history with N intermediate states.
+          await handleAIGenerate(item.architecture, item.prompt, false);
+          await new Promise(res => setTimeout(res, 1500));
+          if (reactFlowInstance) {
+            reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+            await new Promise(res => setTimeout(res, 400));
+          }
+          if (!reactFlowWrapper.current) continue;
+          const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
+            backgroundColor: exportCanvasBackground,
+            exportBackground,
+          });
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = item.filename;
+          a.click();
+          await new Promise(res => setTimeout(res, 350));
+        } catch (err) {
+          console.error(`Failed to capture PNG for ${item.filename}:`, err);
+        }
+      }
+    } finally {
+      setAppView(returnTo);
+    }
+  }, [handleAIGenerate, reactFlowInstance, exportCanvasBackground, exportBackground]);
+
   // Findings and workflow steps both name services by node id OR by label (scenes
   // exported by the MCP server use labels). The glow CSS targets nodes by id.
   const highlightServiceRefs = useCallback((refs: string[]) => {
@@ -3403,7 +3439,7 @@ function App() {
                 </button>
                 <button
                   className="btn btn-compare-models"
-                  onClick={() => setIsCompareModelsOpen(true)}
+                  onClick={() => { setCompareTab('models'); setActiveView('compare'); }}
                   title="Compare architecture output across multiple AI models"
                 >
                   <GitCompare size={18} />
@@ -3846,7 +3882,7 @@ function App() {
                 </button>
                 <button
                   className="btn btn-compare-models"
-                  onClick={() => setActiveView('compare')}
+                  onClick={() => { setCompareTab('validation'); setActiveView('compare'); }}
                   title="Compare WAF validation results across multiple AI models"
                   disabled={nodes.length === 0}
                 >
@@ -3957,15 +3993,22 @@ function App() {
         )}
 
         {hasOpenedCompare && (
-          <CompareValidationPane
-            isActive={activeView === 'compare'}
+          <ComparePane
             onExit={() => setActiveView('canvas')}
-            onApply={(validation) => {
+            onApplyArchitecture={(architecture, prompt, sourceModel, sourceReasoningEffort) => {
+              trackModelComparison({ selectedModel: sourceModel });
+              if (sourceModel && sourceReasoningEffort) {
+                setSourceModel(sourceModel, sourceReasoningEffort);
+              }
+              handleAIGenerate(architecture, prompt, true);
+            }}
+            onApplyValidation={(validation) => {
               setValidationResult(validation);
               setValidationNeedsRefresh(false);
               setIsValidationPanelOpen(true);
               setPanelsCollapsedSignal(prev => prev + 1);
             }}
+            onCaptureBatch={handleCaptureBatch}
             services={nodes
               .filter(n => n.type === 'azureNode')
               .map(n => ({
@@ -4443,50 +4486,6 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         onClose={() => setIsAzureImportOpen(false)}
         onImport={importFromAzure}
       />
-      <CompareModelsModal
-        isOpen={isCompareModelsOpen}
-        onClose={() => setIsCompareModelsOpen(false)}
-        onApply={(architecture, prompt, sourceModel, sourceReasoningEffort) => {
-          trackModelComparison({ selectedModel: sourceModel });
-          if (sourceModel && sourceReasoningEffort) {
-            setSourceModel(sourceModel, sourceReasoningEffort);
-          }
-          handleAIGenerate(architecture, prompt, true);
-        }}
-        onCaptureBatch={async (items) => {
-          // Render each architecture on the main canvas in turn, capture as PNG,
-          // and trigger a download. Filenames are supplied by the modal so the
-          // PNG file always pairs 1:1 with the JSON saved via "Save All Diagrams".
-          for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            try {
-              // Apply this architecture to the canvas (no auto-snapshot to
-              // avoid spamming the snapshot history with N intermediate states).
-              await handleAIGenerate(item.architecture, item.prompt, false);
-              // Give icons, layout, and the post-generate fitView a moment to settle.
-              await new Promise(res => setTimeout(res, 1500));
-              if (reactFlowInstance) {
-                reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
-                await new Promise(res => setTimeout(res, 400));
-              }
-              if (!reactFlowWrapper.current) continue;
-              const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
-                backgroundColor: exportCanvasBackground,
-                exportBackground,
-              });
-              const a = document.createElement('a');
-              a.href = dataUrl;
-              a.download = item.filename;
-              a.click();
-              // Small gap so the browser doesn't throttle / merge downloads.
-              await new Promise(res => setTimeout(res, 350));
-            } catch (err) {
-              console.error(`Failed to capture PNG for ${item.filename}:`, err);
-            }
-          }
-        }}
-      />
-
       {ImpactModal && (
         <button
           className="impact-launcher"

@@ -416,4 +416,57 @@ Both would have become false claims if the first reading had been trusted.
 work *progressed* while hidden. The table above is from a second run built specifically to
 show progression, because the weaker evidence did not support the claim being made.
 
+### 2026-08-31 — Step 7: both comparisons in one Compare pane
+
+`CompareModelsModal` joined it as a second tab rather than becoming a sixth rail item.
+They are the same activity — run one input across N models and compare — and they already
+shared a stylesheet. Rail items are destinations, not features.
+
+| Tab | Input | Output |
+|---|---|---|
+| Generation | a brief | N architectures |
+| Validation | the current diagram | N validations |
+
+Both tabs stay mounted; only the visible one is painted. Toolbar *Compare Models* and
+*Compare Validation* both route here with the right tab, via `compareTab` in
+`appViewStore`.
+
+**Only one comparison may run at a time.** Each tab reports its running state up; the
+idle tab's run button is disabled with a reason in the tooltip, and the running tab shows
+a spinner in the tab strip.
+
+**The bug predicted before writing any code, and fixed.** `onCaptureBatch` renders each
+generated architecture on the *real* canvas and captures it. Behind the Compare pane the
+canvas is `visibility: hidden` — laid out but not painted — so captures would have come
+back blank. `handleCaptureBatch` now switches to Canvas for the batch and restores the
+previous view in a `finally`.
+
+**Tested:**
+
+| Check | Result |
+|---|---|
+| Pane mounted before first visit | 0 |
+| Toolbar *Compare Models* → tab | Generation, heading `Compare Models` |
+| Toolbar *Compare Validation* → tab | Validation, heading `Compare Validation Across Models` |
+| Both tab bodies mounted, one hidden | 2 bodies, 1 hidden |
+| Run lock engages | idle tab disabled, `A model comparison is already running` |
+| Run lock releases | after completion `title: null`; still disabled only for its own `0 services` reason |
+| Generation run end to end | Grok 4.1 Fast 5.3s / Mistral Large 3 11.5s, 2 apply buttons |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Three false leads during verification**, all mine, none real bugs:
+
+1. *"Compare Validation button does not switch tab"* — the button is `disabled` with an
+   empty canvas and my test had no diagram.
+2. *"Lock never releases"* — the validation run was genuinely still going; GPT-5.1 ran
+   past 11 minutes. Release was then proven with two fast non-reasoning models.
+3. *"Toolbar button missing"* — the toolbar is canvas-only now, so it does not exist from
+   inside the Compare pane. Working as designed.
+
+**Gap in the per-step checks:** deleting `CompareValidationPane.css` while its import
+remained passed both `typecheck` and `lint` — neither resolves CSS imports. Only the dev
+server caught it, as a blank page. Run a build, not just typecheck and lint, after
+deleting any asset.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

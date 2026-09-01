@@ -1,0 +1,114 @@
+/* Copyright (c) Microsoft Corporation.
+   Licensed under the MIT License. */
+
+/* Pane shell for the two comparison tabs. Tab bodies keep their .compare-* and
+   .cv-* class names so the existing stylesheets still apply. .compare-modal is
+   sized for a modal, so it is overridden here rather than changed at source. */
+
+.compare-pane {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.compare-tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  padding: 0.5rem 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.compare-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.compare-tab:hover {
+  color: #111827;
+}
+
+.compare-tab.is-active {
+  color: #0078d4;
+  border-bottom-color: #0078d4;
+}
+
+.compare-tab:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: -2px;
+}
+
+.compare-tab-spinner {
+  animation: compare-tab-spin 1s linear infinite;
+}
+
+@keyframes compare-tab-spin {
+  to { transform: rotate(360deg); }
+}
+
+.compare-tab-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Kept mounted so a run survives switching tab or pane; laid out at full size
+   while hidden so results do not reflow on return. */
+.compare-tab-body.is-hidden {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.compare-tab-body .compare-modal {
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+body.dark-mode .compare-pane {
+  background: #1a1a1a;
+}
+
+body.dark-mode .compare-tabs {
+  background: #202020;
+  border-bottom-color: #2d2d2d;
+}
+
+body.dark-mode .compare-tab {
+  color: #9ca3af;
+}
+
+body.dark-mode .compare-tab:hover {
+  color: #f3f4f6;
+}
+
+body.dark-mode .compare-tab.is-active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}

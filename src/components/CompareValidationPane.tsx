@@ -29,7 +29,6 @@ import {
 import './CompareValidationModal.css';
 // Critique + avatar panel styles live in CompareModelsModal.css (shared compare-* classes).
 import './CompareModelsModal.css';
-import './CompareValidationPane.css';
 
 /** Abbreviate model name for filenames */
 function abbreviateModelForFile(model: ModelType): string {
@@ -68,12 +67,15 @@ interface ValidationComparisonResult {
 }
 
 interface CompareValidationPaneProps {
-  /** The Compare pane is the active view. The component stays mounted when false
-     so a long multi-model run survives navigating away. */
+  /** This tab is the visible one. The component stays mounted when false so a
+     long multi-model run survives switching tab or pane. */
   isActive: boolean;
   /** Leave the pane — used after applying a result so the dock is visible. */
   onExit: () => void;
   onApply: (validation: ArchitectureValidation) => void;
+  /** Another comparison is already running; block starting a second one. */
+  otherRunBlocked?: boolean;
+  onRunningChange?: (running: boolean) => void;
   /** Current architecture data to validate */
   services: Array<{ name: string; type: string; category: string; description?: string }>;
   connections: Array<{ from: string; to: string; label: string }>;
@@ -82,7 +84,7 @@ interface CompareValidationPaneProps {
 }
 
 const CompareValidationPane: React.FC<CompareValidationPaneProps> = ({
-  isActive, onExit, onApply, services, connections, groups, architectureDescription,
+  isActive, onExit, onApply, otherRunBlocked, onRunningChange, services, connections, groups, architectureDescription,
 }) => {
   const availableModels = getAvailableModels();
   const currentSettings = getModelSettings();
@@ -139,6 +141,8 @@ const CompareValidationPane: React.FC<CompareValidationPaneProps> = ({
       setCaptionWordIdx(-1);
     }
   }, [isActive]);
+
+  useEffect(() => { onRunningChange?.(isRunning); }, [isRunning, onRunningChange]);
 
   /** Strip markdown syntax so TTS reads cleanly */
   const stripMd = (s: string) =>
@@ -655,7 +659,7 @@ const CompareValidationPane: React.FC<CompareValidationPaneProps> = ({
   };
 
   return (
-    <div className={`compare-pane${isActive ? '' : ' is-hidden'}`}>
+    <div className={`compare-tab-body${isActive ? '' : ' is-hidden'}`}>
       <div className="compare-modal cv-modal">
         <div className="modal-header cv-header">
           <div className="modal-title">
@@ -757,7 +761,8 @@ const CompareValidationPane: React.FC<CompareValidationPaneProps> = ({
             <button
               className="btn btn-primary compare-run-btn"
               onClick={runComparison}
-              disabled={isRunning || services.length === 0 || selectedModels.size < 2}
+              disabled={isRunning || otherRunBlocked || services.length === 0 || selectedModels.size < 2}
+              title={otherRunBlocked ? 'A model comparison is already running' : undefined}
             >
               <GitCompare size={18} />
               Compare Validation Across {selectedModels.size} Models

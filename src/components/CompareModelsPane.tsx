@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, StopCircle } from 'lucide-react';
+import { Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, StopCircle } from 'lucide-react';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
@@ -70,10 +70,16 @@ interface ComparisonResult {
   workflowSteps?: number;
 }
 
-interface CompareModelsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CompareModelsPaneProps {
+  /** This tab is the visible one. The component stays mounted when false so a
+     long multi-model run survives switching tab or pane. */
+  isActive: boolean;
+  /** Leave the pane — used after applying a result so the canvas is visible. */
+  onExit: () => void;
   onApply: (architecture: any, prompt: string, sourceModel?: ModelType, sourceReasoningEffort?: ReasoningEffort) => void;
+  /** Another comparison is already running; block starting a second one. */
+  otherRunBlocked?: boolean;
+  onRunningChange?: (running: boolean) => void;
   /**
    * Optional parent-provided batch PNG capture.
    * Modal supplies one item per successful result with the desired filename;
@@ -83,7 +89,7 @@ interface CompareModelsModalProps {
   onCaptureBatch?: (items: Array<{ architecture: any; prompt: string; filename: string; model: ModelType; reasoningEffort: ReasoningEffort }>) => Promise<void>;
 }
 
-const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose, onApply, onCaptureBatch }) => {
+const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit, onApply, onCaptureBatch, otherRunBlocked, onRunningChange }) => {
   const availableModels = getAvailableModels();
   const currentSettings = getModelSettings();
   
@@ -123,9 +129,10 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     minW: 260, minH: 220, maxW: 640, maxH: 600,
   });
 
-  // Disconnect avatar when the modal closes
+  // Drop the live avatar connection when this tab is not on screen; an in-flight
+  // comparison keeps running.
   useEffect(() => {
-    if (!isOpen) {
+    if (!isActive) {
       presenterRef.current?.disconnect();
       presenterRef.current = null;
       setAvatarStatus('idle');
@@ -133,7 +140,9 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       setCaptionWords([]);
       setCaptionWordIdx(-1);
     };
-  }, [isOpen]);
+  }, [isActive]);
+
+  useEffect(() => { onRunningChange?.(isRunning); }, [isRunning, onRunningChange]);
 
   /** Strip markdown syntax so TTS reads cleanly */
   const stripMd = (s: string) =>
@@ -270,7 +279,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   const handleApply = (result: ComparisonResult) => {
     if (result.architecture) {
       onApply(result.architecture, prompt, result.model, result.reasoningEffort);
-      onClose();
+      onExit();
     }
   };
 
@@ -616,19 +625,14 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     ? Math.max(...successResults.map(r => (r.serviceCount || 0) + (r.connectionCount || 0) + (r.workflowSteps || 0)))
     : 0;
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="compare-modal" onClick={e => e.stopPropagation()}>
+    <div className={`compare-tab-body${isActive ? '' : ' is-hidden'}`}>
+      <div className="compare-modal">
         <div className="modal-header">
           <div className="modal-title">
             <GitCompare size={20} />
             <h2>Compare Models</h2>
           </div>
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
         </div>
 
         <div className="compare-modal-body">
@@ -742,7 +746,8 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
             <button
               className="btn btn-primary compare-run-btn"
               onClick={runComparison}
-              disabled={isRunning || !prompt.trim() || selectedModels.size < 2}
+              disabled={isRunning || otherRunBlocked || !prompt.trim() || selectedModels.size < 2}
+              title={otherRunBlocked ? 'A validation comparison is already running' : undefined}
             >
               <GitCompare size={18} />
               Compare {selectedModels.size} Models
@@ -1041,4 +1046,4 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   );
 };
 
-export default CompareModelsModal;
+export default CompareModelsPane;
