@@ -469,4 +469,47 @@ remained passed both `typecheck` and `lint` — neither resolves CSS imports. On
 server caught it, as a blank page. Run a build, not just typecheck and lint, after
 deleting any asset.
 
+### 2026-08-31 — Generation tab guidance and readability
+
+The Validation tab opened with a paragraph explaining itself; Generation opened with a
+bare model grid. Added a matching intro, and labelled the three sample rows
+(Quick starts / Detailed scenarios / AI workloads).
+
+The prompts were unreadable for two reasons, not one: `0.75rem` **and**
+`white-space: nowrap`, so a 200-character example rendered as a single strip. They now
+wrap inside a bounded width at `0.8125rem`.
+
+**Third instance of the header-scoped styling trap.** `.compare-run-btn` and
+`.compare-apply-btn` inherit `.btn-primary`, which is a white background with blue text
+because it was built for the blue header. On a light pane the primary actions read as
+ghosted. Both now use a filled treatment with an explicit disabled state, verified in
+both themes.
+
+### 2026-08-31 — Regression: Compare pane stayed in the layout
+
+Reported from live use, not caught by the step 7 checks.
+
+`CompareValidationPane` used to hide its own wrapper. When it became a tab inside
+`ComparePane`, the wrapper lost that responsibility and nothing took it back — so once
+mounted the pane remained a flex child of the workspace, leaving compare content on
+screen with the canvas squeezed beside it.
+
+**Why the tests missed it:** every step 7 assertion was made while sitting *on* the
+Compare pane — tab bodies, mounting, routing, the run lock. None navigated back to Canvas,
+which is the only place the bug is visible. When a change is about *hiding* something,
+assert from the place it should be hidden.
+
+| | Canvas width | Compare pane |
+|---|---|---|
+| Before first visit | 1755px | not mounted |
+| On Compare | hidden | visible |
+| Back on Canvas | 1755px | mounted, hidden |
+
+Tab selection and a typed prompt both survive the round trip.
+
+**Standing note:** four elements now participate in mount-and-hide — the canvas, the
+Compare wrapper, and two tab bodies. Each needs an explicit owner for its hidden state,
+and this is the second bug caused by one lacking it. If a fifth appears, extract a shared
+hideable wrapper rather than repeating the class dance again.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.
