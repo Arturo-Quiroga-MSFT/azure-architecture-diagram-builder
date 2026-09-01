@@ -14,7 +14,7 @@
 
 .optional-badge {
   background: #e5e7eb;
-  color: #6b7280;
+  color: #4b5563;
   font-size: 0.6875rem;
   font-weight: 500;
   padding: 0.125rem 0.5rem;
@@ -86,7 +86,7 @@
 
 .upload-hint {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #4b5563;
 }
 
 .preview-container {

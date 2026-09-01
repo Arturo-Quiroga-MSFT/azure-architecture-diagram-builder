@@ -814,7 +814,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
                 <div className="example-list">
                   {categorizedPrompts.map((group) => (
                     <div key={group.category} className="example-category">
-                      <div className="example-category-label" style={{ color: group.color }}>
+                      <div className="example-category-label">
                         <span className="example-category-dot" style={{ backgroundColor: group.color }} />
                         {group.category}
                       </div>
