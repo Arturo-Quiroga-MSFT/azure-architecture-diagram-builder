@@ -949,6 +949,13 @@ function App() {
     });
   }, []);
 
+  // Right-drag pans the canvas (panOnDrag includes button 2), so the browser's
+  // native menu is never wanted here. Releasing that menu over its Back/Reload
+  // entries discards the diagram, which is not saved anywhere.
+  const suppressNativeContextMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+  }, []);
+
   const closeEdgeContextMenu = useCallback(() => {
     setEdgeContextMenu(null);
   }, []);
@@ -4026,6 +4033,9 @@ function App() {
             onConnect={onConnect}
             onReconnect={onReconnect}
             onEdgeContextMenu={onEdgeContextMenu}
+            onNodeContextMenu={suppressNativeContextMenu}
+            onSelectionContextMenu={suppressNativeContextMenu}
+            onPaneContextMenu={suppressNativeContextMenu}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
