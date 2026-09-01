@@ -936,6 +936,13 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### September 1, 2026 — AADB v2.0.3 Private Connectivity Group
+
+- **One Private Connectivity group replaces per-resource Private Endpoint nodes** — the v1.8.0 model correctly gave each protected resource its own `Private Endpoint - <resource>` node, but at 4-8+ protected resources this produced enough nodes and edges to dominate the diagram. A single Virtual Network + Private DNS Zone group now carries a note listing every protected resource, plus one named `Private Link - <resource>` node per resource for at-a-glance identification, with zero edges into the group — membership plus the note already convey the relationship.
+- **Known, disclosed trade-off** — the group's height still grows with the number of protected resources (measured 1003px tall at 6 resources vs 768px for a same-size normal group), but the growth is now contained in one box instead of scattered nodes and edges across the canvas.
+- **Enforced at generation, refinement, and post-processing** — the old per-resource pattern is now disallowed at three prompt call sites plus a deterministic post-processing repair, matching this codebase's established prompt-plus-repair pattern (see the WAF policy fix in v1.8.0).
+- **Also in this release (v2.0.2):** fixed every image/document export rendering blank when triggered from the Reports pane — the canvas was captured while hidden behind the pane; exports now switch to the canvas view for the capture and restore the caller's view afterward.
+
 ### August 25, 2026 — AADB v1.9.0 Prompt Refresh & Pricing Accuracy
 
 - **Prompts showcase the current app** — Guided Chat starters now cover Microsoft Fabric analytics and a private Microsoft Foundry assistant; advanced patterns add a zero-trust private connectivity platform, a connected-factory IoT pipeline, and a Fabric medallion lakehouse.

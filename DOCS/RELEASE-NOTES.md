@@ -6,6 +6,8 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.0.3` | 2026-09-01 | Private Connectivity group replaces per-resource Private Endpoint nodes | Deployed |
+| `v2.0.2` | 2026-09-01 | Fixed blank exports triggered from the Reports pane | Deployed |
 | `v1.9.0` | 2026-08-25 | Prompt refresh and pricing accuracy | Deployed |
 | `v1.8.0` | 2026-08-25 | Semantic relationships and private connectivity | Deployed |
 | `v1.7.2` | 2026-08-24 | Guided Chat helper model correction | Deployed |
@@ -18,6 +20,29 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.0.3: Private Connectivity Group
+
+The v1.8.0 semantic-relationships work correctly modeled each protected resource with its own `Private Endpoint - <resource>` node and association edges. At scale — 4 to 8 or more protected resources behind private endpoints, the shape of the app's own "Private endpoints for PaaS" and "Zero trust enterprise network" example prompts — this produced enough nodes and edges to dominate the diagram.
+
+### What changed
+
+When a model's raw output still contains the old per-resource `Azure Private Link` connector pattern, the deterministic post-processing repair now folds it into one shared group instead of N nodes:
+
+- One Virtual Network and one Private DNS Zone, in a single group, annotated with a `note` listing every protected resource by name.
+- One named `Private Link - <resource>` node per protected resource, for at-a-glance identification, placed in the same group.
+- Zero edges from the group to anything — group membership plus the note already convey the relationship, so nothing fans out across the canvas.
+- The group is reused rather than always freshly created: if the Virtual Network already belongs to a group, that group gains the note rather than a duplicate box being created.
+
+This is enforced at the main generation contract, the modification/refinement prompt, and the App.tsx "Apply Recommendations" prompt, plus the deterministic repair as a backstop — the same prompt-plus-repair pattern established for the Front Door WAF fix in v1.8.0, because models do not reliably comply with prompt instructions alone.
+
+### Known trade-off, disclosed not hidden
+
+Removing edges into the group removes the layout engine's rank signal for it, so the group can land in a less obviously related position than the old edge-connected version. And while node/edge count is now flat regardless of N, the group's own height still grows with the number of protected resources — measured 1003px tall at 6 resources versus 768px for a same-size normal group, the tallest element in the diagram at that scale. This trades scattered canvas clutter for one taller box; it does not eliminate growth outright. "Collapse Groups" only shrink-wraps a box to fit its content today; it does not hide children, so there is no existing escape hatch if this box's height becomes a problem at larger scale.
+
+### Verification
+
+`npm run verify:release` passed (type checks, full lint, production build, bundle budget, 15 deterministic checks, version contract, three Chromium e2e tests). The deterministic suite exercises the fold at 2 and 6 protected resources against fixtures matching the previously reported clutter, asserting exactly the expected node/edge counts and zero orphan-service false positives. Live-verified against the deployed v2.0.3 production app using its own "Private endpoints for PaaS" and "Zero trust enterprise network" example prompts: both generations produced clean diagrams with direct, clearly-labeled private-access edges and no per-resource Private Endpoint clutter.
 
 ## v1.9.0: Prompt Refresh and Pricing Accuracy
 
