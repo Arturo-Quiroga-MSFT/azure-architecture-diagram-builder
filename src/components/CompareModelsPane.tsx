@@ -89,6 +89,35 @@ interface CompareModelsPaneProps {
   onCaptureBatch?: (items: Array<{ architecture: any; prompt: string; filename: string; model: ModelType; reasoningEffort: ReasoningEffort }>) => Promise<void>;
 }
 
+const SAMPLE_PROMPT_GROUPS: Array<{ label: string; prompts: string[] }> = [
+  {
+    label: 'Quick starts',
+    prompts: [
+      'E-commerce platform with payments and search',
+      'Real-time IoT telemetry pipeline with dashboards',
+      'Microservices app with API gateway and auth',
+      'RAG chatbot with vector search and AI',
+    ],
+  },
+  {
+    label: 'Detailed scenarios',
+    prompts: [
+      'A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS, Bastion for VM access, and Microsoft Entra ID with Conditional Access',
+      'An industrial IoT platform with 5,000+ sensors, real-time anomaly detection, IoT Hub for ingestion, Stream Analytics for processing, and Azure ML for predictive models',
+      'A healthcare data platform with FHIR API, HIPAA-compliant storage, real-time patient monitoring, Azure Health Data Services, and Power BI for clinical dashboards',
+      'A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing',
+    ],
+  },
+  {
+    label: 'AI workloads',
+    prompts: [
+      'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Azure AI Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
+      'An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication',
+      'A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability',
+    ],
+  },
+];
+
 const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit, onApply, onCaptureBatch, otherRunBlocked, onRunningChange }) => {
   const availableModels = getAvailableModels();
   const currentSettings = getModelSettings();
@@ -636,6 +665,19 @@ const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit,
         </div>
 
         <div className="compare-modal-body">
+          <div className="cv-waf-info">
+            <p className="cv-waf-intro">
+              Write one brief, then send it to <strong>several AI models at once</strong>. Each
+              returns its own architecture for the same requirement, so you can see where the
+              models agree, where they differ, and which one you want to keep.
+            </p>
+            <p className="cv-waf-intro compare-intro-steps">
+              Pick two or more models, describe the architecture, then run the comparison. Results
+              arrive side by side with the services, connections, time and token cost for each.
+              <strong> Use This Architecture</strong> puts the one you choose on the canvas.
+            </p>
+          </div>
+
           {/* Model Selection */}
           <div className="compare-section">
             <h3 className="compare-section-title">Select Models to Compare</h3>
@@ -681,56 +723,27 @@ const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit,
           {/* Prompt */}
           <div className="compare-section">
             <h3 className="compare-section-title">Architecture Prompt</h3>
-            <div className="compare-sample-prompts">
-              {[
-                'E-commerce platform with payments and search',
-                'Real-time IoT telemetry pipeline with dashboards',
-                'Microservices app with API gateway and auth',
-                'RAG chatbot with vector search and AI'
-              ].map((sample) => (
-                <button
-                  key={sample}
-                  className="compare-sample-chip"
-                  onClick={() => setPrompt(sample)}
-                  disabled={isRunning}
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
-            <div className="compare-sample-prompts">
-              {[
-                'A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS, Bastion for VM access, and Microsoft Entra ID with Conditional Access',
-                'An industrial IoT platform with 5,000+ sensors, real-time anomaly detection, IoT Hub for ingestion, Stream Analytics for processing, and Azure ML for predictive models',
-                'A healthcare data platform with FHIR API, HIPAA-compliant storage, real-time patient monitoring, Azure Health Data Services, and Power BI for clinical dashboards',
-                'A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing'
-              ].map((sample) => (
-                <button
-                  key={sample}
-                  className="compare-sample-chip"
-                  onClick={() => setPrompt(sample)}
-                  disabled={isRunning}
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
-            <div className="compare-sample-prompts">
-              {[
-                'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Azure AI Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
-                'An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication',
-                'A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability'
-              ].map((sample) => (
-                <button
-                  key={sample}
-                  className="compare-sample-chip"
-                  onClick={() => setPrompt(sample)}
-                  disabled={isRunning}
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
+            <p className="compare-sample-hint">
+              Start from an example, or write your own below. Clicking one replaces the box.
+            </p>
+            {SAMPLE_PROMPT_GROUPS.map((group) => (
+              <div className="compare-sample-group" key={group.label}>
+                <span className="compare-sample-group-label">{group.label}</span>
+                <div className="compare-sample-prompts">
+                  {group.prompts.map((sample) => (
+                    <button
+                      key={sample}
+                      className="compare-sample-chip"
+                      onClick={() => setPrompt(sample)}
+                      disabled={isRunning}
+                      title={sample}
+                    >
+                      {sample}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
             <textarea
               className="compare-prompt"
               placeholder="Describe the Azure architecture you want to compare across models..."

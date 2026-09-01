@@ -87,12 +87,106 @@
   background: transparent;
 }
 
+/* Sample prompts. The originals were 0.75rem with white-space: nowrap, so the
+   long scenario prompts rendered as one unreadable line. */
+.compare-sample-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.compare-sample-group {
+  margin-bottom: 0.85rem;
+}
+
+.compare-sample-group-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.compare-tab-body .compare-sample-chip {
+  white-space: normal;
+  text-align: left;
+  max-width: 26rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  background: rgba(0, 120, 212, 0.08);
+  border-color: rgba(0, 120, 212, 0.45);
+  color: #0f4c81;
+}
+
+.compare-tab-body .compare-sample-chip:hover:not(:disabled) {
+  background: rgba(0, 120, 212, 0.16);
+  border-color: #0078d4;
+  color: #0b3d68;
+}
+
+.compare-intro-steps {
+  margin-top: 0.5rem;
+}
+
+/* .btn-primary is white-on-blue-text for the blue header, so the primary actions
+   read as ghosted on a light pane. Give them a real filled treatment. */
+.compare-tab-body .compare-run-btn,
+.compare-tab-body .compare-apply-btn {
+  background: #0078d4;
+  color: #ffffff;
+  border: 1px solid #0078d4;
+}
+
+.compare-tab-body .compare-run-btn:hover:not(:disabled),
+.compare-tab-body .compare-apply-btn:hover:not(:disabled) {
+  background: #106ebe;
+  border-color: #106ebe;
+  color: #ffffff;
+}
+
+.compare-tab-body .compare-run-btn:disabled,
+.compare-tab-body .compare-apply-btn:disabled {
+  background: #d5dbe3;
+  border-color: #d5dbe3;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
 /* ========================================
    DARK MODE
    ======================================== */
 
 body.dark-mode .compare-pane {
   background: #1a1a1a;
+}
+
+body.dark-mode .compare-sample-hint,
+body.dark-mode .compare-sample-group-label {
+  color: #9ca3af;
+}
+
+/* Was #60a5fa on an 8% tint — too faint to read at a glance. */
+body.dark-mode .compare-tab-body .compare-sample-chip {
+  background: rgba(96, 165, 250, 0.14);
+  border-color: rgba(96, 165, 250, 0.5);
+  color: #cfe3ff;
+}
+
+body.dark-mode .compare-tab-body .compare-sample-chip:hover:not(:disabled) {
+  background: rgba(96, 165, 250, 0.26);
+  border-color: #93c5fd;
+  color: #ffffff;
+}
+
+body.dark-mode .compare-tab-body .compare-run-btn:disabled,
+body.dark-mode .compare-tab-body .compare-apply-btn:disabled {
+  background: #33383f;
+  border-color: #33383f;
+  color: #9ca3af;
 }
 
 body.dark-mode .compare-tabs {
