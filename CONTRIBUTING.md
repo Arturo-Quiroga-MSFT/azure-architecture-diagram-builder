@@ -23,10 +23,16 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 ### Submitting Pull Requests
 
 1. Fork the repository and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. Ensure your code follows the existing coding style (TypeScript, React conventions).
-4. Make sure the project builds successfully (`npm run build`).
-5. Write a clear PR description explaining your changes.
+2. Follow the [AADB Software Development Lifecycle](HVE-ADOPTION/SDLC.md):
+	classify risk, define acceptance and non-goals, identify blast radius and
+	rollback, and use the required Research/Plan/Implement/Review path.
+3. For a bug, add a regression fence and show that old behavior fails and new
+	behavior passes, or explain why no executable fence is possible.
+4. Run focused checks while implementing, then run `npm run verify:release`.
+5. Complete the pull request evidence template. Do not merge through unexplained
+	failures or unresolved R4 gates.
+6. Obtain explicit merge approval. Production deployment is a separate decision
+	and requires a second explicit approval naming the intended version.
 
 ### Development Setup
 
@@ -75,7 +81,7 @@ npm run measure:performance -- https://<app-host>/
 
 Compare bundle bytes from identical builds directly. Treat browser timings as samples tied to their network, host, runner, and viewport; do not compare a loopback timing to an Azure-hosted timing as if they were equivalent.
 
-GitHub Actions runs the same command on pull requests, pushes to `main`, and before the manual Azure deployment workflow.
+GitHub Actions runs the same command on pull requests, pushes to `main`, and before the manual Azure deployment workflow. The PR evidence check additionally enforces the required risk, acceptance, testing, limitation, blast-radius, rollback, and approval fields; it validates completeness, not the truth of narrative evidence.
 
 Use semantic versioning:
 
