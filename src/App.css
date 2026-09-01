@@ -68,7 +68,7 @@
 }
 
 /* Independent toolbar collapse (separate from the side-panel "Focus" button).
-   Hides the toolbar rows to give the canvas maximum vertical space. */
+   Hides the toolbar to give the canvas maximum vertical space. */
 .header-collapse-toggle {
   display: inline-flex;
   align-items: center;
@@ -91,7 +91,7 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* When collapsed: hide the toolbar rows and shrink the header chrome. */
+/* When collapsed: hide the toolbar and shrink the header chrome. */
 .app-header.header-collapsed {
   padding-top: 0.35rem;
   padding-bottom: 0.35rem;
@@ -636,6 +636,9 @@ body.dark-mode .pane-btn:hover:not(:disabled) {
   position: relative;
 }
 
+/* Deliberately not position: relative — that would make it the containing block
+   for the prompt banner and break its drag. The .is-hidden variant lives in
+   NavRail.css, next to the rail it keeps clickable. */
 .canvas-container {
   flex: 1;
   height: 100%;
@@ -644,8 +647,8 @@ body.dark-mode .pane-btn:hover:not(:disabled) {
 
 /* Object tools float over the canvas they act on. Top-left is the only free
    edge: the bottom ~300px is taken across its full width by the zoom controls,
-   title block, legend and minimap. The transient occupants up here are the nav
-   hint (top-right) and the prompt banner (top-centre). */
+   title block, legend and minimap. Anything else that wants this band has to
+   stack below it — see CANVAS_BANNER_TOP in App.tsx. */
 .canvas-tools-host {
   position: absolute;
   top: 12px;

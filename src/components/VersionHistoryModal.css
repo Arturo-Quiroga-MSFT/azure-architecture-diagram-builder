@@ -1,11 +1,7 @@
 /* ==========================================================================
-   Version History Modal Styles
+   Version list styles, still named for the modal this started as. The markup
+   now lives in LibraryPane, which imports this alongside LibraryPane.css.
    ========================================================================== */
-
-.version-history-modal {
-  max-width: 800px;
-  max-height: 85vh;
-}
 
 /* --------------------------------------------------------------------------
    Loading & Empty States
@@ -252,12 +248,6 @@
 /* --------------------------------------------------------------------------
    Modal Footer
    -------------------------------------------------------------------------- */
-
-.version-history-modal .modal-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 
 .version-count {
   color: #6b7280;

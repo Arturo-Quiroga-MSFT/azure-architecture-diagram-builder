@@ -139,6 +139,11 @@ const CANVAS_HINT_STORAGE_KEY = 'azure-diagram-builder.canvasHintDismissed.v1';
 const LAYOUT_HINT_SEEN_STORAGE_KEY = 'azure-diagram-builder.layoutHintSeen.v1';
 const HEADER_COLLAPSED_STORAGE_KEY = 'azure-diagram-builder.headerCollapsed.v1';
 
+// Banners stack below the floating canvas tools bar (top 12px, ~47px tall) rather
+// than over it — the bar is z-index 5 and the banners are 1000, so an overlap
+// makes the tools unclickable. The layout hint then stacks below the banner.
+const CANVAS_BANNER_TOP = '68px';
+
 // Derive a short, human-friendly architecture title from a free-form prompt
 // (used as a fallback when no manifest title is available). Strips common
 // prefixes like "MODIFY EXISTING ARCHITECTURE: ...", "Build a", "Design a",
@@ -256,6 +261,7 @@ function App() {
   // a nudge to reload its list.
   const [libraryReloadToken, setLibraryReloadToken] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatResetSignal, setChatResetSignal] = useState(0);
   const [isDeliverChooserOpen, setIsDeliverChooserOpen] = useState(false);
   const [generatorOpenSignal, setGeneratorOpenSignal] = useState(0);
   const generatorOpenSourceRef = useRef<'first-start' | 'journey-strip' | 'toolbar'>('toolbar');
@@ -271,7 +277,7 @@ function App() {
   // must re-run when the element actually attaches.
   const [promptBannerEl, setPromptBannerEl] = useState<HTMLDivElement | null>(null);
   const [layoutHintTop, setLayoutHintTop] = useState(16);
-  // Collapses the top toolbar rows to maximize canvas height. Independent of
+  // Collapses the top toolbar to maximize canvas height. Independent of
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(() => localStorage.getItem(HEADER_COLLAPSED_STORAGE_KEY) === '1');
@@ -1981,6 +1987,40 @@ function App() {
     reader.readAsText(file);
   }, [applyFlowObject]);
 
+  // Should leave the app as a browser refresh would: everything about *this*
+  // diagram gone, and with it the layout/style choices the app deliberately
+  // does not persist. Genuine preferences (dark mode, edge style, export
+  // background) and export history are read from localStorage, so they stay.
+  // Deliberate exception: a model comparison is its own workspace and may be
+  // mid-run, so it is left alone.
+  const startFreshSession = useCallback(() => {
+    trackStartFresh();
+    setNodes([]);
+    setEdges([]);
+    resetGenerationSession();
+    clearSourceModel();
+    setReferenceImageUrl(null);
+    setPromptBannerPosition(null);
+    setHighlightedServices([]);
+    setEdgeContextMenu(null);
+    setShowLayoutHint(false);
+    setValidationResult(null);
+    setValidationNeedsRefresh(false);
+    setIsValidationPanelOpen(false);
+    setDeploymentGuide(null);
+    setIsDeploymentGuideModalOpen(false);
+    setIsChatOpen(false);
+    setChatResetSignal(v => v + 1);
+    setFocusMode(false);
+    setAllGroupsCollapsed(false);
+    setStylePreset('detailed');
+    setLayoutPreset('flow-lr');
+    setLayoutSpacing('comfortable');
+    setLayoutEngine('dagre');
+    setLayoutEmphasizePrimaryPath(false);
+    setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+  }, [resetGenerationSession]);
+
   // Restore a version from history
   const restoreVersion = useCallback((version: DiagramVersion) => {
     try {
@@ -3322,7 +3362,6 @@ function App() {
           {isCanvasView && (
           <>
           <div className="header-actions-wrapper">
-            {/* Row 1: Project-level actions */}
             <div className="header-actions">
               <div className="toolbar-group">
                 <RegionSelector onRegionChange={handleRegionChange} />
@@ -3373,12 +3412,6 @@ function App() {
               </div>
 
               <div className="toolbar-group">
-                <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
-                  </svg>
-                  Add Group
-                </button>
                 <AIArchitectureGenerator 
                   openSignal={generatorOpenSignal}
                   onOpen={() => {
@@ -3444,6 +3477,29 @@ function App() {
                   Guided Chat
                 </button>
                 <button
+                  onClick={handleValidateArchitecture}
+                  className="btn btn-premium"
+                  title="Validate architecture against Azure Well-Architected Framework"
+                  disabled={nodes.length === 0}
+                >
+                  <Shield size={18} />
+                  Validate Architecture
+                </button>
+                {validationResult && (
+                  <button
+                    onClick={() => setIsValidationPanelOpen(true)}
+                    className="btn btn-secondary"
+                    title={validationNeedsRefresh
+                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
+                      : 'Open last validation results'}
+                  >
+                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
+                    {validationNeedsRefresh
+                      ? 'Revalidate Needed'
+                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
+                  </button>
+                )}
+                <button
                   className={`btn btn-help${helpSeen ? '' : ' nudge'}`}
                   onClick={() => {
                     setIsHelpOpen(true);
@@ -3503,6 +3559,15 @@ function App() {
                     </div>
                   )}
                 </div>
+                {/* Signpost, not a menu — the Reports pane owns the export list. */}
+                <button
+                  onClick={() => setActiveView('reports')}
+                  className="btn btn-primary"
+                  title="Open the Reports pane to export this architecture"
+                >
+                  <Download size={18} />
+                  Export
+                </button>
               </div>
 
               <div className="toolbar-group">
@@ -3524,30 +3589,10 @@ function App() {
               </div>
 
               <div className="toolbar-group">
-                {/* Signpost, not a menu — the Reports pane owns the export list. */}
-                <button
-                  onClick={() => setActiveView('reports')}
-                  className="btn btn-primary"
-                  title="Open the Reports pane to export this architecture"
-                >
-                  <Download size={18} />
-                  Export
-                </button>
-              </div>
-
-              <div className="toolbar-group">
                 <button
                   onClick={() => {
                     if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
-                      trackStartFresh();
-                      setNodes([]);
-                      setEdges([]);
-                      resetGenerationSession();
-                      setShowLayoutHint(false);
-                      setValidationResult(null);
-                      setValidationNeedsRefresh(false);
-                      setDeploymentGuide(null);
-                      setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+                      startFreshSession();
                     }
                   }}
                   className="btn btn-secondary"
@@ -3555,32 +3600,6 @@ function App() {
                 >
                   <RefreshCw size={18} />
                 </button>
-              </div>
-
-              <div className="toolbar-group">
-                <button 
-                  onClick={handleValidateArchitecture} 
-                  className="btn btn-premium" 
-                  title="Validate architecture against Azure Well-Architected Framework"
-                  disabled={nodes.length === 0}
-                >
-                  <Shield size={18} />
-                  Validate Architecture
-                </button>
-                {validationResult && (
-                  <button
-                    onClick={() => setIsValidationPanelOpen(true)}
-                    className="btn btn-secondary"
-                    title={validationNeedsRefresh
-                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
-                      : 'Open last validation results'}
-                  >
-                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
-                    {validationNeedsRefresh
-                      ? 'Revalidate Needed'
-                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
-                  </button>
-                )}
               </div>
 
               {/* Object tools act on canvas items, so they render over the canvas.
@@ -3838,6 +3857,13 @@ function App() {
                 >
                   <PanelLeftClose size={18} />
                   {focusMode ? 'Exit Focus' : 'Focus'}
+                </button>
+
+                <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
+                  </svg>
+                  Add Group
                 </button>
 
                 <button
@@ -4111,7 +4137,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: '50%',
-                  top: '10px',
+                  top: CANVAS_BANNER_TOP,
                   transform: 'translateX(-50%)',
                   zIndex: 1001,
                   background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
@@ -4136,7 +4162,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: '50%',
-                  top: '10px',
+                  top: CANVAS_BANNER_TOP,
                   transform: 'translateX(-50%)',
                   zIndex: 1001,
                   background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)',
@@ -4162,7 +4188,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: promptBannerPosition ? `${promptBannerPosition.x}px` : '50%',
-                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : '10px',
+                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : CANVAS_BANNER_TOP,
                   transform: promptBannerPosition ? 'none' : 'translateX(-50%)',
                   cursor: isDraggingBanner ? 'grabbing' : 'grab',
                   zIndex: 1000,
@@ -4440,6 +4466,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
       </button>
       <ArchitectureChatPanel
         isOpen={isChatOpen}
+        resetSignal={chatResetSignal}
         onClose={() => setIsChatOpen(false)}
         currentArchitecture={{
           nodes,

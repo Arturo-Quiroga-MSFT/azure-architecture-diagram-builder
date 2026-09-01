@@ -625,4 +625,160 @@ positioned, and reverting `.canvas-container`.
 **Toolbar across the whole exercise: 22 → 12 in the header**, with five relocated to the
 canvas and the rest reachable from the panes that own them.
 
+### 2026-09-01 — Add Group joins the canvas bar, Validate moves next to Guided Chat
+
+Two placements, and one bug the first placement exposed.
+
+**Add Group** creates a canvas object, so it belongs with the other five under the same
+rule. It sits next to Collapse Groups, which is its natural pair — adding a group is also
+the only way to make Collapse Groups do anything, and the button enables the moment you
+use it.
+
+**Validate Architecture** was stranded at the far right, after Export and the reset icon,
+purely because it was the last survivor of the deleted row 2. It now sits between Guided
+Chat and Help, where the other whole-diagram AI actions are. The "Validation: Good"
+follow-up button moved with it so the pair stays together.
+
+Header 12 → 11. Canvas bar 5 → 6.
+
+**The bug: the prompt banner was covering the canvas toolbar.** The banner is centred at
+the top of the canvas with `z-index: 1000`; the bar is at top-left with `z-index: 5`. On a
+wide screen they miss each other. As the window narrows, the centred banner slides left
+until it lands on the bar — and being 200 layers above it, it does not just overlap, it
+makes Layout, Select and Style unclickable.
+
+| Canvas width | Banner left edge | Bar right edge | Overlap |
+|---|---|---|---|
+| 2679 | 1039 | 728 | no |
+| 2184 | 792 | 728 | no |
+| 1757 | 579 | 728 | **yes** |
+| 1544 | 472 | 728 | **yes** |
+| 1331 | 365 | 728 | **yes** |
+
+This was **not** introduced by Add Group. Yesterday's five-button bar ended at 616, so the
+same collision started at 1832 instead of 2056 — it was already there on any laptop-width
+window, and yesterday's "fits at 1091px" check missed it because it measured whether the
+bar *fits*, not whether anything *lands on it*. The banner only exists after a generation,
+so once again it was absent from the sample.
+
+**Fix:** banners now stack below the bar instead of over it (`CANVAS_BANNER_TOP`). This is
+the pattern the layout hint already used — it measures the banner's bottom edge and sits
+under it. The stack is now bar → banner → hint, and it holds at every width tested.
+
+| Check | Result |
+|---|---|
+| Bar bottom / banner top at 1331, 1544, 1757, 2184 | 59-60 / 68 — clear at all four |
+| Add Group from the bar | groups 0 → 1, Collapse Groups became enabled |
+| Header order | Guided Chat → **Validate Architecture** → Help, same group |
+| Validate enabled with nodes present | yes |
+| Bar wraps to 2 lines | no, down to the narrowest width tested |
+| Header height at 2560 / 1920 | 39px — single line |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.
+
+### 2026-09-01 — Export beside Import, and "Start fresh" was not starting fresh
+
+Export now sits directly right of Import, in the same group. They are the two ends of the
+same idea and were three groups apart.
+
+**The reset was the real find.** Arturo suspected the reset button did not clear the
+session the way a browser refresh does. It did not. There is no autosave anywhere in the
+app, so a refresh means an empty canvas with only saved preferences surviving — that is
+the bar the button has to meet, and it was clearing nodes, edges, the generation session,
+validation, the deployment guide and the title block, but leaving eight other things
+behind:
+
+| Left behind | What you would have seen |
+|---|---|
+| Guided Chat conversation and draft | Yesterday's conversation waiting in a "fresh" session |
+| Source model name | Exports still filenamed after the model that built the old diagram |
+| Reference image | Old sketch still attached |
+| Prompt banner position | Next banner appears wherever you dragged the last one |
+| Highlighted services | Stale glow with nothing to point at |
+| Focus mode | Panels still hidden |
+| Collapse-groups toggle | Button stuck reading "Expand Groups" with no groups |
+| Validation dock / guide modal open | Dock open over an empty canvas |
+
+The chat one is the subtle one. The panel returns `null` when closed, so it vanishes from
+the DOM — but the element is always rendered by `App`, so the **component stays mounted
+and keeps its state**. Measured: typed a draft, closed the panel (confirmed gone from the
+DOM), reopened it, and the draft was still there. Clearing on close would have been wrong
+too, so the panel now takes a `resetSignal` that only the reset bumps.
+
+All of it moved into one `startFreshSession` callback with the standard it has to meet
+written above it, rather than a growing list inside an `onClick`.
+
+| Check after reset | Result |
+|---|---|
+| Nodes | 0, empty-state chooser shown |
+| Prompt banner | gone |
+| Chat draft after reopening | empty, back to cold-start starters |
+| Focus | back to "Focus" |
+| Collapse Groups | back to default label, disabled |
+| Validate Architecture | disabled |
+| Title block | absent |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Measurement note.** The first two attempts to test this reported "reset does nothing" —
+both were wrong. Playwright auto-dismisses dialogs, so the confirm was being answered
+"no", and the handler has to be registered in the same call as the click. Then a real
+click was silently intercepted by the chat panel. Neither was an app bug; both looked
+exactly like one.
+
+**Found while testing, not fixed:** the Guided Chat panel is `position: fixed; top: 0` at
+`z-index: 1100`, so it covers the right end of the header. With chat open, **Load and the
+reset button cannot be clicked** — a genuine real click is intercepted, which is how it
+surfaced.
+
+**Decision (Arturo, 2026-09-01): leave it, and watch for feedback.** It blocks exactly two
+buttons, only while chat is open, and it is not new. If it starts to bite people, the fix
+is to make chat an in-flow flex child of `.workspace` the way the validation dock already
+is — the workspace begins below the header, so "below the header" costs nothing and needs
+no measured height. Note for whoever picks it up: the `body.has-validation-dock` rules are
+*not* the pattern to copy. The validation dock is in-flow; those rules exist to push other
+`position: fixed` elements out of its way, which is the opposite problem.
+
+### 2026-09-01 — Cleanup pass over the whole migration
+
+A deliberate sweep for leftovers after a lot of moving, renaming and deleting.
+
+**Clean.** No orphaned stylesheets, no unused imports, no `useState` with an unused setter,
+no dead top-level classes in the new pane stylesheets, and no references left to the four
+deleted components other than the intentional CSS imports, each of which carries a comment
+saying why.
+
+**Three orphaned components** — `AzPrototypeExportModal`, `AzPrototypeImportModal`,
+`ModelSelector` (636 lines) — are imported by nothing. Checked against the branch point:
+they were already orphaned before this work started, so they are someone else's decision to
+make, not fallout from it.
+
+**Duplicate `.modal-overlay` / `.modal-content` / `.modal-header` / `.modal-body` /
+`.modal-close`** are defined in both `ValidationModal.css` and `AIArchitectureGenerator.css`.
+Also pre-existing and unchanged — but worth knowing about, because which one wins depends on
+bundle import order.
+
+**Four things fixed:**
+
+1. **The reset comment overclaimed.** It said the button leaves the app "as a browser refresh
+   would … saved preferences kept", but `stylePreset`, `layoutPreset`, `layoutSpacing`,
+   `layoutEngine` and `layoutEmphasizePrimaryPath` are *not* saved — a refresh resets them and
+   the button did not. `stylePreset` is the one that bites: leave it on `presentation` and the
+   next diagram silently renders differently than it would in a fresh app. The app's own
+   persistence choices are the tell — it saves dark mode, edge style and export background, and
+   pointedly does not save these. They now reset too, so the comment is true rather than nearly
+   true. The one deliberate exception, a model comparison, is named in the comment.
+2. **Two dead rules in `ValidationModal.css`** scoped to `.validation-modal`, a class no longer
+   in any markup. One was already superseded in `ValidationPanel.css`; the other,
+   `border-bottom-color: #444`, was not — so the panel header's dark-mode border had quietly
+   been dropped. Deleted both, carried the border over.
+3. **Two dead rules in `VersionHistoryModal.css`** scoped to `.version-history-modal`, plus a
+   heading that still called it a modal. The file is now labelled for what it is: version-list
+   styles that `LibraryPane` imports alongside its own stylesheet.
+4. **Stale comments** describing the header as having rows, and the canvas-tools comment still
+   listing the prompt banner as sharing its band — it stacks below now. Added a note on
+   `.canvas-container` recording *why* it must not be `position: relative`, since that mistake
+   cost a release-gate failure and would look like a harmless change to anyone who did not
+   know.

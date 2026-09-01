@@ -36,6 +36,8 @@ interface ArchitectureChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
   currentArchitecture: CurrentArchitecture;
+  /** Bump to discard the conversation; the panel stays mounted when closed. */
+  resetSignal?: number;
   /** Applies a generated architecture to the canvas (App's handleAIGenerate). */
   onApply: (architecture: any, prompt: string, autoSnapshot?: boolean) => void | Promise<void>;
 }
@@ -148,6 +150,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   isOpen,
   onClose,
   currentArchitecture,
+  resetSignal = 0,
   onApply,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -198,6 +201,16 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       threadRef.current.scrollTop = threadRef.current.scrollHeight;
     }
   }, [messages, isSending]);
+
+  useEffect(() => {
+    if (resetSignal === 0) return;
+    setMessages([]);
+    setInput('');
+    setUsedSuggestions(new Set());
+    setModelFollowUps(null);
+    setPendingRefinement(null);
+    setShowAdvanced(false);
+  }, [resetSignal]);
 
   // Focus the composer when the panel opens.
   useEffect(() => {
