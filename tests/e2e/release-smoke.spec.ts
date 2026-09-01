@@ -319,7 +319,11 @@ test('semantic policies and private endpoints do not render as traffic hops', as
   await expect(page.getByText('WAF policy associated with Front Door route')).toBeVisible();
   // No per-resource Private Endpoint node/edges — the group's note carries the
   // relationship, reusing the group the Virtual Network already belonged to.
+  // A named "Private Link - <resource>" node per protected resource sits in
+  // the same group, visible detail alongside the note, with zero edges.
   await expect(page.getByText('Private endpoints: App Service and SQL Database')).toBeVisible();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - App Service' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - SQL Database' })).toHaveCount(1);
   await expect(page.getByText('Contains private endpoint for SQL Database')).toHaveCount(0);
   await expect(page.getByText('VNet Integration for outbound private access')).toHaveCount(0);
 

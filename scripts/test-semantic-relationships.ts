@@ -69,7 +69,22 @@ const vnet = processed.services.find((service: any) => service.name === 'Virtual
 const dnsZone = processed.services.find((service: any) => service.name === 'Private DNS Zone');
 assert.ok(vnet && vnet.groupId === 'private-connectivity');
 assert.ok(dnsZone && dnsZone.groupId === 'private-connectivity');
-// Deliberately no edges into the boundary — the note carries the relationship.
+
+// One named Private Link node per protected resource, contained in the same
+// group, with zero edges — membership in the group carries the relationship.
+const privateLinkNodes = processed.services.filter((service: any) => /^Private Link -/.test(service.name));
+assert.deepEqual(
+  privateLinkNodes.map((service: any) => service.name).sort(),
+  ['Private Link - Azure Cache for Redis', 'Private Link - SQL Database'],
+);
+assert.equal(privateLinkNodes.every((service: any) => service.groupId === 'private-connectivity'), true);
+const privateLinkIds = new Set(privateLinkNodes.map((service: any) => service.id));
+assert.equal(processed.connections.some((connection: any) => (
+  privateLinkIds.has(connection.from) || privateLinkIds.has(connection.to)
+)), false);
+
+// Deliberately no edges into the boundary — the note and the named nodes
+// carry the relationship, not a drawn line.
 assert.equal(processed.connections.some((connection: any) => (
   connection.from === vnet.id || connection.to === vnet.id || connection.from === dnsZone.id || connection.to === dnsZone.id
 )), false);
@@ -164,6 +179,18 @@ assert.equal(reusedDns.groupId, 'network');
 assert.equal(privateNetwork.connections.some((connection: any) => (
   connection.from === reusedVnet.id || connection.to === reusedVnet.id
 )), false);
+
+const reusedPrivateLinkNodes = privateNetwork.services.filter((service: any) => /^Private Link -/.test(service.name));
+assert.deepEqual(
+  reusedPrivateLinkNodes.map((service: any) => service.name).sort(),
+  ['Private Link - App Service', 'Private Link - SQL Database'],
+);
+assert.equal(reusedPrivateLinkNodes.every((service: any) => service.groupId === 'network'), true);
+const reusedPrivateLinkIds = new Set(reusedPrivateLinkNodes.map((service: any) => service.id));
+assert.equal(privateNetwork.connections.some((connection: any) => (
+  reusedPrivateLinkIds.has(connection.from) || reusedPrivateLinkIds.has(connection.to)
+)), false);
+
 assert.equal(privateNetwork.integrity.orphanCount, 0);
 
 assert.equal(privateNetwork.connections.some((connection: any) => (

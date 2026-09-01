@@ -84,7 +84,7 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
   }
 
   const privateConnectivityServices = architecture.services.filter(isPrivateConnectivity);
-  const protectedResourceNames = new Set<string>();
+  const protectedTargets = new Map<string, any>();
   for (const privateConnectivity of privateConnectivityServices) {
     const related = architecture.connections.filter((connection: any) => (
       String(connection.from) === String(privateConnectivity.id)
@@ -157,13 +157,13 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
 
     targetIds.forEach((targetId) => {
       const target = servicesById.get(targetId);
-      if (target) protectedResourceNames.add(target.name);
+      if (target) protectedTargets.set(targetId, target);
     });
     logger.warn(`Folded Azure Private Link connector into the Private Connectivity group (${targetIds.length} protected resource(s))`);
   }
 
-  if (protectedResourceNames.size > 0) {
-    const names = [...protectedResourceNames].sort((a, b) => a.localeCompare(b));
+  if (protectedTargets.size > 0) {
+    const names = [...protectedTargets.values()].map((target: any) => target.name).sort((a, b) => a.localeCompare(b));
     const note = names.length === 1
       ? `Private endpoints: ${names[0]}`
       : `Private endpoints: ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
@@ -194,6 +194,23 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
       servicesById.set(String(privateDnsZone.id), privateDnsZone);
     }
     privateDnsZone.groupId = groupId;
+
+    // One named Private Link node per protected resource, contained in the
+    // same group as the VNet/DNS Zone. No edges to the VNet or to the actual
+    // resource elsewhere on canvas — membership in the group is what says
+    // "this belongs to the boundary", same as the group's own note does at a
+    // glance. This is what makes each protected resource individually visible
+    // (and its name individually readable) without redrawing a line to it.
+    for (const [targetId, target] of protectedTargets) {
+      const linkId = `private-link-${targetId}`;
+      let link = servicesById.get(linkId);
+      if (!link) {
+        link = { id: linkId, name: `Private Link - ${target.name}`, type: 'Azure Private Link', category: 'networking' };
+        architecture.services.push(link);
+        servicesById.set(linkId, link);
+      }
+      link.groupId = groupId;
+    }
 
     repairs++;
   }
