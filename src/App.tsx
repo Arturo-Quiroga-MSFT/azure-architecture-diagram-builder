@@ -21,7 +21,7 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3, RotateCcw } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
 import ReportsPane from './components/ReportsPane';
@@ -69,6 +69,7 @@ import { type ExportAction } from './types/exportActions';
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
+import { saveDraft, loadDraft, clearDraft, type DiagramDraft } from './services/draftStorageService';
 import type { DeckService } from './services/pptxExporter';
 import { extractArchitectureFromArm, summarizeCoverage } from './services/armExtractor';
 import { buildArchitectureFromResources } from './services/resourceGraphAdapter';
@@ -257,6 +258,9 @@ function App() {
 
   // Version History State
   const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
+  // An autosaved diagram found at startup, offered for restore rather than
+  // applied silently — reloading to get a clean canvas stays a valid intent.
+  const [restorableDraft, setRestorableDraft] = useState<DiagramDraft | null>(null);
   // Snapshots are saved from a modal outside the Library pane, so the pane needs
   // a nudge to reload its list.
   const [libraryReloadToken, setLibraryReloadToken] = useState(0);
@@ -947,6 +951,13 @@ function App() {
       y: event.clientY,
       edgeId: edge.id,
     });
+  }, []);
+
+  // Right-drag pans the canvas (panOnDrag includes button 2), so the browser's
+  // native menu is never wanted here. Releasing that menu over its Back/Reload
+  // entries discards the diagram, which is not saved anywhere.
+  const suppressNativeContextMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
   }, []);
 
   const closeEdgeContextMenu = useCallback(() => {
@@ -2023,6 +2034,10 @@ function App() {
     trackStartFresh();
     setNodes([]);
     setEdges([]);
+    // Clearing is deliberate, so the autosaved copy must go too — otherwise the
+    // next reload offers back the diagram the user just discarded.
+    setRestorableDraft(null);
+    clearDraft();
     resetGenerationSession();
     clearSourceModel();
     setReferenceImageUrl(null);
@@ -2095,6 +2110,48 @@ function App() {
       throw error;
     }
   }, [nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow]);
+
+  // Look for an autosaved diagram once at startup. The banner that offers it is
+  // additionally gated on an empty canvas, so a diagram arriving from a shared
+  // link cannot be interrupted by it.
+  useEffect(() => {
+    let cancelled = false;
+    loadDraft().then(draft => {
+      if (!cancelled && draft?.nodes?.length) setRestorableDraft(draft);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Autosave, debounced so a drag writes once at the end rather than per frame.
+  // Guarded on a non-empty canvas: without that, mounting or clearing would
+  // immediately overwrite a recoverable draft with an empty one.
+  useEffect(() => {
+    if (nodes.length === 0) return;
+    const timer = setTimeout(() => {
+      saveDraft({
+        savedAt: Date.now(),
+        diagramName: titleBlockData.architectureName,
+        nodes,
+        edges,
+        architecturePrompt,
+        originalPrompt: originalPrompt || architecturePrompt || undefined,
+        workflow,
+        titleBlockData,
+      });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [nodes, edges, titleBlockData, architecturePrompt, originalPrompt, workflow]);
+
+  const restoreDraft = useCallback(() => {
+    if (!restorableDraft) return;
+    restoreVersion(restorableDraft as unknown as DiagramVersion);
+    setRestorableDraft(null);
+  }, [restorableDraft, restoreVersion]);
+
+  const discardDraft = useCallback(() => {
+    setRestorableDraft(null);
+    clearDraft();
+  }, []);
 
   const handleAIGenerate = useCallback(async (
     architecture: any,
@@ -4026,6 +4083,9 @@ function App() {
             onConnect={onConnect}
             onReconnect={onReconnect}
             onEdgeContextMenu={onEdgeContextMenu}
+            onNodeContextMenu={suppressNativeContextMenu}
+            onSelectionContextMenu={suppressNativeContextMenu}
+            onPaneContextMenu={suppressNativeContextMenu}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
@@ -4062,6 +4122,22 @@ function App() {
             {/* Canvas navigation hint — teaches pan/zoom so large diagrams
                 aren't perceived as "stuck" or too big to view. Shown only when
                 a diagram exists and until the user dismisses it. */}
+            {restorableDraft && nodes.length === 0 && (
+              <div className="canvas-restore-banner" role="status" style={{ top: CANVAS_BANNER_TOP }}>
+                <RotateCcw size={16} />
+                <span className="canvas-restore-banner-text">
+                  Unsaved diagram <strong>{restorableDraft.diagramName}</strong> from{' '}
+                  {new Date(restorableDraft.savedAt).toLocaleString()}
+                </span>
+                <button type="button" className="canvas-restore-banner-primary" onClick={restoreDraft}>
+                  Restore
+                </button>
+                <button type="button" className="canvas-restore-banner-dismiss" onClick={discardDraft}>
+                  Discard
+                </button>
+              </div>
+            )}
+
             {showCanvasHint && nodes.length > 0 && (
               <div className="canvas-nav-hint" role="note" aria-label="Canvas navigation tips">
                 <div className="canvas-nav-hint-tips">

@@ -746,6 +746,70 @@ body.dark-mode .canvas-tools .btn.btn-active {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Offer to restore an autosaved diagram. Shown only on an empty canvas, so it
+   shares the banner lane rather than competing with the prompt banner. */
+.canvas-restore-banner {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 32px);
+  padding: 10px 12px 10px 14px;
+  color: #172554;
+  background: rgba(239, 246, 255, 0.98);
+  border: 1px solid #60a5fa;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
+  font-size: 0.85rem;
+  animation: canvas-nav-hint-in 0.35s ease-out;
+}
+
+.canvas-restore-banner-text { line-height: 1.35; }
+.canvas-restore-banner-text strong { font-weight: 600; }
+
+.canvas-restore-banner-primary,
+.canvas-restore-banner-dismiss {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.canvas-restore-banner-primary {
+  color: #ffffff;
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+}
+
+.canvas-restore-banner-primary:hover { background: #1d4ed8; }
+
+.canvas-restore-banner-dismiss {
+  color: #1e3a5f;
+  background: #ffffff;
+  border: 1px solid #94a3b8;
+}
+
+.canvas-restore-banner-dismiss:hover { background: #e2e8f0; }
+
+body.dark-mode .canvas-restore-banner {
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.96);
+  border-color: rgba(96, 165, 250, 0.6);
+}
+
+body.dark-mode .canvas-restore-banner-dismiss {
+  color: #e2e8f0;
+  background: #1e293b;
+  border-color: #475569;
+}
+
+body.dark-mode .canvas-restore-banner-dismiss:hover { background: #334155; }
+
 .canvas-layout-hint {
   position: absolute;
   left: 50%;
