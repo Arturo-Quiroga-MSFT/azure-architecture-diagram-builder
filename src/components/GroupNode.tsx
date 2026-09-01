@@ -172,6 +172,11 @@ const GroupNode: React.FC<NodeProps> = memo(({ id, data, selected }) => {
             <Palette size={18} />
           </button>
         </div>
+        {data.note && (
+          <div className="group-note" title={data.note} style={{ color: colors.header }}>
+            {data.note}
+          </div>
+        )}
         
         {showColorPicker && (
           <div className="color-picker-panel">

@@ -58,19 +58,31 @@ assert.equal(processed.connections.some((connection: any) => (
 )), true);
 
 const privateEndpoints = processed.services.filter((service: any) => service.type === 'Private Endpoint');
-assert.equal(privateEndpoints.length, 2);
-assert.deepEqual(
-  privateEndpoints.map((service: any) => service.name).sort(),
-  ['Private Endpoint - Azure Cache for Redis', 'Private Endpoint - SQL Database'],
-);
-const privateEndpointIds = new Set(privateEndpoints.map((service: any) => service.id));
-const privateEdges = processed.connections.filter((connection: any) => privateEndpointIds.has(connection.from));
-assert.equal(privateEdges.length, 2);
-assert.equal(privateEdges.every((connection: any) => connection.type === 'association'), true);
-assert.equal(privateEdges.every((connection: any) => !privateEndpointIds.has(connection.to)), true);
-const serviceNames = processed.services.map((service: any) => service.name);
-assert.equal(serviceNames.indexOf('Private Endpoint - Azure Cache for Redis'), serviceNames.indexOf('Azure Cache for Redis') + 1);
-assert.equal(serviceNames.indexOf('Private Endpoint - SQL Database'), serviceNames.indexOf('SQL Database') + 1);
+assert.equal(privateEndpoints.length, 0, 'no per-resource Private Endpoint nodes should be created');
+assert.equal(processed.connections.some((connection: any) => /private endpoint/i.test(connection.label || '')), false);
+
+const boundaryGroup = processed.groups.find((group: any) => group.id === 'private-connectivity');
+assert.ok(boundaryGroup, 'a Private Connectivity group should be created when there was none to reuse');
+assert.equal(boundaryGroup.note, 'Private endpoints: Azure Cache for Redis and SQL Database');
+
+const vnet = processed.services.find((service: any) => service.name === 'Virtual Network');
+const dnsZone = processed.services.find((service: any) => service.name === 'Private DNS Zone');
+assert.ok(vnet && vnet.groupId === 'private-connectivity');
+assert.ok(dnsZone && dnsZone.groupId === 'private-connectivity');
+// Deliberately no edges into the boundary — the note carries the relationship.
+assert.equal(processed.connections.some((connection: any) => (
+  connection.from === vnet.id || connection.to === vnet.id || connection.from === dnsZone.id || connection.to === dnsZone.id
+)), false);
+assert.equal(processed.integrity.orphanCount, 0, 'the boundary\'s own nodes are not orphans');
+
+// The connector's real neighbours still connect directly, unlabelled by any
+// per-resource private-endpoint node.
+assert.equal(processed.connections.some((connection: any) => (
+  connection.from === 'web' && connection.to === 'redis' && connection.type === 'sync'
+)), true);
+assert.equal(processed.connections.some((connection: any) => (
+  connection.from === 'web' && connection.to === 'sql' && connection.type === 'sync'
+)), true);
 assert.equal(processed.workflow.some((step: any) => step.services.includes('private-link')), false);
 assert.ok(processed.integrity.semanticRepairs >= 3);
 
@@ -83,9 +95,9 @@ assert.equal(positionedByName.get('Front Door WAF Policy')?.x, positionedByName.
 const systemPrompt = buildArchitectureGenerationSystemPrompt();
 assert.match(systemPrompt, /sync\|async\|optional\|association\|containment/);
 assert.match(systemPrompt, /Never emit Client → WAF → Front Door/);
-assert.match(systemPrompt, /one "Private Endpoint - <resource>" node.*per protected service/);
-assert.match(systemPrompt, /Virtual Network is NEVER a Private Endpoint target/);
-assert.match(systemPrompt, /VNet Integration for outbound private access/);
+assert.match(systemPrompt, /Do not model a "Private Endpoint - <resource>" node/);
+assert.match(systemPrompt, /Do not connect either of them to the protected resources/);
+assert.doesNotMatch(systemPrompt, /VNet Integration for outbound private access/);
 
 const modificationPrompt = buildModificationPrompt({
   architectureName: 'Customer app',
@@ -136,20 +148,24 @@ const privateNetwork = postProcessArchitecture({
 });
 
 assert.equal(privateNetwork.services.some((service: any) => service.name === 'Private Endpoint - Virtual Network'), false);
-assert.equal(privateNetwork.services.filter((service: any) => /^Private Endpoint -/.test(service.name)).length, 2);
+assert.equal(privateNetwork.services.some((service: any) => /^Private Endpoint -/.test(service.name)), false);
+
+// The pre-existing 'network' group (already holding the VNet) is reused rather
+// than abandoned for a fresh 'private-connectivity' group.
+const reusedGroup = privateNetwork.groups.find((group: any) => group.id === 'network');
+assert.equal(reusedGroup.label, 'Private Connectivity');
+assert.equal(reusedGroup.note, 'Private endpoints: App Service and SQL Database');
+assert.equal(privateNetwork.groups.some((group: any) => group.id === 'private-connectivity'), false);
+
+const reusedVnet = privateNetwork.services.find((service: any) => service.name === 'Virtual Network');
+const reusedDns = privateNetwork.services.find((service: any) => service.name === 'Private DNS Zone');
+assert.equal(reusedVnet.groupId, 'network');
+assert.equal(reusedDns.groupId, 'network');
 assert.equal(privateNetwork.connections.some((connection: any) => (
-  connection.from === 'app-2'
-  && connection.to === 'vnet'
-  && connection.type === 'association'
-  && /VNet Integration/.test(connection.label)
-)), true);
-assert.equal(privateNetwork.connections.some((connection: any) => (
-  connection.from === 'vnet'
-  && connection.type === 'containment'
-  && /Private Endpoint - SQL Database/.test(
-    privateNetwork.services.find((service: any) => service.id === connection.to)?.name || '',
-  )
-)), true);
+  connection.from === reusedVnet.id || connection.to === reusedVnet.id
+)), false);
+assert.equal(privateNetwork.integrity.orphanCount, 0);
+
 assert.equal(privateNetwork.connections.some((connection: any) => (
   connection.from === 'app-2' && connection.to === 'sql-2' && connection.type === 'sync'
 )), true);
@@ -159,23 +175,34 @@ const privateNetworkLayout = layoutArchitecture(
   privateNetwork.groups,
 );
 const privateGroupsById = new Map(privateNetworkLayout.groups.map((group: any) => [group.id, group]));
-assert.equal(privateGroupsById.get('network')?.position.x, privateGroupsById.get('app')?.position.x);
-assert.ok(
-  privateGroupsById.get('network')!.position.y
-    > privateGroupsById.get('app')!.position.y + privateGroupsById.get('app')!.height,
+// The Private Connectivity boundary carries zero edges by design (the note
+// replaces them), so the layout engine has no rank signal to place it near
+// 'app' the way the old per-resource edges used to. It still must land
+// somewhere finite and non-overlapping.
+for (const group of privateNetworkLayout.groups) {
+  assert.ok(Number.isFinite(group.position.x) && Number.isFinite(group.position.y));
+}
+const overlaps = (a: any, b: any) => !(
+  a.position.x + a.width <= b.position.x
+  || b.position.x + b.width <= a.position.x
+  || a.position.y + a.height <= b.position.y
+  || b.position.y + b.height <= a.position.y
 );
+const network = privateGroupsById.get('network')!;
+assert.equal(overlaps(network, privateGroupsById.get('app')!), false, 'Private Connectivity group must not overlap Application');
+assert.equal(overlaps(network, privateGroupsById.get('edge')!), false, 'Private Connectivity group must not overlap Ingress / Edge');
 assert.match(buildModificationPrompt({
   architectureName: 'Private customer app',
   nodes: [
     { id: 'vnet', type: 'azureNode', data: { label: 'Virtual Network' } },
-    { id: 'pe', type: 'azureNode', data: { label: 'Private Endpoint - SQL Database' } },
+    { id: 'app', type: 'azureNode', data: { label: 'App Service' } },
   ],
   edges: [{
-    source: 'vnet',
-    target: 'pe',
-    label: 'Contains private endpoint for SQL Database',
-    data: { connectionType: 'containment' },
+    source: 'app',
+    target: 'vnet',
+    label: 'Connect privately to Virtual Network',
+    data: { connectionType: 'sync' },
   }],
-}, 'Keep private connectivity'), /Virtual Network contains Private Endpoint.*\[containment\]/);
+}, 'Keep private connectivity'), /connect privately to virtual network/i);
 
-console.log('Semantic relationship tests passed: WAF, Private Endpoints, containment, and VNet Integration');
+console.log('Semantic relationship tests passed: WAF, and the Private Connectivity group (no per-resource Private Endpoint nodes)');

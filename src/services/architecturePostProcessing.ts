@@ -25,11 +25,15 @@ const isFrontDoor = (service: any): boolean => /\bfront door\b/.test(serviceText
 const isWafPolicy = (service: any): boolean => /web application firewall|\bwaf\b/.test(serviceText(service));
 const isPrivateConnectivity = (service: any): boolean => /private link|private endpoint/.test(serviceText(service));
 const isVirtualNetwork = (service: any): boolean => /virtual network|\bvnet\b/.test(serviceText(service));
-const isAppService = (service: any): boolean => /\bapp service\b/.test(serviceText(service));
+const isPrivateDnsZone = (service: any): boolean => /private dns|dns zone/.test(serviceText(service));
 const isNetworkContainer = (service: any): boolean => (
   isVirtualNetwork(service)
   || /\bsubnet\b|private dns|dns zone|vnet integration/.test(serviceText(service))
 );
+
+// One shared boundary for the whole diagram, however many resources it
+// protects, instead of a node and up to three edges per protected resource.
+const PRIVATE_CONNECTIVITY_GROUP_ID = 'private-connectivity';
 
 function repairSemanticRelationships(architecture: any, logger: ArchitectureProcessingLogger): number {
   const servicesById = new Map<string, any>(
@@ -80,7 +84,7 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
   }
 
   const privateConnectivityServices = architecture.services.filter(isPrivateConnectivity);
-  const endpointByTarget = new Map<string, any>();
+  const protectedResourceNames = new Set<string>();
   for (const privateConnectivity of privateConnectivityServices) {
     const related = architecture.connections.filter((connection: any) => (
       String(connection.from) === String(privateConnectivity.id)
@@ -131,53 +135,13 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
 
     architecture.connections = architecture.connections.filter((connection: any) => !related.includes(connection));
 
-    if (targetIds.length === 0) {
-      architecture.services = architecture.services.filter(
-        (service: any) => String(service.id) !== String(privateConnectivity.id),
-      );
-      servicesById.delete(String(privateConnectivity.id));
-      repairs += related.length;
-      logger.warn('Removed Private Link connector with no protected resource target');
-      continue;
-    }
-
-    targetIds.forEach((targetId, index) => {
-      const target = servicesById.get(targetId)!;
-      const existingEndpoint = endpointByTarget.get(targetId);
-      const endpoint = existingEndpoint || (index === 0
-        ? privateConnectivity
-        : {
-            ...privateConnectivity,
-            id: `${privateConnectivity.id}-${String(target.id).replace(/[^A-Za-z0-9_-]/g, '-')}`,
-          });
-      endpoint.name = `Private Endpoint - ${target.name}`;
-      endpoint.type = 'Private Endpoint';
-      endpoint.category = 'networking';
-      endpoint.groupId = target.groupId ?? privateConnectivity.groupId ?? null;
-      endpoint.description = `Private endpoint associated with ${target.name}; not a traffic-forwarding hop.`;
-      endpointByTarget.set(targetId, endpoint);
-      servicesById.set(String(endpoint.id), endpoint);
-      if (!existingEndpoint) {
-        architecture.services = architecture.services.filter(
-          (service: any) => String(service.id) !== String(endpoint.id),
-        );
-        const targetIndex = architecture.services.findIndex((service: any) => String(service.id) === targetId);
-        architecture.services.splice(targetIndex + 1, 0, endpoint);
-      }
-      if (existingEndpoint) {
-        architecture.services = architecture.services.filter(
-          (service: any) => String(service.id) !== String(privateConnectivity.id),
-        );
-        servicesById.delete(String(privateConnectivity.id));
-      }
-      architecture.connections.push({
-        from: endpoint.id,
-        to: target.id,
-        label: `Private endpoint associated with ${target.name}`,
-        type: 'association',
-      });
-      repairs++;
-    });
+    // The connector itself never survives as a canvas node: it is either
+    // orphaned (no protected resource) or folded into the shared group below.
+    architecture.services = architecture.services.filter(
+      (service: any) => String(service.id) !== String(privateConnectivity.id),
+    );
+    servicesById.delete(String(privateConnectivity.id));
+    repairs += related.length;
 
     if (Array.isArray(architecture.workflow)) {
       architecture.workflow.forEach((step: any) => {
@@ -185,46 +149,63 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
         step.services = step.services.filter((id: unknown) => String(id) !== String(privateConnectivity.id));
       });
     }
-    logger.warn(`Repaired Azure Private Link into ${targetIds.length} per-resource Private Endpoint association(s)`);
-  }
 
-  const virtualNetwork = architecture.services.find(isVirtualNetwork);
-  if (virtualNetwork) {
-    for (const [targetId, endpoint] of endpointByTarget) {
+    if (targetIds.length === 0) {
+      logger.warn('Removed Private Link connector with no protected resource target');
+      continue;
+    }
+
+    targetIds.forEach((targetId) => {
       const target = servicesById.get(targetId);
-      if (!target || isAppService(target)) continue;
-      architecture.connections.push({
-        from: virtualNetwork.id,
-        to: endpoint.id,
-        label: `Contains private endpoint for ${target.name}`,
-        type: 'containment',
-      });
-      repairs++;
+      if (target) protectedResourceNames.add(target.name);
+    });
+    logger.warn(`Folded Azure Private Link connector into the Private Connectivity group (${targetIds.length} protected resource(s))`);
+  }
+
+  if (protectedResourceNames.size > 0) {
+    const names = [...protectedResourceNames].sort((a, b) => a.localeCompare(b));
+    const note = names.length === 1
+      ? `Private endpoints: ${names[0]}`
+      : `Private endpoints: ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+
+    let virtualNetwork = architecture.services.find(isVirtualNetwork);
+    if (!virtualNetwork) {
+      virtualNetwork = { id: 'private-connectivity-vnet', name: 'Virtual Network', type: 'Virtual Network', category: 'networking' };
+      architecture.services.push(virtualNetwork);
+      servicesById.set(String(virtualNetwork.id), virtualNetwork);
     }
 
-    const privateTargets = new Set(
-      [...endpointByTarget.keys()].filter((targetId) => !isAppService(servicesById.get(targetId))),
-    );
-    const appServices = architecture.services.filter(isAppService);
-    for (const appService of appServices) {
-      const usesPrivateTarget = architecture.connections.some((connection: any) => (
-        connection.type !== 'association'
-        && connection.type !== 'containment'
-        && (
-          (String(connection.from) === String(appService.id) && privateTargets.has(String(connection.to)))
-          || (String(connection.to) === String(appService.id) && privateTargets.has(String(connection.from)))
-        )
-      ));
-      if (!usesPrivateTarget) continue;
-      architecture.connections.push({
-        from: appService.id,
-        to: virtualNetwork.id,
-        label: 'VNet Integration for outbound private access',
-        type: 'association',
-      });
-      repairs++;
+    // Reuse whichever group the Virtual Network already belongs to — that
+    // respects a boundary the model (or the user) already built around it.
+    // Only invent a fresh one when the VNet has none.
+    const groupId = virtualNetwork.groupId || PRIVATE_CONNECTIVITY_GROUP_ID;
+    let group = architecture.groups.find((candidate: any) => candidate.id === groupId);
+    if (!group) {
+      group = { id: groupId, label: 'Private Connectivity' };
+      architecture.groups.push(group);
     }
+    group.note = note;
+    virtualNetwork.groupId = groupId;
+
+    let privateDnsZone = architecture.services.find(isPrivateDnsZone);
+    if (!privateDnsZone) {
+      privateDnsZone = { id: 'private-connectivity-dns', name: 'Private DNS Zone', type: 'Private DNS Zone', category: 'networking' };
+      architecture.services.push(privateDnsZone);
+      servicesById.set(String(privateDnsZone.id), privateDnsZone);
+    }
+    privateDnsZone.groupId = groupId;
+
+    repairs++;
   }
+
+  // A model that ignores the new instructions may still emit this exact edge
+  // on its own (it never touches a Private Endpoint node, so the loop above
+  // never sees it). Its meaning is now carried by the boundary's note instead.
+  const outboundPrivateAccessCount = architecture.connections.length;
+  architecture.connections = architecture.connections.filter(
+    (connection: any) => !/vnet integration for outbound private access/i.test(String(connection.label ?? '')),
+  );
+  repairs += outboundPrivateAccessCount - architecture.connections.length;
 
   architecture.connections.forEach((connection: any) => {
     if (!CONNECTION_TYPES.has(connection.type)) {
@@ -419,8 +400,17 @@ export function postProcessArchitecture(
     connectedIds.add(String(connection.from));
     connectedIds.add(String(connection.to));
   });
+  // The Private Connectivity boundary is deliberately unconnected — the group's
+  // note carries the relationship instead of an edge — so its own nodes are not
+  // orphans in the sense this check exists to catch (a service the model forgot
+  // to wire up). A group only gets a `.note` from that repair, whatever id it
+  // has — the group may be a fresh one or an existing group the VNet already
+  // belonged to, so a note is the reliable signal, not the id.
+  const notedGroupIds = new Set(
+    architecture.groups.filter((group: any) => group.note).map((group: any) => group.id),
+  );
   const orphans = architecture.services.filter(
-    (service: any) => !connectedIds.has(String(service.id)),
+    (service: any) => !connectedIds.has(String(service.id)) && !notedGroupIds.has(service.groupId),
   );
   if (orphans.length > 0) {
     logger.warn(
