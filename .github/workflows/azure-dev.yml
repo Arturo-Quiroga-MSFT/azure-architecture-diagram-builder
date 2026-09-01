@@ -10,6 +10,11 @@ name: Azure Diagram Builder — provision & deploy (azd)
 # To re-enable automatic deploys on push, restore the `push:` trigger below.
 on:
   workflow_dispatch:
+    inputs:
+      confirm_version:
+        description: "Type the exact version to deploy, including v (for example v2.0.5)"
+        required: true
+        type: string
 
 # Required for OIDC federated identity (passwordless login)
 permissions:
@@ -19,6 +24,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     env:
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
@@ -28,6 +34,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Verify version-specific production approval
+        env:
+          CONFIRM_VERSION: ${{ inputs.confirm_version }}
+        run: |
+          EXPECTED_VERSION="v$(node -p "require('./package.json').version")"
+          if [[ "$CONFIRM_VERSION" != "$EXPECTED_VERSION" ]]; then
+            echo "Production approval must match $EXPECTED_VERSION; received '$CONFIRM_VERSION'." >&2
+            exit 1
+          fi
+          echo "Production approval input matches $EXPECTED_VERSION."
+
       - name: Set up Node.js
         uses: actions/setup-node@v5
         with:
@@ -36,6 +53,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install token server dependencies
+        run: npm ci --prefix server
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium

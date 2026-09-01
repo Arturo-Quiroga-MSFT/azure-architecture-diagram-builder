@@ -17,6 +17,8 @@ const tests = [
   'test:refinement-guard',
   'test:follow-up-model',
   'test:semantic-relationships',
+  'test:pr-governance',
+  'test:production-approval',
 ];
 
 for (const testName of tests) {

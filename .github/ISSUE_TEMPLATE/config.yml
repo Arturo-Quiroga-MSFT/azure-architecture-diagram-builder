@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder/security/policy
+    about: Follow the private reporting process. Do not open a public issue.

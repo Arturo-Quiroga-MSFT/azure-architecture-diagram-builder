@@ -1,6 +1,6 @@
 # HVE Phase 1 and Phase 2 Implementation Plan
 
-- Status: Approved for implementation
+- Status: Implementation complete; acceptance review pending
 - Date: 2026-09-01
 - Owner: Arturo Quiroga
 - Branch: `engineering/hve-sdlc-phase-1-2`
@@ -64,7 +64,9 @@ control before relying on it as repository governance.
 - `P02-T01`: Add PR and issue intake templates plus CODEOWNERS.
 - `P02-T02`: Add and test a deterministic PR-evidence validator and workflow.
 - `P02-T03`: Add and test production-deployment confirmation guards.
-- `P02-T04`: Validate YAML, scripts, product gates, and branch isolation.
+- `P02-T04`: Validate YAML, scripts, product gates, and branch isolation. Repair
+  any demonstrated gate defect that prevents a clean checkout from running the
+  authoritative gate; record old failure and new evidence rather than retrying.
 - `P02-T05`: Produce a control inventory with `Automated`, `Documented`,
   `Repository setting required`, or `Named reviewer required` for every control.
 - `P02-T06`: Perform a read-only acceptance review against this plan.

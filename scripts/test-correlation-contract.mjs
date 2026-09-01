@@ -7,6 +7,7 @@ const expectedId = 'correlation-contract-001';
 const bodyMarker = 'correlation-body-must-not-be-logged';
 const userAgentMarker = 'raw-user-agent-must-not-be-logged';
 const logs = [];
+let serverExit = null;
 
 const upstream = createServer((req, res) => {
   let body = '';
@@ -53,6 +54,7 @@ server.stdout.setEncoding('utf8');
 server.stdout.on('data', (chunk) => logs.push(...chunk.split('\n').filter(Boolean)));
 server.stderr.setEncoding('utf8');
 server.stderr.on('data', (chunk) => logs.push(...chunk.split('\n').filter(Boolean)));
+server.on('exit', (code, signal) => { serverExit = { code, signal }; });
 
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const parseEvents = () => logs.map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
@@ -76,13 +78,22 @@ async function callProxy(model, correlationId = crypto.randomUUID()) {
 }
 
 try {
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  let serverReady = false;
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    if (serverExit) {
+      throw new Error(`Token server exited before readiness: ${JSON.stringify(serverExit)}\n${logs.join('\n')}`);
+    }
     try {
       const ready = await fetch(`http://127.0.0.1:${port}/api/ready`);
-      if (ready.ok) break;
-    } catch {
-      await wait(50);
-    }
+      if (ready.ok) {
+        serverReady = true;
+        break;
+      }
+    } catch { /* server is still starting */ }
+    await wait(50);
+  }
+  if (!serverReady) {
+    throw new Error(`Token server was not ready within 10 seconds.\n${logs.join('\n')}`);
   }
 
   const response = await callProxy('success-model', expectedId);

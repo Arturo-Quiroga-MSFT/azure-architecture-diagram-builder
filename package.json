@@ -30,6 +30,8 @@
     "test:refinement-guard": "tsx scripts/test-refinement-guard.ts",
     "test:follow-up-model": "tsx scripts/test-follow-up-model-policy.ts",
     "test:semantic-relationships": "tsx scripts/test-semantic-relationships.ts",
+    "test:pr-governance": "node scripts/test-pr-governance.mjs",
+    "test:production-approval": "bash scripts/test-production-approval.sh",
     "test:deterministic": "node scripts/run-deterministic-tests.mjs",
     "test:bundle-budget": "node scripts/test-bundle-budget.mjs",
     "test:version": "node scripts/test-version-contract.mjs",

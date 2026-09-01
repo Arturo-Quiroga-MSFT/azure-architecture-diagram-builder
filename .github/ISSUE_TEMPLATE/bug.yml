@@ -1,0 +1,67 @@
+name: Bug report
+description: Report reproducible behavior that differs from the intended AADB contract.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets, customer/partner data, internal URLs, raw telemetry, or sensitive security/privacy findings. Use the private escalation path for those.
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Observed behavior
+      description: What happened? Describe only what you directly observed.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened, and what defines that expectation?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Include the smallest repeatable sequence and sample input when public-safe.
+      placeholder: |
+        1. Open...
+        2. Select...
+        3. Observe...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: AADB version or commit
+      placeholder: v2.0.4 or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and operating system
+      placeholder: Edge 140 on Windows 11
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Public-safe evidence
+      description: Screenshots, exported artifacts, console errors, or exact outputs. Label inference separately.
+    validations:
+      required: false
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - Cosmetic or documentation only
+        - Workflow impaired; workaround exists
+        - Core workflow blocked or data/work lost
+        - Security, privacy, authentication, pricing, or production boundary
+    validations:
+      required: true

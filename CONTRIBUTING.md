@@ -43,6 +43,7 @@ cd azure-architecture-diagram-builder
 
 # Install dependencies
 npm install
+npm install --prefix server
 
 # Configure environment variables
 cp .env.example .env

@@ -1,0 +1,17 @@
+# Routing and accountability only. This does not make an author's self-review independent.
+* @Arturo-Quiroga-MSFT
+
+# Protected product and operational surfaces
+/src/services/ @Arturo-Quiroga-MSFT
+/server/ @Arturo-Quiroga-MSFT
+/mcp-server/ @Arturo-Quiroga-MSFT
+/infra/ @Arturo-Quiroga-MSFT
+/scripts/production/ @Arturo-Quiroga-MSFT
+/.github/workflows/ @Arturo-Quiroga-MSFT
+/evaluations/ @Arturo-Quiroga-MSFT
+/eval.yaml @Arturo-Quiroga-MSFT
+/azure.yaml @Arturo-Quiroga-MSFT
+/Dockerfile @Arturo-Quiroga-MSFT
+/package.json @Arturo-Quiroga-MSFT
+/package-lock.json @Arturo-Quiroga-MSFT
+/HVE-ADOPTION/ @Arturo-Quiroga-MSFT

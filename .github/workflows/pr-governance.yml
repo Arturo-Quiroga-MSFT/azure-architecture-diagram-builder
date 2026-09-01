@@ -1,0 +1,33 @@
+name: PR evidence
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-evidence-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate lifecycle evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Collect changed files
+        run: git diff --name-only "origin/${{ github.base_ref }}...HEAD" > "$RUNNER_TEMP/changed-files.txt"
+
+      - name: Validate PR evidence
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node scripts/validate-pr-governance.mjs --changed-files "$RUNNER_TEMP/changed-files.txt"

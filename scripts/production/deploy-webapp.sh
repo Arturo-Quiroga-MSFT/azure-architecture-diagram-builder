@@ -38,7 +38,6 @@ SPEECH_ACCOUNT="aq-speech-008"
 
 SOURCE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 ENV_FILE="$SOURCE_DIR/.env"
-[[ -f "$ENV_FILE" ]] || { echo "❌ .env not found at $ENV_FILE"; exit 1; }
 APP_VERSION="$(node -p "require('$SOURCE_DIR/package.json').version")"
 GIT_SHA="$(git -C "$SOURCE_DIR" rev-parse --short=12 HEAD)"
 TAG="v${APP_VERSION}-${GIT_SHA}"
@@ -49,6 +48,21 @@ if [[ -n "$(git -C "$SOURCE_DIR" status --porcelain)" ]]; then
   echo "❌ Refusing to build an uncommitted worktree; commit the exact source first." >&2
   exit 1
 fi
+
+if [[ "$BUILD_ONLY" != "true" ]]; then
+  "$SOURCE_DIR/scripts/production/require-production-approval.sh" \
+    check-source "$APP_VERSION" "$NEW_APP" "$SOURCE_DIR"
+  EXPECTED_APPROVAL="deploy v${APP_VERSION} to ${NEW_APP}"
+  printf 'Production deployment requires separate approval.\nType exactly: %s\n> ' "$EXPECTED_APPROVAL"
+  if ! IFS= read -r PRODUCTION_APPROVAL; then
+    echo "❌ Production approval was not provided from an interactive session." >&2
+    exit 1
+  fi
+  "$SOURCE_DIR/scripts/production/require-production-approval.sh" \
+    confirm "$APP_VERSION" "$NEW_APP" "$SOURCE_DIR" "$PRODUCTION_APPROVAL"
+fi
+
+[[ -f "$ENV_FILE" ]] || { echo "❌ .env not found at $ENV_FILE"; exit 1; }
 
 get_file_val() {
   { grep -E "^$1=" "$2" | head -1 | cut -d= -f2- \

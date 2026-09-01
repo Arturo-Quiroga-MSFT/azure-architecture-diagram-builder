@@ -1,0 +1,56 @@
+name: Feature request
+description: Define a user problem and observable outcome before proposing implementation.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Substantial or ambiguous features may use Spec Kit to define the product contract before HVE RPI engineering begins. Do not include private customer, partner, or telemetry evidence.
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Who is affected, what are they trying to accomplish, and what prevents it today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior, not implementation technology.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List concrete pass/fail outcomes.
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description: What should this work explicitly not change?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence of need
+      description: Public-safe observations, examples, or research; distinguish measured from inferred.
+    validations:
+      required: false
+  - type: dropdown
+    id: breadth
+    attributes:
+      label: Expected breadth
+      options:
+        - Isolated copy or presentation change
+        - One component or workflow
+        - Cross-component feature
+        - Architecture, AI behavior, public contract, security/privacy, or production boundary
+    validations:
+      required: true

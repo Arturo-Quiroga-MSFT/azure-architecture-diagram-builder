@@ -220,11 +220,21 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   const grabY = Math.round(bannerBox!.y + 20);
   await page.mouse.move(grabX, grabY);
   await page.mouse.down();
+  await expect(page.locator('.prompt-banner')).toHaveCSS('cursor', 'grabbing');
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  }));
   await page.mouse.move(grabX + 120, grabY + 90, { steps: 8 });
-  const draggedBox = await page.locator('.prompt-banner').boundingBox();
+  await page.mouse.move(grabX + 120, grabY + 90);
+  await expect.poll(async () => {
+    const draggedBox = await page.locator('.prompt-banner').boundingBox();
+    if (!draggedBox) return Number.POSITIVE_INFINITY;
+    return Math.max(
+      Math.abs(draggedBox.x - (grabX + 120 - 40)),
+      Math.abs(draggedBox.y - (grabY + 90 - 20)),
+    );
+  }).toBeLessThanOrEqual(1);
   await page.mouse.up();
-  expect(Math.abs(draggedBox!.x - (grabX + 120 - 40))).toBeLessThanOrEqual(1);
-  expect(Math.abs(draggedBox!.y - (grabY + 90 - 20))).toBeLessThanOrEqual(1);
 
   const elkChunk = page.waitForResponse((response) =>
     response.url().includes('/assets/elkLayoutEngine-') && response.ok(),
