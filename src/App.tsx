@@ -1116,16 +1116,37 @@ function App() {
     [reactFlowInstance, setNodes]
   );
 
+  // Reports-pane exports run against `reactFlowWrapper.current`, but on any
+  // non-canvas view that element is `.canvas-container.is-hidden` (opacity: 0,
+  // per NavRail.css). A DOM capture taken while it's hidden serialises that
+  // opacity, producing a blank image regardless of format — html-to-image
+  // captures does not skip an invisible ancestor. Switch to canvas first and
+  // restore the caller's view afterward, whether the capture succeeds or not.
+  const withCanvasViewForCapture = useCallback(async (run: () => Promise<void>) => {
+    const returnTo = getAppView();
+    const alreadyOnCanvas = returnTo === 'canvas';
+    if (!alreadyOnCanvas) {
+      setAppView('canvas');
+      await new Promise(res => setTimeout(res, 250));
+    }
+    try {
+      await run();
+    } finally {
+      if (!alreadyOnCanvas) setAppView(returnTo);
+    }
+  }, []);
+
   const exportDiagram = useCallback(async () => {
     if (!reactFlowWrapper.current || !reactFlowInstance) {
       return;
     }
 
-    // Fit all nodes into view with no animation for immediate rendering
-    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+    await withCanvasViewForCapture(async () => {
+      // Fit all nodes into view with no animation for immediate rendering
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    // Wait for fitView to settle, then capture
-    setTimeout(async () => {
+      // Wait for fitView to settle, then capture
+      await new Promise(res => setTimeout(res, 800));
       try {
         const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: exportCanvasBackground,
@@ -1147,19 +1168,20 @@ function App() {
         console.error('Error exporting diagram:', err);
         alert('Failed to export diagram. Please try again.');
       }
-    }, 800);
-  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground]);
+    });
+  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
 
   const exportAsSvg = useCallback(async () => {
     if (!reactFlowWrapper.current || !reactFlowInstance) {
       return;
     }
 
-    // Fit all nodes into view with no animation for immediate rendering
-    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+    await withCanvasViewForCapture(async () => {
+      // Fit all nodes into view with no animation for immediate rendering
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    // Wait for fitView to settle, then capture
-    setTimeout(async () => {
+      // Wait for fitView to settle, then capture
+      await new Promise(res => setTimeout(res, 800));
       try {
         // captureDiagramAsSvg serialises the DOM natively — SVG edge paths
         // (curves, dashes, orthogonal bends) are preserved as vector data.
@@ -1183,8 +1205,8 @@ function App() {
         console.error('Error exporting SVG:', err);
         alert('Failed to export SVG. Please try again.');
       }
-    }, 800);
-  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground]);
+    });
+  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
 
   // Export the workflow narrative (title, prompt, services, step-by-step flow,
   // connections, optional validation/cost) as a Markdown document.
@@ -1231,9 +1253,10 @@ function App() {
       return;
     }
 
-    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+    await withCanvasViewForCapture(async () => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    setTimeout(async () => {
+      await new Promise(res => setTimeout(res, 800));
       try {
         const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: exportCanvasBackground,
@@ -1256,8 +1279,8 @@ function App() {
         console.error('Error exporting animated SVG:', err);
         alert('Failed to export animated SVG. Please try again.');
       }
-    }, 800);
-  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground]);
+    });
+  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
 
   // Export a SEQUENCED "workflow animation" SVG: plays the diagram's workflow
   // steps chronologically (one edge flows at a time) with a caption per step and
@@ -1272,9 +1295,10 @@ function App() {
       return;
     }
 
-    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+    await withCanvasViewForCapture(async () => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    setTimeout(async () => {
+      await new Promise(res => setTimeout(res, 800));
       try {
         const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: exportCanvasBackground,
@@ -1297,8 +1321,8 @@ function App() {
         console.error('Error exporting workflow animation:', err);
         alert('Failed to export workflow animation. Please try again.');
       }
-    }, 800);
-  }, [reactFlowInstance, recordExport, nodes, edges, workflow, exportBackground, exportCanvasBackground]);
+    });
+  }, [reactFlowInstance, recordExport, nodes, edges, workflow, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
 
   const exportAsDrawio = useCallback(async () => {
     try {
@@ -1354,9 +1378,10 @@ function App() {
   const exportAsPptx = useCallback(async () => {
     if (!reactFlowWrapper.current || !reactFlowInstance) return;
 
-    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+    await withCanvasViewForCapture(async () => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    setTimeout(async () => {
+      await new Promise(res => setTimeout(res, 800));
       try {
         const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: exportCanvasBackground,
@@ -1378,8 +1403,8 @@ function App() {
         console.error('Error exporting PPTX:', err);
         alert('Failed to export PowerPoint slide. Please try again.');
       }
-    }, 800);
-  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, exportBackground, exportCanvasBackground]);
+    });
+  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
 
   const exportCustomerDeck = useCallback(async () => {
     if (!reactFlowWrapper.current || !reactFlowInstance) return;
@@ -1392,7 +1417,8 @@ function App() {
 
     reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
 
-    setTimeout(async () => {
+    await withCanvasViewForCapture(async () => {
+      await new Promise(res => setTimeout(res, 800));
       try {
         const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
           backgroundColor: exportCanvasBackground,
@@ -1528,8 +1554,8 @@ function App() {
         console.error('Error exporting customer deck:', err);
         alert('Failed to export the customer deck. Please try again.');
       }
-    }, 800);
-  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, validationResult, pricingMode, architecturePrompt, originalPrompt, generatedWithModel, exportBackground, exportCanvasBackground]);
+    });
+  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, validationResult, pricingMode, architecturePrompt, originalPrompt, generatedWithModel, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
 
   // ── az prototype export removed (feature unused) ───────────────────────
 
