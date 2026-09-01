@@ -373,4 +373,143 @@ Merging Import/Compare into menus is −2 for real nesting cost. The floating ca
 toolbar (−5) needs a placement decision from a human, because the canvas edges are
 already occupied.
 
+### 2026-08-31 — Step 6: Compare pane
+
+`CompareValidationModal` became `CompareValidationPane` behind a fifth rail item.
+
+**Why a pane and not the right dock.** The results grid is
+`repeat(auto-fill, minmax(320px, 1fr))` and the pillar breakdown is `repeat(5, 1fr)`,
+for up to 15 models. The dock is 480px — that yields one column and destroys the only
+thing the feature exists for. It is a report, it does not annotate the diagram, so by the
+placement rules it earns a pane.
+
+`.compare-modal` is shared with `CompareModelsModal`, which is still a modal, so its
+sizing is overridden inside `.compare-pane` rather than changed at source.
+
+**Mounted lazily, then kept mounted.** A comparison across models is long-running, and a
+pane that unmounts would kill it. The pane is not rendered until the first visit (it is a
+large component), and from then on it stays mounted and is hidden with the same
+absolute + `visibility: hidden` trick as the canvas. The avatar connection still drops
+when the pane is not active, since that is a live speech session.
+
+**Tested** — the central claim, measured directly rather than inferred:
+
+| Check | Result |
+|---|---|
+| Mounted before first visit | 0 panes on 3 consecutive fresh loads |
+| Mounted after first visit, hidden when away | yes |
+| Two-model run started, then navigated to Canvas | — |
+| Results while `hidden: true`, view never left Canvas | 0 → 1 (~30s) → 2 (~110s) |
+| Run completed without returning to the pane | yes |
+
+`npm run verify:release` passes, including all 3 Playwright e2e tests.
+
+**Two measurement mistakes worth recording**, both from reading the DOM in the same
+synchronous `page.evaluate` that had just clicked:
+
+1. "Pane is mounted before first visit" — not reproducible; 3 clean loads showed 0.
+2. "Deselecting models did not take" — it had; the readout was pre-re-render.
+
+Both would have become false claims if the first reading had been trusted.
+
+**Note:** an earlier run only established that state *survived* navigating away, not that
+work *progressed* while hidden. The table above is from a second run built specifically to
+show progression, because the weaker evidence did not support the claim being made.
+
+### 2026-08-31 — Step 7: both comparisons in one Compare pane
+
+`CompareModelsModal` joined it as a second tab rather than becoming a sixth rail item.
+They are the same activity — run one input across N models and compare — and they already
+shared a stylesheet. Rail items are destinations, not features.
+
+| Tab | Input | Output |
+|---|---|---|
+| Generation | a brief | N architectures |
+| Validation | the current diagram | N validations |
+
+Both tabs stay mounted; only the visible one is painted. Toolbar *Compare Models* and
+*Compare Validation* both route here with the right tab, via `compareTab` in
+`appViewStore`.
+
+**Only one comparison may run at a time.** Each tab reports its running state up; the
+idle tab's run button is disabled with a reason in the tooltip, and the running tab shows
+a spinner in the tab strip.
+
+**The bug predicted before writing any code, and fixed.** `onCaptureBatch` renders each
+generated architecture on the *real* canvas and captures it. Behind the Compare pane the
+canvas is `visibility: hidden` — laid out but not painted — so captures would have come
+back blank. `handleCaptureBatch` now switches to Canvas for the batch and restores the
+previous view in a `finally`.
+
+**Tested:**
+
+| Check | Result |
+|---|---|
+| Pane mounted before first visit | 0 |
+| Toolbar *Compare Models* → tab | Generation, heading `Compare Models` |
+| Toolbar *Compare Validation* → tab | Validation, heading `Compare Validation Across Models` |
+| Both tab bodies mounted, one hidden | 2 bodies, 1 hidden |
+| Run lock engages | idle tab disabled, `A model comparison is already running` |
+| Run lock releases | after completion `title: null`; still disabled only for its own `0 services` reason |
+| Generation run end to end | Grok 4.1 Fast 5.3s / Mistral Large 3 11.5s, 2 apply buttons |
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Three false leads during verification**, all mine, none real bugs:
+
+1. *"Compare Validation button does not switch tab"* — the button is `disabled` with an
+   empty canvas and my test had no diagram.
+2. *"Lock never releases"* — the validation run was genuinely still going; GPT-5.1 ran
+   past 11 minutes. Release was then proven with two fast non-reasoning models.
+3. *"Toolbar button missing"* — the toolbar is canvas-only now, so it does not exist from
+   inside the Compare pane. Working as designed.
+
+**Gap in the per-step checks:** deleting `CompareValidationPane.css` while its import
+remained passed both `typecheck` and `lint` — neither resolves CSS imports. Only the dev
+server caught it, as a blank page. Run a build, not just typecheck and lint, after
+deleting any asset.
+
+### 2026-08-31 — Generation tab guidance and readability
+
+The Validation tab opened with a paragraph explaining itself; Generation opened with a
+bare model grid. Added a matching intro, and labelled the three sample rows
+(Quick starts / Detailed scenarios / AI workloads).
+
+The prompts were unreadable for two reasons, not one: `0.75rem` **and**
+`white-space: nowrap`, so a 200-character example rendered as a single strip. They now
+wrap inside a bounded width at `0.8125rem`.
+
+**Third instance of the header-scoped styling trap.** `.compare-run-btn` and
+`.compare-apply-btn` inherit `.btn-primary`, which is a white background with blue text
+because it was built for the blue header. On a light pane the primary actions read as
+ghosted. Both now use a filled treatment with an explicit disabled state, verified in
+both themes.
+
+### 2026-08-31 — Regression: Compare pane stayed in the layout
+
+Reported from live use, not caught by the step 7 checks.
+
+`CompareValidationPane` used to hide its own wrapper. When it became a tab inside
+`ComparePane`, the wrapper lost that responsibility and nothing took it back — so once
+mounted the pane remained a flex child of the workspace, leaving compare content on
+screen with the canvas squeezed beside it.
+
+**Why the tests missed it:** every step 7 assertion was made while sitting *on* the
+Compare pane — tab bodies, mounting, routing, the run lock. None navigated back to Canvas,
+which is the only place the bug is visible. When a change is about *hiding* something,
+assert from the place it should be hidden.
+
+| | Canvas width | Compare pane |
+|---|---|---|
+| Before first visit | 1755px | not mounted |
+| On Compare | hidden | visible |
+| Back on Canvas | 1755px | mounted, hidden |
+
+Tab selection and a typed prompt both survive the round trip.
+
+**Standing note:** four elements now participate in mount-and-hide — the canvas, the
+Compare wrapper, and two tab bodies. Each needs an explicit owner for its hidden state,
+and this is the second bug caused by one lacking it. If a fifth appears, extract a shared
+hideable wrapper rather than repeating the class dance again.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

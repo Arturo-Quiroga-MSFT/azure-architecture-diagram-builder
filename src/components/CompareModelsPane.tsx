@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, StopCircle } from 'lucide-react';
+import { Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Download, FileJson, FileText, Brain, MonitorPlay, StopCircle } from 'lucide-react';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
@@ -70,10 +70,16 @@ interface ComparisonResult {
   workflowSteps?: number;
 }
 
-interface CompareModelsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CompareModelsPaneProps {
+  /** This tab is the visible one. The component stays mounted when false so a
+     long multi-model run survives switching tab or pane. */
+  isActive: boolean;
+  /** Leave the pane — used after applying a result so the canvas is visible. */
+  onExit: () => void;
   onApply: (architecture: any, prompt: string, sourceModel?: ModelType, sourceReasoningEffort?: ReasoningEffort) => void;
+  /** Another comparison is already running; block starting a second one. */
+  otherRunBlocked?: boolean;
+  onRunningChange?: (running: boolean) => void;
   /**
    * Optional parent-provided batch PNG capture.
    * Modal supplies one item per successful result with the desired filename;
@@ -83,7 +89,36 @@ interface CompareModelsModalProps {
   onCaptureBatch?: (items: Array<{ architecture: any; prompt: string; filename: string; model: ModelType; reasoningEffort: ReasoningEffort }>) => Promise<void>;
 }
 
-const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose, onApply, onCaptureBatch }) => {
+const SAMPLE_PROMPT_GROUPS: Array<{ label: string; prompts: string[] }> = [
+  {
+    label: 'Quick starts',
+    prompts: [
+      'E-commerce platform with payments and search',
+      'Real-time IoT telemetry pipeline with dashboards',
+      'Microservices app with API gateway and auth',
+      'RAG chatbot with vector search and AI',
+    ],
+  },
+  {
+    label: 'Detailed scenarios',
+    prompts: [
+      'A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS, Bastion for VM access, and Microsoft Entra ID with Conditional Access',
+      'An industrial IoT platform with 5,000+ sensors, real-time anomaly detection, IoT Hub for ingestion, Stream Analytics for processing, and Azure ML for predictive models',
+      'A healthcare data platform with FHIR API, HIPAA-compliant storage, real-time patient monitoring, Azure Health Data Services, and Power BI for clinical dashboards',
+      'A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing',
+    ],
+  },
+  {
+    label: 'AI workloads',
+    prompts: [
+      'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Azure AI Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
+      'An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication',
+      'A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability',
+    ],
+  },
+];
+
+const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit, onApply, onCaptureBatch, otherRunBlocked, onRunningChange }) => {
   const availableModels = getAvailableModels();
   const currentSettings = getModelSettings();
   
@@ -123,9 +158,10 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     minW: 260, minH: 220, maxW: 640, maxH: 600,
   });
 
-  // Disconnect avatar when the modal closes
+  // Drop the live avatar connection when this tab is not on screen; an in-flight
+  // comparison keeps running.
   useEffect(() => {
-    if (!isOpen) {
+    if (!isActive) {
       presenterRef.current?.disconnect();
       presenterRef.current = null;
       setAvatarStatus('idle');
@@ -133,7 +169,9 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
       setCaptionWords([]);
       setCaptionWordIdx(-1);
     };
-  }, [isOpen]);
+  }, [isActive]);
+
+  useEffect(() => { onRunningChange?.(isRunning); }, [isRunning, onRunningChange]);
 
   /** Strip markdown syntax so TTS reads cleanly */
   const stripMd = (s: string) =>
@@ -270,7 +308,7 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   const handleApply = (result: ComparisonResult) => {
     if (result.architecture) {
       onApply(result.architecture, prompt, result.model, result.reasoningEffort);
-      onClose();
+      onExit();
     }
   };
 
@@ -616,22 +654,30 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
     ? Math.max(...successResults.map(r => (r.serviceCount || 0) + (r.connectionCount || 0) + (r.workflowSteps || 0)))
     : 0;
 
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="compare-modal" onClick={e => e.stopPropagation()}>
+    <div className={`compare-tab-body${isActive ? '' : ' is-hidden'}`}>
+      <div className="compare-modal">
         <div className="modal-header">
           <div className="modal-title">
             <GitCompare size={20} />
             <h2>Compare Models</h2>
           </div>
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
         </div>
 
         <div className="compare-modal-body">
+          <div className="cv-waf-info">
+            <p className="cv-waf-intro">
+              Write one brief, then send it to <strong>several AI models at once</strong>. Each
+              returns its own architecture for the same requirement, so you can see where the
+              models agree, where they differ, and which one you want to keep.
+            </p>
+            <p className="cv-waf-intro compare-intro-steps">
+              Pick two or more models, describe the architecture, then run the comparison. Results
+              arrive side by side with the services, connections, time and token cost for each.
+              <strong> Use This Architecture</strong> puts the one you choose on the canvas.
+            </p>
+          </div>
+
           {/* Model Selection */}
           <div className="compare-section">
             <h3 className="compare-section-title">Select Models to Compare</h3>
@@ -677,56 +723,27 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
           {/* Prompt */}
           <div className="compare-section">
             <h3 className="compare-section-title">Architecture Prompt</h3>
-            <div className="compare-sample-prompts">
-              {[
-                'E-commerce platform with payments and search',
-                'Real-time IoT telemetry pipeline with dashboards',
-                'Microservices app with API gateway and auth',
-                'RAG chatbot with vector search and AI'
-              ].map((sample) => (
-                <button
-                  key={sample}
-                  className="compare-sample-chip"
-                  onClick={() => setPrompt(sample)}
-                  disabled={isRunning}
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
-            <div className="compare-sample-prompts">
-              {[
-                'A zero trust enterprise network with Azure Firewall, Application Gateway with WAF, Private Link for PaaS, Bastion for VM access, and Microsoft Entra ID with Conditional Access',
-                'An industrial IoT platform with 5,000+ sensors, real-time anomaly detection, IoT Hub for ingestion, Stream Analytics for processing, and Azure ML for predictive models',
-                'A healthcare data platform with FHIR API, HIPAA-compliant storage, real-time patient monitoring, Azure Health Data Services, and Power BI for clinical dashboards',
-                'A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing'
-              ].map((sample) => (
-                <button
-                  key={sample}
-                  className="compare-sample-chip"
-                  onClick={() => setPrompt(sample)}
-                  disabled={isRunning}
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
-            <div className="compare-sample-prompts">
-              {[
-                'An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Azure AI Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention',
-                'An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication',
-                'A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability'
-              ].map((sample) => (
-                <button
-                  key={sample}
-                  className="compare-sample-chip"
-                  onClick={() => setPrompt(sample)}
-                  disabled={isRunning}
-                >
-                  {sample}
-                </button>
-              ))}
-            </div>
+            <p className="compare-sample-hint">
+              Start from an example, or write your own below. Clicking one replaces the box.
+            </p>
+            {SAMPLE_PROMPT_GROUPS.map((group) => (
+              <div className="compare-sample-group" key={group.label}>
+                <span className="compare-sample-group-label">{group.label}</span>
+                <div className="compare-sample-prompts">
+                  {group.prompts.map((sample) => (
+                    <button
+                      key={sample}
+                      className="compare-sample-chip"
+                      onClick={() => setPrompt(sample)}
+                      disabled={isRunning}
+                      title={sample}
+                    >
+                      {sample}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
             <textarea
               className="compare-prompt"
               placeholder="Describe the Azure architecture you want to compare across models..."
@@ -742,7 +759,8 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
             <button
               className="btn btn-primary compare-run-btn"
               onClick={runComparison}
-              disabled={isRunning || !prompt.trim() || selectedModels.size < 2}
+              disabled={isRunning || otherRunBlocked || !prompt.trim() || selectedModels.size < 2}
+              title={otherRunBlocked ? 'A validation comparison is already running' : undefined}
             >
               <GitCompare size={18} />
               Compare {selectedModels.size} Models
@@ -1041,4 +1059,4 @@ const CompareModelsModal: React.FC<CompareModelsModalProps> = ({ isOpen, onClose
   );
 };
 
-export default CompareModelsModal;
+export default CompareModelsPane;

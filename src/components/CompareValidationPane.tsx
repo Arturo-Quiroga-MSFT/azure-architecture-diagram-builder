@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, FileJson, FileText, Shield, AlertTriangle, Info, Brain, MonitorPlay, StopCircle } from 'lucide-react';
+import { Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, FileJson, FileText, Shield, AlertTriangle, Info, Brain, MonitorPlay, StopCircle } from 'lucide-react';
 import { isAzureOpenAIConfigured, generateValidationCritique, ModelOverride } from '../services/azureOpenAI';
 import { validateArchitecture, ArchitectureValidation, ValidationModelOverride, AIMetrics } from '../services/architectureValidator';
 import { buildValidationConsensus, renderConsensusMarkdown, ConsensusResult } from '../services/validationConsensus';
@@ -66,10 +66,16 @@ interface ValidationComparisonResult {
   quickWinCount?: number;
 }
 
-interface CompareValidationModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CompareValidationPaneProps {
+  /** This tab is the visible one. The component stays mounted when false so a
+     long multi-model run survives switching tab or pane. */
+  isActive: boolean;
+  /** Leave the pane — used after applying a result so the dock is visible. */
+  onExit: () => void;
   onApply: (validation: ArchitectureValidation) => void;
+  /** Another comparison is already running; block starting a second one. */
+  otherRunBlocked?: boolean;
+  onRunningChange?: (running: boolean) => void;
   /** Current architecture data to validate */
   services: Array<{ name: string; type: string; category: string; description?: string }>;
   connections: Array<{ from: string; to: string; label: string }>;
@@ -77,8 +83,8 @@ interface CompareValidationModalProps {
   architectureDescription?: string;
 }
 
-const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
-  isOpen, onClose, onApply, services, connections, groups, architectureDescription,
+const CompareValidationPane: React.FC<CompareValidationPaneProps> = ({
+  isActive, onExit, onApply, otherRunBlocked, onRunningChange, services, connections, groups, architectureDescription,
 }) => {
   const availableModels = getAvailableModels();
   const currentSettings = getModelSettings();
@@ -123,9 +129,10 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
     minW: 260, minH: 220, maxW: 640, maxH: 600,
   });
 
-  // Disconnect avatar when the modal closes
+  // Drop the live avatar connection when the pane is not on screen; an in-flight
+  // comparison keeps running.
   useEffect(() => {
-    if (!isOpen) {
+    if (!isActive) {
       presenterRef.current?.disconnect();
       presenterRef.current = null;
       setAvatarStatus('idle');
@@ -133,7 +140,9 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
       setCaptionWords([]);
       setCaptionWordIdx(-1);
     }
-  }, [isOpen]);
+  }, [isActive]);
+
+  useEffect(() => { onRunningChange?.(isRunning); }, [isRunning, onRunningChange]);
 
   /** Strip markdown syntax so TTS reads cleanly */
   const stripMd = (s: string) =>
@@ -324,7 +333,7 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
   const handleApply = (result: ValidationComparisonResult) => {
     if (result.validation) {
       onApply(result.validation);
-      onClose();
+      onExit();
     }
   };
 
@@ -637,8 +646,6 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
     return inputs.length >= 2 ? buildValidationConsensus(inputs) : null;
   }, [results]);
 
-  if (!isOpen) return null;
-
   const scoreColor = (score: number) => {
     if (score >= 80) return '#22c55e';
     if (score >= 60) return '#f59e0b';
@@ -652,8 +659,8 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="compare-modal cv-modal" onClick={e => e.stopPropagation()}>
+    <div className={`compare-tab-body${isActive ? '' : ' is-hidden'}`}>
+      <div className="compare-modal cv-modal">
         <div className="modal-header cv-header">
           <div className="modal-title">
             <Shield size={20} />
@@ -668,9 +675,6 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
               />
               <span>Show numeric score</span>
             </label>
-            <button className="modal-close" onClick={onClose}>
-              <X size={20} />
-            </button>
           </div>
         </div>
 
@@ -757,7 +761,8 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
             <button
               className="btn btn-primary compare-run-btn"
               onClick={runComparison}
-              disabled={isRunning || services.length === 0 || selectedModels.size < 2}
+              disabled={isRunning || otherRunBlocked || services.length === 0 || selectedModels.size < 2}
+              title={otherRunBlocked ? 'A model comparison is already running' : undefined}
             >
               <GitCompare size={18} />
               Compare Validation Across {selectedModels.size} Models
@@ -1122,4 +1127,4 @@ const CompareValidationModal: React.FC<CompareValidationModalProps> = ({
   );
 };
 
-export default CompareValidationModal;
+export default CompareValidationPane;
