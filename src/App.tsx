@@ -139,6 +139,11 @@ const CANVAS_HINT_STORAGE_KEY = 'azure-diagram-builder.canvasHintDismissed.v1';
 const LAYOUT_HINT_SEEN_STORAGE_KEY = 'azure-diagram-builder.layoutHintSeen.v1';
 const HEADER_COLLAPSED_STORAGE_KEY = 'azure-diagram-builder.headerCollapsed.v1';
 
+// Banners stack below the floating canvas tools bar (top 12px, ~47px tall) rather
+// than over it — the bar is z-index 5 and the banners are 1000, so an overlap
+// makes the tools unclickable. The layout hint then stacks below the banner.
+const CANVAS_BANNER_TOP = '68px';
+
 // Derive a short, human-friendly architecture title from a free-form prompt
 // (used as a fallback when no manifest title is available). Strips common
 // prefixes like "MODIFY EXISTING ARCHITECTURE: ...", "Build a", "Design a",
@@ -3373,12 +3378,6 @@ function App() {
               </div>
 
               <div className="toolbar-group">
-                <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
-                  </svg>
-                  Add Group
-                </button>
                 <AIArchitectureGenerator 
                   openSignal={generatorOpenSignal}
                   onOpen={() => {
@@ -3443,6 +3442,29 @@ function App() {
                   <MessagesSquare size={18} />
                   Guided Chat
                 </button>
+                <button
+                  onClick={handleValidateArchitecture}
+                  className="btn btn-premium"
+                  title="Validate architecture against Azure Well-Architected Framework"
+                  disabled={nodes.length === 0}
+                >
+                  <Shield size={18} />
+                  Validate Architecture
+                </button>
+                {validationResult && (
+                  <button
+                    onClick={() => setIsValidationPanelOpen(true)}
+                    className="btn btn-secondary"
+                    title={validationNeedsRefresh
+                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
+                      : 'Open last validation results'}
+                  >
+                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
+                    {validationNeedsRefresh
+                      ? 'Revalidate Needed'
+                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
+                  </button>
+                )}
                 <button
                   className={`btn btn-help${helpSeen ? '' : ' nudge'}`}
                   onClick={() => {
@@ -3555,32 +3577,6 @@ function App() {
                 >
                   <RefreshCw size={18} />
                 </button>
-              </div>
-
-              <div className="toolbar-group">
-                <button 
-                  onClick={handleValidateArchitecture} 
-                  className="btn btn-premium" 
-                  title="Validate architecture against Azure Well-Architected Framework"
-                  disabled={nodes.length === 0}
-                >
-                  <Shield size={18} />
-                  Validate Architecture
-                </button>
-                {validationResult && (
-                  <button
-                    onClick={() => setIsValidationPanelOpen(true)}
-                    className="btn btn-secondary"
-                    title={validationNeedsRefresh
-                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
-                      : 'Open last validation results'}
-                  >
-                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
-                    {validationNeedsRefresh
-                      ? 'Revalidate Needed'
-                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
-                  </button>
-                )}
               </div>
 
               {/* Object tools act on canvas items, so they render over the canvas.
@@ -3838,6 +3834,13 @@ function App() {
                 >
                   <PanelLeftClose size={18} />
                   {focusMode ? 'Exit Focus' : 'Focus'}
+                </button>
+
+                <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
+                  </svg>
+                  Add Group
                 </button>
 
                 <button
@@ -4111,7 +4114,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: '50%',
-                  top: '10px',
+                  top: CANVAS_BANNER_TOP,
                   transform: 'translateX(-50%)',
                   zIndex: 1001,
                   background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
@@ -4136,7 +4139,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: '50%',
-                  top: '10px',
+                  top: CANVAS_BANNER_TOP,
                   transform: 'translateX(-50%)',
                   zIndex: 1001,
                   background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)',
@@ -4162,7 +4165,7 @@ function App() {
                 style={{
                   position: 'absolute',
                   left: promptBannerPosition ? `${promptBannerPosition.x}px` : '50%',
-                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : '10px',
+                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : CANVAS_BANNER_TOP,
                   transform: promptBannerPosition ? 'none' : 'translateX(-50%)',
                   cursor: isDraggingBanner ? 'grabbing' : 'grab',
                   zIndex: 1000,
