@@ -512,4 +512,44 @@ Compare wrapper, and two tab bodies. Each needs an explicit owner for its hidden
 and this is the second bug caused by one lacking it. If a fifth appears, extract a shared
 hideable wrapper rather than repeating the class dance again.
 
+### 2026-08-31 — Tier 1 toolbar reduction, 22 controls to 19
+
+Removed only what a pane now owns outright:
+
+| Removed | Now reachable at |
+|---|---|
+| Compare Models | rail → Compare → Generation |
+| Compare Validation | rail → Compare → Validation |
+| Dark mode toggle | Settings → Appearance |
+| Export **dropdown** (14 items) | Reports pane |
+
+Export stayed as a *signpost* — one button, same word, same place, navigating to Reports
+instead of opening a menu. Deleting a long-used entry point outright is the part of this
+that annoys without looking broken.
+
+Also caught: the guided journey's *Share or Build → Share* called `setIsExportMenuOpen(true)`
+on a menu that no longer exists, which would have been a silent dead end. It routes to
+Reports now, verified end to end.
+
+**The e2e suite found a real bug, not a test break.** After the change, clicking the
+Canvas rail item timed out — a React Flow node inside `.canvas-container.is-hidden` was
+intercepting the click.
+
+Root cause is sharper than the earlier hide-state notes suggested: the container had
+*both* `visibility: hidden` and `pointer-events: none`, and React Flow defeats both by
+setting `visibility: visible` and `pointer-events: all` on every node. A descendant can
+override either guard. Because the hidden canvas is `position: absolute; inset: 0` inside
+`.workspace`, and the rail is also inside `.workspace`, those invisible-but-live nodes sat
+over the rail.
+
+Fixed with `opacity: 0` — which a child cannot undo, unlike visibility — plus
+`pointer-events: none !important` on descendants. Verified the rail is hit-testable at
+three corners while a pane is open, and that clicking back to Canvas works.
+
+`npm run verify:release` passes, including all 3 e2e tests.
+
+**Revised standing note:** hiding a subtree is only safe when the child cannot opt back
+in. Prefer `opacity: 0` over `visibility: hidden`, and force `pointer-events` on
+descendants, wherever a third-party library controls child styles.
+
 **Next:** step 4 — decompose the toolbar behind the seams now that they exist.

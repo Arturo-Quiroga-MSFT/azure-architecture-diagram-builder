@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -20,7 +20,7 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, GitCompare, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3 } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
 import ReportsPane from './components/ReportsPane';
@@ -63,13 +63,8 @@ import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
 import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
-import { useAppView, setAppView, getAppView, setCompareTab } from './stores/appViewStore';
-import {
-  EXPORT_GROUP_LABELS,
-  EXPORT_GROUP_ORDER,
-  isExportDisabled,
-  type ExportAction,
-} from './types/exportActions';
+import { useAppView, setAppView, getAppView } from './stores/appViewStore';
+import { type ExportAction } from './types/exportActions';
 import NodePricingEditor from './components/NodePricingEditor';
 import type { NodePricingConfig } from './types/pricing';
 import { createSnapshot, DiagramVersion } from './services/versionStorageService';
@@ -340,12 +335,10 @@ function App() {
     };
   }, [showLayoutHint, promptBannerEl, promptBannerPosition]);
 
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [exportBackground, setExportBackground] = useState<ExportBackground>(() => {
     const saved = localStorage.getItem(EXPORT_BACKGROUND_STORAGE_KEY);
     return saved === 'dots' || saved === 'grid' ? saved : 'plain';
   });
-  const exportMenuRef = useRef<HTMLDivElement | null>(null);
 
   const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
   const layoutMenuRef = useRef<HTMLDivElement | null>(null);
@@ -458,13 +451,9 @@ function App() {
 
   useEffect(() => {
     const handlePointerDown = (e: PointerEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
       const target = e.target as unknown as globalThis.Node | null;
       if (!target) return;
-
-      if (isExportMenuOpen && exportMenuRef.current && !exportMenuRef.current.contains(target)) {
-        setIsExportMenuOpen(false);
-      }
 
       if (isLayoutMenuOpen && layoutMenuRef.current && !layoutMenuRef.current.contains(target)) {
         setIsLayoutMenuOpen(false);
@@ -484,9 +473,8 @@ function App() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isExportMenuOpen && !isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen) return;
       if (e.key === 'Escape') {
-        setIsExportMenuOpen(false);
         setIsLayoutMenuOpen(false);
         setIsBulkSelectMenuOpen(false);
         setIsStylePresetMenuOpen(false);
@@ -500,7 +488,7 @@ function App() {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isExportMenuOpen, isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen]);
+  }, [isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen]);
 
   // Keyboard shortcuts: Delete and Ctrl+D (duplicate)
   useEffect(() => {
@@ -3437,14 +3425,6 @@ function App() {
                   <HelpCircle size={18} />
                   Help
                 </button>
-                <button
-                  className="btn btn-compare-models"
-                  onClick={() => { setCompareTab('models'); setActiveView('compare'); }}
-                  title="Compare architecture output across multiple AI models"
-                >
-                  <GitCompare size={18} />
-                  Compare Models
-                </button>
                 <label className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`} title="Import Bicep, Terraform, or ARM template to generate diagram">
                   {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <FileCode size={18} />}
                   {isImportingTemplate ? 'Parsing...' : 'Import Template'}
@@ -3487,101 +3467,18 @@ function App() {
               </div>
 
               <div className="toolbar-group">
-                <div className="toolbar-dropdown" ref={exportMenuRef}>
-                  <button
-                    onClick={() => setIsExportMenuOpen((v) => !v)}
-                    className="btn btn-primary"
-                    title="Export"
-                    aria-haspopup="menu"
-                    aria-expanded={isExportMenuOpen}
-                  >
-                    <Download size={18} />
-                    Export
-                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
-                  </button>
-
-                  {isExportMenuOpen && (
-                    <div className="toolbar-dropdown-menu toolbar-dropdown-menu--export" role="menu" aria-label="Export options">
-                      <div className="toolbar-dropdown-heading">Capture settings</div>
-                      <div className="toolbar-dropdown-row">
-                        <label className="toolbar-dropdown-label" htmlFor="export-background">Export background</label>
-                        <select
-                          id="export-background"
-                          className="toolbar-dropdown-select"
-                          value={exportBackground}
-                          onChange={(event) => {
-                            const next = event.target.value as ExportBackground;
-                            setExportBackground(next);
-                            try { localStorage.setItem(EXPORT_BACKGROUND_STORAGE_KEY, next); } catch { /* ignore */ }
-                          }}
-                          aria-label="Export background"
-                        >
-                          <option value="plain">Plain (recommended)</option>
-                          <option value="dots">Dots</option>
-                          <option value="grid">Grid</option>
-                        </select>
-                      </div>
-                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
-                        Affects PNG, SVG, animated SVG, and PowerPoint captures. The editing canvas stays dotted.
-                      </div>
-                      <div className="toolbar-dropdown-separator" />
-                      {EXPORT_GROUP_ORDER.map((group) => {
-                        const actions = exportActions.filter((action) => action.group === group);
-                        if (actions.length === 0) return null;
-                        return (
-                          <Fragment key={group}>
-                            <div className="toolbar-dropdown-heading">{EXPORT_GROUP_LABELS[group]}</div>
-                            {actions.map((action) => (
-                              <button
-                                key={action.id}
-                                className="toolbar-dropdown-item"
-                                role="menuitem"
-                                disabled={isExportDisabled(action)}
-                                onClick={() => {
-                                  setIsExportMenuOpen(false);
-                                  action.run();
-                                }}
-                                title={action.disabledReason ?? action.description}
-                              >
-                                <action.icon size={18} />
-                                {action.label}
-                              </button>
-                            ))}
-                          </Fragment>
-                        );
-                      })}
-
-                      <div className="toolbar-dropdown-separator" role="separator" />
-
-                      <div className="toolbar-dropdown-heading">Recent exports</div>
-                      {exportHistory.length === 0 ? (
-                        <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">No exports yet</div>
-                      ) : (
-                        <div className="toolbar-dropdown-history">
-                          {exportHistory.slice(0, 6).map((item) => (
-                            <div key={item.id} className="toolbar-dropdown-history-item">
-                              <div className="toolbar-dropdown-history-file">{item.fileName}</div>
-                              <div className="toolbar-dropdown-history-meta">
-                                {item.kind.toUpperCase()} • {formatTimeAgo(item.createdAt)}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                {/* Signpost, not a menu — the Reports pane owns the export list. */}
+                <button
+                  onClick={() => setActiveView('reports')}
+                  className="btn btn-primary"
+                  title="Open the Reports pane to export this architecture"
+                >
+                  <Download size={18} />
+                  Export
+                </button>
               </div>
 
               <div className="toolbar-group">
-                <button 
-                  onClick={() => setIsDarkMode(!isDarkMode)} 
-                  className="btn btn-secondary" 
-                  title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                  style={{ fontSize: '20px', padding: '0.5rem 1rem' }}
-                >
-                  {isDarkMode ? '☀️' : '🌙'}
-                </button>
                 <button
                   onClick={() => {
                     if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
@@ -3879,15 +3776,6 @@ function App() {
                 >
                   <Shield size={18} />
                   Validate Architecture
-                </button>
-                <button
-                  className="btn btn-compare-models"
-                  onClick={() => { setCompareTab('validation'); setActiveView('compare'); }}
-                  title="Compare WAF validation results across multiple AI models"
-                  disabled={nodes.length === 0}
-                >
-                  <GitCompare size={18} />
-                  Compare Validation
                 </button>
                 {validationResult && (
                   <button
@@ -4558,7 +4446,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
           onShare={() => {
             trackGuidedJourney({ action: 'path-selected', step: 'deliver', path: 'export', source: 'journey-strip', hasDiagram: true });
             setIsDeliverChooserOpen(false);
-            setIsExportMenuOpen(true);
+            setActiveView('reports');
           }}
           onBuild={() => {
             trackGuidedJourney({ action: 'path-selected', step: 'deliver', path: 'deployment-guide', source: 'journey-strip', hasDiagram: true });

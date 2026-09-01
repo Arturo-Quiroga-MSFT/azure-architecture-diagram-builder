@@ -54,13 +54,22 @@
 
 /* Keeps the canvas mounted (React Flow state, undo history, selection) while
    another pane is showing. `display: none` would collapse the container to zero
-   size, which makes React Flow drop its viewport dimensions and warn; keeping it
-   laid out at full size but hidden avoids that. */
+   size, which makes React Flow drop its viewport dimensions and warn.
+
+   opacity rather than visibility, and pointer-events forced on descendants,
+   because React Flow sets `visibility: visible` and `pointer-events: all` on
+   every node — both of which override a hidden ancestor, leaving invisible nodes
+   that still paint over and swallow clicks meant for the rail. Opacity cannot be
+   undone by a child. */
 .canvas-container.is-hidden {
   position: absolute;
   inset: 0;
-  visibility: hidden;
+  opacity: 0;
   pointer-events: none;
+}
+
+.canvas-container.is-hidden * {
+  pointer-events: none !important;
 }
 
 /* ========================================
