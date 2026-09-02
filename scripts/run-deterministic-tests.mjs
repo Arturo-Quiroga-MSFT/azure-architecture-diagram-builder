@@ -17,6 +17,7 @@ const tests = [
   'test:refinement-guard',
   'test:follow-up-model',
   'test:semantic-relationships',
+  'test:dependency-security-policy',
 ];
 
 for (const testName of tests) {
