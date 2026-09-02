@@ -9,15 +9,26 @@ const FIELD_VALUES = {
   'External gate': ['not-applicable', 'pending', 'approved'],
   'Merge approval': ['pending', 'approved'],
   'Production deployment': ['not-requested', 'pending', 'approved'],
+  'Review readiness': ['not-ready', 'ready'],
+  'Readiness acknowledgment': ['pending', 'acknowledged'],
 };
 
+const READINESS_SECTIONS = [
+  'Review Readiness Brief',
+  'Blockers / Critical Findings',
+  'Unexpected Discoveries',
+  'Plan Deviations',
+  'Limitations / Not Tested',
+  'Decision Requested',
+];
+
 const REQUIRED_SECTIONS = [
+  ...READINESS_SECTIONS,
   'Summary',
   'Acceptance Criteria',
   'Blast Radius',
   'Test Evidence',
   'Regression Fence',
-  'Limitations / Not Tested',
   'Rollback',
   'Approval Evidence',
 ];
@@ -49,7 +60,7 @@ function sectionValue(body, name) {
   return stripComments(lines.slice(headingIndex + 1, endIndex).join('\n'));
 }
 
-export function validatePullRequest({ body, changedFiles = [] }) {
+export function validatePullRequest({ body, changedFiles = [], isDraft = true }) {
   const errors = [];
   const visibleBody = stripComments(body || '');
   const fields = {};
@@ -73,6 +84,13 @@ export function validatePullRequest({ body, changedFiles = [] }) {
     }
   }
 
+  const orderedSectionIndices = [...READINESS_SECTIONS, 'Summary'].map(name => (
+    body.split(/\r?\n/).findIndex(line => line.trim().toLowerCase() === `## ${name}`.toLowerCase())
+  ));
+  if (orderedSectionIndices.some((index, position) => position > 0 && index <= orderedSectionIndices[position - 1])) {
+    errors.push('Readiness sections must appear in the required order before Summary');
+  }
+
   if (changedFiles.length === 0) errors.push('Changed-file list is empty');
 
   const risk = fields['Risk class'];
@@ -93,6 +111,12 @@ export function validatePullRequest({ body, changedFiles = [] }) {
   }
   if (risk === 'R4' && fields['External gate'] !== 'approved') {
     errors.push('R4 changes are blocked until External gate is approved');
+  }
+  if (!isDraft && fields['Review readiness'] !== 'ready') {
+    errors.push('Non-draft PR requires Review readiness: ready');
+  }
+  if (!isDraft && fields['Readiness acknowledgment'] !== 'acknowledged') {
+    errors.push('Non-draft PR requires Readiness acknowledgment: acknowledged');
   }
 
   const hasR3Path = changedFiles.some(file => R3_PATHS.some(entry => (
@@ -135,7 +159,8 @@ if (isMain) {
   const changedFiles = args.changedFilesFile
     ? fs.readFileSync(args.changedFilesFile, 'utf8').split(/\r?\n/).filter(Boolean)
     : (process.env.CHANGED_FILES || '').split(/\r?\n/).filter(Boolean);
-  const result = validatePullRequest({ body, changedFiles });
+  const isDraft = process.env.PR_IS_DRAFT !== 'false';
+  const result = validatePullRequest({ body, changedFiles, isDraft });
 
   if (result.errors.length > 0) {
     console.error('PR governance validation failed:');

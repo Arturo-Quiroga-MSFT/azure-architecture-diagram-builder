@@ -72,6 +72,14 @@ control before relying on it as repository governance.
 - `P02-T06`: Perform a read-only acceptance review against this plan.
 - `P02-T07`: Re-check paused-worktree branch, status, and diff checksum; push a
   review branch and open a PR. Do not merge or deploy.
+- `P02-T08`: Before human review, require a one-screen Review Readiness Brief at
+  the top of the PR. Add `Review readiness` and `Readiness acknowledgment`
+  fields. GitHub permits the draft-to-ready state change before Actions runs, so
+  the workflow cannot prevent that click; instead, the required lifecycle check
+  fails after the transition and blocks merge/review acceptance unless both
+  fields are complete, critical findings and limitations are stated first, and
+  the maintainer has acknowledged the brief. Validate section ordering and
+  draft/non-draft behavior with deterministic fixtures.
 
 ## PR Evidence Contract
 
@@ -84,8 +92,18 @@ The PR template uses machine-readable single-line fields plus narrative sections
 - `External gate: not-applicable | pending | approved`
 - `Merge approval: pending | approved`
 - `Production deployment: not-requested | pending | approved`
+- `Review readiness: not-ready | ready`
+- `Readiness acknowledgment: pending | acknowledged`
 - Narrative sections: Summary, Acceptance Criteria, Blast Radius, Test Evidence,
   Regression Fence, Limitations / Not Tested, and Rollback.
+
+The PR begins with these ordered readiness sections before Summary: Review
+Readiness Brief, Blockers / Critical Findings, Unexpected Discoveries, Plan
+Deviations, Limitations / Not Tested, and Decision Requested. The validator
+rejects missing or reordered readiness sections. A draft may remain
+`not-ready`/`pending`; a non-draft PR must be `ready`/`acknowledged`. The workflow
+passes GitHub's draft status to the validator. Once the lifecycle check is made a
+required status check, a non-draft PR with incomplete readiness cannot merge.
 
 The validator rejects a missing field, an unrecognized value, an empty narrative
 section, or retained placeholders such as `TODO`, `TBD`, and template comments.

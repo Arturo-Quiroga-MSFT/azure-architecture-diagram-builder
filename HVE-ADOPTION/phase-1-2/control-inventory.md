@@ -18,6 +18,8 @@
 | Protected-surface owner routing | Automated | `.github/CODEOWNERS`; routing is not independent review |
 | PR evidence fields and placeholders | Automated | `scripts/validate-pr-governance.mjs`; 4 valid and 7 invalid fixture cases pass |
 | PR evidence status check | Automated | `.github/workflows/pr-governance.yml`; requires ruleset after merge |
+| Review readiness information ordering | Automated | PR template leads with blockers, discoveries, deviations, limitations, and decision; validator enforces presence/order |
+| Draft-to-review readiness | Automated | Non-draft PR fails unless `ready`/`acknowledged`; CI cannot prevent the GitHub state change itself |
 | Product release gate | Automated | `.github/workflows/quality.yml` runs `npm run verify:release` |
 | Clean-checkout token-server dependencies | Automated | Quality and deployment workflows run `npm ci --prefix server`; correlation contract passes |
 | Local production source provenance | Automated | Guard requires clean `main` equal to `origin/main` |

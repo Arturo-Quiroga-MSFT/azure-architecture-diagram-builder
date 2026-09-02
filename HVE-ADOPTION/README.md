@@ -44,6 +44,7 @@ PR, CI, approval, release, and rollback controls as authoritative.
 | [SDLC.md](SDLC.md) | Lifecycle, risk gates, Ready/Done, stop conditions, evidence and release authority | Authoritative |
 | [phase-1-2/implementation-plan.md](phase-1-2/implementation-plan.md) | Approved implementation scope and acceptance criteria | In progress |
 | [phase-1-2/plan-critique.md](phase-1-2/plan-critique.md) | Independent plan critique and re-review | Pass |
+| [phase-1-2/review-readiness-critique.md](phase-1-2/review-readiness-critique.md) | Review-readiness amendment critique and corrected enforcement boundary | Pass |
 | [phase-1-2/changes.md](phase-1-2/changes.md) | Material changes, divergences, validation and checks not run | Ready for review |
 | [phase-1-2/control-inventory.md](phase-1-2/control-inventory.md) | Automated, documented, setting-dependent and reviewer-dependent controls | Ready for review |
 | [phase-1-2/acceptance-review.md](phase-1-2/acceptance-review.md) | Read-only acceptance review and evidence corrections | Conformant with justified divergence |

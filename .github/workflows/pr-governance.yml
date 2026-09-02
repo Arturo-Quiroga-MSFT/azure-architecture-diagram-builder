@@ -30,4 +30,5 @@ jobs:
       - name: Validate PR evidence
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
+          PR_IS_DRAFT: ${{ github.event.pull_request.draft }}
         run: node scripts/validate-pr-governance.mjs --changed-files "$RUNNER_TEMP/changed-files.txt"

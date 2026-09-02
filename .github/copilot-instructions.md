@@ -15,6 +15,9 @@ Follow [the authoritative AADB SDLC](../HVE-ADOPTION/SDLC.md).
   from one model, format, browser, region, path, or revision.
 - Label claims Tested, Measured, Documented, Inferred, or Proposed when the
   distinction matters. Include limitations and checks not run.
+- Do not call work review-ready until a top-of-PR readiness brief leads with
+  blockers/critical findings, unexpected discoveries, plan deviations,
+  limitations, and the decision requested, and the maintainer acknowledges it.
 - Never mix unrelated workstreams. Preserve user changes and use an isolated
   branch/worktree for material or concurrent work.
 - Never merge without explicit user approval. Merge approval never authorizes

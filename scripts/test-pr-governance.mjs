@@ -10,6 +10,8 @@ function body(overrides = {}) {
     external: 'not-applicable',
     merge: 'pending',
     deployment: 'not-requested',
+    readiness: 'not-ready',
+    acknowledgment: 'pending',
     fence: 'Not applicable: this feature changes an existing documented workflow.',
     ...overrides,
   };
@@ -21,6 +23,26 @@ Independent review: ${values.review}
 External gate: ${values.external}
 Merge approval: ${values.merge}
 Production deployment: ${values.deployment}
+Review readiness: ${values.readiness}
+Readiness acknowledgment: ${values.acknowledgment}
+
+## Review Readiness Brief
+This R2 change is bounded and remains draft pending maintainer acknowledgment.
+
+## Blockers / Critical Findings
+None.
+
+## Unexpected Discoveries
+None.
+
+## Plan Deviations
+None.
+
+## Limitations / Not Tested
+No production deployment was performed.
+
+## Decision Requested
+Review the implementation evidence and decide whether it may leave draft.
 
 ## Summary
 Adds one bounded behavior with no unrelated refactor.
@@ -37,9 +59,6 @@ npm run test:focused passed with 3 tests.
 ## Regression Fence
 ${values.fence}
 
-## Limitations / Not Tested
-No production deployment was performed.
-
 ## Rollback
 Revert the feature commit.
 
@@ -48,11 +67,13 @@ Plan critique passed; independent implementation review is pending.
 `;
 }
 
-function errorsFor(prBody, changedFiles = ['src/App.tsx']) {
-  return validatePullRequest({ body: prBody, changedFiles }).errors;
+function errorsFor(prBody, changedFiles = ['src/App.tsx'], isDraft = true) {
+  return validatePullRequest({ body: prBody, changedFiles, isDraft }).errors;
 }
 
 assert.deepEqual(errorsFor(body()), [], 'valid R2 feature should pass');
+assert.deepEqual(errorsFor(body({ readiness: 'ready', acknowledgment: 'acknowledged' }), ['src/App.tsx'], false), [],
+  'acknowledged non-draft PR should pass');
 assert.deepEqual(errorsFor(body({
   changeType: 'bug',
   fence: 'Before: old code fails the focused test.\nAfter: fixed code passes the same test.',
@@ -75,5 +96,12 @@ assert(errorsFor(body().replace('## Summary\nAdds one bounded behavior with no u
 assert(errorsFor(body().replace('No production deployment was performed.', 'TBD'))
   .some(error => error.includes('placeholder')));
 assert(errorsFor(body(), []).includes('Changed-file list is empty'));
+assert(errorsFor(body(), ['src/App.tsx'], false).some(error => error.includes('Review readiness: ready')));
+assert(errorsFor(body(), ['src/App.tsx'], false).some(error => error.includes('Readiness acknowledgment: acknowledged')));
+assert(errorsFor(body().replace('## Unexpected Discoveries\nNone.\n\n', ''))
+  .some(error => error.includes('Section is empty: Unexpected Discoveries')));
+assert(errorsFor(body().replace('## Plan Deviations\nNone.\n\n', '')
+  .replace('## Unexpected Discoveries\nNone.', '## Plan Deviations\nNone.\n\n## Unexpected Discoveries\nNone.'))
+  .some(error => error.includes('required order')));
 
-console.log('PR governance tests passed: 4 valid and 7 invalid evidence cases');
+console.log('PR governance tests passed: 5 valid and 11 invalid evidence cases');

@@ -21,6 +21,9 @@
   its 1px contract.
 - `CHG-008`: Added a control inventory separating automated controls from
   settings and named-reviewer dependencies.
+- `CHG-009`: Added a mandatory top-of-PR Review Readiness Brief. Draft PRs may
+  remain honestly not ready; non-draft PRs fail the lifecycle check until the
+  brief is ready and the maintainer acknowledgment is recorded.
 
 ## Approved Divergences
 
@@ -31,6 +34,9 @@
 - `DIV-003`: Full validation exposed a known flaky drag assertion. Three
   hypotheses were measured; only explicit final pointer delivery plus eventual
   render assertion achieved 10/10 without weakening the contract.
+- `DIV-004`: The first readiness amendment claimed CI could prevent GitHub's
+  draft-to-ready state change. Critique blocked that claim. The corrected plan
+  enforces a failing required check after transition and blocks merge instead.
 
 ## Validation
 
@@ -58,4 +64,6 @@
 
 - Draft PR: [#25](https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder/pull/25)
 - Posted PR evidence passes `validate-pr-governance.mjs` as R3 across 38 changed files.
+- Posted PR now leads with the P02-T08 readiness brief and passes as a draft with
+  readiness `not-ready` and acknowledgment `pending`.
 - Independent human R3 review and explicit merge approval remain pending.

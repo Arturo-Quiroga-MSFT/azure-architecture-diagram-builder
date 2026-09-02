@@ -31,6 +31,23 @@ Intake and classify
 Completion of implementation is not acceptance. Merge approval is not deployment
 approval. A passing build is not product validation.
 
+## Review Readiness Gate
+
+Before human review begins, provide a one-screen brief in this order:
+
+1. Blockers and critical findings
+2. Unexpected discoveries
+3. Plan deviations
+4. Limitations and untested paths
+5. Decision requested from the maintainer
+
+The PR remains draft and `not-ready` until the maintainer has seen the brief.
+Only then may `Review readiness` become `ready` and `Readiness acknowledgment`
+become `acknowledged`. GitHub permits the draft-to-ready click before Actions
+runs; the lifecycle check therefore fails afterward and, once required by the
+main ruleset, blocks merge until readiness is complete. The check validates
+presence and ordering, not the truth or sufficiency of narrative evidence.
+
 ## Choose the Smallest Sufficient Lifecycle
 
 | Risk | Required lifecycle | Minimum gates |
