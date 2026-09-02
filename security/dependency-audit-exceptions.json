@@ -1,0 +1,23 @@
+{
+  "exceptions": [
+    {
+      "id": "GHSA-w3rx-r6r6-pgpr",
+      "package": "image-size",
+      "severity": "high",
+      "owner": "Arturo Quiroga",
+      "expires": "2026-10-01",
+      "reason": "PPTXGenJS marks image-size as browser:false; AADB supplies app-generated PNG data URLs, while this advisory requires crafted ICNS input. No patched image-size release exists."
+    },
+    {
+      "id": "GHSA-5p2g-fcmc-qvqq",
+      "package": "image-size",
+      "severity": "high",
+      "owner": "Arturo Quiroga",
+      "expires": "2026-10-01",
+      "reason": "PPTXGenJS marks image-size as browser:false; AADB supplies app-generated PNG data URLs, while this advisory requires crafted JXL/HEIF input. No patched image-size release exists."
+    }
+  ],
+  "allowedWrapperPackages": [
+    "pptxgenjs"
+  ]
+}

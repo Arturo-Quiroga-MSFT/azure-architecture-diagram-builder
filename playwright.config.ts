@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const port = Number(process.env.AADB_SMOKE_PORT || 4173);
+const outputDirectory = process.env.AADB_SMOKE_OUT_DIR || '.release-smoke-dist';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -15,7 +16,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `npm run preview -- --host 127.0.0.1 --port ${port} --strictPort --outDir .release-smoke-dist`,
+    command: `npm run preview -- --host 127.0.0.1 --port ${port} --strictPort --outDir ${outputDirectory}`,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: false,
     timeout: 30_000,

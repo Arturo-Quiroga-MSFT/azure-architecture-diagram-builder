@@ -3,7 +3,8 @@ import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 
 const budget = JSON.parse(readFileSync('performance-budget.json', 'utf8')).initialJavaScript;
-const assetDirectory = join('dist', 'assets');
+const bundleDirectory = process.env.AADB_BUNDLE_DIR || 'dist';
+const assetDirectory = join(bundleDirectory, 'assets');
 const entryFiles = readdirSync(assetDirectory).filter((file) => /^index-[A-Za-z0-9_-]+\.js$/.test(file));
 
 if (entryFiles.length !== 1) {
