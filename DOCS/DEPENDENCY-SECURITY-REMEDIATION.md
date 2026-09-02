@@ -212,6 +212,11 @@ Application Insights, Speech SDK, concurrently, and their transitive utilities.
 - The telemetry-enabled production-like bundle passed the existing budget at
   1,834,168 / 1,900,000 bytes and 484,809 / 500,000 gzip bytes. The narrow gzip
   margin is residual performance risk, not a security failure.
+- The quality workflow now installs `server/package.json` before the expanded
+  release gate runs the token-server correlation contract. Governance PR #25
+  contains the same clean-checkout prerequisite; this is intentional overlap,
+  not a governance merge. Whichever PR merges second must retain one copy during
+  conflict reconciliation.
 
 ### Residual risk
 
