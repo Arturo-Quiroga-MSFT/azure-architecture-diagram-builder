@@ -1,0 +1,526 @@
+Absolutely — here’s a **practical QA/design review** you can feed back into your Azure Architecture Diagram Builder (AADB) so it fixes these diagram polish issues automatically.
+
+## High-level assessment
+
+Your diagrams are already **structurally strong**:
+- good grouping with containers
+- consistent Azure iconography
+- numbered flow annotations
+- clean sectioning
+
+But they have a recurring class of **layout-quality issues**:
+
+1. **Insufficient spacing** between nodes, lines, and labels
+2. **Number bubbles sitting on top of line bends/endpoints**
+3. **Arrowheads missing or visually ambiguous**
+4. **Labels colliding with connectors or icons**
+5. **Connectors routed too tightly through busy areas**
+6. **Text truncation / cramped service labels**
+7. **Inconsistent connector anchoring and flow direction**
+8. **Legends not always perfectly aligned to on-diagram numbering**
+
+Below is a **diagram-by-diagram critique**, followed by a **clean set of rules/specs** you can give your app.
+
+---
+
+# 1. Diagram: Azure Data Lakehouse Analytics Platform
+
+## Observed issues
+
+### A. Crowding in the compute area
+The center section around:
+- Azure Data Factory
+- Azure Synapse Analytics
+- Azure Data Lake Storage
+
+has too many connector turns in a small area.
+
+Specifically:
+- the lines for **ingest to raw**, **write curated**, **design reports**, and **Run SQL/Spark** are visually congested
+- numbered bubbles **2, 4, 5, 6** feel too close to line intersections, labels, or bends
+- the “Design reports” and “Run SQL/Spark” labels are cramped near connectors
+
+### B. Bubble placement problems
+Some numbered markers are placed too close to:
+- arrowheads
+- elbows
+- container boundaries
+- labels
+
+Example patterns:
+- **6** near Synapse is very close to the right-side outgoing connector
+- **7** above Power BI is too close to the service and vertical flow
+- **3/5** around Data Factory are cramped around service icon + label + connector stack
+
+### C. Arrow clarity
+A few flows visually look like plain lines until you inspect closely. In a clean architecture diagram, every directional connector should make direction obvious at first glance.
+
+Potential weak spots:
+- line from BI Developers toward central platform
+- route between Data Factory / Synapse / Data Lake
+- vertical path from Power BI to Business Users
+
+### D. Service-to-label spacing
+“Azure Data Factory” appears crowded by connector lines and the “Design reports” label.
+The label below the icon is too close to routing geometry.
+
+### E. Overlapping semantic zones
+The Azure Subscription container is fine, but the internal “Compute & Orchestration” and “Data & Storage” regions could use slightly more internal padding from the elements they contain.
+
+---
+
+## Fix guidance for this diagram
+
+- Increase horizontal spacing between **Data Factory** and **Synapse**
+- Move **Data Lake Storage** slightly downward or widen the overall subscription canvas
+- Route notebook/report lines outside the main ingest/write path instead of crossing near the center
+- Place numbered markers at the **midpoint of the longest straight segment**, never near elbows
+- Keep a minimum clearance between marker circles and any text label
+- Ensure every connector has a visible terminal arrowhead unless intentionally bidirectional
+- Add more whitespace below service icons before service names
+
+---
+
+# 2. Diagram: React Web App with Node.js API, PostgreSQL, and Blob Storage
+
+## Observed issues
+
+This one is fairly clean, but there are still several layout polish issues.
+
+### A. Vertical congestion in the API area
+The area around:
+- App Service / Node.js API
+- PostgreSQL
+- Blob Storage
+- Application Insights
+
+is too compact vertically.
+
+The API box acts as a hub for:
+- frontend call
+- db read/write
+- blob store
+- telemetry up to App Insights
+- blob retrieval line
+
+That creates a dense connector crossing zone.
+
+### B. Number bubble placement
+- **5** and **4** around the API-to-Blob region are too close to each other and to the vertical/horizontal connector junction
+- **6** under Application Insights is cramped against the dashed telemetry line
+- **3** is close to the database-side arrow path
+
+### C. Some connectors feel under-separated
+The storage-related lines share similar space:
+- API → Blob Storage
+- frontend retrieves image / Blob-related path
+
+This makes the lower center-right area feel tangled.
+
+### D. Text truncation
+“Azure Database for Post…” is visibly truncated. That hurts polish and readability.
+
+### E. Container balance
+The observability box feels a bit detached and small, while Data & Storage is large. The overall composition is okay, but not visually balanced.
+
+---
+
+## Fix guidance for this diagram
+
+- Increase vertical separation between **API** and **Blob Storage**
+- Move App Insights slightly higher and center the telemetry route
+- Separate storage write path from blob retrieval path with independent lanes
+- Reposition bubbles so each one sits on a dedicated straight segment
+- Avoid text truncation; either:
+  - wrap label to 2 lines, or
+  - enlarge node width, or
+  - use approved short label like “Azure Database for PostgreSQL”
+
+---
+
+# 3. Diagram: Web Application with React, Node.js, PostgreSQL, and Blob Storage
+
+This is probably the strongest compositionally, but still has detail issues.
+
+## Observed issues
+
+### A. Top routing line is busy
+Across:
+- Azure Content Delivery
+- Application Gateway
+- Azure Static Web Apps
+- App Service
+- Key Vault
+
+the flow is visually dense, especially around:
+- **2** and **4**
+- the gateway/static-app boundary
+- the secret-fetch connector to Key Vault
+
+### B. Bubble placement at line edges
+You specifically mentioned “number bubbles cutoff by the line edge.”  
+This kind of issue is visible as a general risk in this diagram:
+- **2** is very close to the arrow/connector transition between gateway and static web apps
+- **7** is close to the turn near Key Vault
+- **5/6** are near the shared storage route and can appear attached to line turns rather than centered on a step
+
+### C. Shared storage bus line
+The bottom midsection uses a shared horizontal line for:
+- read/write data
+- store images
+
+That is compact, but it makes step distinction less clear.
+
+### D. Truncation again
+“Azure Content Delivery …”
+“Azure Database for Post…”
+are clipped/truncated. This makes the diagram feel auto-generated rather than presentation-ready.
+
+### E. Flow direction ambiguity
+The top pipeline has several connected services in sequence, but the gateway/static-app directionality is not as visually obvious as it should be. In a production-quality architecture diagram, left-to-right flow should be unmistakable.
+
+---
+
+## Fix guidance for this diagram
+
+- Add more horizontal spacing between top-row services
+- Give bubble **2** its own straight segment between CDN and gateway or gateway and static web apps
+- Move Key Vault farther right and slightly up so **7** sits on a longer line segment
+- Separate database and blob connectors earlier so **5** and **6** are not siblings on the same bus line
+- Do not truncate service names unless a short canonical alias is used consistently everywhere
+
+---
+
+# Common issues across all 3 diagrams
+
+These are the rules your app should implement globally.
+
+---
+
+## 1. Minimum spacing rules
+
+Your app needs explicit layout constraints, not just “best effort.”
+
+### Recommended minimums
+Use these as layout constants:
+
+- **Node to node:** minimum 48–64 px
+- **Node to container edge:** minimum 32 px
+- **Connector to node not involved in that connector:** minimum 24 px
+- **Connector to text label:** minimum 16 px
+- **Connector to connector parallel separation:** minimum 12–20 px
+- **Number bubble to any arrowhead/elbow:** minimum 18 px
+- **Number bubble to text label:** minimum 14 px
+- **Service icon to service name text:** minimum 10–14 px
+
+If your app uses a grid, enforce these as snapped increments.
+
+---
+
+## 2. Number bubble placement rules
+
+This is one of the biggest visible problems.
+
+## Bad placements
+Never place a numbered bubble:
+- on an elbow
+- within 18 px of an arrowhead
+- touching a node edge
+- overlapping container borders
+- directly above/below another bubble
+- over a line intersection
+
+## Good placements
+Place each bubble:
+- on the **longest straight segment** of its connector
+- centered visually, but biased away from nearby labels
+- with a solid white or diagram-background halo if crossing visual noise
+- with a clear z-index above lines
+
+## Recommended algorithm
+For each connector:
+1. Break connector into straight segments
+2. Score each segment by:
+   - length
+   - distance from nodes
+   - distance from labels
+   - distance from other bubbles
+   - distance from elbows and arrowheads
+3. Choose the highest-scoring segment
+4. Place bubble at 40–60% along that segment
+5. If no segment is clean enough, reroute connector
+
+This single improvement would materially improve all three diagrams.
+
+---
+
+## 3. Arrowhead rules
+
+You mentioned some line edges not having end arrows. This should be deterministic.
+
+## Rule
+Every directional relationship must end with:
+- **one visible arrowhead** at the destination anchor
+
+Unless explicitly marked as:
+- bidirectional
+- association / grouping / dependency without flow
+- monitoring/telemetry dashed link with a defined style
+
+## App checks
+Before export, run validation:
+- every connector with `direction=forward` must have terminal arrowhead
+- arrowhead must not be clipped by node/container bounds
+- arrowhead must have at least 6–10 px visible space before destination edge
+- arrowhead angle/size must be consistent globally
+
+## Rendering tip
+Sometimes arrowheads appear missing because the line ends flush into the node boundary. Fix by:
+- shortening line by arrowhead length
+- drawing arrowhead on top layer
+- preventing clipping/masking at container/node boundaries
+
+---
+
+## 4. Orthogonal connector routing rules
+
+Your diagrams use orthogonal routing, which is good — but it needs stricter hygiene.
+
+## Rules
+- Prefer **left-to-right** primary flow
+- Use **top-to-bottom** only for secondary relationships
+- Avoid 3+ connectors sharing the same corridor unless intentionally bundled
+- Avoid routing through the visual center of a node cluster
+- Limit each connector to **max 2 elbows** where possible
+- If a connector needs more than 2 elbows, reconsider node placement
+- Keep connector lanes separated
+
+## Good practice
+Create invisible routing lanes:
+- top lane
+- mid lane
+- bottom lane
+- telemetry lane
+- storage lane
+
+This prevents accidental overlap and produces cleaner exports.
+
+---
+
+## 5. Node label sizing and truncation rules
+
+Truncated labels are one of the most obvious quality problems.
+
+## Rules
+For service labels:
+- do **not** truncate unless there is an approved abbreviation dictionary
+- prefer 2-line wrapping before ellipsis
+- maintain consistent max width
+- center labels relative to icon
+- reserve enough vertical padding beneath icon
+
+## Example short-name dictionary
+If you must shorten:
+- Azure Database for PostgreSQL → **Azure Database for PostgreSQL**
+- Azure Content Delivery Network → **Azure CDN**
+- Azure Static Web Apps → **Static Web Apps**
+- Azure App Service → **App Service**
+- Azure Data Lake Storage → **Data Lake Storage**
+- Azure Synapse Analytics → **Synapse Analytics**
+
+But apply abbreviations consistently.
+
+---
+
+## 6. Container padding rules
+
+Your grouped regions are good, but some contents sit too close to borders.
+
+## Rules
+Each container should have:
+- **top padding:** 28–36 px below title
+- **side padding:** 24–32 px
+- **bottom padding:** 24–32 px
+- **title-safe zone:** no connector under title text
+
+This is especially important for:
+- Azure Subscription
+- Compute & Orchestration
+- Data & Storage
+- Application Compute
+- Observability
+
+---
+
+## 7. Layout balancing rules
+
+Some diagrams feel center-heavy or top-heavy because the auto-layout is packing elements based on relationship count rather than visual balance.
+
+## Rules
+- Balance row widths visually, not just mathematically
+- Hub nodes need more whitespace
+- Keep top-row nodes aligned on a shared baseline
+- Keep sibling storage nodes aligned if they share a category
+- Center secondary boxes relative to the node they support
+
+Example:
+- App Insights should center above the API it observes
+- Key Vault should sit clearly to the right of App Service with enough clearance
+- Blob + Database should align cleanly in the same data-services zone
+
+---
+
+## 8. Line label placement rules
+
+Labels like:
+- “Call API”
+- “Read/write data”
+- “Store images”
+- “Fetch secrets”
+- “Expose datasets”
+
+should not float too close to bubbles or nodes.
+
+## Rules
+- labels must be offset from line by 8–12 px
+- labels must not overlap bubble circles
+- labels should sit on the outside of elbows, not inside cramped corners
+- if a line segment is too short for both label and bubble, separate them across different segments
+- minimum label length space should be reserved before layout finalization
+
+---
+
+# Suggested QA checklist for AADB
+
+You can implement this as a pre-export validator.
+
+## Connector QA
+- [ ] every directed edge has arrowhead
+- [ ] no arrowhead clipped by node or container
+- [ ] no connector crosses a label
+- [ ] no connector overlaps unrelated node
+- [ ] max 2 elbows preferred
+- [ ] parallel lines separated by minimum lane distance
+
+## Bubble QA
+- [ ] no bubble overlaps node/icon/text
+- [ ] no bubble within 18 px of elbow
+- [ ] no bubble within 18 px of arrowhead
+- [ ] no bubble on container border
+- [ ] bubble center lies on straight segment
+- [ ] bubble labels match legend numbering
+
+## Label QA
+- [ ] no truncation unless approved abbreviation
+- [ ] labels fully readable at export size
+- [ ] icon/name vertical spacing is sufficient
+- [ ] line labels do not overlap connectors/bubbles
+
+## Container QA
+- [ ] nodes maintain min padding from container borders
+- [ ] container titles unobstructed
+- [ ] inner group boxes not overcrowded
+
+## Composition QA
+- [ ] major flows readable left-to-right
+- [ ] hub nodes have extra whitespace
+- [ ] no visually dense hotspot without rerouting
+- [ ] diagram remains readable at 100% zoom and presentation scale
+
+---
+
+# Guidance text you can give directly to your app
+
+Here’s a compact instruction block you can reuse.
+
+## AADB layout correction prompt/spec
+> Improve the diagram layout for presentation-quality Azure architecture output.  
+> Enforce minimum spacing between nodes, connectors, labels, and containers.  
+> Re-route connectors to avoid overlap, crowding, and ambiguous direction.  
+> Place all numbered step bubbles only on long straight connector segments, never on elbows, arrowheads, node edges, or container borders.  
+> Ensure every directed connector has a visible destination arrowhead that is not clipped.  
+> Prevent text truncation by expanding node width, wrapping labels to two lines, or using approved short service names consistently.  
+> Maintain clear left-to-right primary flow and top-to-bottom secondary flow.  
+> Increase whitespace around hub services and high-traffic routing zones.  
+> Keep line labels offset from connectors and separated from numbered bubbles.  
+> Add container padding so no node or connector crowds the group border or title area.  
+> Before export, run a collision and readability pass that resolves overlaps among nodes, labels, bubbles, connectors, and arrowheads.
+
+---
+
+# Even better: implement these as hard rules
+
+If your app supports numeric constraints, use something like this:
+
+```yaml
+layout_rules:
+  min_node_spacing: 56
+  min_node_to_container_padding: 28
+  min_connector_to_label_spacing: 16
+  min_connector_parallel_spacing: 14
+  min_bubble_to_arrowhead_spacing: 18
+  min_bubble_to_elbow_spacing: 18
+  min_bubble_to_label_spacing: 14
+  min_icon_to_service_label_spacing: 12
+  max_connector_elbows: 2
+  preferred_flow_direction: left_to_right
+  secondary_flow_direction: top_to_bottom
+
+label_rules:
+  allow_truncation: false
+  max_label_lines: 2
+  wrap_before_truncate: true
+  use_short_service_aliases: true
+
+connector_rules:
+  require_arrowhead_on_directed_edges: true
+  prevent_arrowhead_clipping: true
+  avoid_crossing_labels: true
+  prefer_orthogonal_routing: true
+  separate_shared_lanes: true
+
+bubble_rules:
+  place_on_straight_segment_only: true
+  avoid_elbows: true
+  avoid_arrowheads: true
+  avoid_container_borders: true
+  avoid_node_overlap: true
+  choose_best_segment_by_clearance_score: true
+
+export_qa:
+  detect_collisions: true
+  reroute_until_clear: true
+  verify_legend_number_mapping: true
+  verify_readability_at_1x: true
+```
+
+---
+
+# Best single improvement to make first
+
+If you only change **one thing**, do this:
+
+## Add a final “layout cleanup pass”
+After generating the diagram, run:
+1. collision detection
+2. bubble relocation
+3. arrowhead verification
+4. label expansion/wrapping
+5. connector rerouting around crowded hubs
+
+That one pass would solve most of the problems visible in your screenshots.
+
+---
+
+# Recommended message to your engineering/app logic
+
+You could tell your app team this:
+
+> The current diagrams are structurally correct but need a presentation-quality polish pass. The main issues are connector crowding, missing or clipped arrowheads, poor step-bubble placement, insufficient padding, and truncated labels. We need deterministic layout rules for spacing, routing, bubble placement, and label rendering, plus a final QA pass that detects and resolves overlaps before export.
+
+---
+
+If you want, I can also do either of these next:
+
+1. turn this into a **developer-ready technical spec** for AADB layout logic, or  
+2. write a **single polished master prompt** you can feed directly into your diagram generator.

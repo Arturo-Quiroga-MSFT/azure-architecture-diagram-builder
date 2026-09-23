@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "source": "azure-diagram-builder",
+  "createdAt": "2026-04-30T18:47:42.307Z",
+  "project": {
+    "name": "microservices-aca",
+    "location": "eastus2",
+    "iacTool": "bicep"
+  },
+  "architecture": {
+    "services": [
+      { "id": "svc-1",  "name": "Front Door",         "type": "Azure Front Door",      "category": "networking",  "description": "Global entry point with WAF",         "groupId": "edge" },
+      { "id": "svc-2",  "name": "API Gateway",        "type": "API Management",        "category": "integration", "description": "API gateway and rate limiting",       "groupId": "edge" },
+      { "id": "svc-3",  "name": "Orders Service",     "type": "Container Apps",        "category": "containers",  "description": "Orders microservice",                 "groupId": "services" },
+      { "id": "svc-4",  "name": "Catalog Service",    "type": "Container Apps",        "category": "containers",  "description": "Catalog microservice",                "groupId": "services" },
+      { "id": "svc-5",  "name": "Users Service",      "type": "Container Apps",        "category": "containers",  "description": "Users microservice",                  "groupId": "services" },
+      { "id": "svc-6",  "name": "Fulfillment Worker", "type": "Container Apps",        "category": "containers",  "description": "Async order fulfillment worker",      "groupId": "services" },
+      { "id": "svc-7",  "name": "Service Bus",        "type": "Service Bus",           "category": "integration", "description": "Async messaging backbone",            "groupId": "messaging" },
+      { "id": "svc-8",  "name": "Redis Cache",        "type": "Azure Cache for Redis", "category": "other",       "description": "Distributed cache and session store", "groupId": "messaging" },
+      { "id": "svc-9",  "name": "Orders DB",          "type": "SQL Database",          "category": "databases",   "description": "Orders relational store",             "groupId": "data" },
+      { "id": "svc-10", "name": "Catalog DB",         "type": "SQL Database",          "category": "databases",   "description": "Catalog relational store",            "groupId": "data" },
+      { "id": "svc-11", "name": "Users DB",           "type": "SQL Database",          "category": "databases",   "description": "Users relational store",              "groupId": "data" },
+      { "id": "svc-12", "name": "Log Analytics",      "type": "Log Analytics",         "category": "monitor",     "description": "Centralized logs and metrics",        "groupId": "obs" }
+    ],
+    "connections": [
+      { "from": "Front Door",          "to": "API Gateway",        "label": "HTTPS",        "type": "sync" },
+      { "from": "API Gateway",         "to": "Orders Service",     "label": "HTTP",         "type": "sync" },
+      { "from": "API Gateway",         "to": "Catalog Service",    "label": "HTTP",         "type": "sync" },
+      { "from": "API Gateway",         "to": "Users Service",      "label": "HTTP",         "type": "sync" },
+      { "from": "Orders Service",      "to": "Service Bus",        "label": "publish",      "type": "async" },
+      { "from": "Service Bus",         "to": "Fulfillment Worker", "label": "consume",      "type": "async" },
+      { "from": "Catalog Service",     "to": "Redis Cache",        "label": "cache",        "type": "sync" },
+      { "from": "Users Service",       "to": "Redis Cache",        "label": "cache",        "type": "sync" },
+      { "from": "Orders Service",      "to": "Orders DB",          "label": "writes",       "type": "sync" },
+      { "from": "Catalog Service",     "to": "Catalog DB",         "label": "reads",        "type": "sync" },
+      { "from": "Users Service",       "to": "Users DB",           "label": "reads/writes", "type": "sync" },
+      { "from": "Fulfillment Worker", "to": "Orders DB",          "label": "updates",      "type": "sync" },
+      { "from": "Orders Service",      "to": "Log Analytics",      "label": "logs",         "type": "optional" },
+      { "from": "Catalog Service",     "to": "Log Analytics",      "label": "logs",         "type": "optional" },
+      { "from": "Users Service",       "to": "Log Analytics",      "label": "logs",         "type": "optional" },
+      { "from": "Fulfillment Worker", "to": "Log Analytics",      "label": "logs",         "type": "optional" }
+    ],
+    "groups": [
+      { "id": "edge",      "label": "Edge / Ingress" },
+      { "id": "services",  "label": "Microservices (Container Apps)" },
+      { "id": "messaging", "label": "Messaging & Cache" },
+      { "id": "data",      "label": "Data Stores" },
+      { "id": "obs",       "label": "Observability" }
+    ],
+    "workflow": []
+  },
+  "metadata": {
+    "generatedBy": "azure-diagram-builder-mcp",
+    "serviceCount": 12,
+    "connectionCount": 16
+  }
+}

@@ -1,0 +1,844 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -120,
+        "y": 100
+      },
+      "data": {
+        "label": "Ingestion"
+      },
+      "style": {
+        "width": 1070,
+        "height": 550
+      },
+      "width": 1070,
+      "height": 550,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": -120,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-ml",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 100
+      },
+      "data": {
+        "label": "ML Training & Model Ops"
+      },
+      "style": {
+        "width": 900,
+        "height": 600
+      },
+      "width": 900,
+      "height": 600,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-serving",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "data": {
+        "label": "Inference & API"
+      },
+      "style": {
+        "width": 1230,
+        "height": 810
+      },
+      "width": 1230,
+      "height": 810,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 750
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 900,
+        "height": 550
+      },
+      "width": 900,
+      "height": 550,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 750
+      }
+    },
+    {
+      "id": "eh-ingest",
+      "type": "azureNode",
+      "position": {
+        "x": -80,
+        "y": 160
+      },
+      "data": {
+        "label": "Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10148-icon-service-Analysis-Services.svg",
+        "pricing": {
+          "estimatedCost": 27.6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 124,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -80,
+        "y": 160
+      },
+      "dragging": false
+    },
+    {
+      "id": "adls-raw",
+      "type": "azureNode",
+      "position": {
+        "x": 680,
+        "y": 400
+      },
+      "data": {
+        "label": "Data Lake Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10143-icon-service-Data-Lake-Analytics.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 680,
+        "y": 400
+      },
+      "dragging": false
+    },
+    {
+      "id": "adf-orch",
+      "type": "azureNode",
+      "position": {
+        "x": -40,
+        "y": 520
+      },
+      "data": {
+        "label": "Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10148-icon-service-Analysis-Services.svg",
+        "pricing": {
+          "estimatedCost": 0.8,
+          "tier": "Cloud",
+          "skuName": "Cloud",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1/Month",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 134,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -40,
+        "y": 520
+      },
+      "dragging": false
+    },
+    {
+      "id": "aml-train",
+      "type": "azureNode",
+      "position": {
+        "x": 1180,
+        "y": 480
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 0.016,
+          "tier": "Llama-4-Scout-17B-16E-In",
+          "skuName": "Llama-4-Scout-17B-16E-In",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1K",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1180,
+        "y": 480
+      },
+      "dragging": false
+    },
+    {
+      "id": "acr",
+      "type": "azureNode",
+      "position": {
+        "x": 1580,
+        "y": 240
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 Second",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1580,
+        "y": 240
+      },
+      "dragging": false
+    },
+    {
+      "id": "func-prep",
+      "type": "azureNode",
+      "position": {
+        "x": 340,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg"
+      },
+      "width": 160,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 340,
+        "y": 260
+      },
+      "dragging": false
+    },
+    {
+      "id": "apim",
+      "type": "azureNode",
+      "position": {
+        "x": 2040,
+        "y": 420
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg"
+      },
+      "width": 165,
+      "height": 113,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 2040,
+        "y": 420
+      },
+      "dragging": false
+    },
+    {
+      "id": "app-infer",
+      "type": "azureNode",
+      "position": {
+        "x": 2600,
+        "y": 240
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 129,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2600,
+        "y": 240
+      },
+      "dragging": false
+    },
+    {
+      "id": "cosmos-online",
+      "type": "azureNode",
+      "position": {
+        "x": 2860,
+        "y": 660
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Azure-SQL-Server-Stretch-Databases.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2860,
+        "y": 660
+      },
+      "dragging": false
+    },
+    {
+      "id": "kv",
+      "type": "azureNode",
+      "position": {
+        "x": 1640,
+        "y": 1140
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "10K",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1640,
+        "y": 1140
+      },
+      "dragging": false
+    },
+    {
+      "id": "appi",
+      "type": "azureNode",
+      "position": {
+        "x": 1040,
+        "y": 960
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "swedencentral",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-10T21:44:13.637Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1040,
+        "y": 960
+      },
+      "dragging": false
+    },
+    {
+      "id": "azmon",
+      "type": "azureNode",
+      "position": {
+        "x": 1440,
+        "y": 1140
+      },
+      "data": {
+        "label": "Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1440,
+        "y": 1140
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "eh-ingest",
+      "target": "func-prep",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Stream events for validation and routing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "func-prep",
+      "target": "adls-raw",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Persist raw/curated data for training",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "adf-orch",
+      "target": "adls-raw",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Batch ingest and transform into lake zones",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "adls-raw",
+      "target": "aml-train",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Read training/validation datasets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "aml-train",
+      "target": "acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Publish inference image for the trained model",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "acr",
+      "target": "app-infer",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Pull model container image for deployment",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "apim",
+      "target": "app-infer",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Route inference requests (REST)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "app-infer",
+      "target": "cosmos-online",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Write/read predictions and metadata",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "app-infer",
+      "target": "kv",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets (DB keys, endpoints)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "aml-train",
+      "target": "kv",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets for data access and deployments",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "app-infer",
+      "target": "appi",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Emit request traces, dependencies, and metrics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "aml-train",
+      "target": "appi",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Emit pipeline and job telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "appi",
+      "target": "azmon",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Alert on SLIs/SLOs and failures",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 105.59056603773593,
+    "y": 163.76729559748424,
+    "zoom": 0.5817610062893082
+  }
+}

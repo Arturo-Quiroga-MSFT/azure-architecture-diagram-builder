@@ -1,0 +1,837 @@
+/* ==========================================================================
+   Validation Modal Styles
+   Modal displaying Azure Well-Architected Framework validation results
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Modal Base - Overlay and container
+   -------------------------------------------------------------------------- */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   Modal Header - Title and close button
+   -------------------------------------------------------------------------- */
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #1f2937;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s;
+  color: #6b7280;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+/* --------------------------------------------------------------------------
+   Modal Body - Scrollable content area
+   -------------------------------------------------------------------------- */
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.validation-stale-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  color: #854d0e;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.validation-stale-notice svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #ca8a04;
+}
+
+body.dark-mode .validation-stale-notice {
+  color: #fef3c7;
+  background: rgba(161, 98, 7, 0.22);
+  border-color: rgba(250, 204, 21, 0.45);
+}
+
+body.dark-mode .validation-stale-notice svg {
+  color: #facc15;
+}
+
+/* --------------------------------------------------------------------------
+   Loading State - Spinner and loading message
+   -------------------------------------------------------------------------- */
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  gap: 16px;
+}
+
+.spinner {
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-content {
+  max-width: 600px;
+  text-align: center;
+}
+
+.loading-content h3 {
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.loading-description {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.pillars-info {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: left;
+}
+
+.pillars-info h4 {
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.pillars-list {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+.pillars-list li {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.8;
+  padding: 6px 0;
+  position: relative;
+}
+
+.pillars-list li::before {
+  content: "✓";
+  color: #10b981;
+  font-weight: bold;
+  position: absolute;
+  left: -20px;
+}
+
+.pillars-list li strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.modal-loading p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.validation-dismiss-hint {
+  margin-top: 16px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #8b95a5;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.validation-dismiss-hint strong {
+  color: #a0b4cc;
+  font-style: normal;
+}
+
+.modal-empty {
+  padding: 60px 24px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Scope note - greenfield-Azure positioning shown above validation results */
+.validation-scope-note {
+  margin: 0 0 16px 0;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #6b7280;
+  background: rgba(0, 120, 212, 0.06);
+  border: 1px solid rgba(0, 120, 212, 0.18);
+  border-radius: 8px;
+}
+
+.validation-scope-note strong {
+  color: #0078d4;
+  font-weight: 600;
+}
+
+body.dark-mode .validation-scope-note {
+  color: #9ca3af;
+  background: rgba(96, 165, 250, 0.08);
+  border-color: rgba(96, 165, 250, 0.22);
+}
+
+body.dark-mode .validation-scope-note strong {
+  color: #60a5fa;
+}
+
+/* --------------------------------------------------------------------------
+   Validation Score - Circular progress indicator with overall score
+   -------------------------------------------------------------------------- */
+
+.validation-score {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+/* Circular score indicator with conic gradient */
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-inner {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-value {
+  font-size: 36px;
+  font-weight: bold;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.score-summary h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 18px;
+}
+
+.score-summary p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* AI Metrics display in validation */
+.ai-metrics-validation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #0078d4;
+}
+
+.ai-metrics-validation .metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-metrics-validation .metric svg {
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   Pillars Section - Five Azure Well-Architected Framework pillars
+   -------------------------------------------------------------------------- */
+
+.pillars-section h3 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 18px;
+}
+
+.pillar-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.pillar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pillar-header h4 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pillar-score {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* --------------------------------------------------------------------------
+   Findings - Individual validation findings per pillar
+   -------------------------------------------------------------------------- */
+
+.findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.finding-item {
+  background: white;
+  border-left: 4px solid;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.finding-item.severity-critical {
+  border-left-color: #dc2626;
+}
+
+.finding-item.severity-high {
+  border-left-color: #ea580c;
+}
+
+.finding-item.severity-medium {
+  border-left-color: #f59e0b;
+}
+
+.finding-item.severity-low {
+  border-left-color: #3b82f6;
+}
+
+.finding-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.severity-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.severity-icon.critical {
+  color: #dc2626;
+}
+
+.severity-icon.high {
+  color: #ea580c;
+}
+
+.severity-icon.medium {
+  color: #f59e0b;
+}
+
+.severity-icon.low {
+  color: #3b82f6;
+}
+
+.finding-category {
+  font-weight: 600;
+  color: #1f2937;
+  flex: 1;
+}
+
+.severity-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.severity-badge.critical {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.severity-badge.high {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.severity-badge.medium {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.severity-badge.low {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+/* Source badges (rule-based vs AI) */
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.source-badge.rule-based {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.source-badge.ai-analysis {
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+/* Hybrid metric badge */
+.hybrid-metric {
+  color: #059669 !important;
+}
+
+.finding-content {
+  padding-left: 26px;
+}
+
+.finding-content p {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.finding-resources {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   Quick Wins - High-priority actionable recommendations
+   -------------------------------------------------------------------------- */
+
+.quickwins-section {
+  margin-top: 24px;
+  padding: 24px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.quickwins-section h3 {
+  margin: 0 0 16px 0;
+  color: #0c4a6e;
+  font-size: 18px;
+}
+
+.quickwins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quickwin-item {
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #bae6fd;
+}
+
+.quickwin-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.quickwin-icon {
+  width: 18px;
+  height: 18px;
+  color: #10b981;
+}
+
+.quickwin-category {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.quickwin-recommendation {
+  margin: 0;
+  padding-left: 26px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Modal Actions - Sticky footer with download and close buttons
+   -------------------------------------------------------------------------- */
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.modal-actions .btn-primary,
+.modal-actions .btn-secondary {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.modal-actions .btn-primary {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.modal-actions .btn-primary:hover {
+  background: #2563eb;
+}
+
+.modal-actions .btn-secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.modal-actions .btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.modal-actions .btn-success {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.modal-actions .btn-success:hover {
+  background: #059669;
+}
+
+/* --------------------------------------------------------------------------
+   Finding Checkboxes - For selecting recommendations to apply
+   -------------------------------------------------------------------------- */
+
+.finding-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-right: 8px;
+  accent-color: #3b82f6;
+}
+
+.finding-item.selected {
+  background-color: #eff6ff;
+  border-left: 3px solid #3b82f6;
+}
+
+.finding-item.selected .finding-header {
+  background-color: #dbeafe;
+}
+
+/* --------------------------------------------------------------------------
+   Dark Mode Support
+   -------------------------------------------------------------------------- */
+
+body.dark-mode .loading-content h3 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .loading-description {
+  color: #9ca3af;
+}
+
+body.dark-mode .pillars-info {
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+body.dark-mode .pillars-info h4 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .pillars-list li {
+  color: #d1d5db;
+}
+
+body.dark-mode .pillars-list li strong {
+  color: #f3f4f6;
+}
+
+body.dark-mode .modal-loading p {
+  color: #9ca3af;
+}
+
+body.dark-mode .validation-dismiss-hint {
+  color: #7a8599;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .validation-dismiss-hint strong {
+  color: #8ab4e0;
+}
+
+body.dark-mode .validation-score {
+  background: #2a2a2a;
+}
+
+body.dark-mode .score-summary h3 {
+  color: #e0e0e0;
+}
+
+body.dark-mode .score-summary p {
+  color: #9ca3af;
+}
+
+body.dark-mode .finding-item {
+  border-color: #444;
+}
+
+body.dark-mode .finding-item.selected {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-left-color: #3b82f6;
+}
+
+body.dark-mode .finding-item.selected .finding-header {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   Maturity view - band pills, gaps summary, numeric-score toggle
+   -------------------------------------------------------------------------- */
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.score-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+  user-select: none;
+}
+
+.score-toggle input {
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Band mark shown inside the score circle when numeric score is hidden */
+.score-band-mark {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  padding: 0 8px;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+/* Overall maturity headline row */
+.maturity-headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 10px 0;
+}
+
+.maturity-band-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.maturity-band-pill.small {
+  font-size: 12px;
+  padding: 2px 10px;
+}
+
+.gaps-summary {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.numeric-score-aside {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+/* Per-pillar assessment cluster (band + gaps + optional score) */
+.pillar-assessment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pillar-gaps {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Dark mode */
+body.dark-mode .score-toggle {
+  color: #9ca3af;
+}
+
+body.dark-mode .gaps-summary,
+body.dark-mode .pillar-gaps {
+  color: #9ca3af;
+}
+
+body.dark-mode .numeric-score-aside {
+  color: #7a8599;
+}
+
+body.dark-mode .score-band-mark {
+  /* color is set inline from the band descriptor */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+

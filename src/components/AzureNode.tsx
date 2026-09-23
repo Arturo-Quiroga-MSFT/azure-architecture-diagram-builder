@@ -1,0 +1,302 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+import React, { memo, useEffect, useState } from 'react';
+import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
+import { Zap, Unlink, Layers } from 'lucide-react';
+import { loadIcon } from '../utils/iconLoader';
+import { NodePricingConfig } from '../types/pricing';
+import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
+import { isCapacityConsumed, getServiceCostRange } from '../data/serviceIconMapping';
+import { usePricingDisplayPrefs } from '../stores/pricingDisplayStore';
+import { openNodePricingEditor } from '../stores/nodePricingEditorStore';
+import { usePricingMode } from '../stores/pricingModeStore';
+import { calculateNodeMonthlyCost, getPricingEstimateSourceLabel } from '../services/costEstimationService';
+import './AzureNode.css';
+
+// Map categories to colors
+const getCategoryColor = (category: string): string => {
+  const colorMap: { [key: string]: string } = {
+    'compute': '#0078d4',           // Azure blue
+    'containers': '#0078d4',
+    'databases': '#10b981',         // Green
+    'storage': '#10b981',
+    'data layer': '#10b981',
+    'ai + machine learning': '#f59e0b', // Orange
+    'analytics': '#8b5cf6',         // Purple
+    'networking': '#06b6d4',        // Cyan
+    'identity': '#ec4899',          // Pink
+    'security': '#ef4444',          // Red
+    'monitor': '#6366f1',           // Indigo
+    'integration': '#14b8a6',       // Teal
+    'iot': '#f97316',               // Orange
+    'app services': '#3b82f6',      // Blue
+    'web': '#3b82f6',
+    'devops': '#8b5cf6',            // Purple
+  };
+  
+  const normalizedCategory = category?.toLowerCase() || '';
+  return colorMap[normalizedCategory] || '#6b7280'; // Default gray
+};
+
+const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
+  const [iconUrl, setIconUrl] = useState<string>('');
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [label, setLabel] = useState(data.label || 'Azure Service');
+  const { setNodes } = useReactFlow();
+  
+  // Access parentNode from data (React Flow stores it there)
+  const parentNode = data.parentNode;
+
+  // Extract pricing data
+  const pricing = data.pricing as NodePricingConfig | undefined;
+  const hasPricing = !!pricing && pricing.estimatedCost > 0;
+  const [pricingMode] = usePricingMode();
+  const estimate = pricing ? calculateNodeMonthlyCost(data.label || '', pricing, pricingMode) : null;
+  const totalCost = estimate?.cost || 0;
+
+  // Fabric workload items consume Capacity Units from the shared Fabric
+  // Capacity rather than billing separately — show an "incl. capacity" badge.
+  const serviceKey = (data.serviceName as string) || (data.label as string) || '';
+  const capacityConsumed = !hasPricing && isCapacityConsumed(serviceKey);
+
+  // Services with no meter for the resource itself would otherwise render no
+  // badge at all, hiding real spend (Azure Bastion is $138-876/mo).
+  const catalogRange = !hasPricing && !capacityConsumed ? getServiceCostRange(serviceKey) : null;
+  
+  // Extract style preset
+  const stylePreset = (data as any).stylePreset || 'detailed';
+  const showLabels = true; // Always show labels
+  // Cost badges are suppressed by presentation styling OR by the standalone
+  // cost-visibility preference, so a user can drop the figures without
+  // restyling the whole diagram.
+  const [pricingPrefs] = usePricingDisplayPrefs();
+  const showPricing = stylePreset === 'detailed' && pricingPrefs.showCostBadges;
+
+  useEffect(() => {
+    if (data.iconPath) {
+      loadIcon(data.iconPath).then(url => {
+        setIconUrl(url);
+      });
+    }
+  }, [data.iconPath]);
+
+  const handleLabelDoubleClick = () => {
+    setIsEditingLabel(true);
+  };
+
+  const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLabel(e.target.value);
+    data.label = e.target.value;
+  };
+
+  const handleLabelBlur = () => {
+    setIsEditingLabel(false);
+  };
+
+  const handleLabelKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingLabel(false);
+    }
+  };
+
+  const handleUngroup = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === id && node.parentNode) {
+        // Find the parent group to get its absolute position
+        const parentGroup = nds.find(n => n.id === node.parentNode);
+        
+        if (parentGroup) {
+          // Convert from parent-relative to absolute canvas coordinates
+          const absolutePosition = {
+            x: parentGroup.position.x + node.position.x,
+            y: parentGroup.position.y + node.position.y,
+          };
+          
+          return {
+            ...node,
+            parentNode: undefined,
+            position: absolutePosition,
+            extent: undefined,
+          };
+        }
+        
+        // Fallback: just remove parent if parent not found
+        return {
+          ...node,
+          parentNode: undefined,
+          extent: undefined,
+        };
+      }
+      return node;
+    }));
+  };
+
+  const categoryColor = getCategoryColor(data.category);
+  const borderStyle = {
+    borderLeft: `6px solid ${categoryColor}`,
+    borderTop: '2px solid #e0e0e0',
+    borderRight: '2px solid #e0e0e0',
+    borderBottom: '2px solid #e0e0e0',
+  };
+
+  return (
+    <div className={`azure-node ${selected ? 'selected' : ''} style-${stylePreset}`} style={borderStyle}>
+      {parentNode && selected && (
+        <button
+          className="ungroup-button"
+          onClick={handleUngroup}
+          title="Remove from group (you can then drag into another group)"
+        >
+          <Unlink size={14} />
+        </button>
+      )}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
+        className="node-handle"
+        isConnectable={true}
+      />
+      
+      <div className="node-content">
+        {hasPricing && showPricing && (
+          <button
+            type="button"
+            className="cost-badge cost-badge--editable"
+            onClick={(e) => { e.stopPropagation(); openNodePricingEditor(id); }}
+            title={
+              pricing.isUsageBased
+                ? `Usage-based pricing estimate\n~${formatMonthlyCost(totalCost)}/month\n${estimate ? getPricingEstimateSourceLabel(estimate.source) : ''}\nActual cost varies with consumption\n\nTier: ${pricing.tier}\nRegion: ${pricing.region}\n\nClick to change tier, quantity or set your own price`
+                : `Estimated monthly cost (${pricingMode === 'reserved1yr' ? '1-year estimate' : 'PAYG'})\n${estimate ? getPricingEstimateSourceLabel(estimate.source) : ''}\nTier: ${pricing.tier}\nQuantity: ${pricing.quantity}\nRegion: ${pricing.region}\n\nClick to change tier, quantity or set your own price`
+            }
+            style={{ 
+              background: pricing.isUsageBased
+                ? `linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)`
+                : `linear-gradient(135deg, ${getCostColor(totalCost)} 0%, ${getCostColor(totalCost)}dd 100%)` 
+            }}
+          >
+            {pricing.isUsageBased && <Zap size={12} style={{ marginRight: '2px', display: 'inline-block', verticalAlign: 'middle' }} />}
+            {pricing.isUsageBased && '~'}{formatMonthlyCost(totalCost)}
+            {pricing.quantity > 1 && <span className="cost-quantity"> x{pricing.quantity}</span>}
+          </button>
+        )}
+        {capacityConsumed && showPricing && (
+          <div
+            className="cost-badge cost-badge--capacity"
+            title={`Cost included in Fabric Capacity\nThis item consumes Capacity Units (CUs) from the workspace's Fabric Capacity\nrather than billing separately. See the Microsoft Fabric Capacity node for the cost.`}
+          >
+            <Layers size={12} style={{ marginRight: '2px', display: 'inline-block', verticalAlign: 'middle' }} />
+            incl. capacity
+          </div>
+        )}
+        {catalogRange && showPricing && (
+          <div
+            className="cost-badge cost-badge--range"
+            title={`No metered price is published for this service, so it has no calculated figure.\nTypical range: ${catalogRange}\n\nNot included in the architecture total.`}
+          >
+            {catalogRange}
+          </div>
+        )}
+        {iconUrl ? (
+          <img src={iconUrl} alt={label} className={`node-icon ${stylePreset === 'presentation' ? 'node-icon--presentation' : ''}`} />
+        ) : (
+          <div className="node-icon-placeholder">
+            <div className="loading-spinner"></div>
+          </div>
+        )}
+        
+        {showLabels && (
+          <>
+            {isEditingLabel ? (
+              <input
+                type="text"
+                value={label}
+                onChange={handleLabelChange}
+                onBlur={handleLabelBlur}
+                onKeyDown={handleLabelKeyDown}
+                autoFocus
+                className="node-label-input"
+              />
+            ) : (
+              <div
+                className="node-label"
+                onDoubleClick={handleLabelDoubleClick}
+                title="Double-click to edit"
+              >
+                {label}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right-target"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        className="node-handle"
+        isConnectable={true}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom-target"
+        className="node-handle"
+        isConnectable={true}
+      />
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison for memo - re-render if these props change
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.selected === nextProps.selected &&
+prevProps.data.parentNode === nextProps.data.parentNode &&
+    prevProps.data.label === nextProps.data.label &&
+    prevProps.data.iconPath === nextProps.data.iconPath &&
+    prevProps.data.stylePreset === nextProps.data.stylePreset &&
+    JSON.stringify(prevProps.data.pricing) === JSON.stringify(nextProps.data.pricing)
+  );
+});
+
+AzureNode.displayName = 'AzureNode';
+
+export default AzureNode;

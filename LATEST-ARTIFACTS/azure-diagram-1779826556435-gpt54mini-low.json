@@ -1,0 +1,225 @@
+{
+  "groups": [
+    {
+      "id": "edge-app",
+      "label": "Ingress / Application"
+    },
+    {
+      "id": "ai-orchestration",
+      "label": "AI Orchestration / Retrieval"
+    },
+    {
+      "id": "data-security",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "identity",
+      "label": "Identity / Security"
+    }
+  ],
+  "services": [
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates enterprise users and issues access tokens",
+      "groupId": "identity"
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the RAG web application and handles the user experience",
+      "groupId": "edge-app"
+    },
+    {
+      "id": "ai-foundry",
+      "name": "Azure AI Foundry",
+      "type": "Azure AI Foundry",
+      "category": "ai + machine learning",
+      "description": "Orchestrates prompt flow, retrieval, and generation for the RAG pipeline",
+      "groupId": "ai-orchestration"
+    },
+    {
+      "id": "ai-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Provides hybrid keyword and vector retrieval over indexed enterprise content",
+      "groupId": "ai-orchestration"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates grounded responses using retrieved context",
+      "groupId": "ai-orchestration"
+    },
+    {
+      "id": "redis-cache",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Stores semantic cache entries for repeated questions and responses",
+      "groupId": "ai-orchestration"
+    },
+    {
+      "id": "content-store",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores source documents and indexed content for the knowledge base",
+      "groupId": "data-security"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Collects application and orchestration logs for analysis",
+      "groupId": null
+    }
+  ],
+  "connections": [
+    {
+      "from": "entra-id",
+      "to": "app-service",
+      "label": "Authenticate enterprise users and issue sign-in tokens",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "ai-foundry",
+      "label": "Submit authenticated user prompts to the orchestration layer",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "redis-cache",
+      "label": "Check semantic cache for an existing answer before retrieval",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "ai-search",
+      "label": "Run hybrid vector and keyword retrieval for grounded context",
+      "type": "sync"
+    },
+    {
+      "from": "ai-search",
+      "to": "content-store",
+      "label": "Resolve indexed document chunks from the source content repository",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "openai",
+      "label": "Send grounded prompt and retrieved context for GPT-5 generation",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "redis-cache",
+      "label": "Store completed answer for future semantic cache hits",
+      "type": "async"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "log-analytics",
+      "label": "Emit orchestration and retrieval telemetry for centralized analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "A user signs in through Microsoft Entra ID and reaches the App Service hosted RAG experience.",
+      "services": [
+        "entra-id",
+        "app-service"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The authenticated user submits a question from App Service to Azure AI Foundry for orchestration.",
+      "services": [
+        "app-service",
+        "ai-foundry"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure AI Foundry checks Azure Cache for Redis to reuse a semantically similar prior answer when available.",
+      "services": [
+        "ai-foundry",
+        "redis-cache"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "On a cache miss, Azure AI Foundry queries Azure Cognitive Search using both vector similarity and keyword filters.",
+      "services": [
+        "ai-foundry",
+        "ai-search"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Cognitive Search serves the most relevant chunks from the indexed document corpus in Storage Account.",
+      "services": [
+        "ai-search",
+        "content-store"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure AI Foundry composes a grounded prompt from the retrieved context and sends it to Azure OpenAI.",
+      "services": [
+        "ai-foundry",
+        "openai"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure OpenAI generates the final GPT-5 response and returns it to Azure AI Foundry.",
+      "services": [
+        "openai",
+        "ai-foundry"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure AI Foundry writes the completed response to Azure Cache for Redis and returns the answer to App Service.",
+      "services": [
+        "ai-foundry",
+        "redis-cache",
+        "app-service"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1442,
+    "completionTokens": 2448,
+    "totalTokens": 3890,
+    "elapsedTimeMs": 15375,
+    "model": "gpt-5.4-mini"
+  },
+  "metadata": {
+    "prompt": "An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication",
+    "model": "gpt-5.4-mini",
+    "modelDisplayName": "GPT-5.4 Mini",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1442,
+      "completionTokens": 2448,
+      "totalTokens": 3890,
+      "elapsedTimeMs": 15375,
+      "model": "gpt-5.4-mini"
+    },
+    "savedAt": "2026-05-26T20:15:57.191Z",
+    "source": "model-comparison"
+  }
+}

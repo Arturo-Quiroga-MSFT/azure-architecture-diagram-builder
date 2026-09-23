@@ -1,0 +1,203 @@
+{
+  "title": "React Web App with Node.js API, PostgreSQL, and Blob Storage",
+  "canvas": {
+    "width": 1600,
+    "height": 1000
+  },
+  "zones": [
+    {
+      "id": "azure",
+      "label": "Azure Subscription",
+      "kind": "azure",
+      "x": 242,
+      "y": 132,
+      "width": 972,
+      "height": 736
+    },
+    {
+      "id": "frontend",
+      "label": "Frontend / Web",
+      "kind": "subsystem",
+      "x": 286,
+      "y": 396,
+      "width": 238,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "backend",
+      "label": "Backend API",
+      "kind": "subsystem",
+      "x": 594,
+      "y": 434,
+      "width": 238,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage",
+      "kind": "subsystem",
+      "x": 902,
+      "y": 396,
+      "width": 268,
+      "height": 428,
+      "parent": "azure"
+    },
+    {
+      "id": "observability",
+      "label": "Observability",
+      "kind": "subsystem",
+      "x": 536,
+      "y": 176,
+      "width": 238,
+      "height": 188,
+      "parent": "azure"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "user",
+      "name": "End User",
+      "category": "general",
+      "kind": "persona",
+      "x": 60,
+      "y": 450
+    },
+    {
+      "id": "swa",
+      "name": "Azure Static Web Apps",
+      "category": "web",
+      "kind": "service",
+      "x": 330,
+      "y": 440,
+      "zone": "frontend"
+    },
+    {
+      "id": "api",
+      "name": "App Service (Node.js API)",
+      "category": "compute",
+      "kind": "service",
+      "x": 638,
+      "y": 478,
+      "zone": "backend"
+    },
+    {
+      "id": "pg",
+      "name": "Azure Database for PostgreSQL",
+      "category": "databases",
+      "kind": "database",
+      "x": 976,
+      "y": 440,
+      "zone": "data"
+    },
+    {
+      "id": "blob",
+      "name": "Azure Blob Storage",
+      "category": "storage",
+      "kind": "database",
+      "x": 946,
+      "y": 680,
+      "zone": "data"
+    },
+    {
+      "id": "appins",
+      "name": "Application Insights",
+      "category": "monitor",
+      "kind": "service",
+      "x": 580,
+      "y": 220,
+      "zone": "observability"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "user",
+      "to": "swa",
+      "step": 1,
+      "label": "Open site",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e2",
+      "from": "swa",
+      "to": "api",
+      "step": 2,
+      "label": "Call API",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e3",
+      "from": "api",
+      "to": "pg",
+      "step": 3,
+      "label": "Read/write data",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e4",
+      "from": "api",
+      "to": "blob",
+      "step": 4,
+      "label": "Store images",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e5",
+      "from": "swa",
+      "to": "blob",
+      "step": 5,
+      "label": "Load images",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e6",
+      "from": "api",
+      "to": "appins",
+      "step": 6,
+      "label": "Send telemetry",
+      "routing": "orthogonal",
+      "style": "dashed"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "The end user opens the React-based web application, which is served from Azure Static Web Apps."
+    },
+    {
+      "step": 2,
+      "description": "The React frontend calls the Node.js backend API hosted on Azure App Service over HTTPS."
+    },
+    {
+      "step": 3,
+      "description": "The Node.js API reads and writes relational data to Azure Database for PostgreSQL."
+    },
+    {
+      "step": 4,
+      "description": "The Node.js API uploads image binaries and related blobs to Azure Blob Storage."
+    },
+    {
+      "step": 5,
+      "description": "The React frontend retrieves image content directly from Azure Blob Storage (via secure URLs) to display in the UI."
+    },
+    {
+      "step": 6,
+      "description": "The Node.js API sends request and dependency telemetry to Application Insights for monitoring and troubleshooting."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3105,
+    "completionTokens": 2535,
+    "totalTokens": 5640,
+    "elapsedTimeMs": 35258,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-21T14:49:10.350Z"
+}

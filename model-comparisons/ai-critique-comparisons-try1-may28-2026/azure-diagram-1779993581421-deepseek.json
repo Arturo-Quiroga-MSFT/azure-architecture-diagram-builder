@@ -1,0 +1,273 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Edge & Ingress"
+    },
+    {
+      "id": "compute",
+      "label": "Application & Compute"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "messaging",
+      "label": "Event Processing"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring & Security"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global traffic routing, load balancing, DDoS protection",
+      "groupId": "edge"
+    },
+    {
+      "id": "appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Web application hosting (multi-region)",
+      "groupId": "compute"
+    },
+    {
+      "id": "function",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless order processing",
+      "groupId": "compute"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Global product catalog, multi-master",
+      "groupId": "data"
+    },
+    {
+      "id": "rediscache",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Session caching, product catalog caching",
+      "groupId": "data"
+    },
+    {
+      "id": "eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Event-driven order processing, reliability",
+      "groupId": "messaging"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets, connection strings, certificates",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication, user management",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Metrics, logs, alerts",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log storage and analysis",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "appservice",
+      "label": "Routes HTTP requests",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "cosmosdb",
+      "label": "Read/write product catalog",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "rediscache",
+      "label": "Cache sessions and product data",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "eventgrid",
+      "label": "Publish order events",
+      "type": "async"
+    },
+    {
+      "from": "eventgrid",
+      "to": "function",
+      "label": "Trigger order processing",
+      "type": "async"
+    },
+    {
+      "from": "function",
+      "to": "cosmosdb",
+      "label": "Update order status",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "rediscache",
+      "label": "Invalidate cache on updates",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "keyvault",
+      "label": "Retrieve secrets and connection strings",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "keyvault",
+      "label": "Retrieve secrets and connection strings",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "entra",
+      "label": "Authenticate users",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "monitor",
+      "label": "Send metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "function",
+      "to": "monitor",
+      "label": "Send metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "loganalytics",
+      "label": "Store and analyze logs",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the e-commerce site. Azure Front Door routes the request to the nearest App Service instance.",
+      "services": [
+        "frontdoor",
+        "appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service authenticates the user via Microsoft Entra ID and retrieves secrets from Key Vault.",
+      "services": [
+        "appservice",
+        "entra",
+        "keyvault"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "App Service reads product catalog from Cosmos DB, with Redis Cache as a session store and cache for frequently accessed data.",
+      "services": [
+        "appservice",
+        "cosmosdb",
+        "rediscache"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "When a customer places an order, App Service publishes an order event to Event Grid.",
+      "services": [
+        "appservice",
+        "eventgrid"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Event Grid triggers an Azure Function to process the order asynchronously.",
+      "services": [
+        "eventgrid",
+        "function"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "The Function updates order status in Cosmos DB and invalidates relevant cache entries in Redis.",
+      "services": [
+        "function",
+        "cosmosdb",
+        "rediscache"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "All services emit telemetry to Azure Monitor, which forwards logs to Log Analytics for analysis.",
+      "services": [
+        "appservice",
+        "function",
+        "monitor",
+        "loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1454,
+    "completionTokens": 1542,
+    "totalTokens": 2996,
+    "elapsedTimeMs": 12482,
+    "model": "deepseek-v3.2-speciale",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1454,
+      "completionTokens": 1542,
+      "totalTokens": 2996,
+      "elapsedTimeMs": 12482,
+      "model": "deepseek-v3.2-speciale",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T18:39:42.332Z",
+    "source": "model-comparison"
+  }
+}

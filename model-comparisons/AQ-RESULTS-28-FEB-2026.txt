@@ -1,0 +1,131 @@
+
+PROMPTS TESTED:
+  P1: E-commerce platform with payments and search
+  P2: Real-time IoT telemetry pipeline with dashboards
+  P3: Microservices app with API gateway and auth
+  P4: RAG chatbot with vector search and AI
+
+=== MODEL AVERAGES (across 4 prompts) ===
+Model                     | Avg Time | Avg Tokens | Avg Svc | Avg Conn | Avg Grp | Avg WF | Svc SD
+--------------------------|----------|------------|---------|----------|---------|--------|-------
+GPT-5.1                   | 12.9s    | 3769       | 10.0    | 10.0     | 5.0     | 9.3    | 1.6
+GPT-5.2                   | 51.6s    | 3757       | 11.5    | 12.8     | 5.0     | 8.3    | 0.9
+GPT-5.2 Codex             | 31.9s    | 3224       | 9.3     | 9.8      | 5.0     | 7.0    | 1.9
+GPT-5.3 Codex             | 49.5s    | 3982       | 11.5    | 12.5     | 5.0     | 7.8    | 0.5
+DeepSeek V3.2 Speciale    | 20.3s    | 3121       | 11.5    | 14.8     | 5.3     | 7.3    | 1.7
+Grok 4.1 Fast             | 8.1s     | 2854       | 10.5    | 11.0     | 5.8     | 9.0    | 1.1
+
+=== SPEED RANKINGS ===
+  1. Grok 4.1 Fast: 8.1s avg (7.1s - 8.7s)
+  2. GPT-5.1: 12.9s avg (10.5s - 14.6s)
+  3. DeepSeek V3.2 Speciale: 20.3s avg (12.8s - 31.9s)
+  4. GPT-5.2 Codex: 31.9s avg (19.0s - 46.1s)
+  5. GPT-5.3 Codex: 49.5s avg (45.8s - 53.6s)
+  6. GPT-5.2: 51.6s avg (42.4s - 61.2s)
+
+=== TOKEN EFFICIENCY ===
+  1. Grok 4.1 Fast: 2854 avg total (1488 completion)
+  2. DeepSeek V3.2 Speciale: 3121 avg total (1701 completion)
+  3. GPT-5.2 Codex: 3224 avg total (1831 completion)
+  4. GPT-5.2: 3757 avg total (2364 completion)
+  5. GPT-5.1: 3769 avg total (2376 completion)
+  6. GPT-5.3 Codex: 3982 avg total (2590 completion)
+
+=== ARCHITECTURE RICHNESS (services) ===
+  1. GPT-5.2: 11.5 avg (range 10-12, SD=0.9)
+  2. GPT-5.3 Codex: 11.5 avg (range 11-12, SD=0.5)
+  3. DeepSeek V3.2 Speciale: 11.5 avg (range 10-14, SD=1.7)
+  4. Grok 4.1 Fast: 10.5 avg (range 9-12, SD=1.1)
+  5. GPT-5.1: 10.0 avg (range 8-12, SD=1.6)
+  6. GPT-5.2 Codex: 9.3 avg (range 6-11, SD=1.9)
+
+=== CONNECTIVITY DENSITY ===
+  1. DeepSeek V3.2 Speciale: 14.8 avg (range 11-22)
+  2. GPT-5.2: 12.8 avg (range 12-13)
+  3. GPT-5.3 Codex: 12.5 avg (range 12-13)
+  4. Grok 4.1 Fast: 11.0 avg (range 9-12)
+  5. GPT-5.1: 10.0 avg (range 7-12)
+  6. GPT-5.2 Codex: 9.8 avg (range 5-12)
+
+=== WORKFLOW DEPTH ===
+  1. GPT-5.1: 9.3 avg steps (range 7-10)
+  2. Grok 4.1 Fast: 9.0 avg steps (range 8-10)
+  3. GPT-5.2: 8.3 avg steps (range 8-9)
+  4. GPT-5.3 Codex: 7.8 avg steps (range 7-9)
+  5. DeepSeek V3.2 Speciale: 7.3 avg steps (range 5-10)
+  6. GPT-5.2 Codex: 7.0 avg steps (range 5-8)
+
+=== EFFICIENCY RATIO (services per second) ===
+  1. Grok 4.1 Fast: 1.30 svc/sec
+  2. GPT-5.1: 0.77 svc/sec
+  3. DeepSeek V3.2 Speciale: 0.57 svc/sec
+  4. GPT-5.2 Codex: 0.29 svc/sec
+  5. GPT-5.3 Codex: 0.23 svc/sec
+  6. GPT-5.2: 0.22 svc/sec
+
+=== PER-PROMPT WINNERS ===
+  P1: E-commerce platform with payments and search
+     Fastest: Grok 4.1 Fast (8.7s)
+     Most Services: GPT-5.1 (12)
+     Most Connections: GPT-5.2 (13)
+     Most WF Steps: GPT-5.1 (10)
+
+  P2: Real-time IoT telemetry pipeline with dashboards
+     Fastest: Grok 4.1 Fast (8.4s)
+     Most Services: GPT-5.3 Codex (12)
+     Most Connections: GPT-5.2 (13)
+     Most WF Steps: GPT-5.1 (10)
+
+  P3: Microservices app with API gateway and auth
+     Fastest: Grok 4.1 Fast (7.1s)
+     Most Services: DeepSeek V3.2 Speciale (14)
+     Most Connections: DeepSeek V3.2 Speciale (22)
+     Most WF Steps: GPT-5.2 (8)
+
+  P4: RAG chatbot with vector search and AI
+     Fastest: Grok 4.1 Fast (8.1s)
+     Most Services: GPT-5.2 (12)
+     Most Connections: GPT-5.2 (13)
+     Most WF Steps: GPT-5.1 (10)
+
+=== DETAILED PER-PROMPT BREAKDOWN ===
+
+P1: E-commerce platform with payments and search
+  Model                     | Time    | Tokens | Svc | Conn | Grp | WF
+  --------------------------|---------|--------|-----|------|-----|----
+  GPT-5.1                   | 13.5s   | 3944   | 12  | 12   | 5   | 10
+  GPT-5.2                   | 52.9s   | 3711   | 12  | 13   | 5   | 8
+  GPT-5.2 Codex             | 39.1s   | 3611   | 11  | 12   | 5   | 8
+  GPT-5.3 Codex             | 49.0s   | 3826   | 12  | 12   | 5   | 7
+  DeepSeek V3.2 Speciale    | 12.8s   | 2860   | 10  | 11   | 5   | 6
+  Grok 4.1 Fast             | 8.7s    | 2987   | 12  | 12   | 6   | 10
+
+P2: Real-time IoT telemetry pipeline with dashboards
+  Model                     | Time    | Tokens | Svc | Conn | Grp | WF
+  --------------------------|---------|--------|-----|------|-----|----
+  GPT-5.1                   | 13.1s   | 3846   | 11  | 12   | 5   | 10
+  GPT-5.2                   | 49.8s   | 3957   | 10  | 13   | 5   | 8
+  GPT-5.2 Codex             | 46.1s   | 3883   | 10  | 12   | 5   | 7
+  GPT-5.3 Codex             | 53.6s   | 4426   | 12  | 13   | 5   | 9
+  DeepSeek V3.2 Speciale    | 14.8s   | 2855   | 12  | 13   | 6   | 8
+  Grok 4.1 Fast             | 8.4s    | 2863   | 10  | 11   | 6   | 8
+
+P3: Microservices app with API gateway and auth
+  Model                     | Time    | Tokens | Svc | Conn | Grp | WF
+  --------------------------|---------|--------|-----|------|-----|----
+  GPT-5.1                   | 10.5s   | 3343   | 8   | 7    | 5   | 7
+  GPT-5.2                   | 42.4s   | 3603   | 12  | 12   | 5   | 8
+  GPT-5.2 Codex             | 23.7s   | 2620   | 6   | 5    | 5   | 5
+  GPT-5.3 Codex             | 49.6s   | 3925   | 11  | 12   | 5   | 7
+  DeepSeek V3.2 Speciale    | 31.9s   | 3642   | 14  | 22   | 5   | 5
+  Grok 4.1 Fast             | 7.1s    | 2675   | 9   | 9    | 6   | 8
+
+P4: RAG chatbot with vector search and AI
+  Model                     | Time    | Tokens | Svc | Conn | Grp | WF
+  --------------------------|---------|--------|-----|------|-----|----
+  GPT-5.1                   | 14.6s   | 3943   | 9   | 9    | 5   | 10
+  GPT-5.2                   | 61.2s   | 3755   | 12  | 13   | 5   | 9
+  GPT-5.2 Codex             | 19.0s   | 2781   | 10  | 10   | 5   | 8
+  GPT-5.3 Codex             | 45.8s   | 3752   | 11  | 13   | 5   | 8
+  DeepSeek V3.2 Speciale    | 21.5s   | 3128   | 10  | 13   | 5   | 10
+  Grok 4.1 Fast             | 8.1s    | 2889   | 11  | 12   | 5   | 10

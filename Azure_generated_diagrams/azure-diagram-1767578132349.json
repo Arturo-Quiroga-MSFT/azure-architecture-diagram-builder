@@ -1,0 +1,373 @@
+{
+  "nodes": [
+    {
+      "id": "ingestion-group",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Data Ingestion"
+      },
+      "style": {
+        "width": 451,
+        "height": 250
+      },
+      "width": 451,
+      "height": 250,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "processing-group",
+      "type": "groupNode",
+      "position": {
+        "x": 373.4078212290502,
+        "y": 495.7541899441341
+      },
+      "data": {
+        "label": "Training & Processing"
+      },
+      "style": {
+        "width": 400,
+        "height": 268
+      },
+      "width": 400,
+      "height": 268,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 373.4078212290502,
+        "y": 495.7541899441341
+      }
+    },
+    {
+      "id": "data-group",
+      "type": "groupNode",
+      "position": {
+        "x": 950,
+        "y": 100
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 395,
+        "height": 404
+      },
+      "width": 395,
+      "height": 404,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 950,
+        "y": 100
+      }
+    },
+    {
+      "id": "inference-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1400,
+        "y": 100
+      },
+      "data": {
+        "label": "Inference Endpoints"
+      },
+      "style": {
+        "width": 443,
+        "height": 250
+      },
+      "width": 443,
+      "height": 250,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1400,
+        "y": 100
+      }
+    },
+    {
+      "id": "eventhub-ingest",
+      "type": "azureNode",
+      "position": {
+        "x": 126.64804469273747,
+        "y": 164.91620111731845
+      },
+      "data": {
+        "label": "Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10149-icon-service-Event-Hub-Clusters.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 126.64804469273747,
+        "y": 164.91620111731845
+      },
+      "dragging": false
+    },
+    {
+      "id": "datafactory-ingest",
+      "type": "azureNode",
+      "position": {
+        "x": 345.47486033519544,
+        "y": 205.47486033519556
+      },
+      "data": {
+        "label": "Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 345.47486033519544,
+        "y": 205.47486033519556
+      },
+      "dragging": false
+    },
+    {
+      "id": "ml-service",
+      "type": "azureNode",
+      "position": {
+        "x": 483.63128491620114,
+        "y": 575.4189944134077
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10166-icon-service-Machine-Learning.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 483.63128491620114,
+        "y": 575.4189944134077
+      },
+      "dragging": false
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 1055.3072625698323,
+        "y": 346.81564245810057
+      },
+      "data": {
+        "label": "Blob Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1055.3072625698323,
+        "y": 346.81564245810057
+      },
+      "dragging": false
+    },
+    {
+      "id": "sql-db",
+      "type": "azureNode",
+      "position": {
+        "x": 1174.5810055865923,
+        "y": 196.87150837988827
+      },
+      "data": {
+        "label": "Azure SQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10122-icon-service-Azure-Database-MySQL-Server.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1174.5810055865923,
+        "y": 196.87150837988827
+      },
+      "dragging": false
+    },
+    {
+      "id": "aks-inference",
+      "type": "azureNode",
+      "position": {
+        "x": 1450,
+        "y": 160
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10023-icon-service-Kubernetes-Services.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "positionAbsolute": {
+        "x": 1450,
+        "y": 160
+      }
+    },
+    {
+      "id": "appservice-inference",
+      "type": "azureNode",
+      "position": {
+        "x": 1689.7206703910615,
+        "y": 216.53631284916207
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1689.7206703910615,
+        "y": 216.53631284916207
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "eventhub-ingest",
+      "target": "datafactory-ingest",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Ingested events trigger pipeline",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "datafactory-ingest",
+      "target": "blob-storage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Store raw data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "datafactory-ingest",
+      "target": "sql-db",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Store processed/feature data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "blob-storage",
+      "target": "ml-service",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Training data access",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "sql-db",
+      "target": "ml-service",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Feature data for training",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "ml-service",
+      "target": "blob-storage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Store trained models",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "blob-storage",
+      "target": "aks-inference",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Model retrieval for inference",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "aks-inference",
+      "target": "appservice-inference",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Expose REST API",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 59.88636363636351,
+    "y": 313.0909090909091,
+    "zoom": 0.8136363636363636
+  }
+}

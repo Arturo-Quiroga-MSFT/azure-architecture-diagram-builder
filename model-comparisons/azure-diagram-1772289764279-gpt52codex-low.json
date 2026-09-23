@@ -1,0 +1,263 @@
+{
+  "groups": [
+    {
+      "id": "g-ingress",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "g-processing",
+      "label": "Application / Compute"
+    },
+    {
+      "id": "g-data",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "g-identity",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "g-monitoring",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "s-iothub",
+      "name": "Azure IoT Hub",
+      "type": "Azure IoT Hub",
+      "category": "iot",
+      "description": "Secure device telemetry ingestion",
+      "groupId": "g-ingress"
+    },
+    {
+      "id": "s-stream",
+      "name": "Azure Stream Analytics",
+      "type": "Azure Stream Analytics",
+      "category": "analytics",
+      "description": "Real-time stream processing and aggregation",
+      "groupId": "g-processing"
+    },
+    {
+      "id": "s-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Telemetry enrichment and business logic",
+      "groupId": "g-processing"
+    },
+    {
+      "id": "s-signalr",
+      "name": "Azure SignalR Service",
+      "type": "Azure SignalR Service",
+      "category": "web",
+      "description": "Push live updates to dashboards",
+      "groupId": "g-processing"
+    },
+    {
+      "id": "s-powerbi",
+      "name": "Power BI Embedded",
+      "type": "Power BI Embedded",
+      "category": "analytics",
+      "description": "Real-time and historical dashboards",
+      "groupId": "g-processing"
+    },
+    {
+      "id": "s-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Raw and enriched telemetry archive",
+      "groupId": "g-data"
+    },
+    {
+      "id": "s-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Low-latency telemetry store",
+      "groupId": "g-data"
+    },
+    {
+      "id": "s-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication for dashboards",
+      "groupId": "g-identity"
+    },
+    {
+      "id": "s-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Centralized metrics and alerts",
+      "groupId": "g-monitoring"
+    },
+    {
+      "id": "s-log",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log aggregation and analysis",
+      "groupId": "g-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "s-iothub",
+      "to": "s-stream",
+      "label": "Stream device telemetry to processing job",
+      "type": "async"
+    },
+    {
+      "from": "s-iothub",
+      "to": "s-storage",
+      "label": "Capture raw telemetry for replay and audit",
+      "type": "async"
+    },
+    {
+      "from": "s-stream",
+      "to": "s-functions",
+      "label": "Invoke enrichment for detected events",
+      "type": "sync"
+    },
+    {
+      "from": "s-functions",
+      "to": "s-cosmos",
+      "label": "Persist enriched telemetry records",
+      "type": "sync"
+    },
+    {
+      "from": "s-functions",
+      "to": "s-storage",
+      "label": "Archive enriched telemetry batches",
+      "type": "sync"
+    },
+    {
+      "from": "s-stream",
+      "to": "s-powerbi",
+      "label": "Push live aggregates to dashboards",
+      "type": "sync"
+    },
+    {
+      "from": "s-cosmos",
+      "to": "s-powerbi",
+      "label": "Serve historical telemetry for visuals",
+      "type": "sync"
+    },
+    {
+      "from": "s-functions",
+      "to": "s-signalr",
+      "label": "Publish real-time updates to clients",
+      "type": "sync"
+    },
+    {
+      "from": "s-signalr",
+      "to": "s-powerbi",
+      "label": "Deliver live dashboard refresh notifications",
+      "type": "sync"
+    },
+    {
+      "from": "s-powerbi",
+      "to": "s-entra",
+      "label": "Authenticate dashboard viewers",
+      "type": "sync"
+    },
+    {
+      "from": "s-stream",
+      "to": "s-monitor",
+      "label": "Emit processing metrics and alerts",
+      "type": "sync"
+    },
+    {
+      "from": "s-monitor",
+      "to": "s-log",
+      "label": "Store diagnostics for analysis and retention",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Devices send telemetry securely to the ingestion endpoint.",
+      "services": [
+        "s-iothub",
+        "s-stream"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Incoming telemetry is captured to raw storage for replay and audit.",
+      "services": [
+        "s-iothub",
+        "s-storage"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Stream analytics detects patterns and triggers enrichment logic.",
+      "services": [
+        "s-stream",
+        "s-functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Enriched telemetry is persisted for low-latency queries and archival.",
+      "services": [
+        "s-functions",
+        "s-cosmos",
+        "s-storage"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Real-time aggregates are sent to embedded dashboards.",
+      "services": [
+        "s-stream",
+        "s-powerbi"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Dashboards retrieve historical context and receive live updates.",
+      "services": [
+        "s-cosmos",
+        "s-signalr",
+        "s-powerbi"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Processing metrics are monitored and stored for operational insights.",
+      "services": [
+        "s-stream",
+        "s-monitor",
+        "s-log"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2490,
+    "totalTokens": 3883,
+    "elapsedTimeMs": 46087,
+    "model": "gpt-5.2-codex"
+  },
+  "metadata": {
+    "prompt": "Real-time IoT telemetry pipeline with dashboards",
+    "model": "gpt-5.2-codex",
+    "modelDisplayName": "GPT-5.2 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2490,
+      "totalTokens": 3883,
+      "elapsedTimeMs": 46087,
+      "model": "gpt-5.2-codex"
+    },
+    "savedAt": "2026-02-28T14:42:44.581Z",
+    "source": "model-comparison"
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / Real-Time Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-iothub",
+      "name": "Azure IoT Hub",
+      "type": "Azure IoT Hub",
+      "category": "iot",
+      "description": "Ingests high-volume telemetry from connected devices.",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-eventhubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Buffers and partitions telemetry streams for downstream processing.",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-stream",
+      "name": "Azure Stream Analytics",
+      "type": "Azure Stream Analytics",
+      "category": "analytics",
+      "description": "Executes real-time windowed queries, aggregations, and anomaly detection.",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Runs event-driven business logic for alerts and enrichment.",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-powerbi",
+      "name": "Power BI Embedded",
+      "type": "Power BI Embedded",
+      "category": "analytics",
+      "description": "Serves interactive near-real-time dashboards to end users.",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores hot, queryable telemetry and alert state for dashboards.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-adls",
+      "name": "Azure Data Lake Storage",
+      "type": "Azure Data Lake Storage",
+      "category": "storage",
+      "description": "Persists raw and curated telemetry history for long-term analytics.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Caches latest metrics to reduce dashboard query latency.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Provides user authentication and access control for dashboards.",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets and connection strings used by serverless logic.",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects core pipeline metrics and alerts from streaming compute.",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central workspace for operational logs and troubleshooting queries.",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-iothub",
+      "to": "svc-eventhubs",
+      "label": "Route device telemetry events to partitioned ingestion stream",
+      "type": "async"
+    },
+    {
+      "from": "svc-eventhubs",
+      "to": "svc-stream",
+      "label": "Consume telemetry partitions for real-time SQL-like stream processing",
+      "type": "async"
+    },
+    {
+      "from": "svc-stream",
+      "to": "svc-cosmos",
+      "label": "Upsert live aggregates and KPI snapshots for low-latency queries",
+      "type": "sync"
+    },
+    {
+      "from": "svc-stream",
+      "to": "svc-adls",
+      "label": "Write raw and enriched event batches for historical retention",
+      "type": "async"
+    },
+    {
+      "from": "svc-stream",
+      "to": "svc-functions",
+      "label": "Trigger serverless handlers when anomaly rules or thresholds match",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-cosmos",
+      "label": "Persist alert incidents and remediation status documents",
+      "type": "sync"
+    },
+    {
+      "from": "svc-stream",
+      "to": "svc-redis",
+      "label": "Push latest rolling metrics into in-memory cache",
+      "type": "sync"
+    },
+    {
+      "from": "svc-powerbi",
+      "to": "svc-cosmos",
+      "label": "Query hot telemetry datasets for interactive visual components",
+      "type": "sync"
+    },
+    {
+      "from": "svc-powerbi",
+      "to": "svc-redis",
+      "label": "Read cached latest values for sub-second dashboard tiles",
+      "type": "sync"
+    },
+    {
+      "from": "svc-powerbi",
+      "to": "svc-entra",
+      "label": "Authenticate dashboard viewers and enforce role-based access",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-keyvault",
+      "label": "Retrieve API keys and database secrets at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "svc-stream",
+      "to": "svc-monitor",
+      "label": "Publish job health, throughput, and late-event metrics",
+      "type": "sync"
+    },
+    {
+      "from": "svc-monitor",
+      "to": "svc-loganalytics",
+      "label": "Export collected metrics and alerts to centralized log workspace",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Devices send telemetry to IoT ingress and events are routed into the streaming backbone.",
+      "services": [
+        "svc-iothub",
+        "svc-eventhubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Real-time analytics jobs read partitioned events and execute filtering, windowing, and anomaly logic.",
+      "services": [
+        "svc-eventhubs",
+        "svc-stream"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Processed live aggregates are written to operational storage and cached for rapid dashboard reads.",
+      "services": [
+        "svc-stream",
+        "svc-cosmos",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Raw and enriched telemetry is archived to the data lake for long-term trend analysis.",
+      "services": [
+        "svc-stream",
+        "svc-adls"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Detected anomalies trigger serverless handlers, which securely pull secrets and persist alert records.",
+      "services": [
+        "svc-stream",
+        "svc-functions",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Alert outcomes and incident state are stored for dashboard and operations visibility.",
+      "services": [
+        "svc-functions",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Dashboard users authenticate through identity services before loading embedded analytics.",
+      "services": [
+        "svc-entra",
+        "svc-powerbi"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Dashboards query both hot telemetry store and cache to render near-real-time visuals.",
+      "services": [
+        "svc-powerbi",
+        "svc-cosmos",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Streaming compute emits health metrics to monitoring, then logs are centralized for diagnostics.",
+      "services": [
+        "svc-stream",
+        "svc-monitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 3033,
+    "totalTokens": 4426,
+    "elapsedTimeMs": 53635,
+    "model": "gpt-5.3-codex"
+  },
+  "metadata": {
+    "prompt": "Real-time IoT telemetry pipeline with dashboards",
+    "model": "gpt-5.3-codex",
+    "modelDisplayName": "GPT-5.3 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 3033,
+      "totalTokens": 4426,
+      "elapsedTimeMs": 53635,
+      "model": "gpt-5.3-codex"
+    },
+    "savedAt": "2026-02-28T14:42:44.733Z",
+    "source": "model-comparison"
+  }
+}

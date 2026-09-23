@@ -1,0 +1,263 @@
+{
+  "groups": [
+    {
+      "id": "grp-app",
+      "label": "Application Access"
+    },
+    {
+      "id": "grp-ai",
+      "label": "RAG Orchestration"
+    },
+    {
+      "id": "grp-data",
+      "label": "Knowledge Data"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the enterprise RAG web application and API endpoints",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-aifoundry",
+      "name": "Azure AI Foundry",
+      "type": "Azure AI Foundry",
+      "category": "ai + machine learning",
+      "description": "Orchestrates prompt flows, retrieval, grounding, and response assembly",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Performs hybrid vector and keyword retrieval across indexed enterprise content",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Runs GPT-5 to generate grounded responses from retrieved context",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Stores semantic cache entries for repeated or similar user queries",
+      "groupId": "grp-ai"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Holds source documents used to build the searchable RAG knowledge base",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authenticates enterprise users and issues tokens to the application",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects application telemetry and dependency metrics from the primary app tier",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores and analyzes centralized operational logs and telemetry",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-entra",
+      "to": "svc-appservice",
+      "label": "Issue OAuth tokens for employee sign-in and session authorization",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-redis",
+      "label": "Check semantic cache for similar previously answered prompts",
+      "type": "sync"
+    },
+    {
+      "from": "svc-redis",
+      "to": "svc-appservice",
+      "label": "Return cached grounded answer when similarity threshold is satisfied",
+      "type": "optional"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-aifoundry",
+      "label": "Submit uncached chat request for orchestration and grounding",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aifoundry",
+      "to": "svc-search",
+      "label": "Execute hybrid vector and keyword retrieval against enterprise index",
+      "type": "sync"
+    },
+    {
+      "from": "svc-search",
+      "to": "svc-aifoundry",
+      "label": "Return ranked passages, metadata, and nearest-neighbor matches",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aifoundry",
+      "to": "svc-openai",
+      "label": "Send grounded prompt with retrieved context to GPT-5 for answer generation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-openai",
+      "to": "svc-aifoundry",
+      "label": "Return generated answer, citations, and model completion output",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aifoundry",
+      "to": "svc-redis",
+      "label": "Store semantic cache entry for prompt fingerprint and final response",
+      "type": "async"
+    },
+    {
+      "from": "svc-storage",
+      "to": "svc-search",
+      "label": "Provide source documents for indexing, chunking, and vector enrichment",
+      "type": "async"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-monitor",
+      "label": "Emit request latency, dependency calls, and user interaction telemetry",
+      "type": "async"
+    },
+    {
+      "from": "svc-monitor",
+      "to": "svc-loganalytics",
+      "label": "Persist aggregated application and platform diagnostics for analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Enterprise content is stored and supplied to the search service to build the hybrid retrieval index.",
+      "services": [
+        "svc-storage",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "A user signs in to the RAG application using enterprise identity and receives an authenticated session.",
+      "services": [
+        "svc-entra",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The application checks the semantic cache to determine whether a similar question already has a reusable grounded answer.",
+      "services": [
+        "svc-appservice",
+        "svc-redis"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "If no cache hit is found, the application submits the user query to Azure AI Foundry for orchestration.",
+      "services": [
+        "svc-appservice",
+        "svc-aifoundry"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure AI Foundry retrieves relevant passages using hybrid vector and keyword search over indexed enterprise knowledge.",
+      "services": [
+        "svc-aifoundry",
+        "svc-search",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure AI Foundry sends the grounded prompt and retrieved context to GPT-5 to generate a response with citations.",
+      "services": [
+        "svc-aifoundry",
+        "svc-openai"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "The orchestrated response is cached for semantic reuse and returned to the authenticated application user.",
+      "services": [
+        "svc-aifoundry",
+        "svc-redis",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "The application emits telemetry to centralized monitoring where logs and metrics are retained for operations analysis.",
+      "services": [
+        "svc-appservice",
+        "svc-monitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1442,
+    "completionTokens": 2455,
+    "totalTokens": 3897,
+    "elapsedTimeMs": 32888,
+    "model": "gpt-5.4"
+  },
+  "metadata": {
+    "prompt": "An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication",
+    "model": "gpt-5.4",
+    "modelDisplayName": "GPT-5.4",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1442,
+      "completionTokens": 2455,
+      "totalTokens": 3897,
+      "elapsedTimeMs": 32888,
+      "model": "gpt-5.4"
+    },
+    "savedAt": "2026-05-26T20:15:57.040Z",
+    "source": "model-comparison"
+  }
+}

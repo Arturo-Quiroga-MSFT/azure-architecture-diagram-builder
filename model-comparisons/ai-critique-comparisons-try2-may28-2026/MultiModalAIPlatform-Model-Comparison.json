@@ -1,0 +1,2901 @@
+{
+  "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+  "timestamp": "2026-05-28T19:50:18.522Z",
+  "reasoningEffort": "low",
+  "modelCount": 12,
+  "results": {
+    "gpt51-low": {
+      "model": "gpt-5.1",
+      "displayName": "GPT-5.1",
+      "metrics": {
+        "promptTokens": 1436,
+        "completionTokens": 3061,
+        "totalTokens": 4497,
+        "elapsedTimeMs": 25860,
+        "model": "gpt-5.1",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 9,
+      "groupCount": 5,
+      "workflowSteps": 9,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Streaming Ingestion"
+          },
+          {
+            "id": "grp-app-ai",
+            "label": "Application & AI Processing"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Ingests real-time multi-modal streams (audio, text, metadata) for processing",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Serverless compute that processes streams and orchestrates AI calls",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Provides text and vision models for multi-modal analysis",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Performs real-time speech-to-text transcription from audio streams",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Translates transcripts and text outputs into multiple languages",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores transcripts, translations, and AI analysis artifacts",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Provides identity and access tokens for platform components",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-az-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central monitoring hub collecting metrics and logs from compute layer",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-app-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Provides deep application and model observability for the AI workflows",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Stores and queries consolidated logs and telemetry for analysis and alerting",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-event-hubs",
+            "to": "svc-functions",
+            "label": "Trigger serverless function execution for each incoming multi-modal event",
+            "type": "async"
+          },
+          {
+            "from": "svc-entra",
+            "to": "svc-functions",
+            "label": "Issue OAuth tokens and validate caller identity for stream processing operations",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-speech",
+            "label": "Send audio segments for low-latency speech-to-text transcription",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-openai",
+            "label": "Call text and vision models for contextual understanding and content generation",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-translator",
+            "label": "Submit transcribed and generated text for multilingual translation",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Persist transcripts, translations, and analysis results as structured artifacts",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-az-monitor",
+            "label": "Emit execution metrics and logs for centralized monitoring",
+            "type": "async"
+          },
+          {
+            "from": "svc-az-monitor",
+            "to": "svc-app-insights",
+            "label": "Forward application performance and model telemetry for observability dashboards",
+            "type": "async"
+          },
+          {
+            "from": "svc-az-monitor",
+            "to": "svc-log-analytics",
+            "label": "Stream consolidated platform logs and metrics for querying and alerting",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "External producers send multi-modal events (audio, text, metadata) that are ingested into Event Hubs and await processing by Azure Functions.",
+            "services": [
+              "svc-event-hubs",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Azure Functions is triggered by Event Hubs messages and validates the caller context and permissions using Microsoft Entra ID issued tokens.",
+            "services": [
+              "svc-event-hubs",
+              "svc-functions",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Azure Functions extracts audio segments from the event payload and invokes Speech Services to generate real-time transcriptions.",
+            "services": [
+              "svc-functions",
+              "svc-speech"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Azure Functions submits text and optional images to Azure OpenAI for multi-modal understanding, summarization, and content generation.",
+            "services": [
+              "svc-functions",
+              "svc-openai"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Azure Functions sends source and generated text to Translator to produce multilingual outputs for supported target languages.",
+            "services": [
+              "svc-functions",
+              "svc-translator"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure Functions aggregates transcripts, translations, and AI analysis metadata and writes them to the Storage Account for downstream consumption.",
+            "services": [
+              "svc-functions",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "During each function execution, Azure Functions publishes metrics, traces, and custom model events to Azure Monitor for centralized collection.",
+            "services": [
+              "svc-functions",
+              "svc-az-monitor"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Azure Monitor forwards relevant application and model-level telemetry to Application Insights, enabling detailed observability dashboards and performance analysis.",
+            "services": [
+              "svc-az-monitor",
+              "svc-app-insights"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Azure Monitor streams consolidated logs and metrics into Log Analytics, where operators can run queries and configure alerts on platform behavior.",
+            "services": [
+              "svc-az-monitor",
+              "svc-log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1436,
+          "completionTokens": 3061,
+          "totalTokens": 4497,
+          "elapsedTimeMs": 25860,
+          "model": "gpt-5.1",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt52-low": {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "metrics": {
+        "promptTokens": 1436,
+        "completionTokens": 2500,
+        "totalTokens": 3936,
+        "elapsedTimeMs": 24233,
+        "model": "gpt-5.2",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 11,
+      "connectionCount": 11,
+      "groupCount": 6,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress / Streaming"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application / Orchestration"
+          },
+          {
+            "id": "grp-ai",
+            "label": "AI Services (Multi-Modal + Language)"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data / Storage"
+          },
+          {
+            "id": "grp-idsec",
+            "label": "Identity / Security"
+          },
+          {
+            "id": "grp-obs",
+            "label": "Monitoring / Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-eventhubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Streaming ingestion for audio, images, and metadata events",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Orchestrates real-time processing pipeline and calls AI services",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Generates/understands text and performs vision-capable multimodal reasoning",
+            "groupId": "grp-ai"
+          },
+          {
+            "id": "svc-speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time speech-to-text transcription for streamed audio",
+            "groupId": "grp-ai"
+          },
+          {
+            "id": "svc-translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual translation for transcripts, prompts, and responses",
+            "groupId": "grp-ai"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores raw media, transcripts, translated text, and AI outputs",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates callers and issues tokens for protected API access",
+            "groupId": "grp-idsec"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores secrets/keys for AI endpoints, Event Hubs, and storage access",
+            "groupId": "grp-idsec"
+          },
+          {
+            "id": "svc-azmon",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central observability hub for metrics and platform telemetry",
+            "groupId": "grp-obs"
+          },
+          {
+            "id": "svc-log",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Centralized log store for querying pipeline and operational logs",
+            "groupId": "grp-obs"
+          },
+          {
+            "id": "svc-appinsights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Model and application observability: traces, dependencies, and latency breakdowns",
+            "groupId": "grp-obs"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-entra",
+            "to": "svc-functions",
+            "label": "Validate caller identity and authorize API invocations via tokens",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-keyvault",
+            "label": "Retrieve AI/service credentials and connection strings at runtime",
+            "type": "sync"
+          },
+          {
+            "from": "svc-eventhubs",
+            "to": "svc-functions",
+            "label": "Trigger processing per incoming audio/image event batch/partition",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Persist raw media, transcripts, translations, and enriched outputs",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-speech",
+            "label": "Stream audio frames and receive real-time transcription segments",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-translator",
+            "label": "Translate transcripts and prompts to requested target languages",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-openai",
+            "label": "Submit multimodal prompt (text + image reference) and get generated response",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-eventhubs",
+            "label": "Publish enriched transcript/translation/AI insights as downstream events",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-azmon",
+            "label": "Emit platform metrics and pipeline health signals from the orchestrator",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmon",
+            "to": "svc-log",
+            "label": "Centralize collected telemetry for querying, alerts, and retention",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmon",
+            "to": "svc-appinsights",
+            "label": "Correlate distributed traces and dependency timings for model observability",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Producers send audio/image events to the streaming ingestion layer; the orchestrator is authorized for protected access.",
+            "services": [
+              "svc-eventhubs",
+              "svc-functions",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "The orchestrator is triggered by new stream events and loads required secrets/configuration.",
+            "services": [
+              "svc-eventhubs",
+              "svc-functions",
+              "svc-keyvault"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Audio content is transcribed in real time and transcript segments are accumulated for downstream processing.",
+            "services": [
+              "svc-functions",
+              "svc-speech"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Transcripts and/or prompts are translated to the target languages required by consumers or the model prompt strategy.",
+            "services": [
+              "svc-functions",
+              "svc-translator"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Multimodal inference is performed by combining translated text with image context to generate responses or structured insights.",
+            "services": [
+              "svc-functions",
+              "svc-openai",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Outputs (transcripts, translations, AI responses) are persisted and optionally published back onto the event stream for downstream systems.",
+            "services": [
+              "svc-functions",
+              "svc-storage",
+              "svc-eventhubs"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "End-to-end observability is captured from the orchestrator and centralized for querying and model/pipeline health analysis.",
+            "services": [
+              "svc-functions",
+              "svc-azmon",
+              "svc-appinsights",
+              "svc-log"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1436,
+          "completionTokens": 2500,
+          "totalTokens": 3936,
+          "elapsedTimeMs": 24233,
+          "model": "gpt-5.2",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt52codex-low": {
+      "model": "gpt-5.2-codex",
+      "displayName": "GPT-5.2 Codex",
+      "metrics": {
+        "promptTokens": 1436,
+        "completionTokens": 2387,
+        "totalTokens": 3823,
+        "elapsedTimeMs": 37750,
+        "model": "gpt-5.2-codex",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 10,
+      "connectionCount": 13,
+      "groupCount": 5,
+      "workflowSteps": 9,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress & Streaming"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application & AI Services"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-eventhubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Streaming ingest for multimodal events",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Orchestrates processing and AI calls",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Text and vision inference",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time transcription",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual translation of outputs",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores transcripts and AI outputs",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication and service identity",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-appinsights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Model observability and telemetry",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central monitoring hub",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log and metric storage for analysis",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-eventhubs",
+            "to": "svc-functions",
+            "label": "Consume streaming multimodal events for processing",
+            "type": "async"
+          },
+          {
+            "from": "svc-eventhubs",
+            "to": "svc-storage",
+            "label": "Capture raw streams for replay and audit",
+            "type": "async"
+          },
+          {
+            "from": "svc-entra",
+            "to": "svc-functions",
+            "label": "Authenticate function triggers and service calls",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-speech",
+            "label": "Send audio chunks for real-time transcription",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-openai",
+            "label": "Submit text and vision prompts for inference",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-translator",
+            "label": "Translate transcripts and responses to target languages",
+            "type": "sync"
+          },
+          {
+            "from": "svc-openai",
+            "to": "svc-storage",
+            "label": "Persist model responses and embeddings",
+            "type": "sync"
+          },
+          {
+            "from": "svc-translator",
+            "to": "svc-storage",
+            "label": "Store translated outputs for downstream use",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Write normalized transcripts and metadata",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-eventhubs",
+            "label": "Publish enriched events back to the stream",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-appinsights",
+            "label": "Emit traces and model performance metrics",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appinsights",
+            "to": "svc-azmonitor",
+            "label": "Forward application telemetry to monitoring hub",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmonitor",
+            "to": "svc-loganalytics",
+            "label": "Store logs and metrics for analysis and alerting",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Streaming multimodal events are ingested and captured for replay",
+            "services": [
+              "svc-eventhubs",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Serverless orchestration consumes the stream for processing",
+            "services": [
+              "svc-eventhubs",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Audio is transcribed in real time",
+            "services": [
+              "svc-functions",
+              "svc-speech"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Text and vision prompts are sent for AI inference",
+            "services": [
+              "svc-functions",
+              "svc-openai"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Outputs are translated to requested languages",
+            "services": [
+              "svc-functions",
+              "svc-translator"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Transcripts and AI outputs are persisted for downstream use",
+            "services": [
+              "svc-functions",
+              "svc-openai",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Enriched events are published back to the stream",
+            "services": [
+              "svc-functions",
+              "svc-eventhubs"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Telemetry is collected and centralized for observability",
+            "services": [
+              "svc-functions",
+              "svc-appinsights",
+              "svc-azmonitor"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Logs and metrics are stored for analysis and alerting",
+            "services": [
+              "svc-azmonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1436,
+          "completionTokens": 2387,
+          "totalTokens": 3823,
+          "elapsedTimeMs": 37750,
+          "model": "gpt-5.2-codex",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt53codex-low": {
+      "model": "gpt-5.3-codex",
+      "displayName": "GPT-5.3 Codex",
+      "metrics": {
+        "promptTokens": 1436,
+        "completionTokens": 2343,
+        "totalTokens": 3779,
+        "elapsedTimeMs": 36007,
+        "model": "gpt-5.3-codex",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 9,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress & Streaming"
+          },
+          {
+            "id": "grp-app-ai",
+            "label": "Application & AI Processing"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data Storage"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity & Access"
+          },
+          {
+            "id": "grp-observability",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point for multimodal client traffic and API routing",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-eventhubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "High-throughput streaming ingest for audio, text, and metadata events",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Serverless orchestration of transcription, translation, and multimodal inference pipeline",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Text and vision model inference for multimodal AI responses",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time speech-to-text transcription for streaming audio",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual translation of transcripts and generated responses",
+            "groupId": "grp-app-ai"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores raw stream payloads, transcripts, translations, and model outputs",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates users and issues tokens for platform access",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-appinsights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Tracks model latency, errors, and end-to-end request telemetry",
+            "groupId": "grp-observability"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-entra",
+            "label": "Redirect user sign-in and validate bearer tokens before API access",
+            "type": "sync"
+          },
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-eventhubs",
+            "label": "Accept client audio/text stream and publish ingestion events",
+            "type": "async"
+          },
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-functions",
+            "label": "Route synchronous multimodal prompt requests to orchestration endpoint",
+            "type": "sync"
+          },
+          {
+            "from": "svc-eventhubs",
+            "to": "svc-functions",
+            "label": "Trigger processing function for each queued stream segment",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-speech",
+            "label": "Send real-time audio chunks for transcription",
+            "type": "sync"
+          },
+          {
+            "from": "svc-speech",
+            "to": "svc-functions",
+            "label": "Return timestamped transcript segments to orchestrator",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-translator",
+            "label": "Submit transcript text for target-language translation",
+            "type": "sync"
+          },
+          {
+            "from": "svc-translator",
+            "to": "svc-functions",
+            "label": "Return multilingual transcript and response variants",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-openai",
+            "label": "Invoke text and vision models with normalized multimodal context",
+            "type": "sync"
+          },
+          {
+            "from": "svc-openai",
+            "to": "svc-functions",
+            "label": "Return generated answer, reasoning metadata, and vision interpretation",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Persist transcripts, translations, prompts, and AI outputs for replay",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-appinsights",
+            "label": "Emit dependency traces, token usage, and model latency metrics",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User authenticates and receives access token for the multimodal AI platform.",
+            "services": [
+              "svc-frontdoor",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Client streams audio/text input through the edge endpoint into the ingestion bus.",
+            "services": [
+              "svc-frontdoor",
+              "svc-eventhubs"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Event-driven function execution starts for each incoming stream segment.",
+            "services": [
+              "svc-eventhubs",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Orchestrator submits audio to speech service and receives real-time transcript output.",
+            "services": [
+              "svc-functions",
+              "svc-speech"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Transcript is translated into requested languages for multilingual interaction.",
+            "services": [
+              "svc-functions",
+              "svc-translator"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Translated text and visual context are sent to Azure OpenAI for multimodal inference.",
+            "services": [
+              "svc-functions",
+              "svc-openai"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Function composes final response and stores processing artifacts for audit and replay.",
+            "services": [
+              "svc-functions",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Pipeline emits observability telemetry to monitor model quality, latency, and failures.",
+            "services": [
+              "svc-functions",
+              "svc-appinsights"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1436,
+          "completionTokens": 2343,
+          "totalTokens": 3779,
+          "elapsedTimeMs": 36007,
+          "model": "gpt-5.3-codex",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt54-low": {
+      "model": "gpt-5.4",
+      "displayName": "GPT-5.4",
+      "metrics": {
+        "promptTokens": 1436,
+        "completionTokens": 2395,
+        "totalTokens": 3831,
+        "elapsedTimeMs": 34407,
+        "model": "gpt-5.4",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 8,
+      "connectionCount": 9,
+      "groupCount": 4,
+      "workflowSteps": 6,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress & Streaming"
+          },
+          {
+            "id": "grp-application",
+            "label": "AI Orchestration"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data & Session Storage"
+          },
+          {
+            "id": "grp-monitoring",
+            "label": "Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-eventhubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Ingests real-time multimodal event streams such as audio, image, and text payloads.",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Consumes streaming events, normalizes payloads, and coordinates downstream AI processing.",
+            "groupId": "grp-application"
+          },
+          {
+            "id": "svc-appservice",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Hosts the platform API and session orchestration layer for multimodal AI interactions.",
+            "groupId": "grp-application"
+          },
+          {
+            "id": "svc-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Performs text generation and vision-enabled reasoning over user prompts and image context.",
+            "groupId": "grp-application"
+          },
+          {
+            "id": "svc-speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Provides real-time speech-to-text transcription for streaming audio inputs.",
+            "groupId": "grp-application"
+          },
+          {
+            "id": "svc-translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Translates transcripts, prompts, and responses for multilingual user experiences.",
+            "groupId": "grp-application"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Stores raw media, transcripts, prompts, and generated multimodal outputs.",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-appinsights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Captures model latency, throughput, errors, and application telemetry for observability.",
+            "groupId": "grp-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-eventhubs",
+            "to": "svc-functions",
+            "label": "Consume streamed audio, image, and text events for preprocessing",
+            "type": "async"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-storage",
+            "label": "Persist raw media chunks and normalized event payloads",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-speech",
+            "label": "Submit live audio frames for real-time transcription",
+            "type": "sync"
+          },
+          {
+            "from": "svc-speech",
+            "to": "svc-translator",
+            "label": "Translate interim and final transcripts into target languages",
+            "type": "sync"
+          },
+          {
+            "from": "svc-functions",
+            "to": "svc-appservice",
+            "label": "Forward normalized transcripts and media references to session orchestration",
+            "type": "async"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-openai",
+            "label": "Send text prompts and image context for multimodal reasoning",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-translator",
+            "label": "Translate user prompts and AI responses for multilingual delivery",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-storage",
+            "label": "Store session artifacts, transcripts, and generated outputs",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appservice",
+            "to": "svc-appinsights",
+            "label": "Emit model latency, token usage, and failure telemetry",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Streaming clients publish multimodal events into the platform intake stream for downstream processing.",
+            "services": [
+              "svc-eventhubs",
+              "svc-functions"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "The stream processor normalizes incoming payloads and stores raw media and event snapshots for replay and auditing.",
+            "services": [
+              "svc-functions",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Audio segments are sent for low-latency speech recognition to produce live transcripts.",
+            "services": [
+              "svc-functions",
+              "svc-speech"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Recognized speech is translated into requested languages before being attached to the active application session.",
+            "services": [
+              "svc-speech",
+              "svc-translator",
+              "svc-appservice"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "The application orchestrator submits multilingual text and image context to the multimodal model for reasoning and response generation.",
+            "services": [
+              "svc-appservice",
+              "svc-openai",
+              "svc-translator"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Final transcripts, prompts, and AI outputs are saved, while application and model telemetry is recorded for observability.",
+            "services": [
+              "svc-appservice",
+              "svc-storage",
+              "svc-appinsights"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1436,
+          "completionTokens": 2395,
+          "totalTokens": 3831,
+          "elapsedTimeMs": 34407,
+          "model": "gpt-5.4",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "gpt54mini-low": {
+      "model": "gpt-5.4-mini",
+      "displayName": "GPT-5.4 Mini",
+      "metrics": {
+        "promptTokens": 1436,
+        "completionTokens": 2033,
+        "totalTokens": 3469,
+        "elapsedTimeMs": 16355,
+        "model": "gpt-5.4-mini",
+        "reasoningEffort": "low"
+      },
+      "serviceCount": 9,
+      "connectionCount": 8,
+      "groupCount": 4,
+      "workflowSteps": 6,
+      "architecture": {
+        "groups": [
+          {
+            "id": "group-ingress",
+            "label": "Ingress and Streaming Ingest"
+          },
+          {
+            "id": "group-app",
+            "label": "AI Application and Processing"
+          },
+          {
+            "id": "group-monitoring",
+            "label": "Monitoring and Observability"
+          },
+          {
+            "id": "group-security",
+            "label": "Identity and Security"
+          }
+        ],
+        "services": [
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates users and service-to-service access",
+            "groupId": "group-security"
+          },
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Streams multimodal events and messages into the platform",
+            "groupId": "group-ingress"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Orchestrates streaming processing and AI service calls",
+            "groupId": "group-app"
+          },
+          {
+            "id": "openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Generates text and vision-enabled AI responses",
+            "groupId": "group-app"
+          },
+          {
+            "id": "speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Performs real-time speech-to-text transcription",
+            "groupId": "group-app"
+          },
+          {
+            "id": "translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Translates content for multilingual experiences",
+            "groupId": "group-app"
+          },
+          {
+            "id": "appinsights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Collects application telemetry and model usage signals",
+            "groupId": "group-monitoring"
+          },
+          {
+            "id": "azure-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Centralizes monitoring and alerting for the platform",
+            "groupId": "group-monitoring"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Stores and queries platform telemetry and logs",
+            "groupId": "group-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "entra-id",
+            "to": "event-hubs",
+            "label": "Issue authenticated access tokens for streaming clients",
+            "type": "sync"
+          },
+          {
+            "from": "event-hubs",
+            "to": "functions",
+            "label": "Deliver incoming multimodal events for stream processing",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "speech",
+            "label": "Send audio payloads for real-time transcription",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "translator",
+            "label": "Submit extracted text for multilingual translation",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "openai",
+            "label": "Invoke text and vision prompts for model inference",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "appinsights",
+            "label": "Emit request traces, latency, and model telemetry",
+            "type": "sync"
+          },
+          {
+            "from": "appinsights",
+            "to": "azure-monitor",
+            "label": "Forward application telemetry for platform-wide monitoring",
+            "type": "sync"
+          },
+          {
+            "from": "azure-monitor",
+            "to": "log-analytics",
+            "label": "Store metrics and logs for cross-resource analysis",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Users and streaming producers authenticate before publishing multimodal events into the ingest pipeline.",
+            "services": [
+              "entra-id",
+              "event-hubs"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Event Hubs receives audio, text, and image payloads and triggers downstream processing.",
+            "services": [
+              "event-hubs",
+              "functions"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Azure Functions routes audio streams to Speech Services for real-time transcription.",
+            "services": [
+              "functions",
+              "speech"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Azure Functions sends transcribed and extracted text to Translator for multilingual normalization.",
+            "services": [
+              "functions",
+              "translator"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Azure Functions invokes Azure OpenAI for text and vision inference to generate model outputs.",
+            "services": [
+              "functions",
+              "openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Application telemetry and model usage metrics flow from the compute layer into the monitoring stack.",
+            "services": [
+              "functions",
+              "appinsights",
+              "azure-monitor",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1436,
+          "completionTokens": 2033,
+          "totalTokens": 3469,
+          "elapsedTimeMs": 16355,
+          "model": "gpt-5.4-mini",
+          "reasoningEffort": "low"
+        }
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-v3.2-speciale",
+      "displayName": "DeepSeek V3.2 Speciale",
+      "metrics": {
+        "promptTokens": 1462,
+        "completionTokens": 1650,
+        "totalTokens": 3112,
+        "elapsedTimeMs": 14805,
+        "model": "deepseek-v3.2-speciale",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 12,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge-ingress",
+            "label": "Edge / Ingress"
+          },
+          {
+            "id": "compute-processing",
+            "label": "Compute & Processing"
+          },
+          {
+            "id": "data-storage",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "security-identity",
+            "label": "Security & Identity"
+          },
+          {
+            "id": "monitoring-observability",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Ingest streaming data from clients",
+            "groupId": "edge-ingress"
+          },
+          {
+            "id": "app-service",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Web API frontend for clients",
+            "groupId": "edge-ingress"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Process events, orchestrate AI services",
+            "groupId": "compute-processing"
+          },
+          {
+            "id": "openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Text and vision AI models",
+            "groupId": "compute-processing"
+          },
+          {
+            "id": "ai-speech",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time audio transcription",
+            "groupId": "compute-processing"
+          },
+          {
+            "id": "ai-translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual text translation",
+            "groupId": "compute-processing"
+          },
+          {
+            "id": "storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Store raw and processed data",
+            "groupId": "data-storage"
+          },
+          {
+            "id": "cosmosdb",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Store metadata and results",
+            "groupId": "data-storage"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secrets and keys management",
+            "groupId": "security-identity"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication and authorization",
+            "groupId": "security-identity"
+          },
+          {
+            "id": "app-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Collect telemetry and logs",
+            "groupId": "monitoring-observability"
+          },
+          {
+            "id": "azure-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Aggregated monitoring and alerts",
+            "groupId": "monitoring-observability"
+          }
+        ],
+        "connections": [
+          {
+            "from": "app-service",
+            "to": "event-hubs",
+            "label": "Send streaming data",
+            "type": "async"
+          },
+          {
+            "from": "event-hubs",
+            "to": "functions",
+            "label": "Trigger function on events",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "openai",
+            "label": "Call OpenAI for text/vision",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "ai-speech",
+            "label": "Transcribe audio",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "ai-translator",
+            "label": "Translate text",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "storage",
+            "label": "Store raw media and results",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "cosmosdb",
+            "label": "Save metadata and processed results",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "entra-id",
+            "label": "Authenticate users",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "key-vault",
+            "label": "Retrieve secrets (API keys)",
+            "type": "sync"
+          },
+          {
+            "from": "app-service",
+            "to": "app-insights",
+            "label": "Send frontend telemetry",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "app-insights",
+            "label": "Send function telemetry",
+            "type": "async"
+          },
+          {
+            "from": "app-insights",
+            "to": "azure-monitor",
+            "label": "Aggregate logs and metrics",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Clients send requests to App Service, which authenticates via Microsoft Entra ID.",
+            "services": [
+              "app-service",
+              "entra-id"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "App Service forwards streaming data (e.g., audio, images, text) to Event Hubs.",
+            "services": [
+              "app-service",
+              "event-hubs"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Event Hubs triggers an Azure Function to process each incoming event.",
+            "services": [
+              "event-hubs",
+              "functions"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "The Function retrieves secrets (API keys) from Key Vault to call AI services securely.",
+            "services": [
+              "functions",
+              "key-vault"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "The Function orchestrates calls to Azure OpenAI (text/vision), Speech Services (transcription), and Translator (translation) as needed.",
+            "services": [
+              "functions",
+              "openai",
+              "ai-speech",
+              "ai-translator"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Processed results and raw data are stored: media in Storage Account, metadata and final outputs in Cosmos DB.",
+            "services": [
+              "functions",
+              "storage",
+              "cosmosdb"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Throughout, App Service and Functions send telemetry to Application Insights, which forwards to Azure Monitor for observability.",
+            "services": [
+              "app-service",
+              "functions",
+              "app-insights",
+              "azure-monitor"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1462,
+          "completionTokens": 1650,
+          "totalTokens": 3112,
+          "elapsedTimeMs": 14805,
+          "model": "deepseek-v3.2-speciale",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "deepseekv4pro": {
+      "model": "deepseek-v4-pro",
+      "displayName": "DeepSeek V4 Pro",
+      "metrics": {
+        "promptTokens": 1459,
+        "completionTokens": 1382,
+        "totalTokens": 2841,
+        "elapsedTimeMs": 33528,
+        "model": "default",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 8,
+      "connectionCount": 9,
+      "groupCount": 3,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "group-ingest",
+            "label": "Streaming Ingest"
+          },
+          {
+            "id": "group-ai",
+            "label": "AI Processing"
+          },
+          {
+            "id": "group-monitor",
+            "label": "Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Ingests real-time streaming data for multi-modal processing",
+            "groupId": "group-ingest"
+          },
+          {
+            "id": "azure-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Processes text and vision inputs using GPT-4 and DALL-E models",
+            "groupId": "group-ai"
+          },
+          {
+            "id": "speech-services",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Performs real-time speech-to-text transcription and text-to-speech synthesis",
+            "groupId": "group-ai"
+          },
+          {
+            "id": "translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Provides multilingual translation for text and transcribed speech",
+            "groupId": "group-ai"
+          },
+          {
+            "id": "computer-vision",
+            "name": "Computer Vision",
+            "type": "Computer Vision",
+            "category": "ai + machine learning",
+            "description": "Analyzes images and video frames for object detection and OCR",
+            "groupId": "group-ai"
+          },
+          {
+            "id": "app-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Monitors model performance, latency, and usage telemetry",
+            "groupId": "group-monitor"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Aggregates and queries observability logs",
+            "groupId": "group-monitor"
+          },
+          {
+            "id": "azure-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central observability hub for the AI platform",
+            "groupId": "group-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "event-hubs",
+            "to": "azure-openai",
+            "label": "Streams text and vision events for AI inference",
+            "type": "async"
+          },
+          {
+            "from": "event-hubs",
+            "to": "speech-services",
+            "label": "Routes audio streams for real-time transcription",
+            "type": "async"
+          },
+          {
+            "from": "speech-services",
+            "to": "translator",
+            "label": "Sends transcribed text for multilingual translation",
+            "type": "sync"
+          },
+          {
+            "from": "translator",
+            "to": "azure-openai",
+            "label": "Feeds translated text as enriched context to LLM",
+            "type": "sync"
+          },
+          {
+            "from": "computer-vision",
+            "to": "azure-openai",
+            "label": "Provides extracted visual features for multi-modal reasoning",
+            "type": "sync"
+          },
+          {
+            "from": "event-hubs",
+            "to": "computer-vision",
+            "label": "Forwards image and video frames for analysis",
+            "type": "async"
+          },
+          {
+            "from": "azure-openai",
+            "to": "app-insights",
+            "label": "Emits model invocation metrics and token usage telemetry",
+            "type": "async"
+          },
+          {
+            "from": "app-insights",
+            "to": "azure-monitor",
+            "label": "Forwards application telemetry to central monitoring hub",
+            "type": "async"
+          },
+          {
+            "from": "azure-monitor",
+            "to": "log-analytics",
+            "label": "Routes aggregated logs and metrics for query and analysis",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Multi-modal data (text, audio, images) is ingested into Event Hubs as streaming events.",
+            "services": [
+              "event-hubs"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Event Hubs routes audio streams to Speech Services for real-time transcription and image/video frames to Computer Vision for analysis.",
+            "services": [
+              "event-hubs",
+              "speech-services",
+              "computer-vision"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Speech Services transcribes audio and sends the text to Translator for multilingual conversion.",
+            "services": [
+              "speech-services",
+              "translator"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Translated text and visual features from Computer Vision are sent to Azure OpenAI as enriched context.",
+            "services": [
+              "translator",
+              "computer-vision",
+              "azure-openai"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Azure OpenAI performs multi-modal reasoning combining text, translated content, and visual features to generate a response.",
+            "services": [
+              "azure-openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure OpenAI emits invocation metrics, token usage, and latency data to Application Insights.",
+            "services": [
+              "azure-openai",
+              "app-insights"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Application Insights forwards telemetry to Azure Monitor, which routes aggregated logs to Log Analytics for querying and dashboarding.",
+            "services": [
+              "app-insights",
+              "azure-monitor",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1459,
+          "completionTokens": 1382,
+          "totalTokens": 2841,
+          "elapsedTimeMs": 33528,
+          "model": "default",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "grok41fast": {
+      "model": "grok-4.1-fast",
+      "displayName": "Grok 4.1 Fast",
+      "metrics": {
+        "promptTokens": 1409,
+        "completionTokens": 1218,
+        "totalTokens": 2627,
+        "elapsedTimeMs": 9505,
+        "model": "grok-4-1-fast-non-reasoning",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 8,
+      "connectionCount": 9,
+      "groupCount": 4,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge-ingress",
+            "label": "Edge & Streaming Ingress"
+          },
+          {
+            "id": "ai-processing",
+            "label": "Multi-Modal AI Processing"
+          },
+          {
+            "id": "observability",
+            "label": "Observability & Monitoring"
+          },
+          {
+            "id": "identity-security",
+            "label": "Identity & Security"
+          }
+        ],
+        "services": [
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Real-time streaming data ingest",
+            "groupId": "edge-ingress"
+          },
+          {
+            "id": "azure-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Text and vision model inference",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "speech-services",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time audio transcription",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual translation",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "app-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "AI model performance telemetry",
+            "groupId": "observability"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Centralized log aggregation",
+            "groupId": "observability"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication and authorization",
+            "groupId": "identity-security"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "API keys and secrets management",
+            "groupId": "identity-security"
+          }
+        ],
+        "connections": [
+          {
+            "from": "event-hubs",
+            "to": "azure-openai",
+            "label": "Stream text/vision payloads for inference",
+            "type": "async"
+          },
+          {
+            "from": "event-hubs",
+            "to": "speech-services",
+            "label": "Stream audio for real-time transcription",
+            "type": "async"
+          },
+          {
+            "from": "speech-services",
+            "to": "translator",
+            "label": "Send transcribed text for translation",
+            "type": "sync"
+          },
+          {
+            "from": "azure-openai",
+            "to": "translator",
+            "label": "Pipe vision/text results for multilingual processing",
+            "type": "sync"
+          },
+          {
+            "from": "azure-openai",
+            "to": "app-insights",
+            "label": "Emit model inference telemetry",
+            "type": "async"
+          },
+          {
+            "from": "speech-services",
+            "to": "app-insights",
+            "label": "Report transcription latency metrics",
+            "type": "async"
+          },
+          {
+            "from": "app-insights",
+            "to": "log-analytics",
+            "label": "Aggregate AI observability logs",
+            "type": "async"
+          },
+          {
+            "from": "entra-id",
+            "to": "azure-openai",
+            "label": "Authenticate API requests",
+            "type": "sync"
+          },
+          {
+            "from": "key-vault",
+            "to": "azure-openai",
+            "label": "Retrieve model deployment keys",
+            "type": "optional"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Ingest multi-modal streams (text, vision, audio)",
+            "services": [
+              "event-hubs"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Route streams to parallel AI processors",
+            "services": [
+              "event-hubs",
+              "azure-openai",
+              "speech-services"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Perform real-time speech transcription",
+            "services": [
+              "speech-services"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Execute vision/text inference concurrently",
+            "services": [
+              "azure-openai"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Translate transcribed and inferred content",
+            "services": [
+              "speech-services",
+              "azure-openai",
+              "translator"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Emit telemetry from AI services",
+            "services": [
+              "azure-openai",
+              "speech-services",
+              "app-insights"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Aggregate observability data for analysis",
+            "services": [
+              "app-insights",
+              "log-analytics"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Enforce authentication across AI endpoints",
+            "services": [
+              "entra-id",
+              "azure-openai",
+              "speech-services"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1409,
+          "completionTokens": 1218,
+          "totalTokens": 2627,
+          "elapsedTimeMs": 9505,
+          "model": "grok-4-1-fast-non-reasoning",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "grok43": {
+      "model": "grok-4.3",
+      "displayName": "Grok 4.3",
+      "metrics": {
+        "promptTokens": 1423,
+        "completionTokens": 732,
+        "totalTokens": 4572,
+        "elapsedTimeMs": 34160,
+        "model": "grok-4.3",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 5,
+      "connectionCount": 4,
+      "groupCount": 3,
+      "workflowSteps": 5,
+      "architecture": {
+        "groups": [
+          {
+            "id": "ingress",
+            "label": "Streaming Ingress"
+          },
+          {
+            "id": "ai-processing",
+            "label": "Multi-Modal AI Processing"
+          },
+          {
+            "id": "observability",
+            "label": "Model Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Streaming ingest for real-time data",
+            "groupId": "ingress"
+          },
+          {
+            "id": "speech-services",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time transcription",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual support",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "azure-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Text and vision processing",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "application-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Model observability and monitoring",
+            "groupId": "observability"
+          }
+        ],
+        "connections": [
+          {
+            "from": "event-hubs",
+            "to": "speech-services",
+            "label": "Stream audio for real-time transcription",
+            "type": "async"
+          },
+          {
+            "from": "speech-services",
+            "to": "translator",
+            "label": "Send transcribed text for multilingual translation",
+            "type": "sync"
+          },
+          {
+            "from": "translator",
+            "to": "azure-openai",
+            "label": "Forward translated text for AI text and vision analysis",
+            "type": "sync"
+          },
+          {
+            "from": "azure-openai",
+            "to": "application-insights",
+            "label": "Emit model traces and performance metrics",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Ingest multi-modal streams into Event Hubs for processing",
+            "services": [
+              "event-hubs",
+              "speech-services"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Transcribe incoming audio in real time with Speech Services",
+            "services": [
+              "event-hubs",
+              "speech-services"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Translate transcribed text using Translator for multilingual support",
+            "services": [
+              "speech-services",
+              "translator"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Process text and vision inputs with Azure OpenAI",
+            "services": [
+              "translator",
+              "azure-openai"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Capture inference metrics and logs in Application Insights",
+            "services": [
+              "azure-openai",
+              "application-insights"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1423,
+          "completionTokens": 732,
+          "totalTokens": 4572,
+          "elapsedTimeMs": 34160,
+          "model": "grok-4.3",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "mistrallarge3": {
+      "model": "mistral-large-3",
+      "displayName": "Mistral Large 3",
+      "metrics": {
+        "promptTokens": 1475,
+        "completionTokens": 1500,
+        "totalTokens": 2975,
+        "elapsedTimeMs": 12146,
+        "model": "mistral-large-3",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 9,
+      "connectionCount": 10,
+      "groupCount": 5,
+      "workflowSteps": 9,
+      "architecture": {
+        "groups": [
+          {
+            "id": "ingress",
+            "label": "Ingress & Streaming"
+          },
+          {
+            "id": "ai-processing",
+            "label": "AI Processing"
+          },
+          {
+            "id": "data-storage",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "observability",
+            "label": "Observability"
+          },
+          {
+            "id": "security-identity",
+            "label": "Security & Identity"
+          }
+        ],
+        "services": [
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Streaming ingest for multi-modal data (text, audio, vision)",
+            "groupId": "ingress"
+          },
+          {
+            "id": "azure-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Text and vision processing with GPT-4 and DALL-E models",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "speech-services",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Real-time transcription and speech-to-text",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Multilingual text translation",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "storage-account",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Persistent storage for processed data and logs",
+            "groupId": "data-storage"
+          },
+          {
+            "id": "application-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Model performance and telemetry monitoring",
+            "groupId": "observability"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Centralized logging and analytics",
+            "groupId": "observability"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secure storage for API keys and secrets",
+            "groupId": "security-identity"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication and identity management",
+            "groupId": "security-identity"
+          }
+        ],
+        "connections": [
+          {
+            "from": "event-hubs",
+            "to": "speech-services",
+            "label": "Stream audio data for real-time transcription",
+            "type": "async"
+          },
+          {
+            "from": "event-hubs",
+            "to": "azure-openai",
+            "label": "Stream text and vision data for AI processing",
+            "type": "async"
+          },
+          {
+            "from": "speech-services",
+            "to": "translator",
+            "label": "Send transcribed text for multilingual translation",
+            "type": "sync"
+          },
+          {
+            "from": "speech-services",
+            "to": "storage-account",
+            "label": "Store transcribed and translated text",
+            "type": "async"
+          },
+          {
+            "from": "azure-openai",
+            "to": "storage-account",
+            "label": "Store processed text and vision outputs",
+            "type": "async"
+          },
+          {
+            "from": "azure-openai",
+            "to": "application-insights",
+            "label": "Log model performance and telemetry",
+            "type": "async"
+          },
+          {
+            "from": "application-insights",
+            "to": "log-analytics",
+            "label": "Aggregate and analyze monitoring data",
+            "type": "async"
+          },
+          {
+            "from": "key-vault",
+            "to": "azure-openai",
+            "label": "Retrieve API keys for OpenAI service access",
+            "type": "sync"
+          },
+          {
+            "from": "key-vault",
+            "to": "speech-services",
+            "label": "Retrieve API keys for Speech Services access",
+            "type": "sync"
+          },
+          {
+            "from": "entra-id",
+            "to": "azure-openai",
+            "label": "Authenticate users and services",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Multi-modal data (text, audio, vision) is ingested into Event Hubs for streaming",
+            "services": [
+              "event-hubs"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Event Hubs streams audio data to Speech Services for real-time transcription",
+            "services": [
+              "event-hubs",
+              "speech-services"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Transcribed text is sent to Translator for multilingual processing",
+            "services": [
+              "speech-services",
+              "translator"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Event Hubs streams text and vision data to Azure OpenAI for AI processing",
+            "services": [
+              "event-hubs",
+              "azure-openai"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Processed outputs from Speech Services and Azure OpenAI are stored in Storage Account",
+            "services": [
+              "speech-services",
+              "azure-openai",
+              "storage-account"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure OpenAI logs model performance and telemetry to Application Insights",
+            "services": [
+              "azure-openai",
+              "application-insights"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Application Insights aggregates monitoring data in Log Analytics for analysis",
+            "services": [
+              "application-insights",
+              "log-analytics"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Key Vault provides secure access to API keys for AI services",
+            "services": [
+              "key-vault",
+              "azure-openai",
+              "speech-services"
+            ]
+          },
+          {
+            "step": 9,
+            "description": "Microsoft Entra ID authenticates users and services accessing the platform",
+            "services": [
+              "entra-id",
+              "azure-openai"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1475,
+          "completionTokens": 1500,
+          "totalTokens": 2975,
+          "elapsedTimeMs": 12146,
+          "model": "mistral-large-3",
+          "reasoningEffort": "none"
+        }
+      }
+    },
+    "kimik25": {
+      "model": "kimi-k2-5",
+      "displayName": "Kimi K2.5",
+      "metrics": {
+        "promptTokens": 1429,
+        "completionTokens": 4184,
+        "totalTokens": 5613,
+        "elapsedTimeMs": 26182,
+        "model": "Kimi-K2.5",
+        "reasoningEffort": "none"
+      },
+      "serviceCount": 9,
+      "connectionCount": 8,
+      "groupCount": 4,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "streaming-ingestion",
+            "label": "Streaming Ingestion"
+          },
+          {
+            "id": "ai-processing",
+            "label": "AI Processing"
+          },
+          {
+            "id": "security-identity",
+            "label": "Security & Identity"
+          },
+          {
+            "id": "observability",
+            "label": "Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "event-hubs",
+            "name": "Event Hubs",
+            "type": "Event Hubs",
+            "category": "analytics",
+            "description": "Ingests streaming audio, text, and vision data",
+            "groupId": "streaming-ingestion"
+          },
+          {
+            "id": "azure-functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Orchestrates multi-modal AI processing pipeline",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "azure-openai",
+            "name": "Azure OpenAI",
+            "type": "Azure OpenAI",
+            "category": "ai + machine learning",
+            "description": "Processes text and vision content using GPT models",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "speech-services",
+            "name": "Speech Services",
+            "type": "Speech Services",
+            "category": "ai + machine learning",
+            "description": "Performs real-time audio transcription",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "translator",
+            "name": "Translator",
+            "type": "Translator",
+            "category": "ai + machine learning",
+            "description": "Provides multilingual translation support",
+            "groupId": "ai-processing"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secures AI service API keys and endpoints",
+            "groupId": "security-identity"
+          },
+          {
+            "id": "microsoft-entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authenticates service-to-service identities",
+            "groupId": "security-identity"
+          },
+          {
+            "id": "application-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Collects model performance and request telemetry",
+            "groupId": "observability"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Aggregates logs for operational analysis",
+            "groupId": "observability"
+          }
+        ],
+        "connections": [
+          {
+            "from": "event-hubs",
+            "to": "azure-functions",
+            "label": "Stream multimodal events for processing",
+            "type": "async"
+          },
+          {
+            "from": "azure-functions",
+            "to": "speech-services",
+            "label": "Submit audio for real-time transcription",
+            "type": "sync"
+          },
+          {
+            "from": "azure-functions",
+            "to": "translator",
+            "label": "Translate transcribed text content",
+            "type": "sync"
+          },
+          {
+            "from": "azure-functions",
+            "to": "azure-openai",
+            "label": "Analyze text and vision inputs",
+            "type": "sync"
+          },
+          {
+            "from": "key-vault",
+            "to": "azure-functions",
+            "label": "Retrieve AI service credentials",
+            "type": "sync"
+          },
+          {
+            "from": "microsoft-entra-id",
+            "to": "azure-functions",
+            "label": "Authenticate managed identity",
+            "type": "sync"
+          },
+          {
+            "from": "azure-functions",
+            "to": "application-insights",
+            "label": "Send model inference telemetry",
+            "type": "sync"
+          },
+          {
+            "from": "application-insights",
+            "to": "log-analytics",
+            "label": "Forward aggregated observability data",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Event Hubs ingests streaming audio, text, and vision data from client applications",
+            "services": [
+              "event-hubs"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Azure Functions triggers on Event Hubs stream to process incoming events",
+            "services": [
+              "event-hubs",
+              "azure-functions"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Azure Functions sends audio payloads to Speech Services for real-time transcription",
+            "services": [
+              "azure-functions",
+              "speech-services"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Azure Functions sends text content to Translator for multilingual localization",
+            "services": [
+              "azure-functions",
+              "translator"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Azure Functions sends text and vision data to Azure OpenAI for analysis and generation",
+            "services": [
+              "azure-functions",
+              "azure-openai"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure Functions emits model performance telemetry to Application Insights",
+            "services": [
+              "azure-functions",
+              "application-insights"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Application Insights forwards aggregated logs and metrics to Log Analytics",
+            "services": [
+              "application-insights",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1429,
+          "completionTokens": 4184,
+          "totalTokens": 5613,
+          "elapsedTimeMs": 26182,
+          "model": "Kimi-K2.5",
+          "reasoningEffort": "none"
+        }
+      }
+    }
+  }
+}

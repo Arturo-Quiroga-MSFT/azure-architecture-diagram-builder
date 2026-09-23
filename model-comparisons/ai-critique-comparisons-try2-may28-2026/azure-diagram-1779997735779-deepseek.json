@@ -1,0 +1,283 @@
+{
+  "groups": [
+    {
+      "id": "edge-ingress",
+      "label": "Edge / Ingress"
+    },
+    {
+      "id": "compute-processing",
+      "label": "Compute & Processing"
+    },
+    {
+      "id": "data-storage",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "security-identity",
+      "label": "Security & Identity"
+    },
+    {
+      "id": "monitoring-observability",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Ingest streaming data from clients",
+      "groupId": "edge-ingress"
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Web API frontend for clients",
+      "groupId": "edge-ingress"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Process events, orchestrate AI services",
+      "groupId": "compute-processing"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Text and vision AI models",
+      "groupId": "compute-processing"
+    },
+    {
+      "id": "ai-speech",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Real-time audio transcription",
+      "groupId": "compute-processing"
+    },
+    {
+      "id": "ai-translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Multilingual text translation",
+      "groupId": "compute-processing"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Store raw and processed data",
+      "groupId": "data-storage"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Store metadata and results",
+      "groupId": "data-storage"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets and keys management",
+      "groupId": "security-identity"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and authorization",
+      "groupId": "security-identity"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Collect telemetry and logs",
+      "groupId": "monitoring-observability"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Aggregated monitoring and alerts",
+      "groupId": "monitoring-observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "app-service",
+      "to": "event-hubs",
+      "label": "Send streaming data",
+      "type": "async"
+    },
+    {
+      "from": "event-hubs",
+      "to": "functions",
+      "label": "Trigger function on events",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "openai",
+      "label": "Call OpenAI for text/vision",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "ai-speech",
+      "label": "Transcribe audio",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "ai-translator",
+      "label": "Translate text",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "storage",
+      "label": "Store raw media and results",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "cosmosdb",
+      "label": "Save metadata and processed results",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "entra-id",
+      "label": "Authenticate users",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "key-vault",
+      "label": "Retrieve secrets (API keys)",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "app-insights",
+      "label": "Send frontend telemetry",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "app-insights",
+      "label": "Send function telemetry",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "azure-monitor",
+      "label": "Aggregate logs and metrics",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Clients send requests to App Service, which authenticates via Microsoft Entra ID.",
+      "services": [
+        "app-service",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service forwards streaming data (e.g., audio, images, text) to Event Hubs.",
+      "services": [
+        "app-service",
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Event Hubs triggers an Azure Function to process each incoming event.",
+      "services": [
+        "event-hubs",
+        "functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "The Function retrieves secrets (API keys) from Key Vault to call AI services securely.",
+      "services": [
+        "functions",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The Function orchestrates calls to Azure OpenAI (text/vision), Speech Services (transcription), and Translator (translation) as needed.",
+      "services": [
+        "functions",
+        "openai",
+        "ai-speech",
+        "ai-translator"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Processed results and raw data are stored: media in Storage Account, metadata and final outputs in Cosmos DB.",
+      "services": [
+        "functions",
+        "storage",
+        "cosmosdb"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Throughout, App Service and Functions send telemetry to Application Insights, which forwards to Azure Monitor for observability.",
+      "services": [
+        "app-service",
+        "functions",
+        "app-insights",
+        "azure-monitor"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1462,
+    "completionTokens": 1650,
+    "totalTokens": 3112,
+    "elapsedTimeMs": 14805,
+    "model": "deepseek-v3.2-speciale",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1462,
+      "completionTokens": 1650,
+      "totalTokens": 3112,
+      "elapsedTimeMs": 14805,
+      "model": "deepseek-v3.2-speciale",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T19:48:56.689Z",
+    "source": "model-comparison"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "summary": {
+    "evaluatedFromCaptureAt": "2026-08-12T13:41:48.193Z",
+    "evaluator": {
+      "name": "aadb-deterministic",
+      "version": "v2"
+    },
+    "dataset": {
+      "name": "aadb-eval-seed",
+      "version": "v2",
+      "rows": 48,
+      "scenarios": 8,
+      "sha256": "0528c33f3abd6d81b3369a1bddc1a26643cb5d82d46c323fba06ba85150c35b3"
+    },
+    "capture": {
+      "attempts": 48,
+      "successes": 48,
+      "failures": 0,
+      "successRate": 1
+    },
+    "overall": {
+      "candidates": 48,
+      "passed": 27,
+      "passRate": 0.563,
+      "averageScore": 96.8,
+      "averageServiceRecall": 0.952,
+      "averageConnectionRecall": 0.856
+    },
+    "byModel": [
+      {
+        "key": "gpt-5.6-luna",
+        "candidates": 16,
+        "passed": 12,
+        "passRate": 0.75,
+        "averageScore": 98,
+        "averageServiceRecall": 0.967,
+        "averageConnectionRecall": 0.922,
+        "averageLatencyMs": 30840.3,
+        "averageTokens": 4976.5
+      },
+      {
+        "key": "kimi-k2-7-code",
+        "candidates": 16,
+        "passed": 8,
+        "passRate": 0.5,
+        "averageScore": 97.6,
+        "averageServiceRecall": 0.945,
+        "averageConnectionRecall": 0.917,
+        "averageLatencyMs": 104307.8,
+        "averageTokens": 9446.8
+      },
+      {
+        "key": "gpt-5.2",
+        "candidates": 16,
+        "passed": 7,
+        "passRate": 0.438,
+        "averageScore": 94.8,
+        "averageServiceRecall": 0.945,
+        "averageConnectionRecall": 0.729,
+        "averageLatencyMs": 63015.4,
+        "averageTokens": 6069.6
+      }
+    ],
+    "byScenario": [
+      {
+        "key": "fabric-medallion-current",
+        "candidates": 6,
+        "passed": 5,
+        "passRate": 0.833,
+        "averageScore": 99.5,
+        "averageServiceRecall": 0.976,
+        "averageConnectionRecall": 1,
+        "averageLatencyMs": 63698.3,
+        "averageTokens": 6706.5
+      },
+      {
+        "key": "event-driven-orders-detailed",
+        "candidates": 6,
+        "passed": 6,
+        "passRate": 1,
+        "averageScore": 99.4,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.958,
+        "averageLatencyMs": 63419.3,
+        "averageTokens": 8317.2
+      },
+      {
+        "key": "intelligent-document-processing-v2",
+        "candidates": 6,
+        "passed": 3,
+        "passRate": 0.5,
+        "averageScore": 98.9,
+        "averageServiceRecall": 0.963,
+        "averageConnectionRecall": 1,
+        "averageLatencyMs": 59964.2,
+        "averageTokens": 5311.5
+      },
+      {
+        "key": "private-paas-zero-trust",
+        "candidates": 6,
+        "passed": 5,
+        "passRate": 0.833,
+        "averageScore": 98.8,
+        "averageServiceRecall": 0.983,
+        "averageConnectionRecall": 0.945,
+        "averageLatencyMs": 73303,
+        "averageTokens": 7212.8
+      },
+      {
+        "key": "three-tier-web-concise",
+        "candidates": 6,
+        "passed": 5,
+        "passRate": 0.833,
+        "averageScore": 98.3,
+        "averageServiceRecall": 1,
+        "averageConnectionRecall": 0.889,
+        "averageLatencyMs": 30463.3,
+        "averageTokens": 4861.5
+      },
+      {
+        "key": "enterprise-rag-agent",
+        "candidates": 6,
+        "passed": 2,
+        "passRate": 0.333,
+        "averageScore": 95.4,
+        "averageServiceRecall": 0.979,
+        "averageConnectionRecall": 0.722,
+        "averageLatencyMs": 55853.7,
+        "averageTokens": 6152.2
+      },
+      {
+        "key": "iot-real-time-analytics",
+        "candidates": 6,
+        "passed": 1,
+        "passRate": 0.167,
+        "averageScore": 95.1,
+        "averageServiceRecall": 0.881,
+        "averageConnectionRecall": 0.833,
+        "averageLatencyMs": 108000.8,
+        "averageTokens": 9058
+      },
+      {
+        "key": "multi-region-regulated-tension",
+        "candidates": 6,
+        "passed": 0,
+        "passRate": 0,
+        "averageScore": 89.2,
+        "averageServiceRecall": 0.833,
+        "averageConnectionRecall": 0.5,
+        "averageLatencyMs": 73733.2,
+        "averageTokens": 7028
+      }
+    ],
+    "review": {
+      "status": "pending-human-review",
+      "sampleSize": 16,
+      "file": ".foundry/reviews/aadb-v2-review-sample.jsonl"
+    }
+  },
+  "rowsFile": ".foundry/results/aadb-baseline-v2.rows.jsonl"
+}

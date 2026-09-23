@@ -1,0 +1,532 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion-access",
+      "type": "groupNode",
+      "position": {
+        "x": -33.113592729697075,
+        "y": 77.07464846388714
+      },
+      "data": {
+        "label": "Access & API Layer"
+      },
+      "style": {
+        "width": 460,
+        "height": 260
+      },
+      "width": 460,
+      "height": 260,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -33.113592729697075,
+        "y": 77.07464846388714
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-data-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 583.9004687148172,
+        "y": 34.64695335368859
+      },
+      "data": {
+        "label": "Data Storage"
+      },
+      "style": {
+        "width": 913,
+        "height": 320
+      },
+      "width": 913,
+      "height": 320,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 583.9004687148172,
+        "y": 34.64695335368859
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-analytics-ai",
+      "type": "groupNode",
+      "position": {
+        "x": 519.5427349203343,
+        "y": 413.9004687148171
+      },
+      "data": {
+        "label": "Analytics & Intelligence"
+      },
+      "style": {
+        "width": 825,
+        "height": 510
+      },
+      "width": 825,
+      "height": 510,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 519.5427349203343,
+        "y": 413.9004687148171
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": -369.5290193826754,
+        "y": 453.1337884028215
+      },
+      "data": {
+        "label": "Security & Compliance Monitoring"
+      },
+      "style": {
+        "width": 862,
+        "height": 695
+      },
+      "width": 862,
+      "height": 695,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": -369.5290193826754,
+        "y": 453.1337884028215
+      },
+      "resizing": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 130,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 130,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": -209.3407781890911,
+        "y": 531.6610147982029
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 139,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -209.3407781890911,
+        "y": 531.6610147982029
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-health-data-fhir",
+      "type": "azureNode",
+      "position": {
+        "x": 758.7154675889658,
+        "y": 151.2037497185371
+      },
+      "data": {
+        "label": "Azure Health Data Services (FHIR service)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 146,
+      "height": 137,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 758.7154675889658,
+        "y": 151.2037497185371
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-storage-blob",
+      "type": "azureNode",
+      "position": {
+        "x": 1250.9815973141697,
+        "y": 147.30328100372
+      },
+      "data": {
+        "label": "Azure Blob Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 146,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1250.9815973141697,
+        "y": 147.30328100372
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-adf",
+      "type": "azureNode",
+      "position": {
+        "x": 577.3436723499686,
+        "y": 534.3577337944828
+      },
+      "data": {
+        "label": "Azure Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg"
+      },
+      "width": 145,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 577.3436723499686,
+        "y": 534.3577337944828
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-synapse",
+      "type": "azureNode",
+      "position": {
+        "x": 648.3591808749215,
+        "y": 789.8384346150054
+      },
+      "data": {
+        "label": "Azure Synapse Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/00606-icon-service-Azure-Synapse-Analytics.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 648.3591808749215,
+        "y": 789.8384346150054
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cog",
+      "type": "azureNode",
+      "position": {
+        "x": 1112.3469124177013,
+        "y": 594.8149988741485
+      },
+      "data": {
+        "label": "Azure Cognitive Services",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1112.3469124177013,
+        "y": 594.8149988741485
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 341.43238225837,
+        "y": 576.5164050185999
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 125,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 341.43238225837,
+        "y": 576.5164050185999
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 289.5831262665829,
+        "y": 1019.2196041503455
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00438-icon-service-Azure-Monitors-for-SAP-Solutions.svg"
+      },
+      "width": 120,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 289.5831262665829,
+        "y": 1019.2196041503455
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": -148.88351310942548,
+        "y": 921.7684732992899
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -148.88351310942548,
+        "y": 921.7684732992899
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 5.99207278409591,
+        "y": 638.984491475047
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 5.99207278409591,
+        "y": 638.984491475047
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-apim",
+      "target": "svc-entra-id",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "OAuth2/OIDC authentication and token validation",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-apim",
+      "target": "svc-health-data-fhir",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "FHIR API requests (read/write patient records)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-apim",
+      "target": "svc-storage-blob",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Imaging access (upload/download via secured endpoints/SAS patterns)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-apim",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Retrieve certificates/secrets for backend access",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-health-data-fhir",
+      "target": "svc-adf",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "FHIR data extraction for analytics pipelines",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-storage-blob",
+      "target": "svc-adf",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Imaging metadata and files ingestion for analytics",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-adf",
+      "target": "svc-synapse",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Load curated datasets for reporting and analytics",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-storage-blob",
+      "target": "svc-synapse",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Analytics access to imaging datasets (external tables / lake patterns)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-synapse",
+      "target": "svc-cog",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Invoke AI for text/document analytics on clinical content",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-health-data-fhir",
+      "target": "svc-monitor",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Diagnostic settings and audit logs",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-storage-blob",
+      "target": "svc-monitor",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Storage diagnostics (access, write, delete events)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-apim",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "API telemetry (requests, dependencies, failures)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-monitor",
+      "target": "svc-loganalytics",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Centralize compliance logging and retention",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 508.2282443184529,
+    "y": 113.24666128669341,
+    "zoom": 1.0255177755444518
+  }
+}

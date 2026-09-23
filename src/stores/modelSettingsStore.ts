@@ -1,0 +1,425 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+/**
+ * Model Settings Store
+ * Manages AI model selection and reasoning effort preferences
+ * Supports per-feature model overrides for optimal results
+ * Persists to localStorage for cross-session consistency
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+
+export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'mai-thinking-1' | 'deepseek-v3.2-speciale' | 'deepseek-v4-pro' | 'grok-4.1-fast' | 'grok-4.3' | 'mistral-large-3' | 'kimi-k2-5' | 'kimi-k2-7-code';
+export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
+
+/**
+ * Feature types that can have independent model settings
+ */
+export type FeatureType = 'architectureGeneration' | 'validation' | 'deploymentGuide' | 'blueprint';
+
+/**
+ * Per-feature model override settings
+ * When undefined, the feature uses the default model settings
+ */
+export interface FeatureModelOverride {
+  model: ModelType;
+  reasoningEffort?: ReasoningEffort; // Only used for reasoning models
+}
+
+export interface ModelSettings {
+  model: ModelType;
+  reasoningEffort: ReasoningEffort;
+  // Per-feature overrides (optional)
+  featureOverrides?: Partial<Record<FeatureType, FeatureModelOverride>>;
+}
+
+const STORAGE_KEY = 'azure-diagrams-model-settings';
+
+const DEFAULT_SETTINGS: ModelSettings = {
+  model: 'gpt-5.6-luna',
+  reasoningEffort: 'medium',
+  featureOverrides: {}
+};
+
+/**
+ * Feature display configuration
+ */
+export const FEATURE_CONFIG: Record<FeatureType, {
+  displayName: string;
+  description: string;
+  recommendedModel: ModelType;
+  recommendedReasoning?: ReasoningEffort;
+}> = {
+  architectureGeneration: {
+    displayName: 'Architecture Generation',
+    description: 'Creating Azure architecture diagrams',
+    recommendedModel: 'gpt-5.2',
+    recommendedReasoning: 'medium'
+  },
+  validation: {
+    displayName: 'Architecture Validation',
+    description: 'WAF validation and security analysis',
+    recommendedModel: 'gpt-5.2',
+    recommendedReasoning: 'low'
+  },
+  deploymentGuide: {
+    displayName: 'Deployment Guide & Bicep',
+    description: 'Generating deployment guides and IaC templates',
+    recommendedModel: 'gpt-5.2',
+    recommendedReasoning: 'medium'
+  },
+  blueprint: {
+    displayName: 'Blueprint Diagrams',
+    description: 'Whiteboard-style blueprint sketches (fast, cost-efficient)',
+    recommendedModel: 'gpt-5.4-mini',
+    recommendedReasoning: 'low'
+  }
+};
+
+/**
+ * Model configuration including deployment names and parameters
+ */
+export const MODEL_CONFIG: Record<ModelType, {
+  displayName: string;
+  deploymentEnvVar: string;
+  isReasoning: boolean;
+  maxCompletionTokens: number;
+  description: string;
+  defaultReasoningEffort?: ReasoningEffort;
+  apiFormat?: 'responses' | 'chat-completions' | 'chat-completions-v1'; // defaults to 'responses'
+  supportsVision?: boolean; // defaults to true
+  supportsStructuredOutputs?: boolean; // defaults to true
+}> = {
+  'gpt-5.1': {
+    displayName: 'GPT-5.1',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT51',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Versatile model - fast by default, optional reasoning when needed',
+    defaultReasoningEffort: 'none'
+  },
+  'gpt-5.2': {
+    displayName: 'GPT-5.2',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT52',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Most capable reasoning model - best for complex architectures'
+  },
+  'gpt-5.4': {
+    displayName: 'GPT-5.4',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT54',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Most capable frontier model - best knowledge work, coding, and tool use'
+  },
+  'gpt-5.4-mini': {
+    displayName: 'GPT-5.4 Mini',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Compact frontier model - fast and cost-efficient with strong reasoning'
+  },
+  'gpt-5.6-sol': {
+    displayName: 'GPT-5.6 Sol',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Newest frontier reasoning model - top-tier quality for complex architectures'
+  },
+  'gpt-5.6-terra': {
+    displayName: 'GPT-5.6 Terra',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Frontier reasoning model - grounded, thorough analysis for complex architectures'
+  },
+  'gpt-5.6-luna': {
+    displayName: 'GPT-5.6 Luna',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Frontier reasoning model - fast, creative reasoning for architecture design'
+  },
+  'mai-thinking-1': {
+    displayName: 'MAI-Thinking-1 (Preview)',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1',
+    isReasoning: false,
+    maxCompletionTokens: 64000,
+    description: 'Microsoft adaptive reasoning model - efficient analysis, coding, and agentic tasks',
+    apiFormat: 'chat-completions-v1',
+    supportsVision: false,
+    supportsStructuredOutputs: false,
+  },
+  'deepseek-v3.2-speciale': {
+    displayName: 'DeepSeek V3.2 Speciale',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Strong structured JSON output at lower cost - third-party model',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'deepseek-v4-pro': {
+    displayName: 'DeepSeek V4 Pro',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Flagship DeepSeek V4 - top-tier quality at third-party pricing',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'grok-4.1-fast': {
+    displayName: 'Grok 4.1 Fast',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Fast non-reasoning model from xAI - diversified provider',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'grok-4.3': {
+    displayName: 'Grok 4.3',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK43',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Frontier xAI model - top-tier quality, broad knowledge',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'mistral-large-3': {
+    displayName: 'Mistral Large 3',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Mistral flagship - strong reasoning and multilingual',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'kimi-k2-5': {
+    displayName: 'Kimi K2.5',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'MoonshotAI trillion-param MoE - strong JSON / long context',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+  'kimi-k2-7-code': {
+    displayName: 'Kimi K2.7 Code',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE',
+    isReasoning: false,
+    // Kimi K2.7 Code emits an internal reasoning trace (reasoning_content) that
+    // consumes the completion budget before any answer content is produced. A
+    // 16k budget is frequently exhausted by reasoning + large JSON on complex
+    // architectures, truncating (finish_reason=length) with empty content. Give
+    // it a larger budget so reasoning and the JSON answer both fit.
+    maxCompletionTokens: 32000,
+    description: 'MoonshotAI Kimi K2.7 - optimized for code and structured output',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
+};
+
+/**
+ * Static map of deployment names per model.
+ *
+ * SECURITY: These MUST be accessed with literal `import.meta.env.VITE_...` keys.
+ * Using a dynamic/computed key (e.g. `import.meta.env[someVar]`) forces Vite to
+ * inline the ENTIRE env object into the client bundle — which leaks every VITE_
+ * variable, including the Azure OpenAI API key. Deployment names themselves are
+ * not secrets, so embedding them is fine.
+ */
+export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
+  'gpt-5.1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51,
+  'gpt-5.2': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52,
+  'gpt-5.4': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54,
+  'gpt-5.4-mini': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI,
+  'gpt-5.6-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL,
+  'gpt-5.6-terra': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA,
+  'gpt-5.6-luna': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA,
+  'mai-thinking-1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1,
+  'deepseek-v3.2-speciale': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK,
+  'deepseek-v4-pro': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO,
+  'grok-4.1-fast': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST,
+  'grok-4.3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43,
+  'mistral-large-3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3,
+  'kimi-k2-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25,
+  'kimi-k2-7-code': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE,
+};
+
+/**
+ * Get deployment name for a specific model
+ * Each model requires its own deployment env var to be set
+ */
+export function getDeploymentName(model: ModelType): string {
+  const config = MODEL_CONFIG[model];
+
+  // Static lookup (see DEPLOYMENT_NAMES note above — do not use a dynamic key).
+  const specificDeployment = DEPLOYMENT_NAMES[model];
+  if (specificDeployment) {
+    return specificDeployment;
+  }
+  
+  // No fallback - each model needs its own deployment configured
+  throw new Error(`No deployment configured for ${config.displayName}. Set ${config.deploymentEnvVar} in your .env file.`);
+}
+
+/**
+ * Load settings from localStorage
+ */
+function loadSettings(): ModelSettings {
+  const availableModels = getAvailableModels();
+  const defaultAvailableModel = availableModels.includes(DEFAULT_SETTINGS.model)
+    ? DEFAULT_SETTINGS.model
+    : availableModels[0] ?? DEFAULT_SETTINGS.model;
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Validate model type
+      if (parsed.model && MODEL_CONFIG[parsed.model as ModelType]) {
+        return {
+          model: isModelAvailable(parsed.model as ModelType)
+            ? parsed.model as ModelType
+            : defaultAvailableModel,
+          reasoningEffort: ['none', 'low', 'medium', 'high'].includes(parsed.reasoningEffort) 
+            ? parsed.reasoningEffort 
+            : DEFAULT_SETTINGS.reasoningEffort,
+          featureOverrides: parsed.featureOverrides || {}
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load model settings:', e);
+  }
+  return { ...DEFAULT_SETTINGS, model: defaultAvailableModel };
+}
+
+/**
+ * Save settings to localStorage
+ */
+function saveSettings(settings: ModelSettings): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.warn('Failed to save model settings:', e);
+  }
+}
+
+// Global state for non-hook access
+let currentSettings: ModelSettings = loadSettings();
+const listeners: Set<(settings: ModelSettings) => void> = new Set();
+
+function notifyListeners() {
+  listeners.forEach(listener => listener(currentSettings));
+}
+
+/**
+ * Get current model settings (non-hook version for services)
+ */
+export function getModelSettings(): ModelSettings {
+  return { ...currentSettings };
+}
+
+/**
+ * Get model settings for a specific feature
+ * Returns the feature-specific override if set, otherwise returns default settings
+ */
+export function getModelSettingsForFeature(feature: FeatureType): { model: ModelType; reasoningEffort: ReasoningEffort } {
+  const settings = getModelSettings();
+  const override = settings.featureOverrides?.[feature];
+  
+  if (override) {
+    const config = MODEL_CONFIG[override.model];
+    return {
+      model: override.model,
+      // For reasoning models, use override reasoning or fall back to default
+      // For non-reasoning models, reasoning effort doesn't matter but include it for consistency
+      reasoningEffort: config.isReasoning 
+        ? (override.reasoningEffort || settings.reasoningEffort)
+        : settings.reasoningEffort
+    };
+  }
+  
+  // No override, use default settings
+  return {
+    model: settings.model,
+    reasoningEffort: settings.reasoningEffort
+  };
+}
+
+/**
+ * Update feature-specific model override
+ */
+export function updateFeatureOverride(feature: FeatureType, override: FeatureModelOverride | null): void {
+  const newOverrides = { ...currentSettings.featureOverrides };
+  
+  if (override === null) {
+    delete newOverrides[feature];
+  } else {
+    newOverrides[feature] = override;
+  }
+  
+  updateModelSettings({ featureOverrides: newOverrides });
+}
+
+/**
+ * Check if a feature has a custom override set
+ */
+export function hasFeatureOverride(feature: FeatureType): boolean {
+  return !!currentSettings.featureOverrides?.[feature];
+}
+
+/**
+ * Update model settings (non-hook version for services)
+ */
+export function updateModelSettings(updates: Partial<ModelSettings>): void {
+  currentSettings = { ...currentSettings, ...updates };
+  saveSettings(currentSettings);
+  notifyListeners();
+}
+
+/**
+ * React hook for model settings
+ * Provides reactive updates when settings change
+ */
+export function useModelSettings(): [ModelSettings, (updates: Partial<ModelSettings>) => void] {
+  const [settings, setSettings] = useState<ModelSettings>(currentSettings);
+
+  useEffect(() => {
+    const listener = (newSettings: ModelSettings) => {
+      setSettings({ ...newSettings });
+    };
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  }, []);
+
+  const update = useCallback((updates: Partial<ModelSettings>) => {
+    updateModelSettings(updates);
+  }, []);
+
+  return [settings, update];
+}
+
+/**
+ * Check if a model is available (has deployment configured)
+ */
+export function isModelAvailable(model: ModelType): boolean {
+  try {
+    getDeploymentName(model);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get list of available models
+ */
+export function getAvailableModels(): ModelType[] {
+  return (Object.keys(MODEL_CONFIG) as ModelType[]).filter(isModelAvailable);
+}

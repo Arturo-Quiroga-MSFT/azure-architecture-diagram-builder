@@ -1,0 +1,20 @@
+Region,Region ID,Geography,Flag,Type,Monthly Cost (USD),Annual Cost (USD),vs Cheapest (%),vs Current Region (%)
+"East US 2",eastus2,"United States",🇺🇸,HERO,298.67,3584.04,0.00,0.00
+"Mexico Central",mexicocentral,"Mexico",🇲🇽,HUB,298.67,3584.04,0.00,0.00
+"Sweden Central",swedencentral,"Europe",🇸🇪,HUB,298.67,3584.04,0.00,0.00
+"Canada Central",canadacentral,"Canada",🇨🇦,HUB,310.62,3727.40,4.00,4.00
+"Southeast Asia",southeastasia,"Asia Pacific",🇸🇬,HUB,313.60,3763.24,5.00,5.00
+"West Europe",westeurope,"Europe",🇳🇱,HUB,322.56,3870.76,8.00,8.00
+"Australia East",australiaeast,"Australia",🇦🇺,HERO,343.47,4121.65,15.00,15.00
+"Brazil South",brazilsouth,"Brazil",🇧🇷,HUB,358.40,4300.85,20.00,20.00
+
+Service,Node ID,East US 2,Mexico Central,Sweden Central,Canada Central,Southeast Asia,West Europe,Australia East,Brazil South
+"Azure Database for PostgreSQL",postgres-db,109.86,109.86,109.86,114.25,115.35,118.65,126.34,131.83
+"App Service",app-service,69.35,69.35,69.35,72.12,72.82,74.90,79.75,83.22
+"API Management",api-management,50.26,50.26,50.26,52.27,52.77,54.28,57.80,60.31
+"Azure Front Door",azure-front-door,35.00,35.00,35.00,36.40,36.75,37.80,40.25,42.00
+"Storage Account",storage-account,14.60,14.60,14.60,15.18,15.33,15.77,16.79,17.52
+"Azure Static Web Apps",azure-static-web-apps,9.00,9.00,9.00,9.36,9.45,9.72,10.35,10.80
+"Microsoft Entra ID",microsoft-entra-id,6.00,6.00,6.00,6.24,6.30,6.48,6.90,7.20
+"Azure Monitor",azure-monitor,2.30,2.30,2.30,2.39,2.42,2.48,2.64,2.76
+"Log Analytics",log-analytics,2.30,2.30,2.30,2.39,2.42,2.48,2.64,2.76

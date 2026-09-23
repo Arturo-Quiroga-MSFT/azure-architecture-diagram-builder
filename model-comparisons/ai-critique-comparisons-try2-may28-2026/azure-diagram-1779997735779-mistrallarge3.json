@@ -1,0 +1,259 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Ingress & Streaming"
+    },
+    {
+      "id": "ai-processing",
+      "label": "AI Processing"
+    },
+    {
+      "id": "data-storage",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "observability",
+      "label": "Observability"
+    },
+    {
+      "id": "security-identity",
+      "label": "Security & Identity"
+    }
+  ],
+  "services": [
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Streaming ingest for multi-modal data (text, audio, vision)",
+      "groupId": "ingress"
+    },
+    {
+      "id": "azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Text and vision processing with GPT-4 and DALL-E models",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "speech-services",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Real-time transcription and speech-to-text",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Multilingual text translation",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "storage-account",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Persistent storage for processed data and logs",
+      "groupId": "data-storage"
+    },
+    {
+      "id": "application-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Model performance and telemetry monitoring",
+      "groupId": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized logging and analytics",
+      "groupId": "observability"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secure storage for API keys and secrets",
+      "groupId": "security-identity"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and identity management",
+      "groupId": "security-identity"
+    }
+  ],
+  "connections": [
+    {
+      "from": "event-hubs",
+      "to": "speech-services",
+      "label": "Stream audio data for real-time transcription",
+      "type": "async"
+    },
+    {
+      "from": "event-hubs",
+      "to": "azure-openai",
+      "label": "Stream text and vision data for AI processing",
+      "type": "async"
+    },
+    {
+      "from": "speech-services",
+      "to": "translator",
+      "label": "Send transcribed text for multilingual translation",
+      "type": "sync"
+    },
+    {
+      "from": "speech-services",
+      "to": "storage-account",
+      "label": "Store transcribed and translated text",
+      "type": "async"
+    },
+    {
+      "from": "azure-openai",
+      "to": "storage-account",
+      "label": "Store processed text and vision outputs",
+      "type": "async"
+    },
+    {
+      "from": "azure-openai",
+      "to": "application-insights",
+      "label": "Log model performance and telemetry",
+      "type": "async"
+    },
+    {
+      "from": "application-insights",
+      "to": "log-analytics",
+      "label": "Aggregate and analyze monitoring data",
+      "type": "async"
+    },
+    {
+      "from": "key-vault",
+      "to": "azure-openai",
+      "label": "Retrieve API keys for OpenAI service access",
+      "type": "sync"
+    },
+    {
+      "from": "key-vault",
+      "to": "speech-services",
+      "label": "Retrieve API keys for Speech Services access",
+      "type": "sync"
+    },
+    {
+      "from": "entra-id",
+      "to": "azure-openai",
+      "label": "Authenticate users and services",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Multi-modal data (text, audio, vision) is ingested into Event Hubs for streaming",
+      "services": [
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Event Hubs streams audio data to Speech Services for real-time transcription",
+      "services": [
+        "event-hubs",
+        "speech-services"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Transcribed text is sent to Translator for multilingual processing",
+      "services": [
+        "speech-services",
+        "translator"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Event Hubs streams text and vision data to Azure OpenAI for AI processing",
+      "services": [
+        "event-hubs",
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Processed outputs from Speech Services and Azure OpenAI are stored in Storage Account",
+      "services": [
+        "speech-services",
+        "azure-openai",
+        "storage-account"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure OpenAI logs model performance and telemetry to Application Insights",
+      "services": [
+        "azure-openai",
+        "application-insights"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Application Insights aggregates monitoring data in Log Analytics for analysis",
+      "services": [
+        "application-insights",
+        "log-analytics"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Key Vault provides secure access to API keys for AI services",
+      "services": [
+        "key-vault",
+        "azure-openai",
+        "speech-services"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Microsoft Entra ID authenticates users and services accessing the platform",
+      "services": [
+        "entra-id",
+        "azure-openai"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1475,
+    "completionTokens": 1500,
+    "totalTokens": 2975,
+    "elapsedTimeMs": 12146,
+    "model": "mistral-large-3",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "mistral-large-3",
+    "modelDisplayName": "Mistral Large 3",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1475,
+      "completionTokens": 1500,
+      "totalTokens": 2975,
+      "elapsedTimeMs": 12146,
+      "model": "mistral-large-3",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T19:48:57.296Z",
+    "source": "model-comparison"
+  }
+}

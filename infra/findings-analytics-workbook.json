@@ -1,0 +1,258 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Azure Architecture Diagram Builder — Architecture Findings Analytics workbook. Aggregates the App Insights custom event 'Validation_Findings' (per-validation WAF gap topics) to reveal which gaps recur across all user validations, by pillar, severity, and source (single vs consensus). Drives product decisions: guardrail templates, secure-by-default starters, common-pitfalls nudges."
+  },
+  "parameters": {
+    "appInsightsResourceId": {
+      "type": "string",
+      "metadata": { "description": "Full resource ID of the Application Insights component the workbook is scoped to." }
+    },
+    "workbookDisplayName": {
+      "type": "string",
+      "defaultValue": "Architecture Findings Analytics",
+      "metadata": { "description": "Display name shown in the App Insights workbooks gallery." }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "workbookId": {
+      "type": "string",
+      "defaultValue": "[guid(resourceGroup().id, 'azure-diagram-findings-analytics')]",
+      "metadata": { "description": "Stable GUID so re-deploys update the same workbook instead of creating duplicates." }
+    }
+  },
+  "variables": {
+    "workbookContent": {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 1,
+          "content": {
+            "json": "## 🧭 Architecture Findings Analytics\nWhich Well-Architected gaps recur across **all** user validations? Built from the App Insights event `Validation_Findings`, which records the classified gap **topics** of every validation.\n\n> Use this to prioritize product guardrails: if a few gaps dominate (e.g. *no private endpoints*, *no DR*), ship secure-by-default starter templates or a \"common pitfalls\" nudge. `source = single` is one model's review; `source = consensus` is the multi-model agreement (higher signal)."
+          },
+          "name": "title"
+        },
+        {
+          "type": 9,
+          "content": {
+            "version": "KqlParameterItem/1.0",
+            "parameters": [
+              {
+                "id": "fa000000-0000-0000-0000-000000000001",
+                "version": "KqlParameterItem/1.0",
+                "name": "TimeRange",
+                "label": "Time range",
+                "type": 4,
+                "isRequired": true,
+                "value": { "durationMs": 7776000000 },
+                "typeSettings": {
+                  "selectableValues": [
+                    { "durationMs": 604800000 },
+                    { "durationMs": 2592000000 },
+                    { "durationMs": 7776000000 },
+                    { "durationMs": 15552000000 }
+                  ],
+                  "allowCustom": true
+                }
+              },
+              {
+                "id": "fa000000-0000-0000-0000-000000000002",
+                "version": "KqlParameterItem/1.0",
+                "name": "Source",
+                "label": "Source",
+                "type": 2,
+                "isRequired": true,
+                "value": "all",
+                "typeSettings": {
+                  "additionalResourceOptions": [],
+                  "showDefault": false
+                },
+                "jsonData": "[[{\"value\":\"all\",\"label\":\"All\",\"selected\":true},{\"value\":\"single\",\"label\":\"Single model\"},{\"value\":\"consensus\",\"label\":\"Consensus (multi-model)\"}]"
+              }
+            ],
+            "style": "pills",
+            "queryType": 0
+          },
+          "name": "params"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| summarize Value = count()\n| extend Label = 'Validations analyzed'",
+            "size": 4,
+            "title": "Validations analyzed",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "tiles",
+            "tileSettings": {
+              "showBorder": true,
+              "titleContent": { "columnMatch": "Label", "formatter": 1 },
+              "leftContent": { "columnMatch": "Value", "formatter": 12, "formatOptions": { "palette": "blue" }, "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } } }
+            }
+          },
+          "customWidth": "33",
+          "name": "stat-validations"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| extend topics = parse_json(tostring(customDimensions.topics))\n| mv-expand t = topics\n| where not(tostring(t.id) startswith 'other:')\n| summarize Value = dcount(tostring(t.id))\n| extend Label = 'Distinct gap topics'",
+            "size": 4,
+            "title": "Distinct gap topics",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "tiles",
+            "tileSettings": {
+              "showBorder": true,
+              "titleContent": { "columnMatch": "Label", "formatter": 1 },
+              "leftContent": { "columnMatch": "Value", "formatter": 12, "formatOptions": { "palette": "purple" }, "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } } }
+            }
+          },
+          "customWidth": "33",
+          "name": "stat-topics"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| summarize Value = toint(avg(toint(customMeasurements.highCount)))\n| extend Label = 'Avg high/critical gaps per validation'",
+            "size": 4,
+            "title": "Avg high/critical gaps",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "tiles",
+            "tileSettings": {
+              "showBorder": true,
+              "titleContent": { "columnMatch": "Label", "formatter": 1 },
+              "leftContent": { "columnMatch": "Value", "formatter": 12, "formatOptions": { "palette": "red" }, "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } } }
+            }
+          },
+          "customWidth": "34",
+          "name": "stat-high"
+        },
+        {
+          "type": 1,
+          "content": { "json": "### Top recurring gaps\nHow many validations flagged each Well-Architected gap. The taller the bar, the more universal the gap — and the stronger the case for a built-in guardrail or secure default." },
+          "name": "header-topgaps"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| extend topics = parse_json(tostring(customDimensions.topics))\n| mv-expand t = topics\n| extend Topic = iff(isempty(tostring(t.label)), tostring(t.id), tostring(t.label))\n| where not(tostring(t.id) startswith 'other:')\n| summarize Validations = count() by Topic\n| order by Validations desc\n| take 20",
+            "size": 0,
+            "title": "Top recurring gaps (by validations flagged)",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "barchart",
+            "chartSettings": { "orderBy": ["Validations"], "sortOrderField": 2 }
+          },
+          "name": "top-gaps"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| extend topics = parse_json(tostring(customDimensions.topics))\n| mv-expand t = topics\n| summarize Findings = count() by Pillar = tostring(t.pillar)\n| order by Findings desc",
+            "size": 0,
+            "title": "Gaps by pillar",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "piechart"
+          },
+          "customWidth": "50",
+          "name": "by-pillar"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| extend topics = parse_json(tostring(customDimensions.topics))\n| mv-expand t = topics\n| extend Topic = iff(isempty(tostring(t.label)), tostring(t.id), tostring(t.label))\n| where tostring(t.severity) in ('high', 'critical')\n| where not(tostring(t.id) startswith 'other:')\n| summarize Validations = count() by Topic\n| order by Validations desc\n| take 15",
+            "size": 0,
+            "title": "High / critical gaps (highest-priority fixes)",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "barchart"
+          },
+          "customWidth": "50",
+          "name": "high-gaps"
+        },
+        {
+          "type": 1,
+          "content": { "json": "### Gap detail & trend" },
+          "name": "header-detail"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| extend topics = parse_json(tostring(customDimensions.topics))\n| mv-expand t = topics\n| extend Topic = iff(isempty(tostring(t.label)), tostring(t.id), tostring(t.label)), Pillar = tostring(t.pillar)\n| where not(tostring(t.id) startswith 'other:')\n| summarize Validations = count() by Topic, Pillar\n| order by Validations desc",
+            "size": 0,
+            "title": "Recurring gaps — table",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "table",
+            "gridSettings": {
+              "formatters": [
+                { "columnMatch": "Validations", "formatter": 8, "formatOptions": { "palette": "blue" } }
+              ]
+            }
+          },
+          "customWidth": "50",
+          "name": "gaps-table"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "customEvents\n| where name == 'Validation_Findings'\n| where timestamp {TimeRange}\n| extend src = tostring(customDimensions.source)\n| where '{Source}' == 'all' or src == '{Source}'\n| extend topics = parse_json(tostring(customDimensions.topics))\n| mv-expand t = topics\n| extend Topic = iff(isempty(tostring(t.label)), tostring(t.id), tostring(t.label))\n| where not(tostring(t.id) startswith 'other:')\n| summarize Validations = count() by Topic, bin(timestamp, 1d)\n| order by timestamp asc",
+            "size": 0,
+            "title": "Recurring gaps over time (top topics)",
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.insights/components",
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "gaps-trend"
+        }
+      ],
+      "fallbackResourceIds": [],
+      "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+    }
+  },
+  "resources": [
+    {
+      "type": "microsoft.insights/workbooks",
+      "apiVersion": "2023-06-01",
+      "name": "[parameters('workbookId')]",
+      "location": "[parameters('location')]",
+      "kind": "shared",
+      "properties": {
+        "displayName": "[parameters('workbookDisplayName')]",
+        "serializedData": "[string(variables('workbookContent'))]",
+        "version": "1.0",
+        "sourceId": "[parameters('appInsightsResourceId')]",
+        "category": "workbook"
+      }
+    }
+  ],
+  "outputs": {
+    "workbookId": {
+      "type": "string",
+      "value": "[resourceId('microsoft.insights/workbooks', parameters('workbookId'))]"
+    }
+  }
+}

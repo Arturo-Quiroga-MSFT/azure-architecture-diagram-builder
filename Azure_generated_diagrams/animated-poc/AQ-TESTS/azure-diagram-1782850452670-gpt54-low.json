@@ -1,0 +1,884 @@
+{
+  "nodes": [
+    {
+      "id": "grp-processing",
+      "type": "groupNode",
+      "position": {
+        "x": -20,
+        "y": 450
+      },
+      "data": {
+        "label": "Document Ingestion & AI Processing"
+      },
+      "style": {
+        "width": 1615,
+        "height": 1310
+      },
+      "width": 1615,
+      "height": 1310,
+      "positionAbsolute": {
+        "x": -20,
+        "y": 450
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1880,
+        "y": 240
+      },
+      "data": {
+        "label": "Data & Search"
+      },
+      "style": {
+        "width": 1185,
+        "height": 600
+      },
+      "width": 1185,
+      "height": 600,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1880,
+        "y": 240
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1480,
+        "y": 1240
+      },
+      "data": {
+        "label": "Monitoring & Observability"
+      },
+      "style": {
+        "width": 1185,
+        "height": 560
+      },
+      "width": 1185,
+      "height": 560,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1480,
+        "y": 1240
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 830
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-06-30T20:13:41.783Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-processing",
+      "extent": "parent",
+      "width": 164,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 60,
+        "y": 1280
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 520,
+        "y": 370
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/azure-functions.svg",
+        "pricing": {
+          "estimatedCost": 159.35,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-06-30T20:13:41.783Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-processing",
+      "extent": "parent",
+      "width": 160,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 500,
+        "y": 820
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cv",
+      "type": "azureNode",
+      "position": {
+        "x": 1240,
+        "y": 150
+      },
+      "data": {
+        "label": "Computer Vision",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/computer-vision.svg",
+        "pricing": {
+          "estimatedCost": 150,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-06-30T20:13:41.830Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-processing",
+      "extent": "parent",
+      "width": 163,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 600
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-docint",
+      "type": "azureNode",
+      "position": {
+        "x": 1380,
+        "y": 610
+      },
+      "data": {
+        "label": "Document Intelligence",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/document-intelligence.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-06-30T20:13:41.830Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-processing",
+      "extent": "parent",
+      "width": 172,
+      "height": 134,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1360,
+        "y": 1060
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-language",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 970
+      },
+      "data": {
+        "label": "Language",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/language.svg",
+        "pricing": {
+          "estimatedCost": 25,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-06-30T20:13:41.830Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-processing",
+      "extent": "parent",
+      "width": 120,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 540,
+        "y": 1420
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 370
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-06-30T20:13:41.783Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 172,
+      "height": 134,
+      "positionAbsolute": {
+        "x": 2105,
+        "y": 610
+      }
+    },
+    {
+      "id": "svc-search",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 410
+      },
+      "data": {
+        "label": "Azure Cognitive Search",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-cognitive-search.svg",
+        "pricing": {
+          "estimatedCost": 73.73,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-06-30T20:13:41.818Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 172,
+      "height": 134,
+      "positionAbsolute": {
+        "x": 2660,
+        "y": 650
+      }
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 80
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-06-30T20:13:41.783Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-monitoring",
+      "extent": "parent",
+      "width": 145,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 1705,
+        "y": 1320
+      }
+    },
+    {
+      "id": "svc-logs",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 80
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-06-30T20:13:41.783Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-monitoring",
+      "extent": "parent",
+      "width": 140,
+      "height": 113,
+      "positionAbsolute": {
+        "x": 2260,
+        "y": 1320
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-storage",
+      "target": "svc-functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Trigger document processing when a new image or file is uploaded",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-functions",
+      "target": "svc-cv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit uploaded image for visual analysis and feature detection",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-cv",
+      "target": "svc-functions",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Return image metadata and detected visual elements to orchestrator",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-functions",
+      "target": "svc-docint",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send document for form field, table, and text extraction",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-docint",
+      "target": "svc-functions",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Return extracted key-value pairs, tables, and recognized text",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-functions",
+      "target": "svc-language",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit extracted text for classification and summary generation",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-language",
+      "target": "svc-functions",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Return document category labels and generated summary",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-functions",
+      "target": "svc-cosmos",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Persist enriched document record with extracted insights and analysis results",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-functions",
+      "target": "svc-search",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Push searchable document projection and metadata into the search index",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-cosmos",
+      "target": "svc-search",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide stored document content and attributes for index refresh operations",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-functions",
+      "target": "svc-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit processing metrics, execution traces, and failure signals",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-monitor",
+      "target": "svc-logs",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store aggregated telemetry and operational logs for analysis",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 420.5,
+    "y": 25.5,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "A Smart Document Processing Platform That Uses Computer",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-06-30",
+    "savedAt": "2026-06-30T20:14:12.669Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "A user uploads a document image or file into cloud storage, which initiates the processing pipeline.",
+      "services": [
+        "svc-storage",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The orchestration function sends the uploaded image to Computer Vision to analyze visual content and image characteristics.",
+      "services": [
+        "svc-functions",
+        "svc-cv"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The same orchestration function submits the document to Document Intelligence to extract form fields, tables, and text.",
+      "services": [
+        "svc-functions",
+        "svc-docint"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "The function combines extracted text and analysis results, then calls Language to classify the document and create a summary.",
+      "services": [
+        "svc-functions",
+        "svc-docint",
+        "svc-language"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "The orchestration layer assembles all AI outputs into a normalized document record and writes it to the operational data store.",
+      "services": [
+        "svc-functions",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "The processed document content and metadata are pushed into Azure Cognitive Search to enable retrieval and discovery.",
+      "services": [
+        "svc-functions",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure Cognitive Search can also refresh or enrich its index from document records persisted in Cosmos DB.",
+      "services": [
+        "svc-cosmos",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure Functions sends telemetry about execution health, throughput, and failures to the monitoring pipeline.",
+      "services": [
+        "svc-functions",
+        "svc-monitor"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Azure Monitor forwards collected metrics and logs into Log Analytics for investigation and operational reporting.",
+      "services": [
+        "svc-monitor",
+        "svc-logs"
+      ]
+    }
+  ],
+  "architecturePrompt": "A smart document processing platform that uses Computer Vision to analyze uploaded images, Document Intelligence to extract form data, Language to classify and summarize content, all coordinated through Azure Functions with results stored in Cosmos DB and searchable via Cognitive Search"
+}

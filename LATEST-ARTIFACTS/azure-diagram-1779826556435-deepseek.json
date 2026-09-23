@@ -1,0 +1,271 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Client & Authentication"
+    },
+    {
+      "id": "compute",
+      "label": "Application & AI Orchestration"
+    },
+    {
+      "id": "data",
+      "label": "Data & Search"
+    },
+    {
+      "id": "cache",
+      "label": "Caching"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and authorization for users and app",
+      "groupId": "edge"
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts frontend web application and backend API",
+      "groupId": "compute"
+    },
+    {
+      "id": "ai-foundry",
+      "name": "Azure AI Foundry",
+      "type": "Azure AI Foundry",
+      "category": "ai + machine learning",
+      "description": "Orchestrates RAG workflow (prompt flow, LLM calls, retrieval)",
+      "groupId": "compute"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "GPT-5 model for generation",
+      "groupId": "compute"
+    },
+    {
+      "id": "ai-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Hybrid search (vector + keyword) over documents",
+      "groupId": "data"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Semantic caching of queries and responses",
+      "groupId": "cache"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Raw document storage (blob) for ingested files",
+      "groupId": "data"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets, API keys, and connection strings",
+      "groupId": "edge"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects metrics, logs, and alerts",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central log storage and analysis",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "app-service",
+      "to": "entra-id",
+      "label": "Authenticates users",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "ai-foundry",
+      "label": "Sends user query to orchestration",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "redis",
+      "label": "Checks cache for similar queries",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "ai-search",
+      "label": "Retrieves relevant documents (hybrid search)",
+      "type": "sync"
+    },
+    {
+      "from": "ai-search",
+      "to": "storage",
+      "label": "Accesses indexed documents (blob storage)",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "openai",
+      "label": "Generates answer using GPT-5",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "redis",
+      "label": "Stores query/response in semantic cache",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "key-vault",
+      "label": "Retrieves secrets and connection strings",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "key-vault",
+      "label": "Retrieves API keys for services",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "monitor",
+      "label": "Sends application metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "monitor",
+      "label": "Sends orchestration metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "log-analytics",
+      "label": "Forwards logs for analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User authenticates via Entra ID and sends query through App Service frontend.",
+      "services": [
+        "app-service",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service forwards the query to Azure AI Foundry for orchestration.",
+      "services": [
+        "app-service",
+        "ai-foundry"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "AI Foundry checks Azure Cache for Redis for a cached response to a similar query. If found, returns cached answer.",
+      "services": [
+        "ai-foundry",
+        "redis"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "If not cached, AI Foundry uses Azure Cognitive Search to perform hybrid (vector + keyword) retrieval over documents stored in Blob Storage.",
+      "services": [
+        "ai-foundry",
+        "ai-search",
+        "storage"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "AI Foundry sends retrieved context and query to Azure OpenAI GPT-5 to generate an answer.",
+      "services": [
+        "ai-foundry",
+        "openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "AI Foundry stores the query and generated answer in Redis cache for future semantic caching.",
+      "services": [
+        "ai-foundry",
+        "redis"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "AI Foundry returns the answer to App Service, which presents it to the user.",
+      "services": [
+        "ai-foundry",
+        "app-service"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Throughout the process, App Service and AI Foundry send telemetry to Azure Monitor, which forwards logs to Log Analytics for monitoring.",
+      "services": [
+        "app-service",
+        "ai-foundry",
+        "monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1468,
+    "completionTokens": 1621,
+    "totalTokens": 3089,
+    "elapsedTimeMs": 16132,
+    "model": "deepseek-v3.2-speciale"
+  },
+  "metadata": {
+    "prompt": "An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1468,
+      "completionTokens": 1621,
+      "totalTokens": 3089,
+      "elapsedTimeMs": 16132,
+      "model": "deepseek-v3.2-speciale"
+    },
+    "savedAt": "2026-05-26T20:15:57.342Z",
+    "source": "model-comparison"
+  }
+}

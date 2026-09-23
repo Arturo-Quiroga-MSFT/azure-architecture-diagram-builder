@@ -1,0 +1,248 @@
+{
+  "title": "Machine Learning Pipeline with Ingestion, Training, and Inference",
+  "canvas": {
+    "width": 1900,
+    "height": 1000
+  },
+  "zones": [
+    {
+      "id": "external-clients",
+      "label": "External Clients",
+      "kind": "external",
+      "x": 16,
+      "y": 76,
+      "width": 1518,
+      "height": 188
+    },
+    {
+      "id": "data-ingestion",
+      "label": "Data Ingestion & Storage",
+      "kind": "subsystem",
+      "x": 216,
+      "y": 356,
+      "width": 508,
+      "height": 383
+    },
+    {
+      "id": "ml-compute",
+      "label": "ML Training & Orchestration",
+      "kind": "subsystem",
+      "x": 794,
+      "y": 356,
+      "width": 508,
+      "height": 188
+    },
+    {
+      "id": "inference-endpoints",
+      "label": "Inference Endpoints",
+      "kind": "subsystem",
+      "x": 1372,
+      "y": 356,
+      "width": 508,
+      "height": 188
+    }
+  ],
+  "nodes": [
+    {
+      "id": "data-scientist",
+      "name": "Data Scientist",
+      "category": "general",
+      "kind": "persona",
+      "x": 60,
+      "y": 120,
+      "zone": "external-clients"
+    },
+    {
+      "id": "business-app",
+      "name": "Business Application",
+      "category": "general",
+      "kind": "persona",
+      "x": 1340,
+      "y": 120,
+      "zone": "external-clients"
+    },
+    {
+      "id": "adf",
+      "name": "Azure Data Factory",
+      "category": "integration",
+      "kind": "service",
+      "x": 260,
+      "y": 400,
+      "zone": "data-ingestion"
+    },
+    {
+      "id": "adls",
+      "name": "Azure Data Lake Storage",
+      "category": "storage",
+      "kind": "database",
+      "x": 260,
+      "y": 595,
+      "zone": "data-ingestion"
+    },
+    {
+      "id": "sql-db",
+      "name": "SQL Database",
+      "category": "databases",
+      "kind": "database",
+      "x": 530,
+      "y": 580,
+      "zone": "data-ingestion"
+    },
+    {
+      "id": "aml",
+      "name": "Azure Machine Learning",
+      "category": "ai + machine learning",
+      "kind": "service",
+      "x": 838,
+      "y": 400,
+      "zone": "ml-compute"
+    },
+    {
+      "id": "aml-compute",
+      "name": "Azure Machine Learning Compute",
+      "category": "ai + machine learning",
+      "kind": "service",
+      "x": 1108,
+      "y": 400,
+      "zone": "ml-compute"
+    },
+    {
+      "id": "aks",
+      "name": "Azure Kubernetes Service",
+      "category": "containers",
+      "kind": "service",
+      "x": 1416,
+      "y": 400,
+      "zone": "inference-endpoints"
+    },
+    {
+      "id": "apim",
+      "name": "API Management",
+      "category": "integration",
+      "kind": "service",
+      "x": 1686,
+      "y": 400,
+      "zone": "inference-endpoints"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "data-scientist",
+      "to": "adf",
+      "step": 1,
+      "label": "Design pipelines",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e2",
+      "from": "adf",
+      "to": "adls",
+      "step": 2,
+      "label": "Ingest to lake",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e3",
+      "from": "adf",
+      "to": "sql-db",
+      "step": 3,
+      "label": "Load features",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e4",
+      "from": "data-scientist",
+      "to": "aml",
+      "step": 4,
+      "label": "Configure runs",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e5",
+      "from": "aml",
+      "to": "aml-compute",
+      "step": 5,
+      "label": "Submit training",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e6",
+      "from": "aml-compute",
+      "to": "aml",
+      "step": 6,
+      "label": "Register model",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e7",
+      "from": "aml",
+      "to": "aks",
+      "step": 7,
+      "label": "Deploy model",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e8",
+      "from": "business-app",
+      "to": "apim",
+      "step": 8,
+      "label": "Call inference",
+      "routing": "orthogonal"
+    },
+    {
+      "id": "e9",
+      "from": "apim",
+      "to": "aks",
+      "step": 9,
+      "label": "Route request",
+      "routing": "orthogonal"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "The Data Scientist collaborates with Azure Data Factory to design and configure data ingestion and transformation pipelines for machine learning."
+    },
+    {
+      "step": 2,
+      "description": "Azure Data Factory ingests raw source data and writes it into Azure Data Lake Storage for large-scale, historical training datasets."
+    },
+    {
+      "step": 3,
+      "description": "Azure Data Factory transforms and loads curated feature and label tables into Azure SQL Database for structured model training."
+    },
+    {
+      "step": 4,
+      "description": "The Data Scientist defines experiments, training configurations, and datasets in Azure Machine Learning using data from Data Lake and SQL."
+    },
+    {
+      "step": 5,
+      "description": "Azure Machine Learning submits training jobs to Azure Machine Learning Compute for scalable, distributed model training."
+    },
+    {
+      "step": 6,
+      "description": "Upon completion, Azure Machine Learning Compute reports results back and Azure Machine Learning registers the trained model in its model registry."
+    },
+    {
+      "step": 7,
+      "description": "Azure Machine Learning deploys the registered model as a containerized inference service onto Azure Kubernetes Service."
+    },
+    {
+      "step": 8,
+      "description": "The Business Application sends prediction requests to Azure API Management, calling the exposed inference API."
+    },
+    {
+      "step": 9,
+      "description": "Azure API Management securely routes the incoming inference requests to the model-serving endpoint running on Azure Kubernetes Service, which returns predictions to the Business Application."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3495,
+    "completionTokens": 3749,
+    "totalTokens": 7244,
+    "elapsedTimeMs": 74229,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-21T14:59:05.570Z"
+}

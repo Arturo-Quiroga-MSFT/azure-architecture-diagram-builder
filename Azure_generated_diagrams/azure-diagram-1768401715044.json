@@ -1,0 +1,407 @@
+{
+  "nodes": [
+    {
+      "id": "1768401388993",
+      "type": "azureNode",
+      "position": {
+        "x": 400,
+        "y": 340
+      },
+      "data": {
+        "label": "Azure OpenAI AQ PROD",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-openai.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T14:36:29.059Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "detailed"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 400,
+        "y": 340
+      },
+      "dragging": false
+    },
+    {
+      "id": "1768401390765",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 20
+      },
+      "data": {
+        "label": "Computer Vision",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/computer-vision.svg",
+        "pricing": {
+          "estimatedCost": 156,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T14:41:44.398Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "detailed"
+      },
+      "width": 163,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 80,
+        "y": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "1768401394423",
+      "type": "azureNode",
+      "position": {
+        "x": 840,
+        "y": 540
+      },
+      "data": {
+        "label": "Document Intelligence",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/document-intelligence.svg",
+        "pricing": {
+          "estimatedCost": 52,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T14:41:44.398Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "detailed"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 840,
+        "y": 540
+      },
+      "dragging": false
+    },
+    {
+      "id": "1768401479601",
+      "type": "azureNode",
+      "position": {
+        "x": 140,
+        "y": 660
+      },
+      "data": {
+        "label": "Content Moderators",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/00795-icon-service-Content-Moderators.svg",
+        "stylePreset": "detailed"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 140,
+        "y": 660
+      },
+      "dragging": false
+    },
+    {
+      "id": "group-1768401576865",
+      "type": "groupNode",
+      "position": {
+        "x": -400,
+        "y": 200
+      },
+      "data": {
+        "label": "NEW ITEMS",
+        "customColor": {
+          "name": "Yellow",
+          "bg": "rgba(234, 179, 8, 0.08)",
+          "border": "#eab308",
+          "header": "#eab308"
+        },
+        "stylePreset": "detailed"
+      },
+      "style": {
+        "width": 540,
+        "height": 360
+      },
+      "width": 540,
+      "height": 360,
+      "selected": true,
+      "positionAbsolute": {
+        "x": -400,
+        "y": 200
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "1768401600871",
+      "type": "azureNode",
+      "position": {
+        "x": 20,
+        "y": 160
+      },
+      "data": {
+        "label": "Cognitive Search",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg",
+        "stylePreset": "detailed"
+      },
+      "parentNode": "group-1768401576865",
+      "extent": "parent",
+      "width": 165,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -380,
+        "y": 360
+      },
+      "dragging": false
+    },
+    {
+      "id": "1768401611910",
+      "type": "azureNode",
+      "position": {
+        "x": 360,
+        "y": 60
+      },
+      "data": {
+        "label": "Content Safety",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03390-icon-service-Content-Safety.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-14T14:41:44.398Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "detailed"
+      },
+      "parentNode": "group-1768401576865",
+      "extent": "parent",
+      "width": 151,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -40,
+        "y": 260
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "1768401388993",
+      "sourceHandle": "right",
+      "target": "1768401394423",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "and it goes here too",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-1768401388993right-1768401394423left",
+      "selected": false,
+      "style": {}
+    },
+    {
+      "source": "1768401390765",
+      "sourceHandle": "right",
+      "target": "1768401388993",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Stuff happens here",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-1768401390765right-1768401388993left",
+      "selected": false,
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "style": {}
+    },
+    {
+      "source": "1768401388993",
+      "sourceHandle": "bottom",
+      "target": "1768401479601",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "moderation gallore",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "bidirectional",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-1768401388993bottom-1768401479601top",
+      "selected": false,
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "style": {}
+    },
+    {
+      "source": "1768401611910",
+      "sourceHandle": "right",
+      "target": "1768401388993",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Safe stuff",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-1768401611910right-1768401388993left",
+      "selected": false,
+      "style": {}
+    },
+    {
+      "source": "1768401600871",
+      "sourceHandle": "right",
+      "target": "1768401611910",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Cognition",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "smooth"
+      },
+      "id": "reactflow__edge-1768401600871right-1768401611910left",
+      "selected": false,
+      "style": {}
+    }
+  ],
+  "viewport": {
+    "x": 577.500619124268,
+    "y": 32.03545044093585,
+    "zoom": 1.1586914062694362
+  },
+  "metadata": {
+    "architectureName": "My first  Architecture",
+    "author": "R2D2",
+    "version": "1.1",
+    "date": "2026-01-14",
+    "savedAt": "2026-01-14T14:41:55.044Z"
+  }
+}

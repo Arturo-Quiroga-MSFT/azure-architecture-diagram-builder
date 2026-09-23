@@ -1,0 +1,2799 @@
+{
+  "type": "validation-comparison",
+  "timestamp": "2026-05-27T01:38:28.317Z",
+  "architectureDescription": "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling",
+  "serviceCount": 14,
+  "connectionCount": 14,
+  "reasoningEffort": "low",
+  "modelCount": 8,
+  "results": {
+    "gpt51-low": {
+      "model": "gpt-5.1",
+      "displayName": "GPT-5.1",
+      "metrics": {
+        "promptTokens": 1243,
+        "completionTokens": 4893,
+        "totalTokens": 6136,
+        "elapsedTimeMs": 38218,
+        "model": "gpt-5.1"
+      },
+      "overallScore": 72,
+      "totalFindings": 20,
+      "criticalCount": 0,
+      "highCount": 5,
+      "mediumCount": 12,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 70
+        },
+        {
+          "pillar": "Security",
+          "score": 65
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 75
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 78
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 80
+        }
+      ],
+      "quickWinCount": 3,
+      "validation": {
+        "overallScore": 72,
+        "summary": "The architecture is well-aligned to an industrial IoT predictive maintenance scenario with clear separation of OT/IT, appropriate use of IoT, analytics, and observability services, and a strong real-time processing path. Key gaps are single-region deployment vs uptime goals, absence of centralized secrets management, and limited evidence of DR, backup, and governance practices. Addressing these will materially improve resilience, security, and maintainability without major redesign.",
+        "pillars": [
+          {
+            "score": 70,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The entire workload is described as running in a single Azure region with no clear cross-region failover, which conflicts with the stated 99.9% uptime requirement and leaves all core services vulnerable to regional outages.",
+                "recommendation": "Introduce a secondary region with paired deployments of critical data-plane and control-plane services (Azure IoT Hub, Azure IoT Hub Device Provisioning Service, Azure Stream Analytics, Azure Digital Twins, Azure Data Lake Storage, Azure Synapse Analytics, Time Series Insights, Azure Machine Learning, Azure Monitor, Log Analytics) and configure failover patterns: DPS with multiple allocations, dual IoT Hubs with message routing failover, GRS/RA-GRS for storage, and cross-region disaster recovery runbooks with clearly defined RTO/RPO.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure Private Link",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Microsoft Entra ID",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "High availability at the edge and ingress is not described; a single Azure IoT Edge Gateway or single on-prem path to Azure Private Link could represent a local single point of failure for all telemetry.",
+                "recommendation": "Deploy multiple Azure IoT Edge Gateway instances in a highly available configuration (e.g., clustered or redundant gateways per manufacturing line), ensure redundant network paths from OT to IT networks, and use multiple Private Link endpoints (where supported) combined with redundant connectivity (e.g., dual ExpressRoute/SD-WAN links) to maintain telemetry flow during local failures.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure Private Link"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Business Continuity & DR",
+                "issue": "A formal disaster recovery strategy (RTO/RPO, failover and failback process, DR testing) is not described for the analytics and modeling stack, including Azure Machine Learning, Azure Synapse Analytics, and Digital Twins.",
+                "recommendation": "Define DR tiers for each component (real-time detection vs batch analytics vs reporting) and implement corresponding DR patterns: automate redeployment of Azure Machine Learning, Azure Synapse Analytics, and Azure Digital Twins in a secondary region using infrastructure-as-code; configure cross-region backups/snapshots for configuration metadata; and schedule periodic DR drills to validate RTO/RPO alignment with business expectations.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Durability & Retention",
+                "issue": "The architecture specifies 6-month hot storage and 7-year cold retention in Azure Data Lake Storage, but does not specify redundancy options or backup strategies for long-term compliance and recovery from accidental deletion or corruption.",
+                "recommendation": "Use GRS or RA-GRS for Azure Data Lake Storage to protect against regional failures, enable soft delete and versioning for blobs/files, and implement periodic immutable backups (e.g., using object lock and time-based retention policies) to meet 7-year retention and compliance needs. Document and automate restore procedures.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 65,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No centralized secrets management solution is present; credentials, connection strings, and keys for IoT, analytics, and ML components are at risk of being stored in code, configuration files, or manually managed.",
+                "recommendation": "Introduce Azure Key Vault for all secrets and keys (IoT Hub connection strings, Stream Analytics outputs, Data Lake credentials, Synapse connection information, ML scoring keys, service principals) and integrate services with Key Vault using managed identities and Key Vault references. Enforce policies that prohibit secrets in source code and deployment templates.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Identity & Access Management",
+                "issue": "While Microsoft Entra ID is used, there is no mention of least-privilege role assignments, separation of duties, or managed identities for service-to-service communication across the data and analytics pipeline.",
+                "recommendation": "Define a detailed RBAC model with least-privilege roles for operations, data science, security, and development teams. Use system-assigned and user-assigned managed identities for Azure Stream Analytics, Azure Machine Learning, Azure Synapse Analytics, Time Series Insights, and monitoring components to access Azure Data Lake Storage and other resources without shared keys. Regularly review access using access reviews and PIM for privileged roles.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "The architecture uses Azure Private Link for OT/IT segregation, but there is no explicit mention of NSGs, Azure Firewall, or segmentation controls around ingress, analytics, and management planes in the IT network.",
+                "recommendation": "Harden the network by applying NSGs on subnets hosting data and analytics services, and consider centralizing egress through Azure Firewall or a firewall NVA. Restrict Private Link endpoints to approved subnets, disable public network access on PaaS services where possible, and implement just-in-time access for administrative endpoints.",
+                "resources": [
+                  "Azure Private Link",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "Encryption at rest and in transit is implied but not explicitly addressed, and there is no mention of customer-managed keys (CMK) for sensitive OT telemetry and long-term retained data.",
+                "recommendation": "Ensure TLS 1.2+ for all device-to-cloud and service-to-service communications and enforce it via configuration. Enable encryption at rest for storage and analytics services, and consider CMK-backed encryption for Azure Data Lake Storage and Azure Synapse Analytics where regulatory requirements or internal policies require customer control of keys. Implement consistent data classification and masking for reporting datasets where appropriate.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 75,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Right-Sizing & Scaling",
+                "issue": "The high-frequency telemetry (5,000+ sensors every 5 seconds) can drive significant ingestion and processing costs, but there is no described strategy for right-sizing IoT Hub tiers, Stream Analytics units, or controlling Time Series Insights usage.",
+                "recommendation": "Perform load testing to measure actual throughput and adjust Azure IoT Hub (S-tier units), Stream Analytics SU allocations, and Time Series Insights capacity based on observed utilization. Use features like message batching, compression, and IoT Hub message routing to optimize throughput and minimize overprovisioning.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Storage Lifecycle Management",
+                "issue": "The architecture defines 6-month hot and 7-year cold retention but does not describe automated lifecycle policies, which can lead to unnecessary storage and analytics costs for rarely accessed data.",
+                "recommendation": "Implement lifecycle management policies on Azure Data Lake Storage to automatically tier data from hot to cool/archive and, where appropriate, move long-term, low-access data to more cost-effective storage (e.g., archive tiers or separate archival accounts). Align Synapse datasets to query only necessary time windows to avoid scanning long-term cold data by default.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Analytics & Compute Efficiency",
+                "issue": "Always-on compute for Azure Synapse Analytics and Azure Machine Learning training/compute clusters can generate substantial idle cost if not tightly controlled.",
+                "recommendation": "Use serverless or auto-pause features where possible (e.g., serverless SQL pools or auto-pause dedicated SQL pools in Synapse, AML compute clusters with auto-scale and auto-shutdown). Schedule heavy batch analytics and training jobs to off-peak hours, and regularly review job runtimes and cluster sizes to avoid overprovisioning.",
+                "resources": [
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Licensing & Purchase Options",
+                "issue": "There is no mention of using reserved capacity or savings mechanisms for predictable components like IoT ingress, analytics, and long-term storage.",
+                "recommendation": "Evaluate Azure Reservations and savings plans for Azure IoT Hub, Stream Analytics, Synapse, and Data Lake Storage where workloads are steady-state and predictable. Combine with budget alerts and cost anomaly detection in Azure Cost Management to keep spending within targets.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 78,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring & Observability",
+                "issue": "Azure Monitor and Log Analytics are integrated, but the configuration of end-to-end observability (distributed tracing, log correlation across IoT, streaming, ML, and analytics) is not detailed, which can hinder rapid incident response.",
+                "recommendation": "Define a monitoring strategy with standardized metrics and logs for each component (IoT Hub operations, Stream Analytics job health, ML endpoint performance, Data Lake access, Synapse query performance). Configure diagnostic settings on all services to send logs/metrics to Log Analytics, and create tailored dashboards and alerts for real-time anomaly detection SLA, ingestion failures, and model scoring latencies.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Deployment & Configuration Management",
+                "issue": "The architecture does not describe using infrastructure-as-code or CI/CD pipelines for provisioning and updating IoT, analytics, and ML resources, increasing the risk of configuration drift and manual errors.",
+                "recommendation": "Adopt IaC (Bicep, ARM, Terraform) to define IoT Hub, DPS, Stream Analytics jobs, Data Lake, Synapse, Digital Twins, and monitoring resources. Implement CI/CD pipelines (e.g., Azure DevOps or GitHub Actions) for consistent, versioned deployments of configuration, ML models, and analytics jobs, with automated validation and staged rollouts.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Runbook & Incident Management",
+                "issue": "There is no mention of operational runbooks and incident response procedures for handling common failure modes such as IoT device enrollment failures, telemetry ingestion delays, or ML endpoint degradation.",
+                "recommendation": "Create and maintain operational runbooks covering device provisioning issues (DPS/IoT Hub), Stream Analytics job failures, Data Lake access errors, Synapse performance degradation, and ML scoring failures. Integrate these with alert rules in Azure Monitor and your ITSM tool to standardize triage, escalation, and post-incident review processes.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Configuration Governance",
+                "issue": "There is no explicit use of governance controls such as Azure Policy or tagging standards to enforce consistent configuration across environments for this multi-service architecture.",
+                "recommendation": "Implement Azure Policy to enforce security and operational baselines (e.g., require diagnostic settings, disallow public network access where Private Link is used, enforce encryption configurations). Use resource tags for environment, cost center, data sensitivity, and application role to support governance, reporting, and operational ownership.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 80,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Real-Time Processing & Latency",
+                "issue": "The solution targets sub-second anomaly detection for high-rate telemetry, but there is no explicit performance tuning strategy for end-to-end latency across IoT Hub, Stream Analytics, and Azure Machine Learning scoring.",
+                "recommendation": "Benchmark and tune the ingestion and processing pipeline: configure IoT Hub partitions to match throughput, optimize Stream Analytics query patterns (avoid unnecessary joins and window overlaps), and deploy ML scoring endpoints close to Stream Analytics in the same region with low-latency SKUs. Use Stream Analytics latency metrics and AML endpoint metrics to continuously monitor end-to-end latency and adjust SU counts and endpoint scaling accordingly.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Scaling & Throughput",
+                "issue": "Scaling strategies for IoT Hub, Stream Analytics, and Synapse are not described, which can impact throughput and responsiveness as the number of sensors and telemetry frequency grows.",
+                "recommendation": "Implement autoscaling where available (e.g., dynamic scaling of Stream Analytics SUs based on backlog and latency, scaling AML endpoints based on request rate). For IoT Hub, monitor throttling and increase units/partitions as needed. For Synapse, size pools based on workload patterns and leverage workload management features to prioritize critical jobs.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Access & Query Optimization",
+                "issue": "High-volume time series queries for analytics and dashboards (Synapse and Time Series Insights) can suffer from unnecessary scans and slow responses if data layout and indexing are not optimized.",
+                "recommendation": "Organize Azure Data Lake Storage with partitioning strategies aligned to query patterns (e.g., by site/line/device and time), optimize file sizes, and use columnar formats such as Parquet. In Synapse, implement partitioned tables, materialized views, and result set caching for common queries. Tune Time Series Insights environment retention and warm store settings to balance performance and cost for near-real-time dashboards.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Edge Processing Efficiency",
+                "issue": "The Azure IoT Edge Gateway is aggregating telemetry but there is no mention of performing pre-processing, filtering, or local anomaly checks to reduce bandwidth and cloud processing load.",
+                "recommendation": "Use Azure IoT Edge modules to perform local data filtering, normalization, and optional preliminary anomaly detection to reduce the volume of telemetry sent to the cloud and improve overall responsiveness. This can lower cloud-side processing load and help maintain performance as sensor count grows.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secrets and connection strings are not centrally managed, increasing the risk of credential exposure and inconsistent rotation practices.",
+            "recommendation": "Deploy Azure Key Vault and immediately migrate connection strings, keys, and credentials for IoT Hub, Stream Analytics, Azure Machine Learning, Synapse, and Data Lake. Enable managed identities for these services and update configurations to reference Key Vault secrets instead of inline values.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Machine Learning",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Reliability",
+            "issue": "Critical services lack explicit diagnostic settings and alerts, limiting visibility into issues affecting uptime and SLA adherence.",
+            "recommendation": "Enable diagnostic settings on IoT Hub, Stream Analytics, Azure Machine Learning, Data Lake, Synapse, and Time Series Insights to send logs and metrics to Log Analytics, and configure key alerts (e.g., IoT Hub throttling, Stream Analytics backlogs, ML endpoint failures, Synapse query timeouts).",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Machine Learning",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics",
+              "Time Series Insights",
+              "Azure Monitor",
+              "Log Analytics"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Always-on analytics and ML compute may be running at fixed capacity regardless of workload, leading to avoidable cost.",
+            "recommendation": "Enable auto-pause or scale-down schedules for Synapse and Azure Machine Learning compute where feasible, and review Stream Analytics SU utilization to reduce overprovisioned units while maintaining latency targets.",
+            "resources": [
+              "Azure Stream Analytics",
+              "Azure Machine Learning",
+              "Azure Synapse Analytics"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:38:04.767Z",
+        "metrics": {
+          "promptTokens": 1243,
+          "completionTokens": 4893,
+          "totalTokens": 6136,
+          "elapsedTimeMs": 38218,
+          "model": "gpt-5.1"
+        },
+        "modelUsed": "GPT-5.1 (low)",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 1,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt52-low": {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "metrics": {
+        "promptTokens": 1243,
+        "completionTokens": 3850,
+        "totalTokens": 5093,
+        "elapsedTimeMs": 52120,
+        "model": "gpt-5.2"
+      },
+      "overallScore": 66,
+      "totalFindings": 16,
+      "criticalCount": 0,
+      "highCount": 5,
+      "mediumCount": 10,
+      "lowCount": 1,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 58
+        },
+        {
+          "pillar": "Security",
+          "score": 60
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 72
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 70
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 61
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 66,
+        "summary": "The architecture is well-aligned to an industrial IoT analytics platform with clear separation of ingestion, real-time processing, analytics, identity, and observability. Critical gaps are high availability/disaster recovery for a 99.9% uptime target and missing centralized secrets management; performance risks also exist for sub-second scoring when invoking ML from Stream Analytics at high event rates.",
+        "pillars": [
+          {
+            "score": 58,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "Single-region deployment has no regional failover, which increases the likelihood of missing the 99.9% uptime requirement during a zonal/region incident and complicates DR for stateful components (ingestion, streaming jobs, digital twin state, and analytics).",
+                "recommendation": "Design and test a multi-region DR strategy: deploy paired regional stacks, use active/active or active/passive patterns per component, define RTO/RPO targets, and implement automated failover/runbooks. Validate zone redundancy where supported, and implement replay/reprocessing plans for stream processing and data pipelines to recover deterministically after failover.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Private Link",
+                  "Azure IoT Edge Gateway",
+                  "Industrial Sensors",
+                  "Microsoft Entra ID"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Ingestion Resiliency",
+                "issue": "5,000+ sensors emitting every 5 seconds (~1,000 events/sec) can overwhelm ingestion/processing during bursts; if the edge gateway or stream processing job experiences backpressure, data loss or delayed anomaly detection can occur without explicit buffering/replay controls.",
+                "recommendation": "Implement a defined buffering and replay strategy: ensure the edge gateway can spool telemetry during connectivity issues, define IoT Hub message TTL and retry behavior, and configure Stream Analytics job parallelism/throughput and checkpointing appropriately. Run load tests at peak rates (including bursts) and validate end-to-end recovery and reprocessing behavior.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Retention & Recoverability",
+                "issue": "The requirement calls for 6-month hot storage and 7-year cold retention, but lifecycle/immutability/restore objectives are not defined; long-retention workloads are vulnerable to accidental deletion, corruption, or incomplete compliance retention without explicit controls.",
+                "recommendation": "Define and enforce retention and recoverability: implement lifecycle policies for hot-to-cold transition, ensure backups/point-in-time recovery objectives for analytical stores where required, and document restore procedures and periodic restore tests to meet business RTO/RPO for historical data.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 60,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No centralized secrets management service is present. This typically leads to secrets/keys embedded in deployments, pipeline variables, code, or configuration, increasing the risk of credential leakage and complicating rotation (especially for IoT and analytics integrations).",
+                "recommendation": "Introduce centralized secret storage and rotation for connection strings, SAS tokens, certificates, and service principals. Enforce managed identities where possible and rotate credentials on a defined cadence; integrate with monitoring to alert on expiring credentials and anomalous access.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Microsoft Entra ID",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Device Identity & Provisioning",
+                "issue": "The design states zero-touch provisioning via DPS but does not specify hardware-backed identity, certificate rotation, or anti-tamper strategy. For industrial environments, weak device identity increases the risk of rogue device enrollment or impersonation.",
+                "recommendation": "Use per-device identity with X.509 certificates (preferably hardware-backed) for enrollment and authentication, define certificate rotation processes, and enforce least-privilege device policies. Establish a quarantine process for anomalous devices and automate deprovisioning/credential revocation.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure IoT Hub",
+                  "Microsoft Entra ID",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "Private Link is included for OT/IT segregation, but the architecture does not describe end-to-end private access enforcement for all dependent services and control planes (analytics, ML, and dashboards). Any public endpoint exposure can become a lateral movement path.",
+                "recommendation": "Ensure private endpoints and public network access restrictions are consistently applied where supported across data/analytics services, and verify that monitoring/management access is controlled (MFA/conditional access for operators). Validate DNS resolution, route tables, and egress controls from the OT ingress path to prevent unintended internet exposure.",
+                "resources": [
+                  "Azure Private Link",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Microsoft Entra ID"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "Long retention (7 years) increases exposure if data classification, encryption key governance, and access boundaries are not explicitly defined. Industrial telemetry can become sensitive when correlated with facility operations and production volumes.",
+                "recommendation": "Define data classification and enforce least-privilege access via role-based controls; apply encryption-at-rest and in-transit consistently, and ensure access to analytical outputs is segregated by persona (operators vs. analysts vs. data scientists). Audit data access and alert on unusual download/export patterns.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Microsoft Entra ID",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 72,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Streaming & Inference Cost Control",
+                "issue": "Invoking real-time ML scoring from Stream Analytics can be cost-intensive at ~1,000 events/sec, and costs can spike during bursty telemetry or reprocessing. Without explicit sampling/aggregation rules, the platform may over-process data that doesn’t add value.",
+                "recommendation": "Apply cost controls in the hot path: aggregate at the edge where feasible, implement event filtering/deduplication, and score only the signals needed for anomaly detection. Use monitoring to correlate cost drivers (throughput, job parallelism, scoring calls) with business value and tune accordingly.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Storage Lifecycle & Retention Costs",
+                "issue": "6-month hot + 7-year retention can become a dominant cost if storage tiering, compaction, and curated dataset governance are not enforced (especially if raw telemetry is retained at full fidelity).",
+                "recommendation": "Implement strict lifecycle and dataset governance: separate raw vs curated zones, compress/columnar formats for analytics, and downsample/aggregate older data where permissible. Track storage growth and cost per dataset, and enforce retention policies per data class.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Capacity Commitments",
+                "issue": "No commitment/discount strategy is indicated for steady-state services (ingestion, analytics, and monitoring).",
+                "recommendation": "If workloads are stable, evaluate commitment-based discounts and capacity planning for consistently used services, and right-size based on measured utilization. Establish budgets and alerts to detect anomalies early.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Synapse Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "SLOs, Alerting, and Runbooks",
+                "issue": "While Azure Monitor and Log Analytics are present, the design does not define SLOs (ingestion delay, anomaly detection latency, data completeness), actionable alerting, or operational runbooks for common failure modes (DPS enrollment failures, Stream Analytics lag, model endpoint errors).",
+                "recommendation": "Define SLOs aligned to 99.9% and sub-second detection, build dashboards and alerts for leading indicators (lag, late events, dropped messages, scoring error rate), and create runbooks with clear ownership. Regularly run incident simulations, including region and connectivity disruptions.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Edge Gateway",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Model Lifecycle Operations (MLOps)",
+                "issue": "Real-time anomaly detection depends on model quality and consistent deployment. Without controlled promotion, rollback, and data/model drift monitoring, accuracy can degrade silently and increase false positives/negatives.",
+                "recommendation": "Establish an MLOps operating model: version models and data, implement canary/blue-green deployments for scoring endpoints, and monitor drift, latency, and error rates. Define rollback criteria and automate retraining triggers based on drift or performance thresholds.",
+                "resources": [
+                  "Azure Machine Learning",
+                  "Azure Data Lake Storage",
+                  "Azure Stream Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Service Lifecycle Risk",
+                "issue": "Time Series Insights has been retired/limited for new usage, creating operational and roadmap risk for long-term dashboards and time-series exploration.",
+                "recommendation": "Create a migration plan for time-series visualization and querying, including data model mapping, dashboard parity, and operational handover. Validate performance and retention requirements in the target approach before decommissioning.",
+                "resources": [
+                  "Time Series Insights",
+                  "Azure Data Lake Storage",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 61,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "End-to-End Latency (Sub-second)",
+                "issue": "Sub-second anomaly detection with Stream Analytics calling Azure Machine Learning can be challenged by network hops, scoring endpoint throughput/queueing, and per-event invocation overhead at ~1,000 events/sec. This can cause tail latency spikes and missed SLA during bursts.",
+                "recommendation": "Measure p95/p99 end-to-end latency and redesign the scoring path if needed: batch or micro-batch scoring, pre-filtering/aggregation in Stream Analytics, and offloading inference closer to the edge for critical signals. Ensure the ML deployment is scaled and tuned for concurrency and low-latency inference.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Hub",
+                  "Azure IoT Edge Gateway",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Streaming Job Scaling & Late/Out-of-Order Events",
+                "issue": "Industrial telemetry often arrives late/out-of-order due to intermittent connectivity. Without explicit event-time handling, windowing, and late arrival policies, anomaly detection accuracy and aggregates can be inconsistent under real network conditions.",
+                "recommendation": "Configure Stream Analytics for robust event-time processing: define appropriate windowing, late arrival and out-of-order tolerances, and validate correctness during simulated packet loss and reconnection scenarios. Monitor lag and watermark metrics to keep processing within the latency target.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure IoT Hub",
+                  "Azure IoT Edge Gateway",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Analytics Performance and Data Layout",
+                "issue": "Reporting and trend analysis performance will degrade if curated telemetry is not organized for query patterns (partitioning, file sizing, schema evolution). This is especially likely with 7-year retention and high-ingest raw zones.",
+                "recommendation": "Adopt a data layout strategy: partition by time/facility/asset, enforce consistent file sizes, and maintain a curated layer optimized for Synapse queries. Regularly benchmark key reports and optimize based on actual query plans and data growth.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secrets are likely distributed across configurations for ingestion, analytics, and ML integration, increasing exposure and slowing incident response.",
+            "recommendation": "Centralize secret storage and implement rotation for all inter-service credentials used by the platform; prioritize IoT Hub/DPS and analytics connections first, then enforce managed identities where supported.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure IoT Hub Device Provisioning Service",
+              "Azure Stream Analytics",
+              "Azure Machine Learning",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics",
+              "Microsoft Entra ID"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "No DR/failover approach is defined despite a 99.9% uptime requirement.",
+            "recommendation": "Document RTO/RPO and implement a minimal DR runbook and regular failover test plan; start with ingestion and streaming recovery procedures, then extend to analytics and dashboards.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Data Lake Storage",
+              "Azure Monitor",
+              "Log Analytics"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "No explicit SLO-based alerting for pipeline lag, late events, or ML scoring errors.",
+            "recommendation": "Add alerts and dashboards for end-to-end telemetry lag, Stream Analytics watermark/late events, ML scoring latency/error rate, and IoT Hub throttling; tie each alert to an on-call action/runbook.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "Azure Stream Analytics",
+              "Azure Machine Learning",
+              "Azure IoT Hub"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "Time Series Insights introduces long-term platform risk due to product lifecycle constraints.",
+            "recommendation": "Create and execute a migration plan for dashboards and time-series exploration to avoid operational disruption and ensure long-term supportability.",
+            "resources": [
+              "Time Series Insights",
+              "Azure Data Lake Storage"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:38:18.672Z",
+        "metrics": {
+          "promptTokens": 1243,
+          "completionTokens": 3850,
+          "totalTokens": 5093,
+          "elapsedTimeMs": 52120,
+          "model": "gpt-5.2"
+        },
+        "modelUsed": "GPT-5.2 (low)",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt52codex-low": {
+      "model": "gpt-5.2-codex",
+      "displayName": "GPT-5.2 Codex",
+      "metrics": {
+        "promptTokens": 1243,
+        "completionTokens": 1785,
+        "totalTokens": 3028,
+        "elapsedTimeMs": 19453,
+        "model": "gpt-5.2-codex"
+      },
+      "overallScore": 66,
+      "totalFindings": 10,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 6,
+      "lowCount": 2,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 58
+        },
+        {
+          "pillar": "Security",
+          "score": 60
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 68
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 70
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 66
+        }
+      ],
+      "quickWinCount": 2,
+      "validation": {
+        "overallScore": 66,
+        "summary": "The architecture covers core IoT ingestion, real-time processing, analytics, and observability, and includes private connectivity and identity integration. Key gaps are single-region resiliency and the absence of centralized secrets management, which jeopardize the 99.9% uptime target and security posture.",
+        "pillars": [
+          {
+            "score": 58,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The platform appears to be deployed in a single region with no failover strategy, creating a single point of failure for telemetry ingestion, real-time processing, and analytics.",
+                "recommendation": "Adopt a multi-region design with paired region failover for ingestion and processing, including active/active or active/passive deployment for IoT Hub, Stream Analytics, Data Lake, Synapse, Digital Twins, and Time Series Insights. Implement cross-region data replication and a tested DR plan aligned to 99.9% uptime requirements.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure Private Link",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Microsoft Entra ID",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Resiliency",
+                "issue": "No explicit data replication or immutable retention strategy is defined for 7-year cold retention.",
+                "recommendation": "Enable geo-redundant storage and immutability policies for long-term retention datasets, and validate backup/restore procedures for Data Lake and Synapse to meet compliance requirements.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 60,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No centralized secrets management service is present for managing connection strings, keys, and certificates.",
+                "recommendation": "Introduce a secrets management service to store and rotate IoT Hub keys, DPS credentials, and ML/Synapse access secrets; integrate managed identities where possible to reduce secret usage.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity & Access",
+                "issue": "There is no explicit mention of least-privilege RBAC segmentation between OT, data engineering, and analytics roles.",
+                "recommendation": "Define RBAC roles and conditional access policies for operators, data engineers, and service principals; apply resource-level permissions and managed identities for inter-service access.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 68,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Data Retention Costs",
+                "issue": "Hot storage for 6 months of high-frequency telemetry may drive higher storage costs.",
+                "recommendation": "Apply lifecycle management to tier older data to cool/archive storage and consider aggregations for long-term analytics to reduce storage and query costs.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Compute Optimization",
+                "issue": "Streaming and analytics workloads may not be tuned to actual event throughput, risking overprovisioning.",
+                "recommendation": "Continuously right-size Stream Analytics streaming units and Synapse compute based on observed throughput and query patterns; use autoscale where applicable.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring Coverage",
+                "issue": "Metrics are emitted to Azure Monitor and Log Analytics, but there is no mention of end-to-end alerting, SLOs, or runbooks.",
+                "recommendation": "Define SLOs for ingestion latency, anomaly detection latency, and device provisioning success; implement alerts and automated runbooks for common failures.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Stream Analytics",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "DevOps & Model Operations",
+                "issue": "No CI/CD or MLOps controls are described for Stream Analytics jobs and ML model deployment.",
+                "recommendation": "Implement automated deployment pipelines and versioning for Stream Analytics jobs and ML models; use blue/green or canary deployments to reduce risk.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 66,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Latency حساس",
+                "issue": "Sub-second anomaly detection may be impacted if Stream Analytics and ML inference are not optimized for high-frequency telemetry bursts.",
+                "recommendation": "Optimize Stream Analytics query complexity, use partitioning by device ID, and consider edge inference on Azure IoT Edge Gateway for critical low-latency detection.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Edge Gateway"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Scaling Strategy",
+                "issue": "No explicit scaling strategy is defined for handling bursty sensor workloads.",
+                "recommendation": "Enable autoscale where supported and validate throughput limits for IoT Hub, Stream Analytics, and Time Series Insights; plan capacity for peak load based on 5,000+ sensors and 5-second intervals.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "medium",
+            "category": "Security",
+            "issue": "Secrets are likely stored in app configurations or code.",
+            "recommendation": "Adopt a centralized secrets management service and rotate IoT Hub/DPS keys; use managed identities for inter-service access where possible.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure IoT Hub Device Provisioning Service",
+              "Azure Machine Learning",
+              "Azure Synapse Analytics",
+              "Azure Data Lake Storage"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Reliability",
+            "issue": "Single-region deployment creates a regional outage risk.",
+            "recommendation": "Implement a paired-region failover plan with data replication and run a DR test to validate recovery objectives.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics",
+              "Azure Digital Twins"
+            ],
+            "source": "rule-based"
+          }
+        ],
+        "timestamp": "2026-05-27T01:37:46.005Z",
+        "metrics": {
+          "promptTokens": 1243,
+          "completionTokens": 1785,
+          "totalTokens": 3028,
+          "elapsedTimeMs": 19453,
+          "model": "gpt-5.2-codex"
+        },
+        "modelUsed": "GPT-5.2 Codex (low)",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt53codex-low": {
+      "model": "gpt-5.3-codex",
+      "displayName": "GPT-5.3 Codex",
+      "metrics": {
+        "promptTokens": 1243,
+        "completionTokens": 2737,
+        "totalTokens": 3980,
+        "elapsedTimeMs": 33071,
+        "model": "gpt-5.3-codex"
+      },
+      "overallScore": 72,
+      "totalFindings": 15,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 10,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 62
+        },
+        {
+          "pillar": "Security",
+          "score": 64
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 70
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 76
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 82
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 72,
+        "summary": "This architecture is well-aligned to an industrial IoT analytics platform, with strong service composition across ingestion, real-time processing, analytics, identity, and observability. It is capable of meeting many functional and performance requirements, but resilience and secret governance are notable risk areas. Addressing multi-region failover and centralized secrets/certificate management would materially improve production readiness.",
+        "pillars": [
+          {
+            "score": 62,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The platform appears to be deployed in a single region with no explicit failover strategy, creating a regional single point of failure for ingestion, processing, and analytics workloads.",
+                "recommendation": "Adopt a multi-region topology with paired-region deployment for critical paths: dual IoT Hub/DPS strategy, replicated data lake zones, and regional failover runbooks for Stream Analytics, Azure Machine Learning endpoints, and Azure Digital Twins. Define RTO/RPO targets and test failover regularly.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "Long-term retention is required (7 years cold), but cross-region backup/immutability and recovery procedures are not explicit.",
+                "recommendation": "Enable geo-redundant storage patterns for critical telemetry and model artifacts, configure immutable/archive policies for compliance datasets, and document restore drills for curated and raw zones.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Reliability Engineering",
+                "issue": "No explicit mention of chaos/fault-injection or resilience testing for high-frequency telemetry bursts and dependency outages.",
+                "recommendation": "Implement reliability tests covering IoT Hub throttling, Stream Analytics backpressure, model endpoint latency spikes, and partial network isolation between OT/IT zones.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Private Link"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 64,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No dedicated secrets management service is present, which increases risk for credentials, connection strings, and certificate lifecycle management across IoT and analytics components.",
+                "recommendation": "Introduce centralized secrets and key lifecycle management, integrate managed identities where possible, and rotate credentials/certificates automatically for ingestion and model-serving dependencies.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics",
+                  "Microsoft Entra ID"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity and Access Control",
+                "issue": "Identity is present via Microsoft Entra ID, but least-privilege RBAC boundaries between OT operators, data engineers, and ML operators are not described.",
+                "recommendation": "Define role-separated access models, apply PIM/JIT for privileged operations, and enforce conditional access for operator portals and management APIs.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub",
+                  "Azure Synapse Analytics",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "Private Link is used for ingress, but private endpoint coverage for downstream data and analytics services is not explicit.",
+                "recommendation": "Extend private networking and public network restrictions across data/analytics services handling sensitive OT telemetry, and validate egress control from processing services.",
+                "resources": [
+                  "Azure Private Link",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Right-Sizing",
+                "issue": "Sub-second anomaly detection requirements can lead to persistent overprovisioning of streaming and scoring resources if workloads are not periodically tuned.",
+                "recommendation": "Baseline event throughput and model invocation rates, then right-size Stream Analytics streaming units and model endpoint compute with autoscale bounds tied to real traffic patterns.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Storage Lifecycle",
+                "issue": "Retention targets are clear, but policy-based tier transitions and query-aware partitioning are not specified and may increase storage/compute costs over time.",
+                "recommendation": "Automate lifecycle policies from hot to cool/archive tiers and align partition strategy for Synapse and dashboard access paths to reduce scan costs.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Commitment Discounts",
+                "issue": "No evidence of reserved capacity/commitment planning for stable baseline workloads.",
+                "recommendation": "Evaluate reservations or committed spend options for predictable ingestion, analytics, and monitoring usage after 30-60 days of production telemetry.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Synapse Analytics",
+                  "Log Analytics",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 76,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Observability",
+                "issue": "Monitoring pipeline exists (Azure Monitor to Log Analytics), but end-to-end SLOs and alerting tied to the 99.9% uptime target are not explicit.",
+                "recommendation": "Define service-level indicators for telemetry ingestion latency, anomaly detection latency, model scoring success rate, and dashboard freshness; map alerts to incident response playbooks.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "DevOps and Change Management",
+                "issue": "Model deployment and streaming job updates in real-time environments can introduce operational risk without controlled rollout patterns.",
+                "recommendation": "Use CI/CD with staged deployments, canary model endpoints, versioned stream job definitions, and automated rollback triggers on latency/error regression.",
+                "resources": [
+                  "Azure Machine Learning",
+                  "Azure Stream Analytics",
+                  "Azure Digital Twins"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Runbook Automation",
+                "issue": "Operational procedures for device onboarding spikes, DPS assignment issues, and edge gateway reconnect storms are not described.",
+                "recommendation": "Create automated runbooks for common incidents and capacity events, including proactive throttling and retry policy verification for edge-to-cloud flows.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure IoT Hub",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 82,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "low",
+                "category": "Architecture Fit",
+                "issue": "Service selection is strongly aligned to workload requirements for high-frequency telemetry, real-time anomaly detection, and historical analytics.",
+                "recommendation": "Maintain this separation of hot path (streaming + scoring) and cold path (data lake + synapse) and periodically validate latency budgets per stage.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Latency Optimization",
+                "issue": "Sub-second SLA can degrade if synchronous model scoring becomes a bottleneck under bursty sensor loads.",
+                "recommendation": "Profile end-to-end latency and introduce batching/window tuning, lightweight feature pipelines, and autoscale policies for online inference to sustain p95/p99 targets.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Query Performance",
+                "issue": "Without careful data modeling, long-range trend queries may become expensive and slow as retention grows.",
+                "recommendation": "Implement partition pruning standards, optimized file formats, and curated serving layers for Synapse and time-series dashboards.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secret and certificate storage is decentralized or unclear.",
+            "recommendation": "Centralize secrets/certificate rotation and remove hard-coded credentials from device, pipeline, and analytics configurations.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure IoT Hub Device Provisioning Service",
+              "Azure Machine Learning",
+              "Microsoft Entra ID"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "Regional outage would interrupt ingestion and processing.",
+            "recommendation": "Design and test active-passive multi-region failover for ingestion and critical data paths with documented RTO/RPO.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "SLA observability is present but not explicitly tied to actionable SLOs.",
+            "recommendation": "Create SLO dashboards and alert thresholds for ingestion success, end-to-end latency, and model scoring health.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "Azure Stream Analytics",
+              "Azure Machine Learning"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Storage retention may accumulate unnecessary hot/cool data costs.",
+            "recommendation": "Apply lifecycle rules immediately for 6-month hot to archive transitions and validate access patterns quarterly.",
+            "resources": [
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics",
+              "Time Series Insights"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:37:59.626Z",
+        "metrics": {
+          "promptTokens": 1243,
+          "completionTokens": 2737,
+          "totalTokens": 3980,
+          "elapsedTimeMs": 33071,
+          "model": "gpt-5.3-codex"
+        },
+        "modelUsed": "GPT-5.3 Codex (low)",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt54-low": {
+      "model": "gpt-5.4",
+      "displayName": "GPT-5.4",
+      "metrics": {
+        "promptTokens": 1243,
+        "completionTokens": 4129,
+        "totalTokens": 5372,
+        "elapsedTimeMs": 49863,
+        "model": "gpt-5.4"
+      },
+      "overallScore": 71,
+      "totalFindings": 20,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 14,
+      "lowCount": 4,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 66
+        },
+        {
+          "pillar": "Security",
+          "score": 69
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 70
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 76
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 74
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 71,
+        "summary": "This architecture is well-aligned to an industrial IoT predictive maintenance scenario, with strong service composition for ingestion, real-time analytics, digital modeling, centralized observability, and private connectivity. The main risks are architectural resilience gaps from an apparent single-region deployment, absence of centralized secrets management, and limited evidence of end-to-end disaster recovery, data lifecycle governance, and cost controls for sustained high-volume telemetry retention.",
+        "pillars": [
+          {
+            "score": 66,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The architecture appears to be deployed in a single Azure region with no explicit regional failover or disaster recovery design. This creates a concentrated failure domain across ingestion, stream processing, machine learning inference, analytics, monitoring, and identity-dependent operations, which is a significant risk for a platform targeting 99.9% uptime.",
+                "recommendation": "Define a multi-region resilience strategy for critical platform components. Use paired-region deployment patterns where supported, establish failover procedures for Azure IoT Hub and Azure IoT Hub Device Provisioning Service, replicate Azure Data Lake Storage data, define recovery patterns for Azure Synapse Analytics and Azure Machine Learning assets, and document operational failover for Azure Digital Twins, Azure Monitor, and Log Analytics. Validate recovery time and recovery point objectives with regular failover drills.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure Private Link",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Microsoft Entra ID",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Edge Resiliency",
+                "issue": "The Azure IoT Edge Gateway is a critical dependency between industrial sensors and cloud ingestion, but the design does not show redundant gateways, local buffering strategy, or degraded-operation handling during WAN or Azure outages.",
+                "recommendation": "Deploy gateway redundancy at the facility level, enable offline store-and-forward on Azure IoT Edge Gateway, and define local failover behavior for telemetry persistence and control-plane independence during cloud connectivity loss. Test prolonged disconnection scenarios to ensure no critical telemetry is dropped.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection and Recovery",
+                "issue": "The architecture includes 6-month hot storage and 7-year cold retention requirements, but no explicit backup, immutability, or restore process is described for telemetry, model artifacts, or analytical datasets.",
+                "recommendation": "Implement storage redundancy and lifecycle policies in Azure Data Lake Storage, define backup and restore procedures for curated analytical datasets in Azure Synapse Analytics, and version Azure Machine Learning models and training artifacts. Consider immutable retention for compliance-sensitive telemetry and maintenance evidence.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Capacity Reliability",
+                "issue": "With 5,000+ sensors sending telemetry every 5 seconds, sustained ingress and processing capacity is material. The design does not indicate partitioning, throughput headroom, or backpressure handling for traffic spikes, reconnect storms, or sensor fleet growth.",
+                "recommendation": "Size Azure IoT Hub units and partitions for peak and reconnect events, validate Azure Stream Analytics streaming units against sub-second latency targets, and establish load tests for worst-case telemetry bursts. Define alert thresholds and autoscale or pre-provisioning policies where supported.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 69,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No centralized secrets management service is present in the architecture. This increases the risk of credentials, connection strings, certificates, and service secrets being stored in code, configuration, or operational tooling without proper rotation and access control.",
+                "recommendation": "Introduce centralized secrets and certificate management for service-to-service credentials, device enrollment material, private endpoint-related connection settings, and operational secrets. Integrate secret rotation with application deployment and restricted access policies.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Machine Learning",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Segmentation",
+                "issue": "Private connectivity is used between the edge environment and Azure ingress, which is strong, but the architecture does not clearly show whether all downstream data services are restricted to private access paths only. Public endpoints on analytics or storage services would weaken OT/IT segregation objectives.",
+                "recommendation": "Extend private access and network isolation consistently across Azure Data Lake Storage, Azure Synapse Analytics, Azure Machine Learning, Azure Digital Twins, and monitoring endpoints where supported. Disable public network access where feasible and enforce private DNS resolution and network policies.",
+                "resources": [
+                  "Azure Private Link",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity and Access Control",
+                "issue": "Microsoft Entra ID is present for operator access and device management, but there is no evidence of least-privilege RBAC boundaries, workload identities, privileged access workflows, or separation of duties between OT operators, data engineers, and ML teams.",
+                "recommendation": "Define role-based access for operational personas, use managed identities for service interactions where supported, minimize shared secrets, and implement conditional access and privileged identity controls for administrative operations. Review access paths into Azure IoT Hub, Azure Data Lake Storage, Azure Synapse Analytics, and Azure Machine Learning.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Device Security",
+                "issue": "Zero-touch provisioning is included through Azure IoT Hub Device Provisioning Service, but the architecture does not specify certificate-based attestation, device identity lifecycle controls, or revocation processes for compromised edge or sensor devices.",
+                "recommendation": "Use strong attestation methods for Azure IoT Hub Device Provisioning Service, prefer certificate-based device identity where possible, and establish device rotation, quarantine, and revocation procedures. Monitor enrollment anomalies and unauthorized device behavior through Azure Monitor and Log Analytics.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure IoT Hub",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Telemetry Storage Costs",
+                "issue": "High-frequency telemetry from 5,000+ sensors combined with 6-month hot retention can create substantial storage and query costs, especially if raw and processed data are both retained at high granularity.",
+                "recommendation": "Implement tiered retention and lifecycle management in Azure Data Lake Storage to separate raw, curated, anomaly, and aggregated datasets. Retain high-resolution data only where operationally necessary and downsample older telemetry for analytics and dashboard use cases.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Time Series Insights",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Streaming Compute Efficiency",
+                "issue": "Sub-second anomaly detection requirements can lead to overprovisioned Azure Stream Analytics jobs and always-on ML inference capacity if streaming units and model endpoints are sized for peak load only.",
+                "recommendation": "Benchmark actual event volume, latency, and model invocation patterns. Right-size Azure Stream Analytics streaming units, optimize query complexity, and select inference hosting patterns in Azure Machine Learning that match continuous scoring demand without excessive idle capacity.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Analytics Consumption",
+                "issue": "Batch reporting and trend analysis in Azure Synapse Analytics can become costly if raw telemetry is queried directly or if data is not partitioned and curated for common manufacturing analytics patterns.",
+                "recommendation": "Use curated and partitioned datasets in Azure Data Lake Storage, push aggregation upstream where possible, and align Azure Synapse Analytics usage with scheduled reporting windows. Review storage format, partitioning strategy, and query optimization regularly.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Observability Spend",
+                "issue": "Centralized monitoring is a strength, but verbose diagnostic logging at high telemetry scale can materially increase Log Analytics ingestion and retention costs.",
+                "recommendation": "Apply diagnostic settings selectively, set retention by log type and business need, and separate high-value operational signals from verbose debugging logs. Use alert tuning to reduce noise and unnecessary data collection.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Stream Analytics",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 76,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Observability Coverage",
+                "issue": "Azure Monitor and Log Analytics are present, which is a strong foundation, but the architecture only explicitly shows metrics from Azure Stream Analytics. There is no clear indication of unified alerting, dashboards, or operational runbooks across ingestion, provisioning, storage, analytics, and ML services.",
+                "recommendation": "Standardize diagnostic settings and alert rules across Azure IoT Hub, Azure IoT Hub Device Provisioning Service, Azure Data Lake Storage, Azure Synapse Analytics, Azure Machine Learning, and Azure Digital Twins. Build role-based dashboards and runbooks for incident response, capacity issues, failed provisioning, and data pipeline degradation.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Deployment and Change Management",
+                "issue": "The architecture does not describe infrastructure-as-code, environment promotion, or controlled release processes for streaming queries, ML models, Digital Twins models, and analytics artifacts.",
+                "recommendation": "Adopt reproducible deployments for all platform components, version Azure Stream Analytics queries and Azure Digital Twins models, and implement CI/CD for Azure Machine Learning model training and release. Include rollback plans and pre-production validation for schema, model, and query changes.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Operational Runbooks",
+                "issue": "Manufacturing scenarios require well-defined responses for sensor storms, device enrollment failures, model drift, and edge disconnections, but no operating procedures are shown.",
+                "recommendation": "Create runbooks for common production events including Azure IoT Hub throttling, Azure IoT Hub Device Provisioning Service assignment failures, Azure Stream Analytics lag, Azure Machine Learning inference errors, and Azure IoT Edge Gateway offline operation. Track mean time to detect and mean time to recover using Azure Monitor and Log Analytics.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Service Lifecycle Governance",
+                "issue": "Time Series Insights is included for dashboards, but long-term product roadmap and service lifecycle planning are not evident. Depending on organizational direction, dashboarding and historical analysis patterns may need modernization planning.",
+                "recommendation": "Review the long-term analytics and visualization roadmap for time-series workloads and ensure operational ownership, supportability, and migration planning are documented if future service changes are required.",
+                "resources": [
+                  "Time Series Insights",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 74,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Real-Time Processing Latency",
+                "issue": "The architecture targets sub-second anomaly detection while chaining Azure IoT Hub, Azure Stream Analytics, and Azure Machine Learning. This is feasible but sensitive to streaming query complexity, model inference latency, and network overhead.",
+                "recommendation": "Measure end-to-end latency budgets across ingestion, transformation, inference, and downstream writes. Optimize Azure Stream Analytics queries, minimize model payload size, use low-latency inference endpoints in Azure Machine Learning, and reserve headroom for burst conditions.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Partitioning and Query Performance",
+                "issue": "Historical telemetry analytics and long-term retention can degrade performance if Azure Data Lake Storage data is not partitioned and curated for common reporting, training, and dashboard access patterns.",
+                "recommendation": "Partition telemetry by facility, line, asset, and time window; separate raw and curated zones; and optimize file format and batch sizing for Azure Synapse Analytics and Azure Machine Learning consumption. Use aggregated datasets for Time Series Insights where high-resolution raw data is unnecessary.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Digital Twin Update Throughput",
+                "issue": "Streaming updates from Azure Stream Analytics into Azure Digital Twins may face throughput or modeling bottlenecks if every sensor signal directly updates twin state at full frequency.",
+                "recommendation": "Update twin properties only for contextually relevant signals, aggregate or debounce noisy telemetry before writing to Azure Digital Twins, and reserve high-frequency raw telemetry for Azure Data Lake Storage and analytics services.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Edge-to-Cloud Efficiency",
+                "issue": "All telemetry appears to flow from the facility to the cloud, which may not be optimal for low-value or repetitive sensor data when bandwidth, latency, or cost constraints exist.",
+                "recommendation": "Use Azure IoT Edge Gateway to pre-filter, aggregate, or locally score lower-value telemetry where appropriate, sending only actionable events, summaries, and training-relevant data upstream while preserving critical raw traces according to policy.",
+                "resources": [
+                  "Industrial Sensors",
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "High Availability",
+            "issue": "There is no explicit regional failover design for critical IoT and analytics services.",
+            "recommendation": "Document a minimum viable disaster recovery plan first: identify failover region, define data replication targets, and test manual recovery for Azure IoT Hub, Azure Data Lake Storage, and Azure Synapse Analytics.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Secrets Management",
+            "issue": "Secrets and certificates do not appear to be centrally managed.",
+            "recommendation": "Centralize service credentials, connection strings, and certificate material under a dedicated secrets management process and rotate high-risk secrets used by ingestion, analytics, and ML components.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure IoT Hub Device Provisioning Service",
+              "Azure Machine Learning",
+              "Azure Data Lake Storage"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Observability",
+            "issue": "Monitoring is present but not clearly standardized across all services.",
+            "recommendation": "Enable consistent diagnostics, alerts, and dashboards for Azure IoT Hub, Azure IoT Hub Device Provisioning Service, Azure Machine Learning, Azure Data Lake Storage, and Azure Synapse Analytics into Log Analytics.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "Azure IoT Hub",
+              "Azure IoT Hub Device Provisioning Service",
+              "Azure Machine Learning",
+              "Azure Data Lake Storage",
+              "Azure Synapse Analytics"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "High-frequency telemetry retention may drive unnecessary hot storage and dashboard costs.",
+            "recommendation": "Apply lifecycle policies and downsampling so only operationally valuable recent data stays hot while older raw telemetry moves to lower-cost retention tiers.",
+            "resources": [
+              "Azure Data Lake Storage",
+              "Time Series Insights",
+              "Azure Synapse Analytics"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:38:16.417Z",
+        "metrics": {
+          "promptTokens": 1243,
+          "completionTokens": 4129,
+          "totalTokens": 5372,
+          "elapsedTimeMs": 49863,
+          "model": "gpt-5.4"
+        },
+        "modelUsed": "GPT-5.4 (low)",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt54mini-low": {
+      "model": "gpt-5.4-mini",
+      "displayName": "GPT-5.4 Mini",
+      "metrics": {
+        "promptTokens": 1243,
+        "completionTokens": 2632,
+        "totalTokens": 3875,
+        "elapsedTimeMs": 13818,
+        "model": "gpt-5.4-mini"
+      },
+      "overallScore": 67,
+      "totalFindings": 15,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 10,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 58
+        },
+        {
+          "pillar": "Security",
+          "score": 66
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 62
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 70
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 74
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 67,
+        "summary": "This is a strong, end-to-end industrial IoT architecture with clear real-time processing, analytics, identity, and observability components. The main risks are resilience in a single-region design and the absence of a dedicated secrets management service, while the rest of the platform is reasonably well aligned to the stated latency, retention, and OT/IT segregation requirements.",
+        "pillars": [
+          {
+            "score": 58,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The architecture is deployed in a single region with no documented failover path, creating a regional single point of failure for ingestion, stream processing, storage, analytics, and dashboards.",
+                "recommendation": "Design an active-active or active-passive multi-region recovery pattern for critical data paths, including paired-region IoT ingestion strategy, replicated storage, and tested failover procedures for operational continuity.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Digital Twins",
+                  "Azure Machine Learning",
+                  "Time Series Insights",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "The architecture does not show backup, replication, or recovery mechanics for telemetry history, model artifacts, digital twin state, or analytics stores.",
+                "recommendation": "Define backup and restore objectives for each data store and establish regionally redundant copies or export pipelines for model artifacts, curated analytics, and twin state to reduce recovery time and data loss.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Service Resiliency",
+                "issue": "The real-time telemetry path depends on multiple chained services, so outages or throttling in any one service can impact sub-second anomaly detection.",
+                "recommendation": "Introduce buffering and backpressure handling at the edge and in the ingestion path, and validate retry, dead-letter, and degraded-mode behavior for IoT Hub and Stream Analytics under load or partial outage.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 66,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No secrets management service is present, so credentials, connection strings, certificates, and other sensitive configuration may be handled outside a dedicated hardened store.",
+                "recommendation": "Add a centralized secrets management service and migrate device, application, and integration secrets to managed retrieval patterns with rotation and access auditing.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Machine Learning",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "Private Link is present, which is good for OT/IT segregation, but the architecture does not show explicit private endpoint coverage for all dependent services.",
+                "recommendation": "Confirm that all PaaS endpoints used by ingestion, analytics, and monitoring are restricted to private access where supported, and disable public network access where operationally feasible.",
+                "resources": [
+                  "Azure Private Link",
+                  "Azure IoT Hub",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity and Access",
+                "issue": "Microsoft Entra ID is included, but the architecture does not describe role separation, least-privilege device/operator access, or privileged access workflows.",
+                "recommendation": "Define role-based access control for operators, data engineers, and ML engineers, and apply privileged identity controls for administrative operations and model deployment.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 62,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Data Retention",
+                "issue": "The design retains hot telemetry for 6 months and cold data for 7 years, which can become expensive if the lifecycle and tiering policy is not tightly managed.",
+                "recommendation": "Implement lifecycle management, partitioning, and automated tier transitions so frequently accessed data stays in hot tiers only as long as needed while older data moves to low-cost archival storage.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Consumption Efficiency",
+                "issue": "Always-on streaming, model inference, and analytics workloads may be overprovisioned if they are sized for peak telemetry bursts rather than observed steady-state demand.",
+                "recommendation": "Right-size Stream Analytics, Synapse, and Azure Machine Learning workloads using actual throughput and query patterns, and review scaling settings periodically.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Platform Cost Governance",
+                "issue": "The architecture does not indicate chargeback, tagging, or cost accountability for OT, data, and ML workloads.",
+                "recommendation": "Apply cost allocation tags and establish budgets and alerts per environment, site, and workload to make long-running analytics and retention costs visible.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring",
+                "issue": "Monitoring is present, but the architecture does not show end-to-end tracing across ingestion, scoring, twin updates, and data persistence.",
+                "recommendation": "Establish correlated telemetry, alerts, and dashboards across all major processing stages so operators can isolate failures and latency regressions quickly.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Stream Analytics",
+                  "Azure IoT Hub",
+                  "Azure Machine Learning",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Automation",
+                "issue": "Device provisioning is included, but there is no explicit automation for environment deployment, configuration drift control, or model lifecycle management.",
+                "recommendation": "Use infrastructure as code and automated release pipelines for platform components, and add controlled model promotion, rollback, and validation workflows for Azure Machine Learning deployments.",
+                "resources": [
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Machine Learning",
+                  "Azure Stream Analytics",
+                  "Azure Digital Twins"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Incident Response",
+                "issue": "The design does not define operational runbooks for telemetry spikes, device certificate failures, model degradation, or storage saturation.",
+                "recommendation": "Create runbooks and on-call procedures for common failure modes and integrate them with alerting thresholds and escalation paths.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure IoT Hub",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 74,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Latency",
+                "issue": "The architecture targets sub-second anomaly detection, but the end-to-end path includes multiple services that may add latency if not carefully tuned.",
+                "recommendation": "Tune Stream Analytics windowing, IoT Hub throughput, edge aggregation, and model inference paths to minimize cross-service latency and keep inference as close to the edge as possible when practical.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Scalability",
+                "issue": "5,000+ sensors emitting every 5 seconds creates a sustained high-ingest workload that may require horizontal scaling and partitioning to avoid hot spots.",
+                "recommendation": "Validate partitioning strategy, throughput units, and concurrency settings for ingestion, streaming, and downstream analytics to ensure the platform scales predictably under peak load.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Synapse Analytics",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Data Access Optimization",
+                "issue": "Repeated dashboard and reporting queries against historical telemetry can become expensive and slow without curated models or pre-aggregations.",
+                "recommendation": "Use curated datasets, materialized views, or precomputed aggregates for Synapse and time-series dashboards to reduce query latency and repeated scan costs.",
+                "resources": [
+                  "Azure Synapse Analytics",
+                  "Time Series Insights",
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "No dedicated secrets management service is present.",
+            "recommendation": "Introduce a centralized secrets store and move certificates, keys, and connection secrets out of application configuration.",
+            "resources": [
+              "Microsoft Entra ID",
+              "Azure IoT Hub",
+              "Azure Machine Learning"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "The design is single-region with no failover path.",
+            "recommendation": "Define a second-region recovery strategy for ingestion, storage, and analytics, then test failover regularly.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Data Lake Storage"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "Cross-service latency and failure modes are not explicitly observable end-to-end.",
+            "recommendation": "Add correlated alerts and dashboards across ingestion, model scoring, twin updates, and storage writes.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "Azure Stream Analytics"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Long retention requirements can drive storage costs if lifecycle policies are not automated.",
+            "recommendation": "Implement tiering and lifecycle automation for hot, cool, and archive data.",
+            "resources": [
+              "Azure Data Lake Storage",
+              "Synapse Analytics"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:37:40.372Z",
+        "metrics": {
+          "promptTokens": 1243,
+          "completionTokens": 2632,
+          "totalTokens": 3875,
+          "elapsedTimeMs": 13818,
+          "model": "gpt-5.4-mini"
+        },
+        "modelUsed": "GPT-5.4 Mini (low)",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-v3.2-speciale",
+      "displayName": "DeepSeek V3.2 Speciale",
+      "metrics": {
+        "promptTokens": 1254,
+        "completionTokens": 2890,
+        "totalTokens": 4144,
+        "elapsedTimeMs": 28297,
+        "model": "deepseek-v3.2-speciale"
+      },
+      "overallScore": 65,
+      "totalFindings": 15,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 10,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 55
+        },
+        {
+          "pillar": "Security",
+          "score": 60
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 70
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 75
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 75
+        }
+      ],
+      "quickWinCount": 5,
+      "validation": {
+        "overallScore": 65,
+        "summary": "The architecture leverages robust Azure services for industrial IoT and predictive maintenance, but has critical gaps in high availability (single region, no failover) and secrets management (no Key Vault). Monitoring and identity are present, but reliability and security could be improved with multi-region design and proper secret handling. Cost optimization and operational excellence can be enhanced with auto-scaling and DevOps practices.",
+        "pillars": [
+          {
+            "score": 55,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The entire architecture is deployed in a single Azure region with no cross-region failover or disaster recovery. This violates the 99.9% uptime SLA requirement and creates a single point of failure. Services like IoT Hub, Stream Analytics, and Data Lake are region-bound; a region outage would cause complete service disruption.",
+                "recommendation": "Implement a multi-region active-passive or active-active design. Use IoT Hub geo-redundancy with manual failover, configure Azure Data Lake Storage with geo-redundant storage (GRS), deploy Stream Analytics jobs across regions, and set up Azure Digital Twins with cross-region replication. Consider using Azure Traffic Manager or Front Door for endpoint failover.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Time Series Insights"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Resiliency",
+                "issue": "Real-time processing with Stream Analytics may become a bottleneck if telemetry volume spikes beyond the configured SUs. No auto-scaling is mentioned; manual scaling may not meet dynamic demand.",
+                "recommendation": "Enable auto-scale for Stream Analytics jobs using streaming units that adjust based on load. Alternatively, consider using Azure Stream Analytics on Azure Functions or Event Hubs with Kafka for more elastic scaling.",
+                "resources": [
+                  "Azure Stream Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Durability",
+                "issue": "Data Lake Storage is used for hot and cold storage, but retention policies and lifecycle management are not specified. Without proper lifecycle management, costs may escalate and compliance with 6-month hot and 7-year cold retention may be manual.",
+                "recommendation": "Implement Azure Data Lake Storage lifecycle management policies to automatically transition data from hot to cool/archive tiers based on age. Set up blob versioning and soft delete for data protection.",
+                "resources": [
+                  "Azure Data Lake Storage"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 60,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No Azure Key Vault or equivalent secrets management service is used. Sensitive data such as device credentials, connection strings, SAS tokens, and ML model keys are at risk of exposure in code or configuration.",
+                "recommendation": "Integrate Azure Key Vault to store and manage all secrets, certificates, and keys. Use Managed Identities for services (IoT Hub, Stream Analytics, ML, Synapse) to access Key Vault securely. Rotate secrets regularly.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "Azure Private Link is used to connect on-premises to IoT Hub, which is good. However, other services like Data Lake, Synapse, and ML may be exposed publicly unless private endpoints are configured. This could increase attack surface.",
+                "recommendation": "Enable private endpoints for all Azure PaaS services (Data Lake Storage, Synapse, Machine Learning, Time Series Insights) and restrict public access. Use Azure Private Link and VNet integration to keep traffic within the Microsoft backbone.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity & Access",
+                "issue": "Microsoft Entra ID is used for authentication, but there's no mention of role-based access control (RBAC) least privilege, conditional access, or device identity management beyond IoT Hub. Operators and services may have excessive permissions.",
+                "recommendation": "Define custom RBAC roles with least privilege for each user/service. Use Managed Identities for service-to-service authentication. Implement conditional access for administrative logins. For IoT devices, leverage IoT Hub's X.509 certificates and DPS.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Resource Sizing",
+                "issue": "Services like IoT Hub, Stream Analytics, and Synapse are likely provisioned at fixed tiers. Without right-sizing based on actual usage, there may be over-provisioning and wasted cost.",
+                "recommendation": "Monitor usage patterns with Azure Monitor and adjust SKUs accordingly. Use IoT Hub basic tier if only device telemetry; consider scaling units dynamically. For Stream Analytics, use streaming unit auto-scale. For Synapse, use serverless or pause when idle.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Storage",
+                "issue": "Data Lake Storage holds 6 months hot and 7 years cold data. Without tiering, hot storage costs are higher for older data. Also, Time Series Insights may incur high costs if not configured with appropriate retention.",
+                "recommendation": "Set up lifecycle policies to move data to cool/archive tiers after 6 months. For Time Series Insights, choose the appropriate SKU and retention period; consider using Azure Data Explorer for cost-efficient time-series analytics at scale.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Time Series Insights"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Reserved Instances",
+                "issue": "No mention of using reserved instances for long-running resources like IoT Hub, VMs (if any), or Synapse dedicated pools. Pay-as-you-go may be more expensive over time.",
+                "recommendation": "If using dedicated SQL pools in Synapse or IoT Hub standard tier with consistent usage, purchase reserved capacity for 1-3 years to reduce costs.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 75,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring & Logging",
+                "issue": "Azure Monitor and Log Analytics are used, but the scope and alerting strategies are not defined. Critical metrics (e.g., device connectivity, Stream Analytics backlog, ML scoring latency) may not be tracked.",
+                "recommendation": "Define comprehensive monitoring with dashboards and alerts for key health indicators. Use IoT Hub metrics (connected devices, telemetry ingress), Stream Analytics job metrics (output events, watermark delay), and ML endpoint latency. Create Log Analytics queries for deep diagnostics.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Automation & DevOps",
+                "issue": "No CI/CD pipeline or infrastructure-as-code (IaC) mentioned. Manual deployments increase risk of configuration drift and slow updates.",
+                "recommendation": "Adopt Infrastructure as Code using ARM, Bicep, or Terraform. Automate deployments of IoT Edge modules, ML models, Stream Analytics jobs, and Synapse pipelines via Azure DevOps or GitHub Actions. Implement blue/green deployments for models.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure Machine Learning",
+                  "Azure Stream Analytics",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Disaster Recovery Testing",
+                "issue": "Even if multi-region is implemented, regular DR drills are necessary to ensure failover works as expected. No plan mentioned.",
+                "recommendation": "Document and periodically test failover procedures for IoT Hub, Data Lake, and other critical services. Use Azure Site Recovery for any VM-based components.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Data Lake Storage",
+                  "Azure Stream Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 75,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Scalability",
+                "issue": "The architecture may not scale elastically under varying loads. IoT Hub can scale units, but Stream Analytics and ML endpoints need to handle spikes. No auto-scaling mentioned for ML endpoints.",
+                "recommendation": "Use Azure ML online endpoints with auto-scaling based on request rate. For Stream Analytics, enable auto-scale. For IoT Hub, consider using the standard tier with multiple units. Use Data Lake partitions for efficient querying.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Latency",
+                "issue": "Sub-second latency is required for real-time anomaly detection. The path involves IoT Edge → Private Link → IoT Hub → Stream Analytics → ML → Stream Analytics → outputs. Each hop adds latency; Stream Analytics may introduce batching delays.",
+                "recommendation": "Consider moving ML scoring to the edge (IoT Edge module) to reduce round-trip latency. Alternatively, use Azure ML with low-latency endpoints and configure Stream Analytics with a small output batch size. Use IoT Hub routing to bypass Stream Analytics for critical alerts.",
+                "resources": [
+                  "Azure IoT Edge Gateway",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Caching",
+                "issue": "No caching layer for frequently accessed data (e.g., device metadata, model parameters) which could improve performance.",
+                "recommendation": "Use Azure Cache for Redis to cache ML models, digital twin states, or reference data to reduce latency and load on backend services.",
+                "resources": [
+                  "Azure Machine Learning",
+                  "Azure Digital Twins",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "No secrets management service integrated.",
+            "recommendation": "Deploy Azure Key Vault and migrate all secrets (connection strings, keys) to it. Use Managed Identities for services.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Machine Learning",
+              "Azure Synapse Analytics"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "Single region deployment with no failover.",
+            "recommendation": "Enable geo-redundant storage for Data Lake, configure IoT Hub manual failover, and plan multi-region for critical services.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Data Lake Storage"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Data Lake hot storage for 6 months without tiering.",
+            "recommendation": "Implement lifecycle management to move older data to cooler tiers, reducing storage costs.",
+            "resources": [
+              "Azure Data Lake Storage"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "Stream Analytics may not auto-scale.",
+            "recommendation": "Enable auto-scale on Stream Analytics to handle telemetry spikes.",
+            "resources": [
+              "Azure Stream Analytics"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "Lack of alerting on critical metrics.",
+            "recommendation": "Set up Azure Monitor alerts for device connectivity, telemetry backlog, and ML endpoint health.",
+            "resources": [
+              "Azure Monitor",
+              "Azure IoT Hub",
+              "Azure Stream Analytics",
+              "Azure Machine Learning"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:37:54.875Z",
+        "metrics": {
+          "promptTokens": 1254,
+          "completionTokens": 2890,
+          "totalTokens": 4144,
+          "elapsedTimeMs": 28297,
+          "model": "deepseek-v3.2-speciale"
+        },
+        "modelUsed": "DeepSeek V3.2 Speciale",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "grok41fast": {
+      "model": "grok-4.1-fast",
+      "displayName": "Grok 4.1 Fast",
+      "metrics": {
+        "promptTokens": 1235,
+        "completionTokens": 1443,
+        "totalTokens": 2678,
+        "elapsedTimeMs": 12603,
+        "model": "grok-4-1-fast-non-reasoning"
+      },
+      "overallScore": 68,
+      "totalFindings": 9,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 4,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 45
+        },
+        {
+          "pillar": "Security",
+          "score": 70
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 65
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 85
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 80
+        }
+      ],
+      "quickWinCount": 3,
+      "validation": {
+        "overallScore": 68,
+        "summary": "This industrial IoT predictive maintenance architecture demonstrates strong operational excellence with comprehensive monitoring and real-time processing capabilities, but is critically limited by single-region deployment lacking high availability and failover. Security is partially addressed with Private Link and Entra ID but lacks dedicated secrets management. Cost optimization and performance efficiency show good foundation but opportunities exist for refinement given high-volume telemetry ingestion.",
+        "pillars": [
+          {
+            "score": 45,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "Single-region deployment across all core services provides no zonal or regional redundancy, risking downtime from regional outages despite 99.9% uptime SLA requirement.",
+                "recommendation": "Deploy IoT Hub, Stream Analytics, Data Lake Storage, and Synapse Analytics in paired regions with Availability Zones enabled; implement geo-redundant storage (GRS) for Data Lake and configure IoT Hub multi-region failover.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics",
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics",
+                  "Azure Machine Learning",
+                  "Azure Digital Twins"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No evidence of disaster recovery plan or backup strategies for critical data and models, with 7-year cold retention unmet by current storage configuration.",
+                "recommendation": "Enable Data Lake Storage lifecycle policies for 6-month hot/7-year cold tiers, configure Azure Backup for ML models and Synapse workspaces, and test failover procedures quarterly.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Machine Learning"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No Key Vault detected for managing IoT certificates, ML model credentials, or Stream Analytics connection strings.",
+                "recommendation": "Deploy Azure Key Vault with private endpoints and integrate with IoT Hub DPS for device attestation certificates, Stream Analytics for ML endpoint authentication, and ML workspaces for model secrets.",
+                "resources": [
+                  "Azure IoT Hub Device Provisioning Service",
+                  "Azure Stream Analytics",
+                  "Azure Machine Learning"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "Private Link secures OT/IT boundary but downstream services like ML and Synapse may expose public endpoints.",
+                "recommendation": "Extend Private Link or VNet integration to Azure Machine Learning, Synapse Analytics, and Digital Twins; implement Azure Firewall for east-west traffic control.",
+                "resources": [
+                  "Azure Private Link",
+                  "Azure Machine Learning",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Identity",
+                "issue": "Entra ID integration present but lacks explicit RBAC assignments or PIM for least-privilege access.",
+                "recommendation": "Define custom RBAC roles for IoT operators, data scientists, and analysts; enable PIM for elevated admin access.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 65,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Right-Sizing",
+                "issue": "High-frequency telemetry (5,000+ sensors every 5s) likely incurs premium IoT Hub tier costs without optimization.",
+                "recommendation": "Right-size IoT Hub to Basic tier if message routing suffices, enable data expiration policies, and analyze consumption with Cost Management to identify optimization opportunities.",
+                "resources": [
+                  "Azure IoT Hub",
+                  "Azure Stream Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Storage Optimization",
+                "issue": "Data Lake lacks explicit lifecycle management for 6-month hot/7-year cold requirements.",
+                "recommendation": "Configure storage lifecycle policies to transition data to Cool/Archive tiers and delete after 7 years; use Synapse serverless for infrequent batch queries.",
+                "resources": [
+                  "Azure Data Lake Storage",
+                  "Azure Synapse Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 85,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "low",
+                "category": "Monitoring Coverage",
+                "issue": "Monitoring focused on Stream Analytics but lacks comprehensive coverage across IoT Edge and Digital Twins.",
+                "recommendation": "Enable diagnostic settings for IoT Edge Gateway, Digital Twins, and ML endpoints; create custom dashboards in Time Series Insights for end-to-end SLA monitoring.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure IoT Edge Gateway"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 80,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "low",
+                "category": "Scaling",
+                "issue": "Stream Analytics jobs may throttle under 5,000-sensor peak loads without autoscaling configured.",
+                "recommendation": "Configure Stream Analytics SU autoscaling and monitor for backpressure; evaluate Event Hubs as buffering layer for IoT Hub bursts.",
+                "resources": [
+                  "Azure Stream Analytics",
+                  "Azure IoT Hub"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "Immediate single-region risk exposure.",
+            "recommendation": "Enable Availability Zones for all regional services within current region as Day 1 action.",
+            "resources": [
+              "Azure IoT Hub",
+              "Azure Data Lake Storage"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "medium",
+            "category": "Security",
+            "issue": "Key Vault deployment addresses multiple secrets gaps.",
+            "recommendation": "Deploy Key Vault and migrate first IoT DPS certificates within 1 week.",
+            "resources": [
+              "Azure IoT Hub Device Provisioning Service"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Untapped storage tiering savings.",
+            "recommendation": "Implement Data Lake lifecycle policy for immediate 20-40% storage cost reduction.",
+            "resources": [
+              "Azure Data Lake Storage"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-05-27T01:37:39.179Z",
+        "metrics": {
+          "promptTokens": 1235,
+          "completionTokens": 1443,
+          "totalTokens": 2678,
+          "elapsedTimeMs": 12603,
+          "model": "grok-4-1-fast-non-reasoning"
+        },
+        "modelUsed": "Grok 4.1 Fast",
+        "hybridMetadata": {
+          "localFindings": 7,
+          "patternsDetected": [
+            "single-region",
+            "no-key-vault"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 60,
+          "kbRulesUsed": 73
+        }
+      }
+    }
+  }
+}

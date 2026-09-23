@@ -1,0 +1,742 @@
+{
+  "nodes": [
+    {
+      "id": "group-edge",
+      "type": "groupNode",
+      "position": {
+        "x": -20,
+        "y": 220
+      },
+      "data": {
+        "label": "Ingress / Edge"
+      },
+      "style": {
+        "width": 1060,
+        "height": 560
+      },
+      "width": 1060,
+      "height": 560,
+      "positionAbsolute": {
+        "x": -20,
+        "y": 220
+      }
+    },
+    {
+      "id": "group-app",
+      "type": "groupNode",
+      "position": {
+        "x": 1090,
+        "y": -90
+      },
+      "data": {
+        "label": "Application / Compute"
+      },
+      "style": {
+        "width": 1185,
+        "height": 1170
+      },
+      "width": 1185,
+      "height": 1170,
+      "positionAbsolute": {
+        "x": 1090,
+        "y": -90
+      }
+    },
+    {
+      "id": "group-data",
+      "type": "groupNode",
+      "position": {
+        "x": 2325,
+        "y": -100
+      },
+      "data": {
+        "label": "Data / Storage"
+      },
+      "style": {
+        "width": 630,
+        "height": 840
+      },
+      "width": 630,
+      "height": 840,
+      "positionAbsolute": {
+        "x": 2325,
+        "y": -100
+      }
+    },
+    {
+      "id": "group-identity",
+      "type": "groupNode",
+      "position": {
+        "x": 1090,
+        "y": 1120
+      },
+      "data": {
+        "label": "Identity / Security"
+      },
+      "style": {
+        "width": 630,
+        "height": 560
+      },
+      "width": 630,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 1090,
+        "y": 1120
+      }
+    },
+    {
+      "id": "group-monitor",
+      "type": "groupNode",
+      "position": {
+        "x": 2325,
+        "y": 780
+      },
+      "data": {
+        "label": "Monitoring / Observability"
+      },
+      "style": {
+        "width": 1185,
+        "height": 560
+      },
+      "width": 1185,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 2325,
+        "y": 780
+      }
+    },
+    {
+      "id": "svc-vpn",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 230
+      },
+      "data": {
+        "label": "VPN Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10063-icon-service-Virtual-Network-Gateways.svg",
+        "pricing": {
+          "estimatedCost": 7.3,
+          "tier": "VpnGw2",
+          "skuName": "VpnGw2",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-13T21:22:26.508Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-edge",
+      "extent": "parent",
+      "width": 140,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 205,
+        "y": 450
+      }
+    },
+    {
+      "id": "svc-eventhubs",
+      "type": "azureNode",
+      "position": {
+        "x": 655,
+        "y": 230
+      },
+      "data": {
+        "label": "Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/event-hubs.svg",
+        "pricing": {
+          "estimatedCost": 27.6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-13T21:22:26.497Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-edge",
+      "extent": "parent",
+      "width": 123,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 635,
+        "y": 450
+      }
+    },
+    {
+      "id": "svc-servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 540
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/service-bus.svg",
+        "pricing": {
+          "estimatedCost": 9.81,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-13T21:22:26.497Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-app",
+      "extent": "parent",
+      "width": 126,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1315,
+        "y": 450
+      }
+    },
+    {
+      "id": "svc-functions",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 580
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/azure-functions.svg"
+      },
+      "parentNode": "group-app",
+      "extent": "parent",
+      "width": 159,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1870,
+        "y": 490
+      }
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 310
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-13T21:22:26.451Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2550,
+        "y": 210
+      }
+    },
+    {
+      "id": "svc-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 590
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-13T21:22:26.451Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2550,
+        "y": 490
+      }
+    },
+    {
+      "id": "svc-entra",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 150
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-13T21:22:26.497Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1315,
+        "y": 1270
+      }
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 150
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-13T21:22:26.498Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-monitor",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2550,
+        "y": 930
+      }
+    },
+    {
+      "id": "svc-log",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 150
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-13T21:22:26.498Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-monitor",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 3105,
+        "y": 930
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-vpn",
+      "target": "svc-eventhubs",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Tunnel imaging events from on-prem systems",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-eventhubs",
+      "target": "svc-servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward ordered event batches for routing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-servicebus",
+      "target": "svc-functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Dispatch event messages for processing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-functions",
+      "target": "svc-cosmos",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Upsert study metadata and processing status",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-functions",
+      "target": "svc-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Write imaging payloads as blobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-entra",
+      "target": "svc-functions",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Issue managed identity tokens for resource access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-functions",
+      "target": "svc-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit function health metrics and dependency signals",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-monitor",
+      "target": "svc-log",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store and query telemetry logs centrally",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 328.2766853932583,
+    "y": 172.96910112359546,
+    "zoom": 0.6221910112359551
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-13",
+    "savedAt": "2026-02-13T21:22:59.239Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "On-prem imaging systems send ordered events through the secure VPN tunnel to the cloud ingestion tier",
+      "services": [
+        "svc-vpn",
+        "svc-eventhubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Event Hubs buffers high-throughput streams and forwards ordered batches for routing",
+      "services": [
+        "svc-eventhubs",
+        "svc-servicebus"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Service Bus delivers messages to Functions in order per study or partition",
+      "services": [
+        "svc-servicebus",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Functions authenticate using managed identity to access data services",
+      "services": [
+        "svc-entra",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Functions persist study metadata and processing state",
+      "services": [
+        "svc-functions",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Functions store imaging payloads to blob storage",
+      "services": [
+        "svc-functions",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Functions emit health and throughput metrics to monitoring",
+      "services": [
+        "svc-functions",
+        "svc-monitor"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure Monitor aggregates telemetry in Log Analytics for operational analytics and SLO tracking",
+      "services": [
+        "svc-monitor",
+        "svc-log"
+      ]
+    }
+  ],
+  "architecturePrompt": "An eventing architecture for healthcare imaging with high throughput (50,000-75,000 events/sec), large payloads up to 10MB, strict message ordering, cloud-to-on-prem bridging via VPN Gateway, managed services only (no self-managed Kafka), 99.99% availability SLO, supporting 250M studies, 2.5M daily volume, 5M daily notifications, with Event Hubs for ingestion, Service Bus for routing, Azure Functions for processing, Cosmos DB for metadata, Blob Storage for images, and Log Analytics for monitoring"
+}

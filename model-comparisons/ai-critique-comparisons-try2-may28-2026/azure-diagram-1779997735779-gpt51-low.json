@@ -1,0 +1,261 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Streaming Ingestion"
+    },
+    {
+      "id": "grp-app-ai",
+      "label": "Application & AI Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Ingests real-time multi-modal streams (audio, text, metadata) for processing",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless compute that processes streams and orchestrates AI calls",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Provides text and vision models for multi-modal analysis",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-speech",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Performs real-time speech-to-text transcription from audio streams",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Translates transcripts and text outputs into multiple languages",
+      "groupId": "grp-app-ai"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores transcripts, translations, and AI analysis artifacts",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Provides identity and access tokens for platform components",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "svc-az-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central monitoring hub collecting metrics and logs from compute layer",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Provides deep application and model observability for the AI workflows",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores and queries consolidated logs and telemetry for analysis and alerting",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-event-hubs",
+      "to": "svc-functions",
+      "label": "Trigger serverless function execution for each incoming multi-modal event",
+      "type": "async"
+    },
+    {
+      "from": "svc-entra",
+      "to": "svc-functions",
+      "label": "Issue OAuth tokens and validate caller identity for stream processing operations",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-speech",
+      "label": "Send audio segments for low-latency speech-to-text transcription",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-openai",
+      "label": "Call text and vision models for contextual understanding and content generation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-translator",
+      "label": "Submit transcribed and generated text for multilingual translation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-storage",
+      "label": "Persist transcripts, translations, and analysis results as structured artifacts",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-az-monitor",
+      "label": "Emit execution metrics and logs for centralized monitoring",
+      "type": "async"
+    },
+    {
+      "from": "svc-az-monitor",
+      "to": "svc-app-insights",
+      "label": "Forward application performance and model telemetry for observability dashboards",
+      "type": "async"
+    },
+    {
+      "from": "svc-az-monitor",
+      "to": "svc-log-analytics",
+      "label": "Stream consolidated platform logs and metrics for querying and alerting",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "External producers send multi-modal events (audio, text, metadata) that are ingested into Event Hubs and await processing by Azure Functions.",
+      "services": [
+        "svc-event-hubs",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure Functions is triggered by Event Hubs messages and validates the caller context and permissions using Microsoft Entra ID issued tokens.",
+      "services": [
+        "svc-event-hubs",
+        "svc-functions",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Functions extracts audio segments from the event payload and invokes Speech Services to generate real-time transcriptions.",
+      "services": [
+        "svc-functions",
+        "svc-speech"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Functions submits text and optional images to Azure OpenAI for multi-modal understanding, summarization, and content generation.",
+      "services": [
+        "svc-functions",
+        "svc-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Functions sends source and generated text to Translator to produce multilingual outputs for supported target languages.",
+      "services": [
+        "svc-functions",
+        "svc-translator"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Functions aggregates transcripts, translations, and AI analysis metadata and writes them to the Storage Account for downstream consumption.",
+      "services": [
+        "svc-functions",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "During each function execution, Azure Functions publishes metrics, traces, and custom model events to Azure Monitor for centralized collection.",
+      "services": [
+        "svc-functions",
+        "svc-az-monitor"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Azure Monitor forwards relevant application and model-level telemetry to Application Insights, enabling detailed observability dashboards and performance analysis.",
+      "services": [
+        "svc-az-monitor",
+        "svc-app-insights"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Azure Monitor streams consolidated logs and metrics into Log Analytics, where operators can run queries and configure alerts on platform behavior.",
+      "services": [
+        "svc-az-monitor",
+        "svc-log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1436,
+    "completionTokens": 3061,
+    "totalTokens": 4497,
+    "elapsedTimeMs": 25860,
+    "model": "gpt-5.1",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "gpt-5.1",
+    "modelDisplayName": "GPT-5.1",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1436,
+      "completionTokens": 3061,
+      "totalTokens": 4497,
+      "elapsedTimeMs": 25860,
+      "model": "gpt-5.1",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T19:48:55.779Z",
+    "source": "model-comparison"
+  }
+}

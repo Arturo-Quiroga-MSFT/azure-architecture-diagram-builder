@@ -1,0 +1,22 @@
+{
+  "currencyCode": "USD",
+  "tierMinimumUnits": 0.0,
+  "retailPrice": 0.13,
+  "unitPrice": 0.13,
+  "armRegionName": "eastus2",
+  "location": "US East 2",
+  "effectiveStartDate": "2023-05-01T00:00:00Z",
+  "meterId": "006e32b7-3372-59df-9c69-8c3f3faaa3ec",
+  "meterName": "Cold GRS Read Operations",
+  "productId": "DZH318Z0C120",
+  "skuId": "DZH318Z0C120/02BS",
+  "productName": "General Block Blob v2 Hierarchical Namespace",
+  "skuName": "Cold GRS",
+  "serviceName": "Storage",
+  "serviceId": "DZH317F1HKN0",
+  "serviceFamily": "Storage",
+  "unitOfMeasure": "10K",
+  "type": "Consumption",
+  "isPrimaryMeterRegion": true,
+  "armSkuName": "Cold"
+}

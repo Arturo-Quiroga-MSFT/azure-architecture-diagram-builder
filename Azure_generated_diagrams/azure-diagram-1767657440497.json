@@ -1,0 +1,232 @@
+{
+  "nodes": [
+    {
+      "id": "grp-web",
+      "type": "groupNode",
+      "position": {
+        "x": 9.10986964618246,
+        "y": 50.82309124767225
+      },
+      "data": {
+        "label": "Application Tier (Container Apps)"
+      },
+      "style": {
+        "width": 560,
+        "height": 420
+      },
+      "width": 560,
+      "height": 420,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 9.10986964618246,
+        "y": 50.82309124767225
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-containers",
+      "type": "groupNode",
+      "position": {
+        "x": 710.0558659217877,
+        "y": 49.988826815642454
+      },
+      "data": {
+        "label": "Container Images"
+      },
+      "style": {
+        "width": 520,
+        "height": 260
+      },
+      "width": 520,
+      "height": 260,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 710.0558659217877,
+        "y": 49.988826815642454
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 619.1210428305401,
+        "y": 370.8566108007449
+      },
+      "data": {
+        "label": "Monitoring & Logs"
+      },
+      "style": {
+        "width": 351,
+        "height": 300
+      },
+      "width": 351,
+      "height": 300,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 619.1210428305401,
+        "y": 370.8566108007449
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-aca-env",
+      "type": "azureNode",
+      "position": {
+        "x": 41.55679702048411,
+        "y": 208.40968342644317
+      },
+      "data": {
+        "label": "aca-env-azure-diagrams",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 41.55679702048411,
+        "y": 208.40968342644317
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aca-app",
+      "type": "azureNode",
+      "position": {
+        "x": 261.5791433891993,
+        "y": 111.63500931098696
+      },
+      "data": {
+        "label": "azure-diagram-builder",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 261.5791433891993,
+        "y": 111.63500931098696
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 937.7206703910615,
+        "y": 109.13221601489758
+      },
+      "data": {
+        "label": "acrazurediagrams1767583743",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 937.7206703910615,
+        "y": 109.13221601489758
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-law",
+      "type": "azureNode",
+      "position": {
+        "x": 740,
+        "y": 448.3538175046556
+      },
+      "data": {
+        "label": "workspace-azurediagramsrgbuvF",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 740,
+        "y": 448.3538175046556
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-aca-app",
+      "target": "svc-aca-env",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "deployed into managed environment",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-aca-app",
+      "target": "svc-acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "pull container image (azurecr.io)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-aca-env",
+      "target": "svc-law",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "send app logs to Log Analytics",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 62.330357142857224,
+    "y": 53.475446428571445,
+    "zoom": 1.1986607142857142
+  }
+}

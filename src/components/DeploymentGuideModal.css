@@ -1,0 +1,768 @@
+.deployment-modal .modal-content {
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.deployment-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 0;
+}
+
+.deployment-modal .modal-actions {
+  flex-shrink: 0;
+  margin-top: 0;
+  position: sticky;
+  bottom: 0;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+.guide-header {
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 24px;
+}
+
+.guide-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.guide-overview {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+.guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meta-item {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.meta-item strong {
+  font-weight: 600;
+}
+
+.meta-item.ai-metrics-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* Guide Sections */
+.guide-section {
+  margin-bottom: 32px;
+}
+
+.guide-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Prerequisites */
+.prerequisites-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.prerequisites-list li {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-left: 3px solid #3b82f6;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.prerequisites-list li:before {
+  content: '✓';
+  color: #10b981;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Steps */
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.step-card:hover {
+  border-color: #d1d5db;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+  user-select: none;
+  background: white;
+}
+
+.step-header:hover {
+  background: #f9fafb;
+}
+
+.step-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.step-method {
+  padding: 4px 10px;
+  background: #eff6ff;
+  color: #1e40af;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.step-content {
+  padding: 0 16px 16px 16px;
+  background: white;
+}
+
+.step-description {
+  margin: 0 0 16px 0;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Commands */
+.commands-section {
+  margin: 16px 0;
+}
+
+.commands-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 0 8px 0;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.commands-header span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.command-block {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.command-block pre {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.copy-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.step-notes {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #78350f;
+}
+
+/* Configuration Table */
+.configuration-table {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.configuration-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.configuration-table thead {
+  background: #f9fafb;
+}
+
+.configuration-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.configuration-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.configuration-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.configuration-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.config-key {
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+.config-value code {
+  padding: 2px 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.config-description {
+  color: #6b7280;
+}
+
+/* Validation List */
+.validation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.validation-list li {
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.validation-list li:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.validation-list input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.validation-list label {
+  flex: 1;
+  cursor: pointer;
+}
+
+/* Troubleshooting */
+.troubleshooting-section {
+  background: #fef2f2;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+}
+
+.troubleshooting-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.troubleshooting-item {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  border-left: 4px solid #ef4444;
+}
+
+.troubleshooting-problem {
+  margin-bottom: 8px;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.troubleshooting-solution {
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Best Practices */
+.best-practices-section {
+  background: #f0fdf4;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+.best-practices-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.best-practices-list li {
+  padding: 12px 16px;
+  background: white;
+  border-left: 3px solid #10b981;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #064e3b;
+}
+
+.best-practices-list li:before {
+  content: '💡';
+  margin-right: 8px;
+}
+
+/* Modal Actions Buttons */
+.deployment-modal .modal-actions .btn-primary,
+.deployment-modal .modal-actions .btn-secondary {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.deployment-modal .modal-actions .btn-primary {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.deployment-modal .modal-actions .btn-primary:hover {
+  background: #2563eb;
+}
+
+.deployment-modal .modal-actions .btn-secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.deployment-modal .modal-actions .btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Bicep Templates Section */
+.bicep-section {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #7dd3fc;
+}
+
+.bicep-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.bicep-header h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0369a1;
+}
+
+.btn-download-all-bicep {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-download-all-bicep:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  transform: translateY(-1px);
+}
+
+.bicep-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #0c4a6e;
+  line-height: 1.6;
+}
+
+.bicep-description code {
+  background: #bae6fd;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+  color: #075985;
+}
+
+.bicep-templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bicep-template-card {
+  background: white;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.bicep-template-card:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+}
+
+.bicep-template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.bicep-template-header:hover {
+  background: #f0f9ff;
+}
+
+.bicep-template-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bicep-icon {
+  color: #0284c7;
+}
+
+.bicep-template-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bicep-template-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.bicep-template-filename {
+  font-size: 12px;
+  color: #64748b;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.bicep-template-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-download-bicep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #7dd3fc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-download-bicep:hover {
+  background: #0284c7;
+  color: white;
+}
+
+.bicep-template-content {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.bicep-template-description {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.bicep-code-block {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.bicep-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.bicep-code-header .copy-button {
+  position: static;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.bicep-code {
+  margin: 0;
+  padding: 16px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ==========================================================================
+   DARK MODE
+   The stylesheet had none, so headings were #1f2937 on the #1e1e1e modal
+   surface, and the light content cards kept a light background while their text
+   inherited a light colour. Scoped to .deployment-modal so nothing else shifts.
+   ========================================================================== */
+
+body.dark-mode .deployment-modal .modal-header h2,
+body.dark-mode .deployment-modal .guide-section h4,
+body.dark-mode .deployment-modal .config-key,
+body.dark-mode .deployment-modal .configuration-table th {
+  color: #e5e7eb;
+}
+
+body.dark-mode .deployment-modal .modal-header {
+  border-bottom-color: #333;
+}
+
+body.dark-mode .deployment-modal .step-card,
+body.dark-mode .deployment-modal .prerequisites-list li,
+body.dark-mode .deployment-modal .validation-list li,
+body.dark-mode .deployment-modal .troubleshooting-item,
+body.dark-mode .deployment-modal .best-practices-list li,
+body.dark-mode .deployment-modal .bicep-template-card,
+body.dark-mode .deployment-modal .configuration-table table {
+  background: #242424;
+  border-color: #333;
+  color: #d1d5db;
+}
+
+/* The collapsed step rows are .step-header, not .step-card — they carry their
+   own white background, which left the title invisible. */
+body.dark-mode .deployment-modal .step-header {
+  background: #242424;
+  color: #e5e7eb;
+}
+
+body.dark-mode .deployment-modal .step-header:hover {
+  background: #2d2d2d;
+}
+
+body.dark-mode .deployment-modal .step-title,
+body.dark-mode .deployment-modal .step-title span {
+  color: #e5e7eb;
+}
+
+body.dark-mode .deployment-modal .modal-actions {
+  background: #242424;
+  border-top-color: #333;
+}
+
+body.dark-mode .deployment-modal .step-description,
+body.dark-mode .deployment-modal .configuration-table thead,
+body.dark-mode .deployment-modal .configuration-table tbody tr:hover,
+body.dark-mode .deployment-modal .validation-list li:hover {
+  background: #2a2a2a;
+  color: #d1d5db;
+}
+
+body.dark-mode .deployment-modal .config-description,
+body.dark-mode .deployment-modal .commands-header span,
+body.dark-mode .deployment-modal .troubleshooting-solution,
+body.dark-mode .deployment-modal .bicep-description {
+  color: #9ca3af;
+}
+
+body.dark-mode .deployment-modal .configuration-table td,
+body.dark-mode .deployment-modal .configuration-table th {
+  border-color: #333;
+}
+
+body.dark-mode .deployment-modal .troubleshooting-problem {
+  color: #fca5a5;
+}
+
+/* Amber note keeps its meaning but needs a dark-surface tint. */
+body.dark-mode .deployment-modal .step-notes {
+  background: #2a1f0a;
+  border-color: #78350f;
+  color: #fcd34d;
+}
+
+body.dark-mode .deployment-modal .modal-loading,
+body.dark-mode .deployment-modal .modal-loading p {
+  color: #d1d5db;
+}
+
+/* Microsoft Learn grounding (Phase 1) */
+.grounding-section .grounding-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.grounding-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.grounding-list a {
+  color: #4ea1ff;
+  text-decoration: none;
+}
+.grounding-list a:hover { text-decoration: underline; }
+
+/* Microsoft Learn grounding (Phase 1) */
+.grounding-section .grounding-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.grounding-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.grounding-list a {
+  color: #4ea1ff;
+  text-decoration: none;
+}
+.grounding-list a:hover { text-decoration: underline; }

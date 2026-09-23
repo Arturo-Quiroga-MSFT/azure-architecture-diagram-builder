@@ -1,0 +1,253 @@
+{
+  "groups": [
+    {
+      "id": "edge",
+      "label": "Edge & Ingress"
+    },
+    {
+      "id": "compute",
+      "label": "Application & Compute"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "security",
+      "label": "Security & Identity"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global load balancer, WAF, TLS termination",
+      "groupId": "edge"
+    },
+    {
+      "id": "appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Web app hosting (frontend + backend APIs)",
+      "groupId": "compute"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless order processing, payments webhooks",
+      "groupId": "compute"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Product catalog, user profiles, orders",
+      "groupId": "data"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for product images and static assets",
+      "groupId": "data"
+    },
+    {
+      "id": "search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Product search, faceted navigation",
+      "groupId": "data"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Store API keys, connection strings, certificates",
+      "groupId": "security"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication, SSO, RBAC",
+      "groupId": "security"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central telemetry, metrics, alerts",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "appinsights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Application performance monitoring",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "appservice",
+      "label": "Route HTTP/HTTPS traffic",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "cosmosdb",
+      "label": "Read/write product, order, user data",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "storage",
+      "label": "Upload/download product images",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "search",
+      "label": "Query product search index",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "keyvault",
+      "label": "Retrieve secrets, connection strings",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "entra",
+      "label": "Authenticate users, validate tokens",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "cosmosdb",
+      "label": "Process orders, update inventory",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "keyvault",
+      "label": "Retrieve payment gateway keys",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "monitor",
+      "label": "Send metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "monitor",
+      "label": "Send metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "appinsights",
+      "label": "Analyze application telemetry",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User accesses the e-commerce site via browser; Azure Front Door routes HTTPS request to App Service.",
+      "services": [
+        "frontdoor",
+        "appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service authenticates user with Microsoft Entra ID and retrieves secrets (DB connection, API keys) from Key Vault.",
+      "services": [
+        "appservice",
+        "entra",
+        "keyvault"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "App Service queries product catalog from Cosmos DB and product images from Storage Account; search queries are sent to Azure Cognitive Search.",
+      "services": [
+        "appservice",
+        "cosmosdb",
+        "storage",
+        "search"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "When user places an order, App Service writes order to Cosmos DB and triggers an Azure Functions to process payment and inventory asynchronously.",
+      "services": [
+        "appservice",
+        "cosmosdb",
+        "functions"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Functions retrieves payment gateway secrets from Key Vault, processes payment, updates order status in Cosmos DB.",
+      "services": [
+        "functions",
+        "keyvault",
+        "cosmosdb"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "All services send telemetry to Azure Monitor; Application Insights provides performance insights and dashboards.",
+      "services": [
+        "appservice",
+        "functions",
+        "monitor",
+        "appinsights"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1419,
+    "completionTokens": 1441,
+    "totalTokens": 2860,
+    "elapsedTimeMs": 12776,
+    "model": "deepseek-v3.2-speciale"
+  },
+  "metadata": {
+    "prompt": "E-commerce platform with payments and search",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1419,
+      "completionTokens": 1441,
+      "totalTokens": 2860,
+      "elapsedTimeMs": 12776,
+      "model": "deepseek-v3.2-speciale"
+    },
+    "savedAt": "2026-02-28T14:42:29.557Z",
+    "source": "model-comparison"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "currencyCode": "USD",
+  "tierMinimumUnits": 0.0,
+  "retailPrice": 0.101,
+  "unitPrice": 0.101,
+  "armRegionName": "eastus2",
+  "location": "US East 2",
+  "effectiveStartDate": "2016-08-01T00:00:00Z",
+  "meterId": "0c873ca2-4113-4997-8cf6-ad5df5775599",
+  "meterName": "Basic Unit",
+  "productId": "DZH318Z0BQKZ",
+  "skuId": "DZH318Z0BQKZ/0057",
+  "productName": "Azure AI Search",
+  "skuName": "Basic",
+  "serviceName": "Azure Cognitive Search",
+  "serviceId": "DZH318X5DGJB",
+  "serviceFamily": "Web",
+  "unitOfMeasure": "1 Hour",
+  "type": "Consumption",
+  "isPrimaryMeterRegion": false,
+  "armSkuName": ""
+}

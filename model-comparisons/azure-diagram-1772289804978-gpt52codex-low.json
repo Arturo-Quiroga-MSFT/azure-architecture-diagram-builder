@@ -1,0 +1,257 @@
+{
+  "groups": [
+    {
+      "id": "grp-edge",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / Compute"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "grp-sec",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-mon",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point and routing for chatbot UI/API",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "svc-apim",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway for chatbot endpoints and policies",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "svc-app",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts RAG chatbot orchestration and API",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates responses and embeddings for RAG",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Vector search index for retrieval",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores source documents for indexing",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication for chatbot access",
+      "groupId": "grp-sec"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores API keys and secrets",
+      "groupId": "grp-sec"
+    },
+    {
+      "id": "svc-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects metrics and traces from app",
+      "groupId": "grp-mon"
+    },
+    {
+      "id": "svc-log",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central log store for analysis",
+      "groupId": "grp-mon"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-apim",
+      "label": "Route external chatbot requests to API gateway",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-app",
+      "label": "Forward validated chatbot API calls",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app",
+      "to": "svc-openai",
+      "label": "Send prompts and retrieve completions/embeddings",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app",
+      "to": "svc-search",
+      "label": "Query vector index for relevant passages",
+      "type": "sync"
+    },
+    {
+      "from": "svc-storage",
+      "to": "svc-search",
+      "label": "Provide documents for indexing and enrichment",
+      "type": "async"
+    },
+    {
+      "from": "svc-app",
+      "to": "svc-storage",
+      "label": "Store and fetch conversation context or uploads",
+      "type": "sync"
+    },
+    {
+      "from": "svc-entra",
+      "to": "svc-apim",
+      "label": "Validate user tokens for API access",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app",
+      "to": "svc-keyvault",
+      "label": "Retrieve secrets for downstream calls",
+      "type": "sync"
+    },
+    {
+      "from": "svc-app",
+      "to": "svc-monitor",
+      "label": "Emit application metrics and traces",
+      "type": "sync"
+    },
+    {
+      "from": "svc-monitor",
+      "to": "svc-log",
+      "label": "Persist collected telemetry for analysis",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User requests reach the global edge and are routed to the API gateway",
+      "services": [
+        "svc-frontdoor",
+        "svc-apim"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API gateway validates user identity before allowing chatbot calls",
+      "services": [
+        "svc-apim",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Validated requests are sent to the chatbot application",
+      "services": [
+        "svc-apim",
+        "svc-app"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Chatbot retrieves relevant content via vector search",
+      "services": [
+        "svc-app",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Chatbot composes prompts and obtains AI-generated responses",
+      "services": [
+        "svc-app",
+        "svc-openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Chatbot stores or retrieves supporting context and uploads",
+      "services": [
+        "svc-app",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Documents are indexed asynchronously into the vector store",
+      "services": [
+        "svc-storage",
+        "svc-search"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Application emits operational telemetry for monitoring and analysis",
+      "services": [
+        "svc-app",
+        "svc-monitor",
+        "svc-log"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 1388,
+    "totalTokens": 2781,
+    "elapsedTimeMs": 18991,
+    "model": "gpt-5.2-codex"
+  },
+  "metadata": {
+    "prompt": "RAG chatbot with vector search and AI",
+    "model": "gpt-5.2-codex",
+    "modelDisplayName": "GPT-5.2 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 1388,
+      "totalTokens": 2781,
+      "elapsedTimeMs": 18991,
+      "model": "gpt-5.2-codex"
+    },
+    "savedAt": "2026-02-28T14:43:25.282Z",
+    "source": "model-comparison"
+  }
+}

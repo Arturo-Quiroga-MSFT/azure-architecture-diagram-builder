@@ -1,0 +1,2610 @@
+{
+  "type": "validation-comparison",
+  "timestamp": "2026-06-26T19:52:55.865Z",
+  "architectureDescription": "We will have users from many regions of the world accessing this app, what do we need to handle them?",
+  "serviceCount": 12,
+  "connectionCount": 12,
+  "reasoningEffort": "low",
+  "modelCount": 11,
+  "results": {
+    "gpt51-low": {
+      "model": "gpt-5.1",
+      "displayName": "GPT-5.1",
+      "metrics": {
+        "promptTokens": 975,
+        "completionTokens": 4389,
+        "totalTokens": 5364,
+        "elapsedTimeMs": 43029,
+        "model": "gpt-5.1"
+      },
+      "overallScore": 72,
+      "totalFindings": 25,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 14,
+      "lowCount": 9,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 68
+        },
+        {
+          "pillar": "Security",
+          "score": 70
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 74
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 78
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 72
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 72,
+        "summary": "The architecture is generally well-structured with clear separation of concerns, secure token-based access via Microsoft Entra ID, global entry via Azure Front Door, and strong observability using Azure Monitor and Log Analytics. The main gaps relate to data resilience, secrets management, multi-region/high-availability for core components, and the absence of caching and formal backup/DR strategy. Addressing these will make the platform more robust for a globally distributed user base.",
+        "pillars": [
+          {
+            "score": 68,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Data Resilience",
+                "issue": "SQL Database is described as a single instance with no explicit geo-replication, failover group, or high availability configuration, creating a single point of failure for moderation decisions and metadata.",
+                "recommendation": "Configure Azure SQL Database active geo-replication or auto-failover groups across at least two regions that align with your main user populations; define clear failover policies, connection strings using the listener endpoint, and test failover regularly. Consider using zone-redundant configuration in regions that support availability zones.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Global Availability",
+                "issue": "Azure Front Door provides global entry, but there is no explicit indication that API Management, Azure Functions, and Event Hubs are deployed in multiple regions, which can lead to regional outages impacting all users.",
+                "recommendation": "Deploy API Management, Azure Functions, and Event Hubs in at least two paired regions and configure Azure Front Door with multiple backend origins and appropriate health probes. Use region-aware routing (priority-based or latency-based) for failover and ensure configuration (APIM policies, Function app settings) is managed consistently across regions.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No explicit backup or disaster recovery strategy is defined for SQL Database, Storage Account, or configuration data, which increases risk of data loss and prolonged downtime in a catastrophic event.",
+                "recommendation": "Enable and validate automatic backups for SQL Database with long enough retention and geo-redundant storage; configure Azure Storage with GRS/RA-GRS where appropriate and use blob soft-delete and versioning for critical data. Document an end-to-end DR plan including RPO/RTO targets, runbooks, and regular DR drills.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Resilient Messaging",
+                "issue": "Event Hubs is used as a critical ingestion point but there is no mention of consumer group strategy, checkpointing, or handling dead-letter scenarios for failed moderation events.",
+                "recommendation": "Implement robust Event Hubs consumption patterns in Azure Functions using durable checkpoints (e.g., Azure Storage), configure retry policies and poison-message handling (dead-letter queues or error streams), and monitor lag/throughput to ensure events are processed within acceptable SLAs.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Transient Fault Handling",
+                "issue": "No explicit mention of retry, timeout, and circuit breaker patterns for calls from Azure Functions to downstream services (Computer Vision, Language, Azure OpenAI, SQL Database).",
+                "recommendation": "Implement resilient client configurations with exponential backoff retries, timeouts, and preferably circuit breaker patterns (via custom code or libraries) for all external calls. Ensure idempotent processing so that retried Function executions do not cause duplicate writes to SQL Database.",
+                "resources": [
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No secrets management service such as Azure Key Vault is detected; this suggests connection strings, API keys (for Cognitive Services and Azure OpenAI), and other secrets may be stored in app settings or configuration files.",
+                "recommendation": "Introduce Azure Key Vault for centralized, audited secret management and rotate all secrets regularly. Integrate Azure Functions, API Management, and any admin tools with Key Vault using managed identities and Key Vault references instead of inline secrets.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity & Access Management",
+                "issue": "Microsoft Entra ID is used for OAuth validation at API Management, but there is no detail on role-based access, least privilege, or use of managed identities for internal service-to-service calls.",
+                "recommendation": "Define and enforce RBAC roles for operations such as reading moderation results vs. administering the platform. Use system-assigned or user-assigned managed identities for Azure Functions and API Management to access SQL Database, Storage Account, and Key Vault instead of credential-based access.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "The architecture does not mention private endpoints, VNET integration, or IP restrictions; traffic from Azure Functions and API Management to SQL Database and Storage Account may be exposed over the public internet (though still encrypted).",
+                "recommendation": "Enable private endpoints for SQL Database and Storage Account and integrate Azure Functions and API Management with a virtual network. Use network security groups and/or IP restrictions to limit access to these services and leverage Front Door WAF policies to protect the public edge.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "There is no explicit mention of encryption at rest and in transit for SQL Database and Storage Account, or of classification and protection for sensitive moderation data.",
+                "recommendation": "Ensure transparent data encryption (TDE) is enabled for SQL Database and encryption at rest is enabled for Storage Account using Microsoft-managed or customer-managed keys. Classify sensitive data (e.g., user identifiers, moderation outcomes) and apply appropriate data masking, access controls, and retention policies.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Logging & Auditing",
+                "issue": "While Azure Monitor and Log Analytics are present, there is no explicit mention of security-specific logs such as SQL auditing, Key Vault logs, or APIM access logs being centrally collected and retained.",
+                "recommendation": "Enable SQL Database auditing, API Management diagnostics logs, and later Key Vault logs, and send them to Log Analytics. Define retention periods, implement alert rules for anomalous access patterns, and use Microsoft Sentinel or similar for advanced threat detection if the risk profile warrants it.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 74,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching & Repeated Reads",
+                "issue": "No caching layer is present between API Management/Azure Functions and SQL Database, which can drive up database DTU/vCore consumption and cost, especially for frequently read moderation results.",
+                "recommendation": "Introduce a distributed cache (e.g., Azure Cache for Redis) for frequently accessed or read-mostly data such as recent moderation results or policy metadata. Cache at the API Management layer where appropriate to reduce downstream load and SQL Database costs.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Service Sizing & Plans",
+                "issue": "No details are provided about the SKU/tiers used for Azure Functions, API Management, and SQL Database, which can lead to over-provisioning if sized for peak instead of typical usage.",
+                "recommendation": "Start Azure Functions on the Consumption or Premium plan based on cold start tolerance, and size API Management using developer or lower-tier SKUs in non-prod and appropriately in prod. For SQL Database, use vCore or DTU tiers aligned with expected workload and revisit sizing based on performance metrics and auto-scale/auto-pause options where applicable.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Global Traffic & Data Egress",
+                "issue": "Global users accessing via Azure Front Door and cross-region traffic to a single-region backend can incur unnecessary data egress and latency, increasing costs as load grows.",
+                "recommendation": "Co-locate compute and data in regions closest to major user populations and use Azure Front Door routing to minimize cross-region hops. Periodically review Front Door and data egress cost reports and optimize routing, compression, and caching policies.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Observability Costs",
+                "issue": "Azure Monitor and Log Analytics ingestion and retention can become a significant cost driver if verbose logging is enabled without controls.",
+                "recommendation": "Define log sampling, filtering, and appropriate retention per data type. Use multiple Log Analytics workspaces or data collection rules where needed to separate high-value logs from verbose diagnostic data, and regularly review cost breakdowns to tune settings.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "AI Service Consumption",
+                "issue": "Computer Vision, Language, and Azure OpenAI calls can become expensive under high load if every request is processed with the most advanced models and maximum context.",
+                "recommendation": "Define tiered moderation flows where simpler and cheaper models handle the majority of content and escalate only ambiguous or high-risk items to Azure OpenAI. Optimize prompt design, context window size, and batching where possible to reduce per-request cost.",
+                "resources": [
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 78,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring & Alerting",
+                "issue": "Azure Monitor and Log Analytics are present but there is no explicit mention of SLOs, alert rules, or dashboards aligned with business metrics (e.g., time-to-moderate, error rate per region).",
+                "recommendation": "Define key SLI/SLOs such as request success rate, P95 latency, and time-to-decision for moderation. Configure Azure Monitor alerts on these metrics, build tailored dashboards in Azure Monitor workbooks or Power BI, and ensure runbooks exist for responding to common alerts.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Functions",
+                  "API Management",
+                  "Event Hubs"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Deployment & Configuration Management",
+                "issue": "There is no mention of IaC or release automation for API Management policies, Azure Functions code, or Azure Front Door routing, which can make changes error-prone and slow.",
+                "recommendation": "Use Infrastructure as Code (Bicep, ARM, Terraform) to define all Azure resources and APIM configurations, and deploy via CI/CD pipelines (e.g., GitHub Actions, Azure DevOps). Version API Management policies and Azure Functions configurations in source control and use staged deployment slots for safe rollouts.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Runbooks & Incident Response",
+                "issue": "No documented operational runbooks or incident management procedures are referenced for handling outages in regions, upstream AI services, or dependency failures.",
+                "recommendation": "Create and maintain runbooks for common incidents such as AI service rate limiting/failures, Event Hubs backlog, SQL failover, and Front Door routing issues. Include clear steps, escalation paths, and verification procedures, and rehearse them periodically.",
+                "resources": [
+                  "Azure Functions",
+                  "Event Hubs",
+                  "SQL Database",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Testing & Validation",
+                "issue": "There is no mention of automated tests for resiliency (e.g., chaos testing) or performance in the multi-region scenario.",
+                "recommendation": "Introduce automated functional, performance, and chaos tests that simulate regional failures, high event load, and AI service unavailability. Use these tests in lower environments and pre-production to validate scaling and failover behaviors before changes reach production.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management",
+                  "Event Hubs",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Configuration Drift",
+                "issue": "Multi-region deployment (once implemented) risks configuration drift between regions for APIM, Functions, and Front Door.",
+                "recommendation": "Use centralized configuration (e.g., IaC templates and Azure App Configuration) and regularly validate that deployments are consistent across regions. Implement automated checks or compliance policies to detect and correct drift.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 72,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer is present between compute and data tiers, which can increase latency for read-heavy operations such as fetching moderation results and policy metadata, especially for globally distributed users.",
+                "recommendation": "Implement caching using Azure Cache for Redis for frequently read, non-volatile data (e.g., moderation rules, recent decisions) and consider APIM response caching where responses are safe to cache. Tune TTLs based on business requirements for freshness vs. performance.",
+                "resources": [
+                  "Azure Functions",
+                  "SQL Database",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Global Latency & Routing",
+                "issue": "Azure Front Door provides global entry, but if backends (API Management, Azure Functions, SQL Database) are located in a single region, users far from that region may experience increased latency.",
+                "recommendation": "Deploy regional instances of API Management and Azure Functions in key geographies and use Azure Front Door with latency-based routing to direct users to the closest healthy backend. Evaluate read replicas or geo-distributed databases if read latency becomes a significant issue.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Asynchronous Processing & Throughput",
+                "issue": "Event Hubs and Azure Functions are used, but no details are given about scaling thresholds, batch sizes, or processing parallelism, which directly impact throughput and latency for moderation requests.",
+                "recommendation": "Tune Azure Functions triggers for Event Hubs by configuring appropriate max batch sizes, prefetch counts, and concurrency settings. Use autoscale rules and monitor end-to-end processing time from event ingress to final decision to ensure the system meets time-to-moderate targets.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "AI Request Optimization",
+                "issue": "The pipeline uses Computer Vision, Language, and Azure OpenAI per event, which may introduce unnecessary latency if every request is processed by all services regardless of content type and risk.",
+                "recommendation": "Implement dynamic routing logic in Azure Functions to call only the necessary AI services based on the content type and initial risk signals. For example, bypass Azure OpenAI for clear-cut cases and reserve it for complex or borderline moderation decisions.",
+                "resources": [
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Database Query Performance",
+                "issue": "No mention of SQL indexing strategy, query optimization, or read/write pattern design, which can affect performance under high global load.",
+                "recommendation": "Design SQL Database schemas and indexes optimized for the most common query patterns (e.g., by user, time window, content ID). Use application-side pagination, appropriate indexing, and query tuning, and monitor query performance and blockers via SQL insights.",
+                "resources": [
+                  "SQL Database",
+                  "API Management",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secrets for downstream services and databases are likely stored in application configuration instead of a centralized secrets store.",
+            "recommendation": "Provision Azure Key Vault and migrate all connection strings, API keys, and credentials from Azure Functions and API Management configuration into Key Vault, accessing them via managed identities and Key Vault references.",
+            "resources": [
+              "Azure Functions",
+              "API Management"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Reliability",
+            "issue": "SQL Database currently appears as a single-region, single-instance deployment without geo-replication.",
+            "recommendation": "Enable active geo-replication or configure an auto-failover group for SQL Database to a paired region and update connection strings to use the failover group listener.",
+            "resources": [
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "Every read of moderation results hits SQL Database directly, increasing latency and load under growing traffic.",
+            "recommendation": "Introduce a cache (e.g., Azure Cache for Redis) for frequently read moderation results and configure short-lived response caching in API Management for safe-to-cache endpoints.",
+            "resources": [
+              "API Management",
+              "Azure Functions",
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "There are no clearly defined SLO-based alerts for critical user-facing behaviors.",
+            "recommendation": "Define metrics such as request success rate, P95 latency, and moderation decision time, then configure Azure Monitor alerts and dashboards around these to enable proactive incident detection.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "API Management",
+              "Azure Functions"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:42:19.674Z",
+        "metrics": {
+          "promptTokens": 975,
+          "completionTokens": 4389,
+          "totalTokens": 5364,
+          "elapsedTimeMs": 43029,
+          "model": "gpt-5.1"
+        },
+        "modelUsed": "GPT-5.1 (low)",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt52-low": {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "metrics": {
+        "promptTokens": 975,
+        "completionTokens": 3363,
+        "totalTokens": 4338,
+        "elapsedTimeMs": 36123,
+        "model": "gpt-5.2"
+      },
+      "overallScore": 64,
+      "totalFindings": 18,
+      "criticalCount": 0,
+      "highCount": 4,
+      "mediumCount": 12,
+      "lowCount": 2,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 58
+        },
+        {
+          "pillar": "Security",
+          "score": 66
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 60
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 68
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 66
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 64,
+        "summary": "The architecture has a solid global entry point (Azure Front Door), centralized API governance (API Management), event-driven processing, and baseline observability (Azure Monitor + Log Analytics). Key gaps are multi-region resiliency for stateful components (SQL Database) and secrets management, plus limited global performance controls (caching) for worldwide users.",
+        "pillars": [
+          {
+            "score": 58,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "SQL Database appears to be a single instance without geo-replication/failover, creating a regional single point of failure and risking high downtime for a globally accessed app.",
+                "recommendation": "Enable SQL Database business continuity features such as zone redundancy (where available) and configure failover groups with geo-replication to a paired region. Update API Management and Azure Functions to use the failover group listener endpoint so failover is transparent to the app.",
+                "resources": [
+                  "SQL Database",
+                  "API Management",
+                  "Azure Functions"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Disaster Recovery",
+                "issue": "No explicit backup/DR strategy is described for SQL Database, increasing risk of data loss and long recovery times after accidental deletion, corruption, or ransomware scenarios.",
+                "recommendation": "Confirm SQL Database automated backups (PITR) are configured with appropriate retention for your compliance needs and enable long-term retention (LTR) where required. Regularly test restore in a separate environment and document RPO/RTO per region.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Regional Resiliency",
+                "issue": "Global traffic is routed to the closest API endpoint, but there is no explicit multi-region active/active design for API Management, Azure Functions, and Event Hubs to match the global entry point.",
+                "recommendation": "Deploy API Management and Azure Functions in at least two regions (active/active) behind Azure Front Door. For Event Hubs, use Geo-Disaster Recovery alias for namespace-level failover and define an operational runbook for initiating failover during a regional outage.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "Event Hubs"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Reliability Testing",
+                "issue": "No resiliency validation approach is described (failover drills, dependency timeouts, retry/circuit breaker patterns) across AI dependencies and data stores.",
+                "recommendation": "Implement resilience patterns in Azure Functions (timeouts, bounded retries, exponential backoff, circuit breakers) for calls to Computer Vision, Language, Azure OpenAI, Storage Account, and SQL Database. Run periodic regional failover drills and chaos testing for dependency failures to validate end-to-end behavior.",
+                "resources": [
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI",
+                  "Storage Account",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 66,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No secrets management service is present; Azure Functions likely stores connection strings/keys in app settings, increasing exposure risk and complicating rotation.",
+                "recommendation": "Add Azure Key Vault and use managed identity from Azure Functions and API Management to retrieve secrets at runtime (or via references). Rotate secrets/keys regularly and remove sensitive values from configuration where possible.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Network Security",
+                "issue": "The design does not describe private connectivity for SQL Database, Storage Account, and AI services. Public endpoints increase attack surface and data exfiltration risk.",
+                "recommendation": "Adopt a private networking posture: use private endpoints for SQL Database and Storage Account, and where supported, private connectivity for AI services. Restrict public network access, enforce TLS, and control egress from Azure Functions to only required destinations.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account",
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Edge Protection",
+                "issue": "Global exposure via Azure Front Door is good, but there is no mention of WAF/bot protection/rate limiting for worldwide users and automated abuse.",
+                "recommendation": "Enable Azure Front Door WAF policies (managed OWASP rules, bot protection where applicable) and implement rate limiting/quotas in API Management per client/app to reduce abuse and cost spikes. Consider IP reputation filtering and request size limits for media payloads.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity & Authorization",
+                "issue": "OAuth token validation is present, but authorization scope design (RBAC/claims-based access, tenant restrictions, and least privilege) is not specified.",
+                "recommendation": "Define granular API scopes/roles in Microsoft Entra ID and enforce them in API Management policies. Use managed identities for service-to-service access (Azure Functions to SQL Database/Storage Account) to eliminate shared secrets and ensure least-privilege access.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "Data classification and encryption posture for stored moderation metadata and media references is not described, which can be critical for global compliance.",
+                "recommendation": "Ensure encryption at rest is enabled (platform-managed keys by default) and consider customer-managed keys for regulated workloads. Apply data retention policies for moderation metadata in SQL Database and lifecycle policies for objects in Storage Account.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 60,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Global Cost Control",
+                "issue": "Worldwide access plus AI calls can drive unpredictable spend (Azure OpenAI, Language, Computer Vision) and event-driven bursts can increase downstream costs.",
+                "recommendation": "Implement cost guards: quotas and rate limits in API Management, request validation to reject oversized payloads early, and budget alerts by service. Add per-tenant/client metering using logs so high-cost callers can be managed.",
+                "resources": [
+                  "API Management",
+                  "Azure OpenAI",
+                  "Language",
+                  "Computer Vision",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Right-sizing & Scaling",
+                "issue": "No scaling/consumption strategy is described for API Management tiers, Azure Functions plan choice, or SQL Database service tier, which can cause overspend or throttling.",
+                "recommendation": "Validate workload patterns and choose appropriate SKUs: autoscale for Azure Functions, ensure API Management capacity aligns with peak global traffic (and multi-region adds cost), and right-size SQL Database with performance baselines. Use reserved capacity/commitments where stable utilization exists.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Logging Cost Management",
+                "issue": "All telemetry flowing into Log Analytics can become expensive at global scale if high-cardinality logs and verbose payloads are ingested.",
+                "recommendation": "Apply sampling, set sensible retention, and separate high-volume diagnostic logs from high-value security/audit logs. Create ingestion and retention policies that match compliance requirements.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 68,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Observability Coverage",
+                "issue": "Telemetry exists, but the architecture does not mention end-to-end correlation, SLOs, alerting, dashboards, or runbooks for incidents (especially multi-region failover).",
+                "recommendation": "Standardize distributed tracing and correlation IDs from Azure Front Door through API Management and Azure Functions, and build dashboards for key metrics (latency, error rate, event backlog, AI dependency failures, SQL DTU/vCore usage). Create actionable alerts and documented runbooks for throttling, failover, and degraded-mode operation.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "Event Hubs",
+                  "SQL Database",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Deployment & Configuration Management",
+                "issue": "No mention of infrastructure-as-code, environment promotion, or configuration validation for global deployments and policy consistency.",
+                "recommendation": "Adopt IaC for repeatable multi-region deployments and consistent policy enforcement (API Management policies, Azure Front Door routes/WAF, Function app settings). Include automated validation and staged rollouts to reduce global blast radius.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "Event Hubs",
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Queue/Stream Operations",
+                "issue": "Operational handling of Event Hubs backpressure, consumer lag, and poison messages is not described.",
+                "recommendation": "Define operational thresholds for lag, set up alerts, and implement dead-letter/poison handling patterns in Azure Functions (e.g., checkpointing strategy, idempotency, and retries). Ensure reprocessing procedures are documented.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 66,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer is present between compute and SQL Database, which can increase latency for worldwide users and raise load on SQL Database for repeated reads of moderation results.",
+                "recommendation": "Introduce a cache for read-heavy moderation result lookups and rate-limit repetitive queries. If adding a cache is not feasible immediately, optimize SQL queries/indexes and ensure API Management responses leverage appropriate HTTP caching headers where safe.",
+                "resources": [
+                  "Azure Functions",
+                  "SQL Database",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Global Latency",
+                "issue": "Azure Front Door routes users to the closest API entry point, but data/processing dependencies may still be centralized, causing cross-region hops to SQL Database/Storage Account and AI services.",
+                "recommendation": "Align regional deployments so API Management and Azure Functions run in-region with their closest data/AI endpoints where feasible. If data must remain centralized, implement async patterns (return job ID, poll results) and prioritize user-perceived latency via edge routing and response shaping.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database",
+                  "Storage Account",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Throughput & Concurrency",
+                "issue": "AI calls (Azure OpenAI/Language/Computer Vision) can throttle at high concurrency; Event Hubs consumer scale and Azure Functions concurrency controls are not specified.",
+                "recommendation": "Set explicit concurrency limits and scaling rules for Azure Functions to match downstream quotas, and implement adaptive load shedding when dependencies throttle. Monitor Event Hubs throughput units/capacity and partitioning strategy to avoid hotspots.",
+                "resources": [
+                  "Azure Functions",
+                  "Event Hubs",
+                  "Azure OpenAI",
+                  "Language",
+                  "Computer Vision",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secrets are likely stored in configuration without a dedicated secrets store.",
+            "recommendation": "Add Key Vault and switch Azure Functions and API Management to managed identity-based secret retrieval/rotation to reduce exposure risk quickly.",
+            "resources": [
+              "Azure Functions",
+              "API Management"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "Single-region SQL Database creates an immediate outage risk for global users.",
+            "recommendation": "Enable SQL Database failover groups to a paired region and validate application connection strings use the listener endpoint.",
+            "resources": [
+              "SQL Database",
+              "Azure Functions",
+              "API Management"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "Repeated reads of moderation results can add latency and cost without caching.",
+            "recommendation": "Start with API-level caching where safe (HTTP cache headers and API Management caching policies for idempotent reads) and plan a dedicated caching tier if read volume grows.",
+            "resources": [
+              "API Management",
+              "SQL Database",
+              "Azure Functions"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "Lack of defined alerts/runbooks for global operations and dependency throttling.",
+            "recommendation": "Create alerts for Event Hubs lag, Function failures, SQL saturation, and AI dependency errors; document runbooks for throttling and regional failover.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "Event Hubs",
+              "Azure Functions",
+              "SQL Database",
+              "Azure OpenAI",
+              "Language",
+              "Computer Vision"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:42:12.770Z",
+        "metrics": {
+          "promptTokens": 975,
+          "completionTokens": 3363,
+          "totalTokens": 4338,
+          "elapsedTimeMs": 36123,
+          "model": "gpt-5.2"
+        },
+        "modelUsed": "GPT-5.2 (low)",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt52codex-low": {
+      "model": "gpt-5.2-codex",
+      "displayName": "GPT-5.2 Codex",
+      "metrics": {
+        "promptTokens": 975,
+        "completionTokens": 1432,
+        "totalTokens": 2407,
+        "elapsedTimeMs": 14500,
+        "model": "gpt-5.2-codex"
+      },
+      "overallScore": 68,
+      "totalFindings": 10,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 6,
+      "lowCount": 2,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 62
+        },
+        {
+          "pillar": "Security",
+          "score": 64
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 70
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 78
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 66
+        }
+      ],
+      "quickWinCount": 3,
+      "validation": {
+        "overallScore": 68,
+        "summary": "The architecture includes strong global entry (Azure Front Door), centralized identity, and good observability with Azure Monitor and Log Analytics. Key gaps remain around data resilience, secrets management, and caching, which will affect global user experience and recovery posture.",
+        "pillars": [
+          {
+            "score": 62,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "SQL Database appears as a single instance without geo-replication or failover, creating a single point of failure for global users and recovery.",
+                "recommendation": "Enable geo-replication or auto-failover groups for SQL Database in a paired region and configure Azure Front Door/API Management routing to handle regional failover.",
+                "resources": [
+                  "SQL Database",
+                  "Azure Front Door",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No backup or disaster recovery service is specified for the data tier.",
+                "recommendation": "Configure automated backups and verify retention/restore testing for SQL Database; define RPO/RTO aligned with moderation service SLAs.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Regional Resiliency",
+                "issue": "Global users are routed to the closest API Management instance, but there is no explicit multi-region deployment or failover for API Management or Azure Functions.",
+                "recommendation": "Deploy API Management and Azure Functions in multiple regions with Front Door health probes and priority routing to ensure regional resiliency.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 64,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No secrets management service is present for API keys/connection strings used by Azure Functions and API Management.",
+                "recommendation": "Introduce Azure Key Vault for all secrets and configure managed identities for Azure Functions and API Management.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "The architecture does not specify encryption or data access controls for stored moderation results and media artifacts.",
+                "recommendation": "Enable customer-managed keys and private endpoints for SQL Database and Storage Account where required, and enforce least-privilege RBAC.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Consumption Management",
+                "issue": "Global access may drive high egress and API costs without regional optimization and caching.",
+                "recommendation": "Use Azure Front Door caching for repeatable API responses and evaluate API Management tiers to match throughput per region.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Right-Sizing",
+                "issue": "Compute and AI services costs can grow with usage spikes.",
+                "recommendation": "Implement budgets and cost alerts in Azure Monitor/Log Analytics and review scaling thresholds for Azure Functions and Event Hubs.",
+                "resources": [
+                  "Azure Functions",
+                  "Event Hubs",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 78,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "low",
+                "category": "Monitoring",
+                "issue": "Telemetry is centralized, but there is no mention of alerting or runbooks.",
+                "recommendation": "Create alert rules and action groups for latency, failure rates, and queue backlogs; document runbooks for moderation pipeline incidents.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 66,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer is defined between API Management/Azure Functions and SQL Database, which can increase latency for global users.",
+                "recommendation": "Introduce a caching layer for moderation result reads to reduce database load and improve response time.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Scaling",
+                "issue": "Event-driven processing can be constrained by Event Hubs throughput units and Azure Functions concurrency limits.",
+                "recommendation": "Validate throughput units for Event Hubs and configure Azure Functions scale settings to handle peak moderation volume.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secrets are likely stored in configuration for Azure Functions/API Management.",
+            "recommendation": "Add Azure Key Vault and enable managed identity access for all secrets.",
+            "resources": [
+              "Azure Functions",
+              "API Management"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Reliability",
+            "issue": "Single-region SQL Database can impact global availability.",
+            "recommendation": "Enable geo-replication and configure failover groups.",
+            "resources": [
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "Repeated reads of moderation results can create latency and database load.",
+            "recommendation": "Add caching for read-heavy endpoints to improve global response time.",
+            "resources": [
+              "API Management",
+              "SQL Database",
+              "Azure Functions"
+            ],
+            "source": "rule-based"
+          }
+        ],
+        "timestamp": "2026-06-26T18:41:51.147Z",
+        "metrics": {
+          "promptTokens": 975,
+          "completionTokens": 1432,
+          "totalTokens": 2407,
+          "elapsedTimeMs": 14500,
+          "model": "gpt-5.2-codex"
+        },
+        "modelUsed": "GPT-5.2 Codex (low)",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt53codex-low": {
+      "model": "gpt-5.3-codex",
+      "displayName": "GPT-5.3 Codex",
+      "metrics": {
+        "promptTokens": 975,
+        "completionTokens": 2738,
+        "totalTokens": 3713,
+        "elapsedTimeMs": 32233,
+        "model": "gpt-5.3-codex"
+      },
+      "overallScore": 68,
+      "totalFindings": 17,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 12,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 62
+        },
+        {
+          "pillar": "Security",
+          "score": 61
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 67
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 72
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 66
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 68,
+        "summary": "The architecture has a strong global ingress and event-driven processing backbone with good core observability and centralized identity integration. However, it has several critical resilience and security gaps for a globally distributed workload, especially around database redundancy, secrets management, and disaster recovery design. Addressing these gaps will materially improve reliability, security posture, and global user experience.",
+        "pillars": [
+          {
+            "score": 62,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "A single SQL database instance is shown without explicit replication or geo-redundancy, creating a single point of failure for moderation results and metadata.",
+                "recommendation": "Enable SQL Database zone-redundant high availability where supported and configure active geo-replication or failover groups for cross-region continuity. Define and test failover procedures for read/write paths in API and Functions.",
+                "resources": [
+                  "SQL Database",
+                  "API Management",
+                  "Azure Functions"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No explicit backup/DR strategy is represented for critical data paths.",
+                "recommendation": "Configure SQL backup retention (short-term + long-term where needed), validate restore SLAs, and implement region-level DR runbooks. Ensure Storage Account uses appropriate redundancy (e.g., GRS/GZRS) aligned with RPO/RTO targets.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account",
+                  "Azure Monitor"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Global Resiliency",
+                "issue": "Global users are expected, but the design does not show multi-region deployment of compute/API components behind Front Door.",
+                "recommendation": "Deploy API Management and Azure Functions in at least two regions and configure Azure Front Door health probes and failover routing. Validate regional dependencies for AI services and event ingestion capacity per region.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "Event Hubs"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Message Durability",
+                "issue": "Event-driven ingestion exists, but replay/recovery controls are not explicit for failed moderation processing.",
+                "recommendation": "Use Event Hubs checkpointing and consumer error-handling patterns with retries and poison-message handling. Define reprocessing workflows for partial failures and backfill scenarios.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 61,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No centralized secrets management service is shown; API keys/connection strings may be handled insecurely in app settings or code.",
+                "recommendation": "Adopt a centralized secret store and integrate with managed identity-based access from Azure Functions and API Management. Rotate credentials regularly and remove embedded secrets.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management",
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "Sensitive moderation payloads and decisions may include regulated content, but encryption and data governance controls are not explicit.",
+                "recommendation": "Enforce encryption in transit/endpoints, enable at-rest protections, classify moderation data, and apply least-privilege access policies across SQL and Storage. Add retention and purge controls for sensitive artifacts.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "API Security",
+                "issue": "OAuth token validation is present, but layered API protections for global internet exposure are not fully indicated.",
+                "recommendation": "Harden API Management policies with rate limiting, quotas, request validation, JWT claims enforcement, and abuse/threat protection. Use Front Door WAF policies tuned for API traffic patterns.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "API Management",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Identity",
+                "issue": "Central identity exists, but service-to-service authentication approach is not explicit.",
+                "recommendation": "Prefer managed identities for Azure Functions and API Management backend access, minimizing secret-based authentication and simplifying credential rotation.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 67,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer is detected between API/compute and SQL reads, which can increase database DTU/vCore usage and API latency costs.",
+                "recommendation": "Introduce response/data caching at API Management (and where applicable Front Door) for read-heavy moderation result queries with safe TTL and invalidation strategy.",
+                "resources": [
+                  "API Management",
+                  "Azure Front Door",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Serverless Consumption",
+                "issue": "Event-driven Functions may experience bursty loads from global traffic, causing unpredictable execution and downstream AI service spend.",
+                "recommendation": "Set budget alerts and per-service cost guardrails, tune batch/concurrency for Event Hubs triggers, and optimize prompt/request size to AI services to control token and call costs.",
+                "resources": [
+                  "Azure Functions",
+                  "Event Hubs",
+                  "Azure OpenAI",
+                  "Computer Vision",
+                  "Language"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Observability Cost",
+                "issue": "High-volume telemetry from Functions and dependencies can significantly increase Log Analytics ingestion costs.",
+                "recommendation": "Use sampling, filter noisy logs, define retention tiers, and route only high-value diagnostic data. Track cost by table and workload to adjust logging policies.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 72,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring Coverage",
+                "issue": "Core monitoring exists, but end-to-end SLOs and actionable alerting across edge, API, eventing, AI calls, and data layers are not defined.",
+                "recommendation": "Define SLI/SLOs (latency, error rate, backlog, moderation turnaround), implement alert thresholds and runbooks, and create unified dashboards with dependency correlation.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Front Door",
+                  "API Management",
+                  "Event Hubs",
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Release Management",
+                "issue": "No CI/CD and environment promotion strategy is shown for APIs, functions, and policy/config changes.",
+                "recommendation": "Implement infrastructure-as-code and staged deployments with automated testing, canary/blue-green rollout for Functions/APIs, and versioned API Management policies.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Operational Readiness",
+                "issue": "Failure drills and incident response workflows are not visible.",
+                "recommendation": "Run regular game days for regional failover, event replay, and degraded AI dependency scenarios. Maintain documented incident playbooks and post-incident review cadence.",
+                "resources": [
+                  "Azure Front Door",
+                  "Event Hubs",
+                  "Azure Functions",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 66,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Latency Optimization",
+                "issue": "Global ingress is present, but backend processing and data tiers may still incur cross-region latency for worldwide users.",
+                "recommendation": "Place API/Functions close to major user regions and align Event Hubs and data access paths regionally. Use Front Door routing and health probes to direct users to nearest healthy backend.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "Azure Functions",
+                  "Event Hubs",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Access Performance",
+                "issue": "Read and write pressure on a single SQL Database can increase response times as moderation volume grows.",
+                "recommendation": "Optimize indexes and query plans, separate read workloads where possible, and use API-side caching for frequently queried moderation results.",
+                "resources": [
+                  "SQL Database",
+                  "API Management",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Burst Handling",
+                "issue": "Event bursts from worldwide users can cause processing lag if Function scaling/concurrency and Event Hubs throughput are not tuned.",
+                "recommendation": "Tune Event Hubs partitions/throughput units and Function host concurrency settings; monitor end-to-end queue lag and autoscale behavior under peak load tests.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions",
+                  "Azure Monitor"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "No centralized secrets management is shown.",
+            "recommendation": "Move all connection strings, API keys, and tokens out of app configs and enforce managed identity-based secret retrieval pattern.",
+            "resources": [
+              "Azure Functions",
+              "API Management",
+              "SQL Database",
+              "Storage Account"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "Single SQL Database instance is a potential single point of failure.",
+            "recommendation": "Enable geo-replication/failover group and validate failover with a runbook and recovery test.",
+            "resources": [
+              "SQL Database",
+              "API Management",
+              "Azure Functions"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "No caching layer for moderation result reads.",
+            "recommendation": "Enable API Management response caching for safe GET endpoints to reduce SQL load and improve global response times.",
+            "resources": [
+              "API Management",
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "Telemetry likely high-volume and potentially costly/noisy.",
+            "recommendation": "Implement log sampling, alert tuning, and retention optimization in Azure Monitor/Log Analytics within the first sprint.",
+            "resources": [
+              "Azure Monitor",
+              "Log Analytics",
+              "Azure Functions"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:42:08.881Z",
+        "metrics": {
+          "promptTokens": 975,
+          "completionTokens": 2738,
+          "totalTokens": 3713,
+          "elapsedTimeMs": 32233,
+          "model": "gpt-5.3-codex"
+        },
+        "modelUsed": "GPT-5.3 Codex (low)",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "gpt54mini-low": {
+      "model": "gpt-5.4-mini",
+      "displayName": "GPT-5.4 Mini",
+      "metrics": {
+        "promptTokens": 975,
+        "completionTokens": 2189,
+        "totalTokens": 3164,
+        "elapsedTimeMs": 14948,
+        "model": "gpt-5.4-mini"
+      },
+      "overallScore": 74,
+      "totalFindings": 15,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 10,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 72
+        },
+        {
+          "pillar": "Security",
+          "score": 76
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 71
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 77
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 73
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 74,
+        "summary": "This is a well-structured global moderation platform with strong edge routing, identity protection, async processing, and observability. The main gaps are around data resilience, secrets management, and cache optimization; these do not block the design, but they should be addressed before production scale or regional failures become a concern.",
+        "pillars": [
+          {
+            "score": 72,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "The architecture uses a single SQL Database instance, which creates a potential point of failure for moderation metadata and client reads.",
+                "recommendation": "Enable geo-replication or failover groups for SQL Database, and validate application failover behavior so the app can continue serving requests during regional outages.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No explicit backup or disaster recovery service is shown for SQL Database, so recovery objectives may not be met after accidental deletion, corruption, or outage.",
+                "recommendation": "Define automated backups, retention, point-in-time restore, and a tested restore/runbook process for SQL Database.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Global Availability",
+                "issue": "The design routes global traffic through Azure Front Door, but resilience depends on whether the downstream API Management and data services are deployed in a multi-region pattern.",
+                "recommendation": "Deploy regional API Management instances and align them with regional failover or active-active traffic management patterns to avoid a single regional dependency.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 76,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No Key Vault is present, so function app secrets, API credentials, and any AI/service connection secrets may end up stored outside a dedicated secrets store.",
+                "recommendation": "Add Azure Key Vault and use managed identities wherever possible so Azure Functions and API Management can access secrets without embedding them in configuration.",
+                "resources": [
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Identity and Access",
+                "issue": "Microsoft Entra ID is used for token validation, but the access model for data plane calls between services is not shown.",
+                "recommendation": "Use managed identities for Azure Functions and API Management when accessing Storage Account, SQL Database, and monitoring resources to reduce credential exposure.",
+                "resources": [
+                  "Microsoft Entra ID",
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Protection",
+                "issue": "The architecture does not show encryption key management or customer-managed key controls for sensitive moderation outputs and media references.",
+                "recommendation": "Review whether customer-managed keys, private endpoints, and network restrictions are required for SQL Database and Storage Account based on data sensitivity and compliance needs.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 71,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Consumption Efficiency",
+                "issue": "The moderation workflow already uses Event Hubs and Azure Functions, which is cost-efficient for bursty workloads, but the design may still incur unnecessary read traffic on SQL Database from API Management.",
+                "recommendation": "Minimize synchronous database reads by caching frequently requested moderation results or returning status from a dedicated read model.",
+                "resources": [
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Service Consumption",
+                "issue": "Multiple AI services are used in sequence for each moderation request, which can increase per-request cost significantly.",
+                "recommendation": "Implement routing logic so only the necessary AI services are invoked per content type, and use confidence thresholds to avoid redundant model calls.",
+                "resources": [
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Platform Sizing",
+                "issue": "The architecture does not show whether Event Hubs, SQL Database, and API Management are sized for expected regional traffic patterns.",
+                "recommendation": "Right-size each tier using load testing and scale metrics, and review reserved capacity or committed-use options for steady workloads.",
+                "resources": [
+                  "Event Hubs",
+                  "SQL Database",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 77,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Monitoring",
+                "issue": "Telemetry is present through Azure Monitor and Log Analytics, which is strong, but the architecture does not show actionable alerting or dashboarding for failed moderation flows.",
+                "recommendation": "Create alerts and workbooks for Event Hubs lag, Function failures, API Management errors, SQL latency, and AI dependency failures to speed incident response.",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Resilience Operations",
+                "issue": "The event-driven flow is operationally sound, but there is no explicit dead-letter or poison-message handling pattern shown for failed moderation events.",
+                "recommendation": "Add retry, dead-letter, and reprocessing procedures for Event Hubs and Azure Functions so malformed or problematic requests do not block the pipeline.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Release Management",
+                "issue": "The architecture does not indicate deployment automation or configuration promotion for the API, function, and data components.",
+                "recommendation": "Use infrastructure-as-code and CI/CD pipelines with staged releases so changes to API Management, Azure Functions, and SQL Database can be deployed consistently.",
+                "resources": [
+                  "API Management",
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 73,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer is present between compute and data tiers, so repeated moderation result lookups and metadata reads may hit SQL Database unnecessarily.",
+                "recommendation": "Introduce caching for read-heavy moderation results or reference data where freshness requirements allow it, and reduce repeated calls through API Management.",
+                "resources": [
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Global Routing",
+                "issue": "Azure Front Door is a strong choice for global entry, but end-to-end performance also depends on regional placement and dependency latency to AI services.",
+                "recommendation": "Deploy compute close to users and measure latency to Computer Vision, Language, Azure OpenAI, and SQL Database to ensure the moderation path remains responsive.",
+                "resources": [
+                  "Azure Front Door",
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Async Scalability",
+                "issue": "The event-driven design is inherently scalable, but throughput tuning for Event Hubs and Function concurrency is not shown.",
+                "recommendation": "Validate partitioning, consumer scaling, and Function concurrency settings under peak load to avoid ingestion bottlenecks.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "No Key Vault is included for storing secrets, connection strings, or API credentials.",
+            "recommendation": "Add Azure Key Vault and switch Azure Functions and API Management to managed identity-based access wherever possible.",
+            "resources": [
+              "Azure Functions",
+              "API Management"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "SQL Database appears to be a single instance without visible replication or geo-redundancy.",
+            "recommendation": "Enable geo-replication or failover groups and test failover procedures regularly.",
+            "resources": [
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "There is no cache between API Management and SQL Database for repeat reads.",
+            "recommendation": "Add caching for moderation lookup data where freshness constraints allow it.",
+            "resources": [
+              "API Management",
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Operational Excellence",
+            "issue": "The architecture does not show dead-letter handling for failed moderation events.",
+            "recommendation": "Implement poison-message handling and reprocessing workflows for Event Hubs and Azure Functions.",
+            "resources": [
+              "Event Hubs",
+              "Azure Functions"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:41:51.597Z",
+        "metrics": {
+          "promptTokens": 975,
+          "completionTokens": 2189,
+          "totalTokens": 3164,
+          "elapsedTimeMs": 14948,
+          "model": "gpt-5.4-mini"
+        },
+        "modelUsed": "GPT-5.4 Mini (low)",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-v3.2-speciale",
+      "displayName": "DeepSeek V3.2 Speciale",
+      "metrics": {
+        "promptTokens": 992,
+        "completionTokens": 2184,
+        "totalTokens": 3176,
+        "elapsedTimeMs": 20014,
+        "model": "deepseek-v3.2-speciale"
+      },
+      "overallScore": 75,
+      "totalFindings": 13,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 7,
+      "lowCount": 4,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 65
+        },
+        {
+          "pillar": "Security",
+          "score": 70
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 80
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 85
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 75
+        }
+      ],
+      "quickWinCount": 4,
+      "validation": {
+        "overallScore": 75,
+        "summary": "The architecture is globally distributed with Azure Front Door and API Management, leverages serverless functions and AI services for content moderation, and includes monitoring via Azure Monitor and Log Analytics. However, there are gaps in reliability (single database, no geo-redundancy), security (no Key Vault for secrets), and performance (no caching). Quick wins include enabling geo-replication for SQL Database and adding a Key Vault.",
+        "pillars": [
+          {
+            "score": 65,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "SQL Database is a single instance without replication or geo-redundancy, creating a single point of failure for data storage. If the region hosting the database goes down, the application will lose access to moderation results and possibly fail.",
+                "recommendation": "Enable active geo-replication or use auto-failover groups to replicate the database to another region. Consider using a higher service tier with zone redundancy for improved availability.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No backup strategy is explicitly defined. While SQL Database includes automated backups by default, the architecture does not specify retention policies, geo-restore, or long-term backup storage, which are essential for data recovery.",
+                "recommendation": "Configure SQL Database automated backups with appropriate retention (e.g., 7-35 days) and consider enabling long-term retention. Also, define a disaster recovery plan that includes regular testing.",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Resiliency",
+                "issue": "Event Hubs is used as a buffer, but there is no mention of consumer groups or checkpointing strategies for Azure Functions. If the function fails, events might be reprocessed or lost depending on configuration.",
+                "recommendation": "Ensure Azure Functions Event Hubs trigger uses checkpointing and configure multiple consumer groups if needed. Set up retry policies and dead-letter handling for poison messages.",
+                "resources": [
+                  "Event Hubs",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No secrets management service (Key Vault) is used. Azure Functions likely need connection strings, API keys, or credentials to access Storage Account, SQL Database, and AI services. Storing secrets in configuration files is insecure.",
+                "recommendation": "Integrate Azure Key Vault to store and manage secrets, certificates, and keys. Use managed identities for Azure Functions to securely access Key Vault and other services.",
+                "resources": [
+                  "Azure Functions"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "The architecture uses public endpoints for many services (Front Door, API Management, Event Hubs, etc.) without explicit mention of private endpoints or network isolation. This could expose backend services to unnecessary risk.",
+                "recommendation": "Consider using private endpoints for services like SQL Database, Storage Account, and Event Hubs to restrict access to the virtual network. Also, use API Management's virtual network integration for internal connectivity.",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account",
+                  "Event Hubs",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Identity",
+                "issue": "Microsoft Entra ID is used for OAuth token validation at API Management, which is good. However, ensure that the Azure Functions also use managed identities for secure access to other Azure services.",
+                "recommendation": "Assign a system-assigned managed identity to the Azure Functions app and grant least-privilege access to dependent services (Storage, SQL, Event Hubs, AI services).",
+                "resources": [
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 80,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Resource Sizing",
+                "issue": "Azure Functions consumption plan is likely used, which is cost-effective for variable workloads. However, the use of premium AI services (Computer Vision, Language, OpenAI) can become expensive at scale. No cost controls like budgets or quotas are mentioned.",
+                "recommendation": "Set up Azure Budgets with alerts to monitor spending. Consider implementing caching or batching to reduce calls to AI services. Also, review pricing tiers for SQL Database and Storage to match usage patterns.",
+                "resources": [
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Reservations",
+                "issue": "API Management and SQL Database are long-running services that could benefit from reserved capacity discounts. No reservation strategy is indicated.",
+                "recommendation": "Evaluate usage patterns and consider purchasing reserved instances for API Management and SQL Database to reduce costs if the commitment period aligns with plans.",
+                "resources": [
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 85,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "low",
+                "category": "Monitoring",
+                "issue": "Azure Monitor and Log Analytics are integrated, providing telemetry. However, there is no mention of alerting, dashboards, or Application Insights for deeper insights into Azure Functions.",
+                "recommendation": "Enable Application Insights for Azure Functions to get detailed performance monitoring. Create dashboards and alerts for key metrics (e.g., function execution latency, error rates, Event Hubs backlog).",
+                "resources": [
+                  "Azure Monitor",
+                  "Log Analytics",
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "DevOps",
+                "issue": "No CI/CD pipelines or infrastructure as code are described. Manual deployment could lead to inconsistency and errors.",
+                "recommendation": "Implement infrastructure as code using ARM, Bicep, or Terraform. Set up CI/CD pipelines for deploying Azure Functions and API Management configurations.",
+                "resources": [
+                  "All"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 75,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer is present between compute and data tiers. API Management reads directly from SQL Database, which may cause latency and load on the database for frequently accessed moderation results.",
+                "recommendation": "Introduce a caching layer such as Azure Cache for Redis to store frequently accessed moderation results. This reduces database load and improves response times for read queries.",
+                "resources": [
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Scaling",
+                "issue": "Azure Functions on consumption plan scales automatically, but the downstream services (SQL Database, Event Hubs, AI services) need to handle scale. SQL Database may need to scale up or use elastic pools under high load.",
+                "recommendation": "Monitor performance and consider using SQL Database auto-scale or elastic pools. Also, ensure Event Hubs throughput units are scaled appropriately and AI services have sufficient quotas.",
+                "resources": [
+                  "SQL Database",
+                  "Event Hubs",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Global Distribution",
+                "issue": "Front Door provides global routing to API Management, but API Management may be deployed in a single region, reducing performance for distant users. Also, the database is region-bound.",
+                "recommendation": "Consider deploying API Management in multiple regions with a global tier, and use SQL Database geo-replication for read-only replicas to reduce latency. Or use Azure Cosmos DB for globally distributed data if needed.",
+                "resources": [
+                  "Azure Front Door",
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "SQL Database single point of failure",
+            "recommendation": "Enable active geo-replication and configure failover groups for high availability.",
+            "resources": [
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "No Key Vault for secrets management",
+            "recommendation": "Create an Azure Key Vault, store all secrets there, and configure Azure Functions to retrieve them using managed identity.",
+            "resources": [
+              "Azure Functions"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Performance Efficiency",
+            "issue": "No caching layer for read queries",
+            "recommendation": "Add Azure Cache for Redis to cache moderation results, reducing database load.",
+            "resources": [
+              "API Management",
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Potential overspending on AI services",
+            "recommendation": "Set up Azure Budget alerts and consider implementing request batching or caching to reduce AI service calls.",
+            "resources": [
+              "Computer Vision",
+              "Language",
+              "Azure OpenAI"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:41:56.663Z",
+        "metrics": {
+          "promptTokens": 992,
+          "completionTokens": 2184,
+          "totalTokens": 3176,
+          "elapsedTimeMs": 20014,
+          "model": "deepseek-v3.2-speciale"
+        },
+        "modelUsed": "DeepSeek V3.2 Speciale",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "unknown": {
+      "model": "kimi-k2-5",
+      "displayName": "Kimi K2.5",
+      "metrics": {
+        "promptTokens": 975,
+        "completionTokens": 4869,
+        "totalTokens": 5844,
+        "elapsedTimeMs": 33865,
+        "model": "Kimi-K2.5"
+      },
+      "overallScore": 68,
+      "totalFindings": 15,
+      "criticalCount": 0,
+      "highCount": 5,
+      "mediumCount": 8,
+      "lowCount": 2,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 65
+        },
+        {
+          "pillar": "Security",
+          "score": 60
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 70
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 75
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 65
+        }
+      ],
+      "quickWinCount": 3,
+      "validation": {
+        "overallScore": 68,
+        "summary": "This architecture demonstrates solid event-driven design with Azure Front Door for global reach and Event Hubs for load leveling, but critical gaps in data resilience and secrets management limit production readiness. The single-region SQL Database creates a significant bottleneck for global users, while the absence of caching and Key Vault increases costs and security risks.",
+        "pillars": [
+          {
+            "score": 65,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "High Availability",
+                "issue": "Single SQL Database instance without geo-replication creates a single point of failure for global users",
+                "recommendation": "Enable Auto-failover Groups with readable secondary replicas in 2-3 strategic regions to support both disaster recovery and read scaling",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Data Protection",
+                "issue": "No backup or disaster recovery configuration detected for SQL Database or Storage Account",
+                "recommendation": "Configure Long-term Retention (LTR) policies for SQL Database, enable soft-delete and versioning for Storage Account, and implement geo-redundant storage (GRS) for critical media",
+                "resources": [
+                  "SQL Database",
+                  "Storage Account"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Event Streaming Resilience",
+                "issue": "Single Event Hubs namespace represents a regional failure risk for the moderation pipeline",
+                "recommendation": "Implement Geo-disaster recovery for Event Hubs or use Event Grid with multiple regional endpoints to ensure event ingestion continues during regional outages",
+                "resources": [
+                  "Event Hubs"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 60,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No Azure Key Vault detected; AI service keys and database connection strings likely stored in application configuration",
+                "recommendation": "Deploy Azure Key Vault with soft-delete and purge protection enabled; configure Azure Functions and API Management to use managed identities and Key Vault references",
+                "resources": [
+                  "Azure Functions",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "high",
+                "category": "Data Access Security",
+                "issue": "API Management connects directly to SQL Database, bypassing application security logic and potentially exposing database credentials",
+                "recommendation": "Eliminate direct SQL access from API Management; route all queries through Azure Functions to enforce consistent security controls and audit logging, or implement row-level security (RLS) if direct access is mandatory",
+                "resources": [
+                  "API Management",
+                  "SQL Database"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Network Security",
+                "issue": "Azure Functions accesses AI services (Computer Vision, Language, OpenAI) and SQL Database over public endpoints without private connectivity",
+                "recommendation": "Deploy private endpoints for SQL Database and AI services; integrate Azure Functions with a virtual network using Premium plan or Container Apps to ensure traffic stays on the Microsoft backbone",
+                "resources": [
+                  "Azure Functions",
+                  "SQL Database",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 70,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Service Consumption",
+                "issue": "No caching layer detected; redundant calls to Computer Vision, Language, and Azure OpenAI for identical content will incur unnecessary AI service costs",
+                "recommendation": "Implement Azure Cache for Redis to store moderation results with content-hash keys; implement idempotency checks before invoking paid AI services",
+                "resources": [
+                  "Azure Functions",
+                  "Computer Vision",
+                  "Language",
+                  "Azure OpenAI"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Data Transfer",
+                "issue": "Global users writing to single-region SQL Database incurs cross-region data transfer charges and requires over-provisioning to handle latency",
+                "recommendation": "Use geo-replicated SQL Database read replicas to offload read queries; consider Azure Cosmos DB with multi-region writes if latency requirements demand it",
+                "resources": [
+                  "SQL Database",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Compute Optimization",
+                "issue": "Azure Functions processing Event Hubs events may experience cold starts under burst traffic patterns",
+                "recommendation": "Consider Premium plan with pre-warmed workers for consistent performance, or use Consumption plan with retry policies and dead-letter queues for cost-effective burst handling",
+                "resources": [
+                  "Azure Functions",
+                  "Event Hubs"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 75,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Observability",
+                "issue": "While Azure Monitor and Log Analytics are present, end-to-end distributed tracing across Event Hubs, Functions, and AI services is not explicitly configured",
+                "recommendation": "Enable Application Insights integration for Azure Functions with distributed tracing; implement custom telemetry for AI service call latency and content moderation decision tracking",
+                "resources": [
+                  "Azure Functions",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Health Monitoring",
+                "issue": "No health check endpoints detected for the moderation pipeline components",
+                "recommendation": "Implement health check Functions that verify connectivity to SQL Database and AI services; expose via API Management with a /health endpoint for Front Door backend health probes",
+                "resources": [
+                  "Azure Functions",
+                  "API Management",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Event Retention",
+                "issue": "Event Hubs does not have Capture enabled for long-term audit trails of moderation requests",
+                "recommendation": "Enable Event Hubs Capture to archive events to Storage Account for compliance, forensic analysis, and pipeline replay capabilities",
+                "resources": [
+                  "Event Hubs",
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 65,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Data Latency",
+                "issue": "Single-region SQL Database creates high write latency for global users and limits throughput for the moderation pipeline",
+                "recommendation": "For global write scenarios, evaluate Azure Cosmos DB with multi-region writes; alternatively, implement SQL Database geo-replication with read-only routing for API Management queries while keeping writes regional",
+                "resources": [
+                  "SQL Database",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "medium",
+                "category": "Caching",
+                "issue": "No caching layer between compute and data tiers results in repeated database queries for popular moderation results",
+                "recommendation": "Deploy Azure Cache for Redis between Azure Functions and SQL Database; cache moderation decisions for 1-24 hours depending on content volatility",
+                "resources": [
+                  "Azure Functions",
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Content Delivery",
+                "issue": "Storage Account media objects retrieved by Functions lack CDN caching, increasing latency for global media analysis",
+                "recommendation": "Configure Azure Front Door caching rules for Storage Account origins, or add Azure CDN to cache frequently accessed media objects near processing regions",
+                "resources": [
+                  "Storage Account",
+                  "Azure Front Door"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Secrets stored in configuration files present immediate security risk",
+            "recommendation": "Deploy Azure Key Vault and migrate AI service keys and SQL connection strings to Key Vault references; enable managed identities for Azure Functions",
+            "resources": [
+              "Azure Functions",
+              "API Management"
+            ],
+            "source": "ai-analysis"
+          },
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "No backup strategy for critical moderation data",
+            "recommendation": "Enable SQL Database automated backups with 7-35 day retention and configure geo-redundant backup storage; enable soft-delete on Storage Account",
+            "resources": [
+              "SQL Database",
+              "Storage Account"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Redundant AI service calls increasing operational costs",
+            "recommendation": "Implement in-memory caching or Azure Cache for Redis to cache Computer Vision and Language service results for identical content hashes, reducing API calls by 40-60%",
+            "resources": [
+              "Azure Functions",
+              "Computer Vision",
+              "Language"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:42:10.517Z",
+        "metrics": {
+          "promptTokens": 975,
+          "completionTokens": 4869,
+          "totalTokens": 5844,
+          "elapsedTimeMs": 33865,
+          "model": "Kimi-K2.5"
+        },
+        "modelUsed": "Kimi K2.5",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    },
+    "grok41fast": {
+      "model": "grok-4.1-fast",
+      "displayName": "Grok 4.1 Fast",
+      "metrics": {
+        "promptTokens": 967,
+        "completionTokens": 1335,
+        "totalTokens": 2302,
+        "elapsedTimeMs": 14386,
+        "model": "grok-4-1-fast-non-reasoning"
+      },
+      "overallScore": 78,
+      "totalFindings": 10,
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 5,
+      "lowCount": 3,
+      "pillarScores": [
+        {
+          "pillar": "Reliability",
+          "score": 65
+        },
+        {
+          "pillar": "Security",
+          "score": 85
+        },
+        {
+          "pillar": "Cost Optimization",
+          "score": 72
+        },
+        {
+          "pillar": "Operational Excellence",
+          "score": 92
+        },
+        {
+          "pillar": "Performance Efficiency",
+          "score": 82
+        }
+      ],
+      "quickWinCount": 3,
+      "validation": {
+        "overallScore": 78,
+        "summary": "This global moderation architecture demonstrates strong global distribution, security, and observability with Azure Front Door, Entra ID, and Azure Monitor/Log Analytics. Reliability is moderate due to single SQL Database instance lacking explicit replication or backups, while caching is absent for repeated data access patterns. Security and operations score highly, with minor gaps in secrets management and cost optimization for serverless workloads.",
+        "pillars": [
+          {
+            "score": 65,
+            "pillar": "Reliability",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Data Resilience",
+                "issue": "Single database instance without replication or geo-redundancy detected",
+                "recommendation": "Enable zone-redundant or geo-replicated SQL Database with active geo-replication for global availability; configure auto-failover groups for multi-region resilience",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Disaster Recovery",
+                "issue": "No backup or disaster recovery service detected for SQL Database",
+                "recommendation": "Enable automated backups with long-term retention policies (7-35 years) and configure point-in-time restore; implement cross-region geo-restore for DR",
+                "resources": [
+                  "SQL Database"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Event-Driven Resilience",
+                "issue": "Event Hubs lacks explicit geo-disaster recovery configuration",
+                "recommendation": "Configure Event Hubs with geo-replicated namespaces and Availability Zones for message durability across regions",
+                "resources": [
+                  "Event Hubs"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 85,
+            "pillar": "Security",
+            "findings": [
+              {
+                "severity": "high",
+                "category": "Secrets Management",
+                "issue": "No secrets management service (Key Vault) detected; Azure Functions likely using hardcoded or app settings for AI service credentials",
+                "recommendation": "Integrate Azure Key Vault for all secrets (AI endpoints, connection strings); configure Functions Managed Identity with Key Vault access policies",
+                "resources": [
+                  "Azure Functions"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "low",
+                "category": "Data Protection",
+                "issue": "Storage Account lacks explicit encryption and access restrictions for media analysis",
+                "recommendation": "Enable customer-managed keys, private endpoints, and firewall rules on Storage Account; implement lifecycle policies for temporary media",
+                "resources": [
+                  "Storage Account"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 72,
+            "pillar": "Cost Optimization",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Caching Absence",
+                "issue": "No caching layer between Azure Functions and SQL Database for repeated moderation result queries",
+                "recommendation": "Deploy Azure Cache for Redis Premium tier with zone redundancy; implement output caching in API Management for common moderation responses",
+                "resources": [
+                  "Azure Functions",
+                  "SQL Database",
+                  "API Management"
+                ],
+                "source": "rule-based"
+              },
+              {
+                "severity": "medium",
+                "category": "Serverless Right-Sizing",
+                "issue": "Azure Functions may incur unnecessary cold starts for predictable moderation patterns",
+                "recommendation": "Enable Premium plan with pre-warmed instances or consider App Service for steady workloads; analyze consumption patterns in Azure Monitor",
+                "resources": [
+                  "Azure Functions"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 92,
+            "pillar": "Operational Excellence",
+            "findings": [
+              {
+                "severity": "low",
+                "category": "Monitoring Coverage",
+                "issue": "Application Insights integration missing for end-to-end request tracing",
+                "recommendation": "Enable Application Insights in Azure Functions and API Management; create custom dashboards in Log Analytics for moderation SLA monitoring",
+                "resources": [
+                  "Azure Functions",
+                  "API Management",
+                  "Azure Monitor",
+                  "Log Analytics"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          },
+          {
+            "score": 82,
+            "pillar": "Performance Efficiency",
+            "findings": [
+              {
+                "severity": "medium",
+                "category": "Database Scaling",
+                "issue": "SQL Database may become bottleneck for global concurrent reads/writes",
+                "recommendation": "Implement auto-scaling with serverless tier or Hyperscale for AI metadata workloads; add read replicas for API Management queries",
+                "resources": [
+                  "SQL Database",
+                  "API Management"
+                ],
+                "source": "ai-analysis"
+              },
+              {
+                "severity": "low",
+                "category": "Global Optimization",
+                "issue": "AI services accessed without explicit global endpoints",
+                "recommendation": "Deploy Azure OpenAI, Computer Vision, and Language services in multiple regions with Front Door routing optimization",
+                "resources": [
+                  "Azure Front Door",
+                  "Azure OpenAI",
+                  "Computer Vision",
+                  "Language"
+                ],
+                "source": "ai-analysis"
+              }
+            ]
+          }
+        ],
+        "quickWins": [
+          {
+            "severity": "high",
+            "category": "Reliability",
+            "issue": "Enable SQL Database zone redundancy immediately",
+            "recommendation": "Use Azure Portal or ARM template to set 'zoneRedundant = true' on SQL Server; minimal downtime required",
+            "resources": [
+              "SQL Database"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "high",
+            "category": "Security",
+            "issue": "Deploy Key Vault for Azure Functions AI credentials",
+            "recommendation": "Create Key Vault, assign Functions Managed Identity RBAC role, reference secrets via @Microsoft.KeyVault",
+            "resources": [
+              "Azure Functions"
+            ],
+            "source": "rule-based"
+          },
+          {
+            "severity": "medium",
+            "category": "Cost Optimization",
+            "issue": "Add API Management caching policy",
+            "recommendation": "Configure <caching> policy on moderation GET operations (TTL 5-15min) for 30-50% cost reduction",
+            "resources": [
+              "API Management"
+            ],
+            "source": "ai-analysis"
+          }
+        ],
+        "timestamp": "2026-06-26T18:41:51.036Z",
+        "metrics": {
+          "promptTokens": 967,
+          "completionTokens": 1335,
+          "totalTokens": 2302,
+          "elapsedTimeMs": 14386,
+          "model": "grok-4-1-fast-non-reasoning"
+        },
+        "modelUsed": "Grok 4.1 Fast",
+        "hybridMetadata": {
+          "localFindings": 26,
+          "patternsDetected": [
+            "single-database",
+            "no-cache",
+            "no-key-vault",
+            "no-backup"
+          ],
+          "localElapsedMs": 0,
+          "preliminaryScore": 10,
+          "kbRulesUsed": 73
+        }
+      }
+    }
+  }
+}

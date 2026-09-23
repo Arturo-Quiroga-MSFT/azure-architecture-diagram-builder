@@ -1,0 +1,969 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+import { getModelSettingsForFeature, getModelSettings, getDeploymentName, getAvailableModels, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
+import { trackAIModelUsage } from './telemetryService';
+import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
+import { buildArchitectureGenerationSystemPrompt } from './architectureGenerationContract';
+import { postProcessArchitecture } from './architecturePostProcessing';
+import { FOLLOW_UP_MODEL_POLICY, getFollowUpOperation, type FollowUpSource } from './followUpModelPolicy';
+
+// Non-secret flag indicating the AI backend is wired up. The actual Azure OpenAI
+// endpoint and credentials live server-side in the token server; the browser
+// never sees the API key — all calls go through the /api/openai proxy.
+const endpoint = import.meta.env.VITE_AZURE_OPENAI_ENDPOINT;
+
+// Token usage metrics returned from Azure OpenAI API
+export interface AIMetrics {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  elapsedTimeMs: number;
+  model?: string;
+  reasoningEffort?: string;
+}
+
+interface CallResult {
+  content: string;
+  metrics: AIMetrics;
+}
+
+export interface ModelOverride {
+  model: ModelType;
+  reasoningEffort: ReasoningEffort;
+}
+
+export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOverride, jsonOutput = true, operation = 'architecture_generation'): Promise<CallResult> {
+  // Use explicit model override if provided, otherwise read from store
+  const storeSettings = getModelSettingsForFeature('architectureGeneration');
+  const rawStore = getModelSettings();
+  const settings = modelOverride || storeSettings;
+  const modelConfig = MODEL_CONFIG[settings.model];
+  
+  console.log(`📋 Model: using ${settings.model} | dropdown=${rawStore.model} | featureOverride=${rawStore.featureOverrides?.architectureGeneration?.model || 'none'} | source=${modelOverride ? 'explicit' : 'store'}`);
+
+  
+  let deployment: string;
+  try {
+    deployment = getDeploymentName(settings.model);
+  } catch (e) {
+    throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
+  }
+
+  if (!endpoint) {
+    throw new Error('Azure OpenAI is not configured. Please check your .env file.');
+  }
+
+  // Determine API format (Responses for OpenAI models, Chat Completions for third-party)
+  const apiFormat = modelConfig.apiFormat || 'responses';
+
+  // Add timeout for large requests (5 minutes for regenerations)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000);
+  
+  // Start timing
+  const startTime = performance.now();
+
+  // Build request body using the appropriate API format
+  const requestBody = buildRequestBody({
+    deployment,
+    messages,
+    maxTokens: modelConfig.maxCompletionTokens,
+    apiFormat,
+    isReasoning: modelConfig.isReasoning,
+    reasoningEffort: settings.reasoningEffort,
+    jsonOutput,
+    supportsStructuredOutputs: modelConfig.supportsStructuredOutputs,
+  });
+  
+  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
+
+  try {
+    const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
+      apiFormat,
+      deployment,
+      model: modelConfig.displayName,
+      operation,
+      body: requestBody,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    
+    // Calculate elapsed time
+    const elapsedTimeMs = Math.round(performance.now() - startTime);
+
+    if (!ok) {
+      console.error('Azure OpenAI API error:', status, errorText);
+      if (status === 401 || status === 403) {
+        throw new Error('Azure OpenAI authentication failed on the server. Check the managed identity role assignment.');
+      }
+      if (status === 404) {
+        throw new Error('Deployment not found. Please check your model deployment name.');
+      }
+      throw new Error(`Azure OpenAI API error (${status}): ${errorText}`);
+    }
+
+    // Parse response using the appropriate API format
+    const parsed = parseApiResponse(data, apiFormat);
+    const content = parsed.content;
+    const metrics: AIMetrics = {
+      promptTokens: parsed.promptTokens,
+      completionTokens: parsed.completionTokens,
+      totalTokens: parsed.totalTokens,
+      elapsedTimeMs,
+      model: data.model || modelConfig.displayName,
+      reasoningEffort: modelConfig.isReasoning ? settings.reasoningEffort : 'none',
+    };
+    
+    if (!content || content.trim().length === 0) {
+      throw new Error('Empty response from Azure OpenAI. The request may have been too large or complex. Try reducing recommendations or using lower reasoning effort.');
+    }
+    
+    console.log(`API Response: ${content.length} chars | Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out (${metrics.totalTokens} total) | Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s | Model: ${modelConfig.displayName}`);
+    
+    // Track model usage telemetry
+    trackAIModelUsage({
+      model: modelConfig.displayName,
+      operation,
+      reasoningEffort: modelConfig.isReasoning ? settings.reasoningEffort : undefined,
+      promptTokens: metrics.promptTokens,
+      completionTokens: metrics.completionTokens,
+      totalTokens: metrics.totalTokens,
+      elapsedTimeMs: metrics.elapsedTimeMs,
+      correlationId,
+    });
+    
+    return { content, metrics };
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out after 5 minutes. The request may be too complex. Consider simplifying the architecture or reducing the number of recommendations.');
+    }
+    
+    throw error;
+  }
+}
+
+// ── Tier 3: change-specific chat follow-up suggestions ──────────────────────
+// A non-blocking helper that asks the approved utility model for 3 tailored
+// "next step" refinements based on the current services and the last change.
+// Failures return [] so the caller falls back to the static (rule-based) chips.
+function getFollowUpModel(): ModelOverride {
+  // This helper policy is intentionally independent of the user's main model.
+  // If Sol is not deployed, the caller catches the configuration error and
+  // keeps the deterministic static suggestion chips instead of silently using
+  // another model.
+  return FOLLOW_UP_MODEL_POLICY;
+}
+
+export async function generateFollowUpSuggestions(input: {
+  services: string[];
+  lastChange: string;
+  recentRequests: string[];
+  count?: number;
+  source: FollowUpSource;
+}): Promise<string[]> {
+  const count = Math.min(Math.max(input.count ?? 3, 1), 5);
+  try {
+    const systemPrompt = `You are an Azure solutions architect helping a user iteratively refine an architecture diagram.
+Given the CURRENT services and the MOST RECENT change, propose exactly ${count} concise, high-value NEXT refinement${count === 1 ? '' : 's'}.
+Rules:
+- Each suggestion is an imperative instruction the user could send to modify the diagram (max ~9 words).
+- Prefer Azure Well-Architected improvements (security, reliability, cost, operations, performance) that are NOT already present.
+- Be specific to this architecture; no duplicates; no trailing punctuation; no numbering.
+${count === 1 ? 'Return the single HIGHEST-IMPACT improvement.' : ''}
+Return ONLY JSON: {"suggestions":["..."]}`;
+
+    const userPrompt = JSON.stringify({
+      currentServices: input.services.slice(0, 40),
+      lastChange: input.lastChange,
+      recentRequests: input.recentRequests.slice(-4),
+    });
+
+    const { content } = await callAzureOpenAI(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      getFollowUpModel(),
+      true,
+      getFollowUpOperation(input.source),
+    );
+
+    const parsed = JSON.parse(content);
+    const arr = Array.isArray(parsed?.suggestions) ? parsed.suggestions : [];
+    return arr
+      .map((s: any) => String(s).trim().replace(/[.;]+$/, ''))
+      .filter((s: string) => s.length > 0 && s.length <= 80)
+      .slice(0, count);
+  } catch {
+    return [];
+  }
+}
+
+export async function generateArchitectureWithAI(description: string, modelOverride?: ModelOverride, manifest?: import('./componentManifestAI').ComponentManifest) {
+  const manifestBlock = manifest
+    ? '\n\n' + (await import('./componentManifestAI')).renderManifestForPrompt(manifest)
+    : '';
+
+  const systemPrompt = buildArchitectureGenerationSystemPrompt(manifestBlock);
+
+  try {
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: description }
+    ];
+
+    const activeModel = modelOverride?.model || getModelSettings().model;
+    const { content, metrics } = await callAzureOpenAI(messages, modelOverride);
+    
+    console.log(`Azure OpenAI Response [${MODEL_CONFIG[activeModel].displayName}]:`, content);
+    
+    if (!content) {
+      throw new Error('No response from Azure OpenAI. The model may have timed out or returned empty content.');
+    }
+
+    let architecture;
+    try {
+      architecture = JSON.parse(content);
+    } catch (parseError: any) {
+      console.error('Failed to parse JSON response:', content);
+      throw new Error(`Invalid JSON response from Azure OpenAI: ${parseError.message}`);
+    }
+    
+    // Add AI metrics to the response
+    architecture.metrics = metrics;
+    return postProcessArchitecture(architecture);
+  } catch (error: any) {
+    console.error('Azure OpenAI Error:', error);
+    
+    if (error.message?.includes('credentials not configured')) {
+      throw new Error('Azure OpenAI is not configured. Please check your environment variables.');
+    }
+    
+    if (error.status === 401) {
+      throw new Error('Invalid API key. Please check your Azure OpenAI credentials.');
+    }
+    
+    if (error.status === 404) {
+      throw new Error('Deployment not found. Please check your model deployment name.');
+    }
+    
+    throw new Error(`Failed to generate architecture: ${error.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Generate an AI critique of multiple architecture comparison results.
+ * Passes a condensed summary (not raw JSON) to stay within token limits.
+ * Returns plain-text / markdown content (not parsed as JSON).
+ */
+export async function generateCritique(
+  summaryText: string,
+  originalPrompt: string,
+  modelOverride: ModelOverride
+): Promise<{ content: string; metrics: AIMetrics }> {
+  const systemPrompt = `You are an expert Azure cloud architect and impartial technical reviewer. \
+You will evaluate multiple AI-generated Azure architecture proposals for the same requirements \
+and produce a structured critique.
+
+Your critique MUST use these exact markdown headings in order:
+
+## Overall Ranking
+Rank all architectures from best to worst. For each rank, give the model name in **bold** and \
+one sentence explaining why.
+
+## Per-Model Analysis
+For each model, provide a brief analysis with exactly two bullet points:
+- **Best feature:** one specific, concrete architectural decision that is correct or adds clear value
+- **Notable gap or concern:** one specific issue — missing component, incorrect design choice, or \
+mismatch with requirements
+
+## Recommendation
+State which architecture you recommend as the best starting point. Provide 2–3 sentences citing \
+specific architectural decisions that make it the right choice for these requirements.
+
+---
+*This critique is AI-generated and may reflect the reviewer model's own architectural preferences. \
+Verify findings independently.*`;
+
+  const userMessage = `Original requirements:\n${originalPrompt}\n\n---\n\n${summaryText}`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userMessage },
+  ];
+
+  return callAzureOpenAI(messages, modelOverride, false);
+}
+
+/**
+ * Generate an AI critique of multiple WAF validation results for the SAME architecture.
+ * Unlike generateCritique (which ranks competing architectures), this function evaluates
+ * which reviewer model produced the most thorough, accurate, and actionable WAF validation.
+ * Returns plain-text / markdown content (not parsed as JSON).
+ */
+export async function generateValidationCritique(
+  summaryText: string,
+  architectureDescription: string,
+  modelOverride: ModelOverride
+): Promise<{ content: string; metrics: AIMetrics }> {
+  const systemPrompt = `You are a senior Azure cloud architect and impartial reviewer of \
+Well-Architected Framework (WAF) assessments. Multiple AI models have validated the SAME \
+Azure architecture against the five WAF pillars (Cost Optimization, Operational Excellence, \
+Performance Efficiency, Reliability, Security). Your job is to evaluate the QUALITY of each \
+model's validation — not the architecture itself.
+
+Your critique MUST use these exact markdown headings in order:
+
+## Overall Ranking
+Rank the reviewer models from best to worst based on the quality of their WAF assessment. \
+For each rank, give the model name in **bold** and one sentence explaining why (e.g., \
+thoroughness, accurate severity calibration, actionable recommendations, balanced pillar \
+coverage, or alignment with Microsoft WAF guidance).
+
+## Per-Model Analysis
+For each reviewer model, provide a brief analysis with exactly two bullet points:
+- **Strongest finding:** one specific, high-value issue the model surfaced that is clearly \
+correct and important
+- **Weakness or blind spot:** one specific gap — a missed risk, an over/under-rated severity, \
+a generic or vague recommendation, or a pillar that was under-analyzed
+
+## Recommendation
+State which model's validation you recommend adopting as the primary assessment, and why. \
+Provide 2–3 sentences citing specific findings, severity calibration, or pillar coverage \
+that make it the most trustworthy starting point for remediation work.
+
+---
+*This critique is AI-generated and may reflect the reviewer model's own architectural preferences. \
+Verify findings independently.*`;
+
+  const userMessage = `Architecture being validated:\n${architectureDescription || '(no description provided)'}\n\n---\n\n${summaryText}`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userMessage },
+  ];
+
+  return callAzureOpenAI(messages, modelOverride, false);
+}
+
+export function isAzureOpenAIConfigured(): boolean {
+  return !!endpoint && getAvailableModels().length > 0;
+}
+
+/**
+ * Analyzes an architecture diagram image and generates a detailed text description
+ * that can be used as input for the AI architecture generator.
+ * 
+ * Phase 1 implementation: Image → Text Description → Existing Generation Pipeline
+ */
+export async function analyzeArchitectureDiagramImage(imageBase64: string, mimeType: string = 'image/png'): Promise<{ description: string; metrics: AIMetrics }> {
+  const settings = getModelSettingsForFeature('architectureGeneration');
+  const modelConfig = MODEL_CONFIG[settings.model];
+  
+  // Vision is only supported by OpenAI models (Responses API)
+  if (modelConfig.supportsVision === false) {
+    throw new Error(`${modelConfig.displayName} does not support image analysis. Please select an OpenAI model (GPT-5.x) for diagram-to-architecture conversion.`);
+  }
+
+  let deployment: string;
+  try {
+    deployment = getDeploymentName(settings.model);
+  } catch (e) {
+    throw new Error(`No deployment configured for ${settings.model}. Please check your .env file.`);
+  }
+
+  if (!endpoint) {
+    throw new Error('Azure OpenAI is not configured. Please check your .env file.');
+  }
+
+  const systemPrompt = `You are an expert Azure cloud architect specializing in analyzing architecture diagrams.
+
+Your task is to analyze the provided architecture diagram image and create a detailed, comprehensive text description that can be used to recreate this architecture.
+
+IMPORTANT: Extract and describe:
+1. **All services/components visible** - Identify each Azure service, third-party service, or component shown
+2. **Service relationships and connections** - How services connect to each other, data flow direction
+3. **Groupings and tiers** - Any logical groupings (e.g., "Web Tier", "Data Layer", "Security")
+4. **Connection types** - Distinguish directional traffic (sync/async/optional) from arrowless resource associations and containment inside network boundaries
+5. **Labels and annotations** - PRESERVE THE EXACT TEXT of any labels on connections or services - these are critical!
+6. **Data flow** - The overall flow of data through the system
+7. **Security components** - Identity, authentication, firewalls, etc.
+8. **Monitoring/observability** - Any monitoring or logging services shown
+
+AZURE MACHINE LEARNING GRANULAR COMPONENTS:
+If the diagram shows detailed AML architecture, identify these SPECIFIC component types:
+- "AML Online Endpoint" - for real-time inference endpoints
+- "AML Batch Endpoint" - for batch inference endpoints
+- "AML Deployment" (shared or dedicated) - for model deployments
+- "AML Managed Compute" - for compute instances/clusters
+- "Batch Compute Pool" - for batch processing pools
+Using these specific names helps with accurate cost estimation (endpoints are $0, compute has cost).
+
+CRITICAL FOR CONNECTION LABELS:
+- If the diagram has text labels on the arrows/connections, include those EXACT labels in your description
+- Labels like "Submit batch job per tenant" or "Route to dedicated deployment" must be preserved verbatim
+- These labels are essential for recreating the diagram accurately
+
+OUTPUT FORMAT:
+Write a detailed paragraph description that fully captures the architecture shown in the image. Include:
+- All services by name (use official Azure service names where recognizable)
+- How they connect and interact
+- The purpose/role of each component
+- Any groupings or organizational structure
+- The overall workflow from input to output
+
+Be thorough and specific. The description will be used to automatically generate a diagram, so accuracy is critical.
+
+If you cannot identify a specific Azure service, describe it by its apparent function (e.g., "a database service", "an API gateway", "a message queue").
+
+If the image is not an architecture diagram or is unclear, describe what you can see and note any limitations.`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes for image analysis
+  
+  const startTime = performance.now();
+
+  // Responses API request body with image input
+  const requestBody: any = {
+    model: deployment,
+    instructions: systemPrompt,
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: 'Analyze this architecture diagram and provide a detailed description that captures all services, connections, groupings, and data flows shown. Be specific and thorough.'
+          },
+          {
+            type: 'input_image',
+            image_url: `data:${mimeType};base64,${imageBase64}`,
+          }
+        ]
+      }
+    ],
+    max_output_tokens: 4000,
+    store: false,
+  };
+  
+  // Add reasoning config for reasoning models (skip when effort is 'none')
+  if (modelConfig.isReasoning && settings.reasoningEffort !== 'none') {
+    requestBody.reasoning = { effort: settings.reasoningEffort };
+  }
+
+  console.log(`🖼️ Analyzing architecture diagram with ${modelConfig.displayName}... | API: Responses`);
+
+  try {
+    const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
+      apiFormat: 'responses',
+      deployment,
+      model: modelConfig.displayName,
+      operation: 'image_analysis',
+      body: requestBody,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    const elapsedTimeMs = Math.round(performance.now() - startTime);
+
+    if (!ok) {
+      console.error('Azure OpenAI Vision API error:', status, errorText);
+      
+      if (status === 401 || status === 403) {
+        throw new Error('Azure OpenAI authentication failed on the server. Check the managed identity role assignment.');
+      }
+      if (status === 404) {
+        throw new Error('Deployment not found. Please check your model deployment name.');
+      }
+      if (status === 400 && (errorText || '').includes('image')) {
+        throw new Error('The selected model may not support image analysis. Try using GPT-4o or GPT-5.2.');
+      }
+      throw new Error(`Azure OpenAI API error (${status}): ${errorText}`);
+    }
+    
+    // Responses API: extract text from output
+    let content = data.output_text || '';
+    if (!content && data.output) {
+      for (const item of data.output) {
+        if (item.type === 'message' && item.content) {
+          for (const part of item.content) {
+            if (part.type === 'output_text') {
+              content += part.text;
+            }
+          }
+        }
+      }
+    }
+    
+    // Responses API uses input_tokens/output_tokens
+    const usage = data.usage || {};
+    const metrics: AIMetrics = {
+      promptTokens: usage.input_tokens || 0,
+      completionTokens: usage.output_tokens || 0,
+      totalTokens: usage.total_tokens || 0,
+      elapsedTimeMs,
+      model: data.model
+    };
+    
+    if (!content || content.trim().length === 0) {
+      throw new Error('Empty response from Azure OpenAI. The image may be too complex or unclear.');
+    }
+    
+    console.log('🖼️ Image analysis complete:', content.length, 'chars |', 
+      `Tokens: ${metrics.promptTokens} in → ${metrics.completionTokens} out |`,
+      `Time: ${(metrics.elapsedTimeMs / 1000).toFixed(2)}s`);
+
+    trackAIModelUsage({
+      model: modelConfig.displayName,
+      operation: 'image_analysis',
+      reasoningEffort: modelConfig.isReasoning ? settings.reasoningEffort : undefined,
+      promptTokens: metrics.promptTokens,
+      completionTokens: metrics.completionTokens,
+      totalTokens: metrics.totalTokens,
+      elapsedTimeMs: metrics.elapsedTimeMs,
+      correlationId,
+    });
+    
+    return { description: content, metrics };
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    if (error.name === 'AbortError') {
+      throw new Error('Image analysis timed out. The image may be too large or complex.');
+    }
+    
+    throw error;
+  }
+}
+
+// ─── IaC Template Import (Bicep, Terraform, ARM) ─────────────────────
+
+export type IaCFormat = 'arm' | 'bicep' | 'terraform-hcl' | 'terraform-state';
+
+export interface IaCImportInput {
+  format: IaCFormat;
+  /** For ARM/tfstate: parsed JSON object. For Bicep/HCL: raw text content. */
+  content: string | object;
+  /** Original filename(s) for context in the prompt */
+  filenames: string[];
+}
+
+/** Shared output schema instruction block reused by all format prompts */
+const IAC_SHARED_OUTPUT_SCHEMA = `Return ONLY a valid JSON object (no markdown, no explanations) with this exact structure:
+{
+  "groups": [
+    {
+      "id": "unique-group-id",
+      "label": "Group Name (e.g., Web Tier, Data Layer, Networking)",
+      "position": {"x": 100, "y": 100},
+      "width": 700,
+      "height": 500
+    }
+  ],
+  "services": [
+    {
+      "id": "unique-id",
+      "name": "Service Display Name",
+      "type": "Azure service type",
+      "category": "icon category",
+      "description": "Role in architecture",
+      "groupId": "group-id or null"
+    }
+  ],
+  "connections": [
+    {
+      "from": "service-id",
+      "to": "service-id",
+      "label": "connection type",
+      "type": "sync|async|optional|association|containment",
+      "sourcePosition": "right|bottom|left|top",
+      "targetPosition": "top|left|right|bottom"
+    }
+  ]
+}
+
+Icon category mapping (MUST use these exact values):
+- "app services": App Service, Function Apps, Logic Apps, API Management
+- "databases": SQL Database, Cosmos DB, MySQL, PostgreSQL
+- "storage": Storage Account, Blob Storage, File Storage, Queue Storage
+- "networking": Virtual Network, Application Gateway, Load Balancer, VPN Gateway
+- "compute": Virtual Machines, VM Scale Sets, Batch, Container Instances
+- "containers": Container Registry, Kubernetes Service (AKS)
+- "ai + machine learning": Machine Learning, Foundry Tools, Azure AI Document Intelligence, Azure AI Search, OpenAI
+- "analytics": Stream Analytics, Data Factory, Synapse Analytics, Event Hubs
+- "identity": Active Directory, Key Vault, Managed Identity
+- "monitor": Monitor, Application Insights, Log Analytics
+- "iot": IoT Hub, IoT Central
+- "integration": Service Bus, Event Grid
+- "security": Key Vault, Security Center
+- "web": Static Web Apps, CDN, Front Door`;
+
+function buildARMSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering ARM templates into architecture diagrams.
+
+Your task is to analyze an Azure ARM template JSON and convert it into a visual architecture diagram specification with logical groupings.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+ARM Resource Type to Service Mapping:
+- Microsoft.Web/sites → App Service (app services)
+- Microsoft.Web/sites/functions → Function App (app services)
+- Microsoft.DocumentDB/databaseAccounts → Cosmos DB (databases)
+- Microsoft.Sql/servers/databases → SQL Database (databases)
+- Microsoft.Storage/storageAccounts → Storage Account (storage)
+- Microsoft.Network/virtualNetworks → Virtual Network (networking)
+- Microsoft.Network/applicationGateways → Application Gateway (networking)
+- Microsoft.Network/loadBalancers → Load Balancer (networking)
+- Microsoft.Compute/virtualMachines → Virtual Machine (compute)
+- Microsoft.ContainerRegistry/registries → Container Registry (containers)
+- Microsoft.ContainerInstance/containerGroups → Container Instances (containers)
+- Microsoft.ContainerService/managedClusters → AKS (containers)
+- Microsoft.KeyVault/vaults → Key Vault (identity)
+- Microsoft.Insights/components → Application Insights (monitor)
+- Microsoft.ServiceBus/namespaces → Service Bus (integration)
+- Microsoft.EventGrid/topics → Event Grid (integration)
+- Microsoft.CognitiveServices/accounts → Foundry Tools (ai + machine learning)
+- Microsoft.MachineLearningServices/workspaces → Machine Learning (ai + machine learning)
+
+Instructions:
+1. Parse the ARM template resources array
+2. Identify resource types and map to Azure services
+3. Use dependsOn arrays to infer connections between resources
+4. Group related resources logically (e.g., web tier, data tier, networking)
+5. Create realistic connection labels based on resource relationships
+6. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries
+7. Extract meaningful names from resource names (remove template expressions)`;
+}
+
+function buildBicepSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering Bicep templates into architecture diagrams.
+
+Your task is to analyze Bicep (.bicep) Infrastructure-as-Code files and convert them into a visual architecture diagram specification with logical groupings.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+Bicep Resource Type to Service Mapping (the API version after @ should be ignored):
+- Microsoft.Web/sites → App Service (app services)
+- Microsoft.Web/sites (kind: 'functionapp') → Function App (app services)
+- Microsoft.ApiManagement/service → API Management (app services)
+- Microsoft.Web/sites (kind: 'app,linux') → App Service (app services)
+- Microsoft.DocumentDB/databaseAccounts → Cosmos DB (databases)
+- Microsoft.Sql/servers → SQL Server (databases)
+- Microsoft.Sql/servers/databases → SQL Database (databases)
+- Microsoft.DBforPostgreSQL/flexibleServers → PostgreSQL (databases)
+- Microsoft.DBforMySQL/flexibleServers → MySQL (databases)
+- Microsoft.Cache/redis → Azure Cache for Redis (databases)
+- Microsoft.Storage/storageAccounts → Storage Account (storage)
+- Microsoft.Network/virtualNetworks → Virtual Network (networking)
+- Microsoft.Network/applicationGateways → Application Gateway (networking)
+- Microsoft.Network/loadBalancers → Load Balancer (networking)
+- Microsoft.Network/frontDoors → Front Door (web)
+- Microsoft.Cdn/profiles → CDN (web)
+- Microsoft.Network/privateDnsZones → Private DNS Zone (networking)
+- Microsoft.Network/privateEndpoints → Private Endpoint (networking)
+- Microsoft.Network/networkSecurityGroups → NSG (networking)
+- Microsoft.Compute/virtualMachines → Virtual Machine (compute)
+- Microsoft.Compute/virtualMachineScaleSets → VM Scale Set (compute)
+- Microsoft.ContainerRegistry/registries → Container Registry (containers)
+- Microsoft.ContainerService/managedClusters → AKS (containers)
+- Microsoft.App/managedEnvironments → Container Apps Environment (containers)
+- Microsoft.App/containerApps → Container App (containers)
+- Microsoft.KeyVault/vaults → Key Vault (identity)
+- Microsoft.ManagedIdentity/userAssignedIdentities → Managed Identity (identity)
+- Microsoft.Insights/components → Application Insights (monitor)
+- Microsoft.OperationalInsights/workspaces → Log Analytics (monitor)
+- Microsoft.Insights/diagnosticSettings → Monitor Diagnostics (monitor)
+- Microsoft.ServiceBus/namespaces → Service Bus (integration)
+- Microsoft.EventGrid/topics → Event Grid (integration)
+- Microsoft.EventHub/namespaces → Event Hubs (analytics)
+- Microsoft.CognitiveServices/accounts → Foundry Tools (ai + machine learning)
+- Microsoft.MachineLearningServices/workspaces → Machine Learning (ai + machine learning)
+- Microsoft.Search/searchServices → Azure AI Search (ai + machine learning)
+- Microsoft.SignalRService/signalR → SignalR (web)
+- Microsoft.Web/staticSites → Static Web App (web)
+
+Instructions:
+1. Parse all resource declarations (resource keyword with type string and API version)
+2. Parse module declarations to understand modular structure
+3. Identify resource types and map to Azure services using the table above
+4. Infer connections from: dependsOn, parameter passing between modules, property references (e.g., storageAccount.properties.primaryEndpoints)
+5. Group related resources logically by module or by tier (web, data, networking, etc.)
+6. Extract meaningful display names from resource symbolic names
+7. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries`;
+}
+
+function buildTerraformHCLSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering Terraform configurations into architecture diagrams.
+
+Your task is to analyze Terraform (.tf) HCL files using the AzureRM provider and convert them into a visual architecture diagram specification with logical groupings.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+Terraform AzureRM Resource Type to Service Mapping:
+- azurerm_resource_group → Resource Group (use as a grouping container, not as a service node)
+- azurerm_linux_web_app / azurerm_windows_web_app → App Service (app services)
+- azurerm_linux_function_app / azurerm_windows_function_app → Function App (app services)
+- azurerm_api_management → API Management (app services)
+- azurerm_logic_app_workflow → Logic App (app services)
+- azurerm_service_plan → App Service Plan (app services) — group with its web/function apps
+- azurerm_cosmosdb_account → Cosmos DB (databases)
+- azurerm_mssql_server → SQL Server (databases)
+- azurerm_mssql_database → SQL Database (databases)
+- azurerm_postgresql_flexible_server → PostgreSQL (databases)
+- azurerm_mysql_flexible_server → MySQL (databases)
+- azurerm_redis_cache → Azure Cache for Redis (databases)
+- azurerm_storage_account → Storage Account (storage)
+- azurerm_storage_container → Blob Container (storage) — group with its storage account
+- azurerm_virtual_network → Virtual Network (networking)
+- azurerm_subnet → Subnet (networking) — group with its VNet
+- azurerm_application_gateway → Application Gateway (networking)
+- azurerm_lb → Load Balancer (networking)
+- azurerm_frontdoor → Front Door (web)
+- azurerm_cdn_profile → CDN (web)
+- azurerm_private_dns_zone → Private DNS Zone (networking)
+- azurerm_private_endpoint → Private Endpoint (networking)
+- azurerm_network_security_group → NSG (networking)
+- azurerm_linux_virtual_machine / azurerm_windows_virtual_machine → Virtual Machine (compute)
+- azurerm_virtual_machine_scale_set → VM Scale Set (compute)
+- azurerm_container_registry → Container Registry (containers)
+- azurerm_kubernetes_cluster → AKS (containers)
+- azurerm_container_app → Container App (containers)
+- azurerm_container_app_environment → Container Apps Environment (containers)
+- azurerm_key_vault → Key Vault (identity)
+- azurerm_user_assigned_identity → Managed Identity (identity)
+- azurerm_application_insights → Application Insights (monitor)
+- azurerm_log_analytics_workspace → Log Analytics (monitor)
+- azurerm_servicebus_namespace → Service Bus (integration)
+- azurerm_eventgrid_topic → Event Grid (integration)
+- azurerm_eventhub_namespace → Event Hubs (analytics)
+- azurerm_cognitive_account → Foundry Tools (ai + machine learning)
+- azurerm_machine_learning_workspace → Machine Learning (ai + machine learning)
+- azurerm_search_service → Azure AI Search (ai + machine learning)
+- azurerm_signalr_service → SignalR (web)
+- azurerm_static_web_app → Static Web App (web)
+
+Instructions:
+1. Parse all resource blocks (resource "azurerm_*" "name" { ... })
+2. Identify resource types and map to Azure services using the table above
+3. Infer connections from: depends_on blocks, implicit references (e.g., azurerm_subnet.main.id), and attribute references between resources
+4. Use azurerm_resource_group as logical grouping containers
+5. Group related resources by tier (web, data, networking) or by resource group
+6. Extract meaningful display names from resource labels (the second string in resource declarations)
+7. Collapse child resources with their parents (e.g., storage_container inside storage_account)
+8. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries`;
+}
+
+function buildTerraformStateSystemPrompt(): string {
+  return `You are an expert Azure cloud architect specializing in reverse engineering Terraform state files into architecture diagrams.
+
+Your task is to analyze a Terraform state file (terraform.tfstate) JSON and convert it into a visual architecture diagram specification with logical groupings. The state file represents actually deployed infrastructure.
+
+${IAC_SHARED_OUTPUT_SCHEMA}
+
+The Terraform state file has this structure:
+- resources[]: Array of resource objects
+  - type: The Terraform resource type (e.g., "azurerm_linux_web_app")
+  - name: The Terraform resource label
+  - provider: The provider path
+  - instances[]: Array of deployed instances with attributes
+
+Use the same resource type mapping as Terraform HCL (azurerm_* types).
+
+Instructions:
+1. Parse the resources array from the state file
+2. Map each resource type to an Azure service
+3. Infer connections from attribute values that reference other resource IDs
+4. Group resources by resource group (look for resource_group_name attribute in instances)
+5. Extract display names from the name field or from instance attributes
+6. Use sync/async/optional for traffic, association for resource relationships, and containment for placement inside boundaries`;
+}
+
+function buildARMUserMessage(armTemplate: any): string {
+  const resources = armTemplate.resources || [];
+  const resourceSummary = resources.map((r: any) => ({
+    type: r.type,
+    name: r.name,
+    location: r.location,
+    dependsOn: r.dependsOn || [],
+    properties: Object.keys(r.properties || {})
+  }));
+
+  return `Parse this ARM template and generate an architecture diagram:
+
+Template Summary:
+- Total Resources: ${resources.length}
+- Resource Types: ${[...new Set(resources.map((r: any) => r.type))].join(', ')}
+
+Detailed Resources:
+${JSON.stringify(resourceSummary, null, 2)}
+
+Full ARM Template:
+${JSON.stringify(armTemplate, null, 2)}`;
+}
+
+function buildBicepUserMessage(content: string, filenames: string[]): string {
+  return `Parse this Bicep template and generate an architecture diagram:
+
+Files: ${filenames.join(', ')}
+File Count: ${filenames.length}
+
+Bicep Source:
+${content}`;
+}
+
+function buildTerraformHCLUserMessage(content: string, filenames: string[]): string {
+  return `Parse this Terraform configuration and generate an architecture diagram:
+
+Files: ${filenames.join(', ')}
+File Count: ${filenames.length}
+
+Terraform HCL Source:
+${content}`;
+}
+
+function buildTerraformStateUserMessage(stateJson: any): string {
+  const resources = stateJson.resources || [];
+  return `Parse this Terraform state file and generate an architecture diagram:
+
+State Summary:
+- Terraform Version: ${stateJson.terraform_version || 'unknown'}
+- Total Resources: ${resources.length}
+- Resource Types: ${[...new Set(resources.map((r: any) => r.type))].join(', ')}
+
+Full State:
+${JSON.stringify(stateJson, null, 2)}`;
+}
+
+/** Post-process the architecture response to normalize groups and resolve conflicts */
+function normalizeArchitectureResponse(architecture: any): any {
+  // Validate response structure
+  if (!architecture.services || !Array.isArray(architecture.services)) {
+    throw new Error('Invalid response: missing services array');
+  }
+
+  if (!architecture.connections) {
+    architecture.connections = [];
+  }
+
+  if (!architecture.groups) {
+    architecture.groups = [];
+  }
+
+  // Normalize groups: some models return plain strings instead of objects
+  architecture.groups = architecture.groups.map((g: any) => {
+    if (typeof g === 'string') {
+      return {
+        id: g,
+        label: g.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      };
+    }
+    // Strip groupId from group objects to prevent circular parent refs
+    const { groupId, ...cleanGroup } = g;
+    return cleanGroup;
+  });
+
+  // Build valid group ID set and resolve conflicts
+  const groupIds = new Set(architecture.groups.map((g: any) => g.id));
+  const serviceIds = new Set(architecture.services.map((s: any) => s.id));
+
+  // Prevent ID collisions between groups and services (causes ReactFlow circular refs)
+  for (const gid of groupIds) {
+    if (serviceIds.has(gid)) {
+      console.warn(`⚠️ Group ID "${gid}" collides with a service ID — prefixing group`);
+      const group = architecture.groups.find((g: any) => g.id === gid);
+      const newId = `group-${gid}`;
+      group.id = newId;
+      architecture.services.forEach((s: any) => {
+        if (s.groupId === gid) s.groupId = newId;
+      });
+    }
+  }
+
+  // Clear invalid groupId references on services to prevent "parent not found" crashes
+  const validGroupIds = new Set(architecture.groups.map((g: any) => g.id));
+  architecture.services.forEach((s: any) => {
+    if (s.groupId && !validGroupIds.has(s.groupId)) {
+      console.warn(`⚠️ Service "${s.id}" references unknown group "${s.groupId}" — clearing`);
+      s.groupId = null;
+    }
+  });
+
+  return architecture;
+}
+
+const FORMAT_LABELS: Record<IaCFormat, string> = {
+  'arm': 'ARM',
+  'bicep': 'Bicep',
+  'terraform-hcl': 'Terraform',
+  'terraform-state': 'Terraform State',
+};
+
+/**
+ * Unified IaC template import: generates an architecture diagram from
+ * Bicep, Terraform HCL, Terraform state, or ARM template files.
+ */
+export async function generateArchitectureFromIaC(input: IaCImportInput) {
+  const label = FORMAT_LABELS[input.format];
+  console.log(`📄 Parsing ${label} template (${input.filenames.length} file(s))...`);
+
+  let systemPrompt: string;
+  let userMessage: string;
+
+  switch (input.format) {
+    case 'arm':
+      systemPrompt = buildARMSystemPrompt();
+      userMessage = buildARMUserMessage(input.content);
+      break;
+    case 'bicep':
+      systemPrompt = buildBicepSystemPrompt();
+      userMessage = buildBicepUserMessage(input.content as string, input.filenames);
+      break;
+    case 'terraform-hcl':
+      systemPrompt = buildTerraformHCLSystemPrompt();
+      userMessage = buildTerraformHCLUserMessage(input.content as string, input.filenames);
+      break;
+    case 'terraform-state':
+      systemPrompt = buildTerraformStateSystemPrompt();
+      userMessage = buildTerraformStateUserMessage(input.content);
+      break;
+    default:
+      throw new Error(`Unsupported IaC format: ${input.format}`);
+  }
+
+  try {
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage }
+    ];
+
+    const { content, metrics } = await callAzureOpenAI(messages);
+
+    if (!content) {
+      throw new Error('No response from Azure OpenAI');
+    }
+
+    const architecture = JSON.parse(content);
+    architecture.metrics = metrics;
+
+    return normalizeArchitectureResponse(architecture);
+  } catch (error: any) {
+    console.error(`${label} parsing error:`, error);
+    throw new Error(`Failed to parse ${label} template: ${error.message}`);
+  }
+}
+
+/**
+ * Legacy wrapper — kept for backward compatibility.
+ * Delegates to the unified generateArchitectureFromIaC().
+ */
+export async function generateArchitectureFromARM(armTemplate: any) {
+  return generateArchitectureFromIaC({
+    format: 'arm',
+    content: armTemplate,
+    filenames: ['template.json'],
+  });
+}

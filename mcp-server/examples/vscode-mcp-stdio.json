@@ -1,0 +1,12 @@
+{
+  "// description": "VS Code (Copilot Chat) MCP config — stdio transport. Save as .vscode/mcp.json in your workspace, OR add the 'servers' object to your user settings under 'mcp.servers'.",
+  "servers": {
+    "azure-diagram-builder": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/mcp-server/dist/index.js"
+      ]
+    }
+  }
+}

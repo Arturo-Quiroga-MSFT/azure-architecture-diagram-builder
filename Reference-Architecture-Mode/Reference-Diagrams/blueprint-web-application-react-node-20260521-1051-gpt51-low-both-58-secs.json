@@ -1,0 +1,234 @@
+{
+  "title": "Web Application with React, Node.js, PostgreSQL, and Blob Storage",
+  "canvas": {
+    "width": 1808,
+    "height": 1008
+  },
+  "zones": [
+    {
+      "id": "external",
+      "label": "External Users",
+      "kind": "external",
+      "x": 36,
+      "y": 336,
+      "width": 238,
+      "height": 188
+    },
+    {
+      "id": "azure",
+      "label": "Azure Subscription",
+      "kind": "azure",
+      "x": 344,
+      "y": 192,
+      "width": 1444,
+      "height": 796
+    },
+    {
+      "id": "edge",
+      "label": "Edge & Ingress",
+      "kind": "subsystem",
+      "x": 388,
+      "y": 316,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "compute",
+      "label": "Application Compute",
+      "kind": "subsystem",
+      "x": 966,
+      "y": 236,
+      "width": 778,
+      "height": 268,
+      "parent": "azure"
+    },
+    {
+      "id": "data",
+      "label": "Data Services",
+      "kind": "subsystem",
+      "x": 868,
+      "y": 756,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "webUsers",
+      "name": "Web Users",
+      "category": "general",
+      "kind": "persona",
+      "x": 80,
+      "y": 380,
+      "zone": "external"
+    },
+    {
+      "id": "cdn",
+      "name": "Azure Content Delivery Network",
+      "category": "networking",
+      "kind": "service",
+      "x": 432,
+      "y": 360,
+      "zone": "edge"
+    },
+    {
+      "id": "appGw",
+      "name": "Application Gateway",
+      "category": "networking",
+      "kind": "service",
+      "x": 702,
+      "y": 360,
+      "zone": "edge"
+    },
+    {
+      "id": "staticWeb",
+      "name": "Azure Static Web Apps",
+      "category": "web",
+      "kind": "service",
+      "x": 1010,
+      "y": 360,
+      "zone": "compute"
+    },
+    {
+      "id": "appService",
+      "name": "App Service",
+      "category": "app services",
+      "kind": "service",
+      "x": 1280,
+      "y": 360,
+      "zone": "compute"
+    },
+    {
+      "id": "keyVault",
+      "name": "Key Vault",
+      "category": "security",
+      "kind": "service",
+      "x": 1550,
+      "y": 280,
+      "zone": "compute"
+    },
+    {
+      "id": "postgres",
+      "name": "Azure Database for PostgreSQL",
+      "category": "databases",
+      "kind": "database",
+      "x": 912,
+      "y": 800,
+      "zone": "data"
+    },
+    {
+      "id": "blob",
+      "name": "Azure Blob Storage",
+      "category": "storage",
+      "kind": "database",
+      "x": 1182,
+      "y": 800,
+      "zone": "data"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "webUsers",
+      "to": "cdn",
+      "step": 1,
+      "label": "Request app",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e2",
+      "from": "cdn",
+      "to": "staticWeb",
+      "step": 2,
+      "label": "Fetch static",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e3",
+      "from": "staticWeb",
+      "to": "appGw",
+      "step": 3,
+      "label": "Call API",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e4",
+      "from": "appGw",
+      "to": "appService",
+      "step": 4,
+      "label": "Route request",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e5",
+      "from": "appService",
+      "to": "postgres",
+      "step": 5,
+      "label": "Read/write data",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e6",
+      "from": "appService",
+      "to": "blob",
+      "step": 6,
+      "label": "Store images",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e7",
+      "from": "appService",
+      "to": "keyVault",
+      "step": 7,
+      "label": "Fetch secrets",
+      "routing": "orthogonal",
+      "style": "solid"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Web Users access the application from their browsers, sending HTTP requests to Azure Content Delivery Network for the React frontend."
+    },
+    {
+      "step": 2,
+      "description": "Azure Content Delivery Network serves cached React static assets or forwards requests to Azure Static Web Apps to fetch the latest static files."
+    },
+    {
+      "step": 3,
+      "description": "The React frontend running from Azure Static Web Apps calls the backend API via Azure Application Gateway."
+    },
+    {
+      "step": 4,
+      "description": "Azure Application Gateway performs HTTP load balancing and routing of API requests to the Node.js backend hosted on Azure App Service."
+    },
+    {
+      "step": 5,
+      "description": "The Node.js backend on Azure App Service connects to Azure Database for PostgreSQL to read and write relational application data."
+    },
+    {
+      "step": 6,
+      "description": "The Node.js backend stores and retrieves user-uploaded images and other binary files in Azure Blob Storage."
+    },
+    {
+      "step": 7,
+      "description": "Azure App Service retrieves application secrets and database connection strings securely from Key Vault at startup or on demand."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3430,
+    "completionTokens": 3105,
+    "totalTokens": 6535,
+    "elapsedTimeMs": 44330,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-21T14:51:34.400Z"
+}

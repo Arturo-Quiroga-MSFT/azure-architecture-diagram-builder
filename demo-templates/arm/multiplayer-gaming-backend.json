@@ -1,0 +1,200 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Global multiplayer gaming backend with real-time matchmaking and analytics"
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.PlayFab/playerAccountPools",
+      "apiVersion": "2022-04-01-preview",
+      "name": "pf-game-services",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2023-04-15",
+      "name": "cosmos-player-data",
+      "location": "[parameters('location')]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "enableMultipleWriteLocations": true,
+        "locations": [
+          { "locationName": "eastus2" },
+          { "locationName": "westeurope" },
+          { "locationName": "southeastasia" }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.SignalRService/signalR",
+      "apiVersion": "2023-02-01",
+      "name": "sigr-realtime-game",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Premium_P1",
+        "capacity": 10
+      },
+      "properties": {
+        "features": [
+          {
+            "flag": "ServiceMode",
+            "value": "Serverless"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2023-04-01",
+      "name": "redis-leaderboard-cache",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "Premium",
+          "family": "P",
+          "capacity": 2
+        },
+        "enableNonSslPort": false
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2022-10-01-preview",
+      "name": "evh-gameplay-telemetry",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard",
+        "capacity": 8
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "func-matchmaking-engine",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "func-anticheat-processor",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-09-01",
+      "name": "func-live-events",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2023-05-01",
+      "name": "aks-game-servers",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.28.0"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2022-08-01",
+      "name": "apim-game-api",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Premium",
+        "capacity": 2
+      }
+    },
+    {
+      "type": "Microsoft.Cdn/profiles",
+      "apiVersion": "2023-05-01",
+      "name": "cdn-game-assets",
+      "location": "global",
+      "sku": {
+        "name": "Premium_AzureFrontDoor"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "stgameassets",
+      "location": "[parameters('location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_ZRS"
+      }
+    },
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs",
+      "apiVersion": "2021-10-01-preview",
+      "name": "asa-realtime-analytics",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "Standard"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "syn-game-analytics",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2023-02-01",
+      "name": "kv-game-secrets",
+      "location": "[parameters('location')]",
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "appi-game-telemetry",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "log-game-operations",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.NotificationHubs/namespaces",
+      "apiVersion": "2023-01-01",
+      "name": "nh-push-notifications",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "project": "Main-Project",
+  "projectEndpoint": "https://r2d2-foundry-001.services.ai.azure.com/api/projects/Main-Project",
+  "dataset": {
+    "name": "aadb-eval-seed",
+    "version": "v1",
+    "sha256": "96e9605a7c50e4be2aa7aa4da447a11406e494365e17294d1ebe29ad1316a496",
+    "remoteMode": "inline-jsonl",
+    "rows": 14
+  },
+  "judgeDeployment": "gpt-5.4-mini",
+  "evaluation": {
+    "id": "eval_32eda4aa4285491fadd28cb700857c29",
+    "runId": "evalrun_de4529ef901d478a98e801deacede30f",
+    "name": "aadb-captured-models-baseline-v1",
+    "status": "Completed",
+    "reportUrl": "https://ai.azure.com/nextgen/r/eiiyHg0-RDWmhtkoidTulg,AQ-FOUNDRY-RG,,r2d2-foundry-001,Main-Project/build/evaluations/eval_32eda4aa4285491fadd28cb700857c29/run/evalrun_de4529ef901d478a98e801deacede30f"
+  },
+  "resultCount": {
+    "total": 14,
+    "passed": 1,
+    "failed": 13,
+    "errored": 0,
+    "skipped": 0
+  },
+  "criteria": {
+    "relevance": {
+      "passed": 14,
+      "failed": 0,
+      "passRate": 1.0
+    },
+    "coherence": {
+      "passed": 14,
+      "failed": 0,
+      "passRate": 1.0
+    },
+    "aadb_architecture_quality": {
+      "passed": 1,
+      "failed": 13,
+      "passRate": 0.0714
+    }
+  },
+  "usage": {
+    "totalInvocations": 42,
+    "totalTokens": 59516,
+    "promptTokens": 54223,
+    "completionTokens": 5293
+  },
+  "rowLevelResults": {
+    "availableVia": "Foundry portal report",
+    "localFile": null,
+    "note": "The current Foundry MCP catalog returns aggregate run metrics but does not expose an evaluation-result artifact download command."
+  }
+}

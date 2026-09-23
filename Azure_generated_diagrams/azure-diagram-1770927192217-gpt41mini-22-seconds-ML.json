@@ -1,0 +1,1039 @@
+{
+  "nodes": [
+    {
+      "id": "group-data-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 270
+      },
+      "data": {
+        "label": "Data Ingestion"
+      },
+      "style": {
+        "width": 540,
+        "height": 460
+      },
+      "width": 540,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 270
+      }
+    },
+    {
+      "id": "group-training",
+      "type": "groupNode",
+      "position": {
+        "x": 1100,
+        "y": 840
+      },
+      "data": {
+        "label": "Model Training"
+      },
+      "style": {
+        "width": 1020,
+        "height": 735
+      },
+      "width": 1020,
+      "height": 735,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 1100,
+        "y": 840
+      }
+    },
+    {
+      "id": "group-inference",
+      "type": "groupNode",
+      "position": {
+        "x": 1380,
+        "y": -80
+      },
+      "data": {
+        "label": "Inference Endpoints"
+      },
+      "style": {
+        "width": 540,
+        "height": 860
+      },
+      "width": 540,
+      "height": 860,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1380,
+        "y": -80
+      },
+      "dragging": false
+    },
+    {
+      "id": "group-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 560,
+        "y": 80
+      },
+      "data": {
+        "label": "Storage",
+        "customColor": {
+          "name": "Blue",
+          "bg": "rgba(0, 120, 212, 0.25)",
+          "border": "#0078d4",
+          "header": "#0078d4"
+        }
+      },
+      "style": {
+        "width": 540,
+        "height": 650
+      },
+      "width": 540,
+      "height": 650,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 560,
+        "y": 80
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "group-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 2190,
+        "y": -30
+      },
+      "data": {
+        "label": "Monitoring & Security"
+      },
+      "style": {
+        "width": 540,
+        "height": 1260
+      },
+      "width": 540,
+      "height": 1260,
+      "positionAbsolute": {
+        "x": 2190,
+        "y": -30
+      }
+    },
+    {
+      "id": "service-data-factory",
+      "type": "azureNode",
+      "position": {
+        "x": 110,
+        "y": 110
+      },
+      "data": {
+        "label": "Azure Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/data-factory.svg",
+        "pricing": {
+          "estimatedCost": 5,
+          "tier": "Cloud",
+          "skuName": "Cloud",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Month",
+          "lastUpdated": "2026-02-12T20:11:57.786Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-data-ingestion",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 80,
+        "y": 380
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-storage-account",
+      "type": "azureNode",
+      "position": {
+        "x": 90,
+        "y": 430
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:11:57.741Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-storage",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 650,
+        "y": 510
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-aml-workspace",
+      "type": "azureNode",
+      "position": {
+        "x": 260,
+        "y": 480
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T20:11:57.786Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "group-training",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1360,
+        "y": 1320
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-aml-managed-compute",
+      "type": "azureNode",
+      "position": {
+        "x": 600,
+        "y": 140
+      },
+      "data": {
+        "label": "AML Managed Compute",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/virtual-machines.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:11:57.784Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-training",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": 980
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-aml-online-endpoint",
+      "type": "azureNode",
+      "position": {
+        "x": 320,
+        "y": 560
+      },
+      "data": {
+        "label": "AML Online Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:11:57.784Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-inference",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": 480
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-aml-batch-endpoint",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 255
+      },
+      "data": {
+        "label": "AML Batch Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:11:57.784Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-inference",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1560,
+        "y": 175
+      }
+    },
+    {
+      "id": "service-key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 350,
+        "y": 630
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:11:57.786Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-monitoring",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2540,
+        "y": 600
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-app-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 250,
+        "y": 70
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T20:11:57.786Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2440,
+        "y": 40
+      },
+      "dragging": false
+    },
+    {
+      "id": "service-microsoft-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 290,
+        "y": 1010
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:11:57.784Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "group-monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2480,
+        "y": 980
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "service-data-factory",
+      "target": "service-storage-account",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Load ingested raw and processed data into Storage Account",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "service-storage-account",
+      "target": "service-aml-workspace",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide training data for experiments",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "service-aml-workspace",
+      "target": "service-aml-managed-compute",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit training jobs to managed compute",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "service-aml-managed-compute",
+      "target": "service-storage-account",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store trained model artifacts in storage",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "service-aml-workspace",
+      "target": "service-aml-online-endpoint",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy trained models to online endpoint",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "service-aml-workspace",
+      "target": "service-aml-batch-endpoint",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy models for batch inference jobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "service-aml-online-endpoint",
+      "target": "service-storage-account",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve model artifacts and input data for real-time inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "service-aml-batch-endpoint",
+      "target": "service-storage-account",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve input data and save batch inference results",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "service-aml-online-endpoint",
+      "target": "service-app-insights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send telemetry and usage logs for monitoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "service-aml-batch-endpoint",
+      "target": "service-app-insights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send batch job execution logs and metrics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "service-aml-workspace",
+      "target": "service-key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve secrets and keys for secure authentication",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "service-aml-online-endpoint",
+      "target": "service-key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Securely fetch authentication tokens and keys",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "service-aml-batch-endpoint",
+      "target": "service-key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Securely fetch authentication tokens and keys",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "service-aml-online-endpoint",
+      "target": "service-microsoft-entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate client inference requests",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "service-aml-workspace",
+      "target": "service-microsoft-entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate users and services for training management",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 444.0757575757576,
+    "y": 131.22053872053868,
+    "zoom": 0.7351290684624018
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T20:13:12.217Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Data Factory ingests and processes raw data from sources",
+      "services": [
+        "service-data-factory"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Ingested data is stored in Storage Account",
+      "services": [
+        "service-storage-account"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Machine Learning accesses data to run experiments",
+      "services": [
+        "service-aml-workspace"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Model training jobs submitted to AML Managed Compute cluster",
+      "services": [
+        "service-aml-managed-compute"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Trained model artifacts saved into Storage Account",
+      "services": [
+        "service-storage-account"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Trained models deployed to AML Online and Batch Endpoints for inference",
+      "services": [
+        "service-aml-online-endpoint",
+        "service-aml-batch-endpoint"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Real-time inference requests authenticated via Microsoft Entra ID",
+      "services": [
+        "service-microsoft-entra-id",
+        "service-aml-online-endpoint"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Inference endpoints retrieve model and input data from storage and process requests",
+      "services": [
+        "service-aml-online-endpoint",
+        "service-aml-batch-endpoint",
+        "service-storage-account"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Inference telemetry and logs sent to Application Insights for monitoring",
+      "services": [
+        "service-app-insights"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "All services securely access secrets and credentials managed in Key Vault",
+      "services": [
+        "service-key-vault"
+      ]
+    }
+  ],
+  "architecturePrompt": "A machine learning pipeline with data ingestion, training, and inference endpoints"
+}

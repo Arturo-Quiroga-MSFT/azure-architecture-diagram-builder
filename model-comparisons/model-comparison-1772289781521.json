@@ -1,0 +1,1543 @@
+{
+  "prompt": "Microservices app with API gateway and auth",
+  "timestamp": "2026-02-28T14:43:01.830Z",
+  "reasoningEffort": "low",
+  "modelCount": 6,
+  "results": {
+    "gpt51-low": {
+      "model": "gpt-5.1",
+      "displayName": "GPT-5.1",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 1950,
+        "totalTokens": 3343,
+        "elapsedTimeMs": 10535,
+        "model": "gpt-5.1"
+      },
+      "serviceCount": 8,
+      "connectionCount": 7,
+      "groupCount": 5,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress",
+            "label": "Ingress & API Gateway"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application & Microservices"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "grp-identity-security",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "grp-monitoring",
+            "label": "Monitoring & Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point routing external API traffic to the gateway",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-apimgmt",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway providing routing, throttling, and policy enforcement for microservices APIs",
+            "groupId": "grp-ingress"
+          },
+          {
+            "id": "svc-aks",
+            "name": "Azure Kubernetes Service",
+            "type": "Azure Kubernetes Service",
+            "category": "containers",
+            "description": "Hosts the containerized microservices and internal APIs",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Primary database for microservices to store and query application data",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Provides OAuth2/OpenID Connect authentication and token issuance",
+            "groupId": "grp-identity-security"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Securely stores secrets, certificates, and connection strings for the microservices",
+            "groupId": "grp-identity-security"
+          },
+          {
+            "id": "svc-azmonitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects metrics and traces from the microservices platform",
+            "groupId": "grp-monitoring"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Central workspace for querying and analyzing logs and telemetry",
+            "groupId": "grp-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-apimgmt",
+            "label": "Route external HTTPS API calls to API gateway endpoint",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apimgmt",
+            "to": "svc-entra",
+            "label": "Validate incoming JWT access tokens using OpenID Connect",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apimgmt",
+            "to": "svc-aks",
+            "label": "Forward authenticated API requests to appropriate microservice",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-cosmos",
+            "label": "Perform CRUD operations on microservice data collections",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-keyvault",
+            "label": "Retrieve secrets and database connection strings at runtime",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-azmonitor",
+            "label": "Emit application metrics, logs, and distributed traces",
+            "type": "optional"
+          },
+          {
+            "from": "svc-azmonitor",
+            "to": "svc-loganalytics",
+            "label": "Ingest collected telemetry into centralized log workspace",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Client sends an HTTPS API request which is received by Azure Front Door and routed to API Management.",
+            "services": [
+              "svc-frontdoor",
+              "svc-apimgmt"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "API Management validates the bearer token with Microsoft Entra ID using OpenID Connect and authorization policies.",
+            "services": [
+              "svc-apimgmt",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "After successful authentication and policy checks, API Management forwards the request to the appropriate microservice hosted on Azure Kubernetes Service.",
+            "services": [
+              "svc-apimgmt",
+              "svc-aks"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "The targeted microservice retrieves required secrets and connection strings from Key Vault before processing the request.",
+            "services": [
+              "svc-aks",
+              "svc-keyvault"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "The microservice performs read or write operations against Azure Cosmos DB to handle domain data.",
+            "services": [
+              "svc-aks",
+              "svc-cosmos"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Azure Kubernetes Service emits metrics, logs, and traces to Azure Monitor for observability.",
+            "services": [
+              "svc-aks",
+              "svc-azmonitor"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Azure Monitor forwards consolidated telemetry to Log Analytics for centralized querying, alerting, and analysis.",
+            "services": [
+              "svc-azmonitor",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 1950,
+          "totalTokens": 3343,
+          "elapsedTimeMs": 10535,
+          "model": "gpt-5.1"
+        }
+      }
+    },
+    "gpt52-low": {
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 2210,
+        "totalTokens": 3603,
+        "elapsedTimeMs": 42404,
+        "model": "gpt-5.2"
+      },
+      "serviceCount": 12,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-ingress-edge",
+            "label": "Ingress / Edge"
+          },
+          {
+            "id": "grp-app-compute",
+            "label": "Application / Compute"
+          },
+          {
+            "id": "grp-data-storage",
+            "label": "Data / Storage"
+          },
+          {
+            "id": "grp-identity-security",
+            "label": "Identity / Security"
+          },
+          {
+            "id": "grp-monitoring",
+            "label": "Monitoring / Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point with TLS termination and routing to regional ingress",
+            "groupId": "grp-ingress-edge"
+          },
+          {
+            "id": "svc-appgw",
+            "name": "Application Gateway",
+            "type": "Application Gateway",
+            "category": "networking",
+            "description": "Regional HTTP(S) ingress and reverse proxy to API gateway",
+            "groupId": "grp-ingress-edge"
+          },
+          {
+            "id": "svc-waf",
+            "name": "Web Application Firewall",
+            "type": "Web Application Firewall",
+            "category": "networking",
+            "description": "L7 protection enforcing OWASP rules for inbound traffic",
+            "groupId": "grp-ingress-edge"
+          },
+          {
+            "id": "svc-apim",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway for routing, auth enforcement, throttling, and versioning",
+            "groupId": "grp-ingress-edge"
+          },
+          {
+            "id": "svc-aks",
+            "name": "Azure Kubernetes Service",
+            "type": "Azure Kubernetes Service",
+            "category": "containers",
+            "description": "Hosts microservices and internal service-to-service communication",
+            "groupId": "grp-app-compute"
+          },
+          {
+            "id": "svc-acr",
+            "name": "Container Registry",
+            "type": "Container Registry",
+            "category": "containers",
+            "description": "Stores and serves versioned container images for deployments",
+            "groupId": "grp-app-compute"
+          },
+          {
+            "id": "svc-cosmos",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Primary operational datastore for microservices",
+            "groupId": "grp-data-storage"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Object storage for files, exports, and shared blobs",
+            "groupId": "grp-data-storage"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Identity provider for OAuth2/OIDC login and token issuance",
+            "groupId": "grp-identity-security"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Stores secrets, keys, and certificates used by gateway and workloads",
+            "groupId": "grp-identity-security"
+          },
+          {
+            "id": "svc-azmon",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Central collection for platform metrics and application telemetry",
+            "groupId": "grp-monitoring"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log store and query engine for troubleshooting and alerting",
+            "groupId": "grp-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-appgw",
+            "label": "Route HTTPS requests to regional ingress based on latency and health probes",
+            "type": "sync"
+          },
+          {
+            "from": "svc-appgw",
+            "to": "svc-waf",
+            "label": "Inspect inbound HTTP(S) traffic and block malicious patterns before forwarding",
+            "type": "sync"
+          },
+          {
+            "from": "svc-waf",
+            "to": "svc-apim",
+            "label": "Forward allowed API traffic to API gateway for policy enforcement",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-entra",
+            "label": "Validate JWT access tokens and challenge unauthorized callers via OIDC",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-aks",
+            "label": "Route authenticated API calls to the correct microservice backend",
+            "type": "sync"
+          },
+          {
+            "from": "svc-acr",
+            "to": "svc-aks",
+            "label": "Provide container images for microservice deployments and rollouts",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-cosmos",
+            "label": "Read and write operational data with partitioned queries per microservice",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-storage",
+            "label": "Store and retrieve blobs for uploads, downloads, and generated artifacts",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-keyvault",
+            "label": "Fetch runtime secrets and connection strings using managed identity",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-keyvault",
+            "label": "Retrieve TLS certificates and named values for gateway configuration",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-azmon",
+            "label": "Emit application telemetry and container insights from microservices",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmon",
+            "to": "svc-loganalytics",
+            "label": "Persist collected logs and metrics for KQL queries, dashboards, and alerts",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Client calls the public API endpoint; traffic is routed to the closest healthy region.",
+            "services": [
+              "svc-frontdoor",
+              "svc-appgw"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Inbound requests are inspected and blocked if they match WAF attack signatures.",
+            "services": [
+              "svc-appgw",
+              "svc-waf"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Allowed requests enter the API gateway where policies (rate limits, headers, versions) are applied.",
+            "services": [
+              "svc-waf",
+              "svc-apim"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "API gateway enforces authentication by validating tokens and redirecting/denying when needed.",
+            "services": [
+              "svc-apim",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Authenticated calls are routed to the target microservice running in Kubernetes.",
+            "services": [
+              "svc-apim",
+              "svc-aks"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Microservices pull secrets at runtime and read/write operational data to the database.",
+            "services": [
+              "svc-aks",
+              "svc-keyvault",
+              "svc-cosmos"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Microservices store and retrieve files/blobs needed for user uploads and generated outputs.",
+            "services": [
+              "svc-aks",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "Workloads emit telemetry to central monitoring and logs are retained for querying and alerting.",
+            "services": [
+              "svc-aks",
+              "svc-azmon",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 2210,
+          "totalTokens": 3603,
+          "elapsedTimeMs": 42404,
+          "model": "gpt-5.2"
+        }
+      }
+    },
+    "gpt52codex-low": {
+      "model": "gpt-5.2-codex",
+      "displayName": "GPT-5.2 Codex",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 1227,
+        "totalTokens": 2620,
+        "elapsedTimeMs": 23666,
+        "model": "gpt-5.2-codex"
+      },
+      "serviceCount": 6,
+      "connectionCount": 5,
+      "groupCount": 5,
+      "workflowSteps": 5,
+      "architecture": {
+        "groups": [
+          {
+            "id": "group-ingress",
+            "label": "Ingress/Edge"
+          },
+          {
+            "id": "group-app",
+            "label": "Application/Compute"
+          },
+          {
+            "id": "group-data",
+            "label": "Data/Storage"
+          },
+          {
+            "id": "group-identity",
+            "label": "Identity/Security"
+          },
+          {
+            "id": "group-monitoring",
+            "label": "Monitoring/Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "api-management",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway for routing, policies, and throttling",
+            "groupId": "group-ingress"
+          },
+          {
+            "id": "aks",
+            "name": "Azure Kubernetes Service",
+            "type": "Azure Kubernetes Service",
+            "category": "containers",
+            "description": "Hosts microservices and internal APIs",
+            "groupId": "group-app"
+          },
+          {
+            "id": "cosmos-db",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Primary data store for microservices",
+            "groupId": "group-data"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "User authentication and token issuance",
+            "groupId": "group-identity"
+          },
+          {
+            "id": "azure-monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Collects platform metrics and logs",
+            "groupId": "group-monitoring"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Central log workspace for querying and retention",
+            "groupId": "group-monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "api-management",
+            "to": "entra-id",
+            "label": "Validate access tokens for incoming API calls",
+            "type": "sync"
+          },
+          {
+            "from": "api-management",
+            "to": "aks",
+            "label": "Route authenticated requests to microservices",
+            "type": "sync"
+          },
+          {
+            "from": "aks",
+            "to": "cosmos-db",
+            "label": "Read and write service data per request",
+            "type": "sync"
+          },
+          {
+            "from": "aks",
+            "to": "azure-monitor",
+            "label": "Emit service metrics and logs",
+            "type": "sync"
+          },
+          {
+            "from": "azure-monitor",
+            "to": "log-analytics",
+            "label": "Ingest collected telemetry into workspace",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Client sends API request through the gateway for policy enforcement",
+            "services": [
+              "api-management",
+              "entra-id"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Gateway forwards authorized request to the appropriate microservice",
+            "services": [
+              "api-management",
+              "aks"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Microservice processes the request and persists domain data",
+            "services": [
+              "aks",
+              "cosmos-db"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Microservice emits operational metrics and logs",
+            "services": [
+              "aks",
+              "azure-monitor"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Monitoring platform stores telemetry for query and analysis",
+            "services": [
+              "azure-monitor",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 1227,
+          "totalTokens": 2620,
+          "elapsedTimeMs": 23666,
+          "model": "gpt-5.2-codex"
+        }
+      }
+    },
+    "gpt53codex-low": {
+      "model": "gpt-5.3-codex",
+      "displayName": "GPT-5.3 Codex",
+      "metrics": {
+        "promptTokens": 1393,
+        "completionTokens": 2532,
+        "totalTokens": 3925,
+        "elapsedTimeMs": 49559,
+        "model": "gpt-5.3-codex"
+      },
+      "serviceCount": 11,
+      "connectionCount": 12,
+      "groupCount": 5,
+      "workflowSteps": 7,
+      "architecture": {
+        "groups": [
+          {
+            "id": "grp-edge",
+            "label": "Ingress / Edge"
+          },
+          {
+            "id": "grp-app",
+            "label": "Application / Compute"
+          },
+          {
+            "id": "grp-data",
+            "label": "Data / Storage"
+          },
+          {
+            "id": "grp-identity",
+            "label": "Identity / Security"
+          },
+          {
+            "id": "grp-monitor",
+            "label": "Monitoring / Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "svc-frontdoor",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global entry point for HTTPS routing and edge acceleration",
+            "groupId": "grp-edge"
+          },
+          {
+            "id": "svc-apim",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway enforcing policies, throttling, and backend routing",
+            "groupId": "grp-edge"
+          },
+          {
+            "id": "svc-aks",
+            "name": "Azure Kubernetes Service",
+            "type": "Azure Kubernetes Service",
+            "category": "containers",
+            "description": "Hosts containerized microservices and internal APIs",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-servicebus",
+            "name": "Service Bus",
+            "type": "Service Bus",
+            "category": "integration",
+            "description": "Asynchronous messaging between microservices",
+            "groupId": "grp-app"
+          },
+          {
+            "id": "svc-sql",
+            "name": "SQL Database",
+            "type": "SQL Database",
+            "category": "databases",
+            "description": "Relational store for transactional microservice data",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-redis",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Low-latency cache for sessions and frequently accessed data",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Blob/object storage for files, payloads, and artifacts",
+            "groupId": "grp-data"
+          },
+          {
+            "id": "svc-entra",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Identity provider for OAuth2/OpenID Connect authentication",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-keyvault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Centralized secrets, keys, and certificate management",
+            "groupId": "grp-identity"
+          },
+          {
+            "id": "svc-azmon",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Telemetry collection hub for platform and application metrics",
+            "groupId": "grp-monitor"
+          },
+          {
+            "id": "svc-loganalytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Queryable workspace for logs, traces, and diagnostics",
+            "groupId": "grp-monitor"
+          }
+        ],
+        "connections": [
+          {
+            "from": "svc-frontdoor",
+            "to": "svc-apim",
+            "label": "Route external HTTPS traffic to managed API gateway endpoints",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-entra",
+            "label": "Validate OAuth2/JWT access tokens using OpenID metadata",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-aks",
+            "label": "Forward authenticated API operations to target microservice routes",
+            "type": "sync"
+          },
+          {
+            "from": "svc-apim",
+            "to": "svc-keyvault",
+            "label": "Load gateway certificates and backend credential secrets",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-keyvault",
+            "label": "Fetch runtime secrets and connection strings via managed identity",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-redis",
+            "label": "Read and update cached session/context data for low-latency responses",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-sql",
+            "label": "Execute transactional reads/writes for core business entities",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-storage",
+            "label": "Store and retrieve blobs for documents and payload attachments",
+            "type": "sync"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-servicebus",
+            "label": "Publish domain events and background work messages",
+            "type": "async"
+          },
+          {
+            "from": "svc-servicebus",
+            "to": "svc-aks",
+            "label": "Deliver queued commands to worker microservices for processing",
+            "type": "async"
+          },
+          {
+            "from": "svc-aks",
+            "to": "svc-azmon",
+            "label": "Emit application logs, traces, and performance metrics",
+            "type": "sync"
+          },
+          {
+            "from": "svc-azmon",
+            "to": "svc-loganalytics",
+            "label": "Ingest and index telemetry for centralized querying and retention",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Client API calls enter through global edge and are handed to the API gateway.",
+            "services": [
+              "svc-frontdoor",
+              "svc-apim"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "API gateway authenticates each request token with the identity provider before policy execution.",
+            "services": [
+              "svc-apim",
+              "svc-entra"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "Gateway applies routing policies and forwards authorized requests to AKS-hosted microservices.",
+            "services": [
+              "svc-apim",
+              "svc-aks"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Microservices retrieve secrets from Key Vault and use Redis to accelerate session and reference-data access.",
+            "services": [
+              "svc-aks",
+              "svc-keyvault",
+              "svc-redis"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Business operations persist transactional records in SQL and store large payloads in Blob storage.",
+            "services": [
+              "svc-aks",
+              "svc-sql",
+              "svc-storage"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Services publish asynchronous events to Service Bus, and worker services consume queued tasks.",
+            "services": [
+              "svc-aks",
+              "svc-servicebus"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "AKS sends operational telemetry to Azure Monitor, which forwards logs to Log Analytics for analysis.",
+            "services": [
+              "svc-aks",
+              "svc-azmon",
+              "svc-loganalytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1393,
+          "completionTokens": 2532,
+          "totalTokens": 3925,
+          "elapsedTimeMs": 49559,
+          "model": "gpt-5.3-codex"
+        }
+      }
+    },
+    "deepseek": {
+      "model": "deepseek-v3.2-speciale",
+      "displayName": "DeepSeek V3.2 Speciale",
+      "metrics": {
+        "promptTokens": 1420,
+        "completionTokens": 2222,
+        "totalTokens": 3642,
+        "elapsedTimeMs": 31895,
+        "model": "deepseek-v3.2-speciale"
+      },
+      "serviceCount": 14,
+      "connectionCount": 22,
+      "groupCount": 5,
+      "workflowSteps": 5,
+      "architecture": {
+        "groups": [
+          {
+            "id": "ingress",
+            "label": "Ingress & Security"
+          },
+          {
+            "id": "compute",
+            "label": "Compute & APIs"
+          },
+          {
+            "id": "data",
+            "label": "Data & Storage"
+          },
+          {
+            "id": "monitoring",
+            "label": "Monitoring"
+          },
+          {
+            "id": "identity",
+            "label": "Identity"
+          }
+        ],
+        "services": [
+          {
+            "id": "app-gateway",
+            "name": "Application Gateway",
+            "type": "Application Gateway",
+            "category": "networking",
+            "description": "Public ingress with WAF, TLS termination, and routing to microservices",
+            "groupId": "ingress"
+          },
+          {
+            "id": "front-door",
+            "name": "Azure Front Door",
+            "type": "Azure Front Door",
+            "category": "networking",
+            "description": "Global load balancing, CDN, DDoS protection",
+            "groupId": "ingress"
+          },
+          {
+            "id": "api-mgmt",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway for microservices, authentication, rate limiting, and versioning",
+            "groupId": "ingress"
+          },
+          {
+            "id": "app-service-1",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Containerized microservice #1 (e.g., Order service)",
+            "groupId": "compute"
+          },
+          {
+            "id": "app-service-2",
+            "name": "App Service",
+            "type": "App Service",
+            "category": "app services",
+            "description": "Containerized microservice #2 (e.g., Payment service)",
+            "groupId": "compute"
+          },
+          {
+            "id": "functions",
+            "name": "Azure Functions",
+            "type": "Azure Functions",
+            "category": "compute",
+            "description": "Serverless functions for event-driven processing",
+            "groupId": "compute"
+          },
+          {
+            "id": "cosmosdb",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "Globally distributed NoSQL database for microservices",
+            "groupId": "data"
+          },
+          {
+            "id": "storage",
+            "name": "Storage Account",
+            "type": "Storage Account",
+            "category": "storage",
+            "description": "Blob storage for static assets and file uploads",
+            "groupId": "data"
+          },
+          {
+            "id": "service-bus",
+            "name": "Service Bus",
+            "type": "Service Bus",
+            "category": "integration",
+            "description": "Message broker for async communication between microservices",
+            "groupId": "data"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Central secrets, certificates, and keys management",
+            "groupId": "identity"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "Authentication and authorization for users and services",
+            "groupId": "identity"
+          },
+          {
+            "id": "monitor",
+            "name": "Azure Monitor",
+            "type": "Azure Monitor",
+            "category": "monitor",
+            "description": "Centralized monitoring, metrics, alerts",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Log collection and analysis",
+            "groupId": "monitoring"
+          },
+          {
+            "id": "app-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Application performance monitoring",
+            "groupId": "monitoring"
+          }
+        ],
+        "connections": [
+          {
+            "from": "front-door",
+            "to": "app-gateway",
+            "label": "Routes global traffic with SSL offload",
+            "type": "sync"
+          },
+          {
+            "from": "app-gateway",
+            "to": "api-mgmt",
+            "label": "Proxies requests to API Management",
+            "type": "sync"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "app-service-1",
+            "label": "Routes API calls to microservice",
+            "type": "sync"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "app-service-2",
+            "label": "Routes API calls to microservice",
+            "type": "sync"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "functions",
+            "label": "Invokes serverless functions via HTTP triggers",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-1",
+            "to": "cosmosdb",
+            "label": "Reads/writes data",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-2",
+            "to": "cosmosdb",
+            "label": "Reads/writes data",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "cosmosdb",
+            "label": "Reads/writes data",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-1",
+            "to": "service-bus",
+            "label": "Publishes events (async)",
+            "type": "async"
+          },
+          {
+            "from": "service-bus",
+            "to": "app-service-2",
+            "label": "Subscribes to events (async)",
+            "type": "async"
+          },
+          {
+            "from": "app-service-1",
+            "to": "key-vault",
+            "label": "Retrieves secrets and certificates",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-2",
+            "to": "key-vault",
+            "label": "Retrieves secrets and certificates",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "key-vault",
+            "label": "Retrieves secrets and certificates",
+            "type": "sync"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "entra-id",
+            "label": "Validates OAuth2 tokens",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-1",
+            "to": "entra-id",
+            "label": "Uses managed identity for auth",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-2",
+            "to": "entra-id",
+            "label": "Uses managed identity for auth",
+            "type": "sync"
+          },
+          {
+            "from": "functions",
+            "to": "entra-id",
+            "label": "Uses managed identity for auth",
+            "type": "sync"
+          },
+          {
+            "from": "app-service-1",
+            "to": "app-insights",
+            "label": "Sends telemetry",
+            "type": "async"
+          },
+          {
+            "from": "app-service-2",
+            "to": "app-insights",
+            "label": "Sends telemetry",
+            "type": "async"
+          },
+          {
+            "from": "functions",
+            "to": "app-insights",
+            "label": "Sends telemetry",
+            "type": "async"
+          },
+          {
+            "from": "app-insights",
+            "to": "monitor",
+            "label": "Forwards metrics and logs",
+            "type": "async"
+          },
+          {
+            "from": "monitor",
+            "to": "log-analytics",
+            "label": "Stores logs for analysis",
+            "type": "async"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "User request arrives via Azure Front Door, which routes to Application Gateway with WAF and TLS termination.",
+            "services": [
+              "front-door",
+              "app-gateway"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Application Gateway forwards the request to API Management, which authenticates using Microsoft Entra ID and routes to the appropriate microservice based on API path.",
+            "services": [
+              "app-gateway",
+              "api-mgmt",
+              "entra-id"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "The microservice (App Service or Azure Function) processes the request: reads/writes data from Cosmos DB, retrieves secrets from Key Vault, and may publish events to Service Bus.",
+            "services": [
+              "app-service-1",
+              "app-service-2",
+              "functions",
+              "cosmosdb",
+              "key-vault",
+              "service-bus"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "Other microservices asynchronously consume events from Service Bus to perform additional processing, also using Cosmos DB and Key Vault.",
+            "services": [
+              "service-bus",
+              "app-service-1",
+              "app-service-2",
+              "cosmosdb",
+              "key-vault"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "All compute services send telemetry to Application Insights, which forwards to Azure Monitor. Logs are stored in Log Analytics for analysis.",
+            "services": [
+              "app-service-1",
+              "app-service-2",
+              "functions",
+              "app-insights",
+              "monitor",
+              "log-analytics"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1420,
+          "completionTokens": 2222,
+          "totalTokens": 3642,
+          "elapsedTimeMs": 31895,
+          "model": "deepseek-v3.2-speciale"
+        }
+      }
+    },
+    "grok41fast": {
+      "model": "grok-4.1-fast",
+      "displayName": "Grok 4.1 Fast",
+      "metrics": {
+        "promptTokens": 1366,
+        "completionTokens": 1309,
+        "totalTokens": 2675,
+        "elapsedTimeMs": 7067,
+        "model": "grok-4-1-fast-non-reasoning"
+      },
+      "serviceCount": 9,
+      "connectionCount": 9,
+      "groupCount": 6,
+      "workflowSteps": 8,
+      "architecture": {
+        "groups": [
+          {
+            "id": "edge",
+            "label": "Edge & Ingress"
+          },
+          {
+            "id": "identity",
+            "label": "Identity & Security"
+          },
+          {
+            "id": "api-gateway",
+            "label": "API Gateway"
+          },
+          {
+            "id": "microservices",
+            "label": "Microservices"
+          },
+          {
+            "id": "data",
+            "label": "Data Layer"
+          },
+          {
+            "id": "observability",
+            "label": "Observability"
+          }
+        ],
+        "services": [
+          {
+            "id": "app-gateway",
+            "name": "Application Gateway",
+            "type": "Application Gateway",
+            "category": "networking",
+            "description": "External HTTPS entry point",
+            "groupId": "edge"
+          },
+          {
+            "id": "entra-id",
+            "name": "Microsoft Entra ID",
+            "type": "Microsoft Entra ID",
+            "category": "identity",
+            "description": "OAuth2/JWT token validation",
+            "groupId": "identity"
+          },
+          {
+            "id": "key-vault",
+            "name": "Key Vault",
+            "type": "Key Vault",
+            "category": "security",
+            "description": "Secrets & certificates",
+            "groupId": "identity"
+          },
+          {
+            "id": "api-mgmt",
+            "name": "API Management",
+            "type": "API Management",
+            "category": "integration",
+            "description": "API gateway & policy enforcement",
+            "groupId": "api-gateway"
+          },
+          {
+            "id": "aks",
+            "name": "Azure Kubernetes Service",
+            "type": "Azure Kubernetes Service",
+            "category": "containers",
+            "description": "Microservices container orchestration",
+            "groupId": "microservices"
+          },
+          {
+            "id": "cosmos-db",
+            "name": "Azure Cosmos DB",
+            "type": "Azure Cosmos DB",
+            "category": "databases",
+            "description": "NoSQL document storage",
+            "groupId": "data"
+          },
+          {
+            "id": "redis-cache",
+            "name": "Azure Cache for Redis",
+            "type": "Azure Cache for Redis",
+            "category": "databases",
+            "description": "Session & caching layer",
+            "groupId": "data"
+          },
+          {
+            "id": "app-insights",
+            "name": "Application Insights",
+            "type": "Application Insights",
+            "category": "monitor",
+            "description": "Application performance monitoring",
+            "groupId": "observability"
+          },
+          {
+            "id": "log-analytics",
+            "name": "Log Analytics",
+            "type": "Log Analytics",
+            "category": "monitor",
+            "description": "Centralized log aggregation",
+            "groupId": "observability"
+          }
+        ],
+        "connections": [
+          {
+            "from": "app-gateway",
+            "to": "api-mgmt",
+            "label": "Route external HTTPS traffic",
+            "type": "sync"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "entra-id",
+            "label": "Validate JWT bearer tokens",
+            "type": "sync"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "aks",
+            "label": "Proxy authenticated API requests to microservices",
+            "type": "sync"
+          },
+          {
+            "from": "entra-id",
+            "to": "key-vault",
+            "label": "Managed identity access to secrets",
+            "type": "sync"
+          },
+          {
+            "from": "aks",
+            "to": "cosmos-db",
+            "label": "Read/write multi-tenant documents",
+            "type": "sync"
+          },
+          {
+            "from": "aks",
+            "to": "redis-cache",
+            "label": "Cache session data & API responses",
+            "type": "sync"
+          },
+          {
+            "from": "aks",
+            "to": "app-insights",
+            "label": "Send metrics, traces, & exceptions",
+            "type": "async"
+          },
+          {
+            "from": "app-insights",
+            "to": "log-analytics",
+            "label": "Forward telemetry to central logs",
+            "type": "async"
+          },
+          {
+            "from": "api-mgmt",
+            "to": "key-vault",
+            "label": "Retrieve backend TLS certificates",
+            "type": "sync"
+          }
+        ],
+        "workflow": [
+          {
+            "step": 1,
+            "description": "Client sends HTTPS request to Application Gateway",
+            "services": [
+              "app-gateway"
+            ]
+          },
+          {
+            "step": 2,
+            "description": "Application Gateway routes to API Management for JWT validation",
+            "services": [
+              "app-gateway",
+              "api-mgmt"
+            ]
+          },
+          {
+            "step": 3,
+            "description": "API Management validates token with Microsoft Entra ID",
+            "services": [
+              "api-mgmt",
+              "entra-id"
+            ]
+          },
+          {
+            "step": 4,
+            "description": "API Management proxies authenticated request to AKS microservices",
+            "services": [
+              "api-mgmt",
+              "aks"
+            ]
+          },
+          {
+            "step": 5,
+            "description": "Microservices read/write data from Cosmos DB and Redis cache",
+            "services": [
+              "aks",
+              "cosmos-db",
+              "redis-cache"
+            ]
+          },
+          {
+            "step": 6,
+            "description": "Microservices emit telemetry to Application Insights",
+            "services": [
+              "aks",
+              "app-insights"
+            ]
+          },
+          {
+            "step": 7,
+            "description": "Application Insights forwards logs to Log Analytics workspace",
+            "services": [
+              "app-insights",
+              "log-analytics"
+            ]
+          },
+          {
+            "step": 8,
+            "description": "API Management retrieves secrets from Key Vault for backend auth",
+            "services": [
+              "api-mgmt",
+              "key-vault"
+            ]
+          }
+        ],
+        "metrics": {
+          "promptTokens": 1366,
+          "completionTokens": 1309,
+          "totalTokens": 2675,
+          "elapsedTimeMs": 7067,
+          "model": "grok-4-1-fast-non-reasoning"
+        }
+      }
+    }
+  }
+}

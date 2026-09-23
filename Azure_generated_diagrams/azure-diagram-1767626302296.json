@@ -1,0 +1,352 @@
+{
+  "nodes": [
+    {
+      "id": "grp-web-edge",
+      "type": "groupNode",
+      "position": {
+        "x": 80,
+        "y": 80
+      },
+      "data": {
+        "label": "Web & Edge"
+      },
+      "style": {
+        "width": 280,
+        "height": 301
+      },
+      "width": 280,
+      "height": 301,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 80,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-app-api",
+      "type": "groupNode",
+      "position": {
+        "x": 560,
+        "y": 80
+      },
+      "data": {
+        "label": "Application Layer"
+      },
+      "style": {
+        "width": 440,
+        "height": 260
+      },
+      "width": 440,
+      "height": 260,
+      "positionAbsolute": {
+        "x": 560,
+        "y": 80
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1040,
+        "y": -33
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 440,
+        "height": 373
+      },
+      "width": 440,
+      "height": 373,
+      "selected": true,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1040,
+        "y": -33
+      }
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 560,
+        "y": 368.3381494519306
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 619,
+        "height": 260
+      },
+      "width": 619,
+      "height": 260,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 560,
+        "y": 368.3381494519306
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-frontend",
+      "type": "azureNode",
+      "position": {
+        "x": 117.5051601270685,
+        "y": 215.80202856245103
+      },
+      "data": {
+        "label": "Azure Static Web Apps (React)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 117.5051601270685,
+        "y": 215.80202856245103
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-api",
+      "type": "azureNode",
+      "position": {
+        "x": 610,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure App Service (Node.js API)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "positionAbsolute": {
+        "x": 610,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-db",
+      "type": "azureNode",
+      "position": {
+        "x": 1090,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL - Flexible Server",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10131-icon-service-Azure-Database-PostgreSQL-Server.svg"
+      },
+      "width": 146,
+      "height": 137,
+      "positionAbsolute": {
+        "x": 1090,
+        "y": 140
+      }
+    },
+    {
+      "id": "svc-blob",
+      "type": "azureNode",
+      "position": {
+        "x": 1274.152562319346,
+        "y": 55.86807818892794
+      },
+      "data": {
+        "label": "Azure Storage Account (Blob Storage)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 146,
+      "height": 137,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1274.152562319346,
+        "y": 55.86807818892794
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 598.3381494519306,
+        "y": 442.4989679745862
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 125,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 598.3381494519306,
+        "y": 442.4989679745862
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-managed-identity",
+      "type": "azureNode",
+      "position": {
+        "x": 763.3319572994483,
+        "y": 467.4886477204492
+      },
+      "data": {
+        "label": "Managed Identity",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10227-icon-service-Entra-Managed-Identities.svg"
+      },
+      "width": 135,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 763.3319572994483,
+        "y": 467.4886477204492
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 980.8040926132785,
+        "y": 467.4886477204492
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 980.8040926132785,
+        "y": 467.4886477204492
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-frontend",
+      "target": "svc-api",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "SPA calls backend API (HTTPS)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-api",
+      "target": "svc-db",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Read/write application data (PostgreSQL)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-api",
+      "target": "svc-blob",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Upload/download images (Blob Storage)",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-api",
+      "target": "svc-managed-identity",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Uses managed identity for resource access",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-managed-identity",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Retrieve secrets/certificates",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-api",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send telemetry, traces, and metrics",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-frontend",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Send client-side telemetry",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 140.77018079688628,
+    "y": 226.48713793945382,
+    "zoom": 1.2004955767777084
+  }
+}

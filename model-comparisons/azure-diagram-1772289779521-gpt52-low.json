@@ -1,0 +1,286 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress-edge",
+      "label": "Ingress / Edge"
+    },
+    {
+      "id": "grp-app-compute",
+      "label": "Application / Compute"
+    },
+    {
+      "id": "grp-data-storage",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "grp-identity-security",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-monitoring",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point with TLS termination and routing to regional ingress",
+      "groupId": "grp-ingress-edge"
+    },
+    {
+      "id": "svc-appgw",
+      "name": "Application Gateway",
+      "type": "Application Gateway",
+      "category": "networking",
+      "description": "Regional HTTP(S) ingress and reverse proxy to API gateway",
+      "groupId": "grp-ingress-edge"
+    },
+    {
+      "id": "svc-waf",
+      "name": "Web Application Firewall",
+      "type": "Web Application Firewall",
+      "category": "networking",
+      "description": "L7 protection enforcing OWASP rules for inbound traffic",
+      "groupId": "grp-ingress-edge"
+    },
+    {
+      "id": "svc-apim",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway for routing, auth enforcement, throttling, and versioning",
+      "groupId": "grp-ingress-edge"
+    },
+    {
+      "id": "svc-aks",
+      "name": "Azure Kubernetes Service",
+      "type": "Azure Kubernetes Service",
+      "category": "containers",
+      "description": "Hosts microservices and internal service-to-service communication",
+      "groupId": "grp-app-compute"
+    },
+    {
+      "id": "svc-acr",
+      "name": "Container Registry",
+      "type": "Container Registry",
+      "category": "containers",
+      "description": "Stores and serves versioned container images for deployments",
+      "groupId": "grp-app-compute"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Primary operational datastore for microservices",
+      "groupId": "grp-data-storage"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Object storage for files, exports, and shared blobs",
+      "groupId": "grp-data-storage"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Identity provider for OAuth2/OIDC login and token issuance",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets, keys, and certificates used by gateway and workloads",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-azmon",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central collection for platform metrics and application telemetry",
+      "groupId": "grp-monitoring"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log store and query engine for troubleshooting and alerting",
+      "groupId": "grp-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-appgw",
+      "label": "Route HTTPS requests to regional ingress based on latency and health probes",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appgw",
+      "to": "svc-waf",
+      "label": "Inspect inbound HTTP(S) traffic and block malicious patterns before forwarding",
+      "type": "sync"
+    },
+    {
+      "from": "svc-waf",
+      "to": "svc-apim",
+      "label": "Forward allowed API traffic to API gateway for policy enforcement",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-entra",
+      "label": "Validate JWT access tokens and challenge unauthorized callers via OIDC",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-aks",
+      "label": "Route authenticated API calls to the correct microservice backend",
+      "type": "sync"
+    },
+    {
+      "from": "svc-acr",
+      "to": "svc-aks",
+      "label": "Provide container images for microservice deployments and rollouts",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-cosmos",
+      "label": "Read and write operational data with partitioned queries per microservice",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-storage",
+      "label": "Store and retrieve blobs for uploads, downloads, and generated artifacts",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-keyvault",
+      "label": "Fetch runtime secrets and connection strings using managed identity",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-keyvault",
+      "label": "Retrieve TLS certificates and named values for gateway configuration",
+      "type": "sync"
+    },
+    {
+      "from": "svc-aks",
+      "to": "svc-azmon",
+      "label": "Emit application telemetry and container insights from microservices",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmon",
+      "to": "svc-loganalytics",
+      "label": "Persist collected logs and metrics for KQL queries, dashboards, and alerts",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client calls the public API endpoint; traffic is routed to the closest healthy region.",
+      "services": [
+        "svc-frontdoor",
+        "svc-appgw"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Inbound requests are inspected and blocked if they match WAF attack signatures.",
+      "services": [
+        "svc-appgw",
+        "svc-waf"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Allowed requests enter the API gateway where policies (rate limits, headers, versions) are applied.",
+      "services": [
+        "svc-waf",
+        "svc-apim"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "API gateway enforces authentication by validating tokens and redirecting/denying when needed.",
+      "services": [
+        "svc-apim",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Authenticated calls are routed to the target microservice running in Kubernetes.",
+      "services": [
+        "svc-apim",
+        "svc-aks"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Microservices pull secrets at runtime and read/write operational data to the database.",
+      "services": [
+        "svc-aks",
+        "svc-keyvault",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Microservices store and retrieve files/blobs needed for user uploads and generated outputs.",
+      "services": [
+        "svc-aks",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Workloads emit telemetry to central monitoring and logs are retained for querying and alerting.",
+      "services": [
+        "svc-aks",
+        "svc-azmon",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1393,
+    "completionTokens": 2210,
+    "totalTokens": 3603,
+    "elapsedTimeMs": 42404,
+    "model": "gpt-5.2"
+  },
+  "metadata": {
+    "prompt": "Microservices app with API gateway and auth",
+    "model": "gpt-5.2",
+    "modelDisplayName": "GPT-5.2",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1393,
+      "completionTokens": 2210,
+      "totalTokens": 3603,
+      "elapsedTimeMs": 42404,
+      "model": "gpt-5.2"
+    },
+    "savedAt": "2026-02-28T14:42:59.673Z",
+    "source": "model-comparison"
+  }
+}

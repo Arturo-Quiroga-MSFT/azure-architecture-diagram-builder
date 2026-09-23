@@ -1,0 +1,23 @@
+=== COST ESTIMATION SUMMARY ===
+
+Total Monthly Cost: $298.67
+Region: eastus2
+Currency: USD
+Last Updated: 2026-05-26, 11:50:53 a.m.
+
+BY SERVICE:
+  Azure Database for PostgreSQL (Standard): $109.86/mo x1
+  App Service (Standard): $69.35/mo x1
+  API Management (Standard): $50.26/mo x1
+  Azure Front Door (Standard): $35.00/mo x1
+  Storage Account (Standard): $14.60/mo x1
+  Azure Static Web Apps (Standard): $9.00/mo x1
+  Microsoft Entra ID (Standard): $6.00/mo x1
+  Azure Monitor (Standard): $2.30/mo x1
+  Log Analytics (Standard): $2.30/mo x1
+
+BY GROUP:
+  Ungrouped: $298.67/mo (9 services)
+
+BY CATEGORY:
+  Other: $298.67/mo (100.0%)

@@ -1,0 +1,49 @@
+API Management
+App Configuration
+Azure Analysis Services
+Azure API for FHIR
+Azure App Service
+Azure Bastion
+Azure Cognitive Search
+Azure Container Apps
+Azure Cosmos DB
+Azure Data Factory v2
+Azure Database for MySQL
+Azure Database for PostgreSQL
+Azure Database Migration Service
+Azure Databricks
+Azure Machine Learning
+Azure Managed Instance for Apache Cassandra
+Azure Maps
+Azure Monitor
+Azure NetApp Files
+Azure Purview
+Azure Synapse Analytics
+Backup
+Bandwidth
+Cloud Services
+Container Instances
+Data Box
+ExpressRoute
+Foundry Models
+Foundry Tools
+HDInsight
+IoT Hub
+Microsoft Copilot Studio
+Microsoft Defender for Cloud
+Microsoft Fabric
+Microsoft Purview
+Phone Numbers
+Power BI
+Redis Cache
+SMS
+Specialized Compute
+SQL Data Warehouse
+SQL Database
+SQL Managed Instance
+SQL Server Stretch Database
+Storage
+Syntex
+Virtual Machines
+VPN Gateway
+Windows Virtual Desktop

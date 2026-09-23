@@ -1,0 +1,84 @@
+name: Azure Diagram Builder — provision & deploy (azd)
+
+# Manual-only. This workflow deploys via `azd` using OIDC federated login and
+# requires the following to be configured in the repo before it will run:
+#   Secrets:   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#   Variables: AZURE_ENV_NAME, AZURE_LOCATION, AZURE_SPEECH_REGION
+# Optional additional model deployments can be supplied as AZURE_OPENAI_DEPLOYMENT_*
+# variables. The default GPT-5.6 Luna endpoint/deployment is created by Bicep.
+# Until those exist, run deployments locally with scripts/production/deploy-webapp.sh.
+# To re-enable automatic deploys on push, restore the `push:` trigger below.
+on:
+  workflow_dispatch:
+
+# Required for OIDC federated identity (passwordless login)
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify release
+        run: npm run verify:release
+
+      - name: Install azd
+        uses: Azure/setup-azd@v2
+
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up azd environment
+        run: |
+          azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZURE_LOCATION" --no-prompt
+          # Optional additional deployments in the generated Foundry account.
+          azd env set AZURE_OPENAI_DEPLOYMENT_NAME  "${{ vars.AZURE_OPENAI_DEPLOYMENT_NAME }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT52        "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT52 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT52CODEX   "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT52CODEX }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT53CODEX   "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT53CODEX }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT54        "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT54 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT54MINI    "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT54MINI }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT56SOL     "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT56SOL }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT56TERRA   "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT56TERRA }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GPT56LUNA    "${{ vars.AZURE_OPENAI_DEPLOYMENT_GPT56LUNA }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1 "${{ vars.AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_DEEPSEEK     "${{ vars.AZURE_OPENAI_DEPLOYMENT_DEEPSEEK }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO "${{ vars.AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GROK4FAST    "${{ vars.AZURE_OPENAI_DEPLOYMENT_GROK4FAST }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_GROK43       "${{ vars.AZURE_OPENAI_DEPLOYMENT_GROK43 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3 "${{ vars.AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_KIMIK25      "${{ vars.AZURE_OPENAI_DEPLOYMENT_KIMIK25 }}"
+          azd env set AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE  "${{ vars.AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE }}"
+          # Speech region (for avatar presenter)
+          azd env set AZURE_SPEECH_REGION "${{ vars.AZURE_SPEECH_REGION }}"
+
+      - name: Provision infrastructure
+        run: azd provision --no-prompt
+
+      - name: Deploy application
+        run: azd deploy --no-prompt

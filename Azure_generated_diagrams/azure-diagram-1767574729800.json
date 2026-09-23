@@ -1,0 +1,139 @@
+{
+  "nodes": [
+    {
+      "id": "static-web-apps",
+      "type": "azureNode",
+      "position": {
+        "x": -94,
+        "y": 35.5
+      },
+      "data": {
+        "label": "Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 131,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -94,
+        "y": 35.5
+      },
+      "dragging": false
+    },
+    {
+      "id": "app-service-api",
+      "type": "azureNode",
+      "position": {
+        "x": 46.10000000000002,
+        "y": 167
+      },
+      "data": {
+        "label": "App Service (Node.js API)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 46.10000000000002,
+        "y": 167
+      },
+      "dragging": false
+    },
+    {
+      "id": "postgres-db",
+      "type": "azureNode",
+      "position": {
+        "x": 276,
+        "y": 378
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10131-icon-service-Azure-Database-PostgreSQL-Server.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 276,
+        "y": 378
+      },
+      "dragging": false
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 491.5,
+        "y": 179
+      },
+      "data": {
+        "label": "Storage Account (Blob Storage)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 491.5,
+        "y": 179
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "static-web-apps",
+      "target": "app-service-api",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "API requests from React frontend",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "app-service-api",
+      "target": "postgres-db",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Reads/writes application data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "app-service-api",
+      "target": "blob-storage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Stores and retrieves images",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 349.66666666666663,
+    "y": 83.5,
+    "zoom": 1.6666666666666667
+  }
+}

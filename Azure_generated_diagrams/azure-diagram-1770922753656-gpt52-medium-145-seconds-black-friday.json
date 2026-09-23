@@ -1,0 +1,1912 @@
+{
+  "nodes": [
+    {
+      "id": "grp-edge-access",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 470
+      },
+      "data": {
+        "label": "Edge, Identity & API Entry"
+      },
+      "style": {
+        "width": 1300,
+        "height": 1085
+      },
+      "width": 1300,
+      "height": 1085,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 470
+      }
+    },
+    {
+      "id": "grp-app-integration",
+      "type": "groupNode",
+      "position": {
+        "x": 1640,
+        "y": 60
+      },
+      "data": {
+        "label": "Microservices & Orchestration"
+      },
+      "style": {
+        "width": 1500,
+        "height": 1145
+      },
+      "width": 1500,
+      "height": 1145,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1640,
+        "y": 60
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 2600,
+        "y": 1380
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 1280,
+        "height": 730
+      },
+      "width": 1280,
+      "height": 730,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2600,
+        "y": 1380
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-ml-search",
+      "type": "groupNode",
+      "position": {
+        "x": 1660,
+        "y": 2080
+      },
+      "data": {
+        "label": "Search & ML Intelligence"
+      },
+      "style": {
+        "width": 2240,
+        "height": 310
+      },
+      "width": 2240,
+      "height": 310,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1660,
+        "y": 2080
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-security-ops",
+      "type": "groupNode",
+      "position": {
+        "x": 3480,
+        "y": 80
+      },
+      "data": {
+        "label": "Security, Compliance & Observability"
+      },
+      "style": {
+        "width": 1320,
+        "height": 1485
+      },
+      "width": 1320,
+      "height": 1485,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3480,
+        "y": 80
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "frontdoor",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 455
+      },
+      "data": {
+        "label": "Azure Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/azure-front-door.svg",
+        "pricing": {
+          "estimatedCost": 35,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-12T18:52:34.530Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-edge-access",
+      "extent": "parent",
+      "width": 165,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 925
+      }
+    },
+    {
+      "id": "cdn",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 180
+      },
+      "data": {
+        "label": "Content Delivery Network",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg",
+        "pricing": {
+          "estimatedCost": 8.7,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1M",
+          "lastUpdated": "2026-02-12T18:52:34.535Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-edge-access",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 530,
+        "y": 650
+      }
+    },
+    {
+      "id": "appgw",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 805
+      },
+      "data": {
+        "label": "Application Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/application-gateway.svg",
+        "pricing": {
+          "estimatedCost": 162,
+          "tier": "Large",
+          "skuName": "Large",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB",
+          "lastUpdated": "2026-02-12T18:52:34.531Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-edge-access",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 530,
+        "y": 1275
+      }
+    },
+    {
+      "id": "entra",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 430
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:52:34.530Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-edge-access",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 530,
+        "y": 900
+      }
+    },
+    {
+      "id": "apim",
+      "type": "azureNode",
+      "position": {
+        "x": 940,
+        "y": 580
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "pricing": {
+          "estimatedCost": 50.26,
+          "tier": "Developer",
+          "skuName": "Developer",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-12T18:52:34.535Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-edge-access",
+      "extent": "parent",
+      "width": 165,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 910,
+        "y": 1050
+      }
+    },
+    {
+      "id": "aks",
+      "type": "azureNode",
+      "position": {
+        "x": 220,
+        "y": 820
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/azure-kubernetes-service.svg",
+        "pricing": {
+          "estimatedCost": 73,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T18:52:34.535Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-app-integration",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1860,
+        "y": 880
+      },
+      "dragging": false
+    },
+    {
+      "id": "servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 520,
+        "y": 400
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/service-bus.svg",
+        "pricing": {
+          "estimatedCost": 9.81,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:52:34.530Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-app-integration",
+      "extent": "parent",
+      "width": 126,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2160,
+        "y": 460
+      },
+      "dragging": false
+    },
+    {
+      "id": "functions",
+      "type": "azureNode",
+      "position": {
+        "x": 1300,
+        "y": 840
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/azure-functions.svg"
+      },
+      "parentNode": "grp-app-integration",
+      "extent": "parent",
+      "width": 159,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2940,
+        "y": 900
+      },
+      "dragging": false
+    },
+    {
+      "id": "logicapps",
+      "type": "azureNode",
+      "position": {
+        "x": 360,
+        "y": 60
+      },
+      "data": {
+        "label": "Logic Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/logic-apps.svg",
+        "pricing": {
+          "estimatedCost": 10.001,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GiB Hour",
+          "lastUpdated": "2026-02-12T18:52:34.536Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-app-integration",
+      "extent": "parent",
+      "width": 121,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 120
+      },
+      "dragging": false
+    },
+    {
+      "id": "cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 540,
+        "y": 240
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg",
+        "pricing": {
+          "estimatedCost": 0.02,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T18:52:34.462Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3140,
+        "y": 1620
+      },
+      "dragging": false
+    },
+    {
+      "id": "redis",
+      "type": "azureNode",
+      "position": {
+        "x": 700,
+        "y": 40
+      },
+      "data": {
+        "label": "Azure Cache for Redis",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg",
+        "pricing": {
+          "estimatedCost": 64.24,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:52:34.530Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3300,
+        "y": 1420
+      },
+      "dragging": false
+    },
+    {
+      "id": "sqldb",
+      "type": "azureNode",
+      "position": {
+        "x": 200,
+        "y": 400
+      },
+      "data": {
+        "label": "SQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/sql-database.svg",
+        "pricing": {
+          "estimatedCost": 29.031,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Day",
+          "lastUpdated": "2026-02-12T18:52:34.462Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 144,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2800,
+        "y": 1780
+      },
+      "dragging": false
+    },
+    {
+      "id": "storage",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 580
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T18:52:34.462Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2680,
+        "y": 1960
+      },
+      "dragging": false
+    },
+    {
+      "id": "search",
+      "type": "azureNode",
+      "position": {
+        "x": 1980,
+        "y": 100
+      },
+      "data": {
+        "label": "Azure Cognitive Search",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-cognitive-search.svg"
+      },
+      "parentNode": "grp-ml-search",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3640,
+        "y": 2180
+      },
+      "dragging": false
+    },
+    {
+      "id": "aml",
+      "type": "azureNode",
+      "position": {
+        "x": 140,
+        "y": 120
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T18:52:34.535Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ml-search",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1800,
+        "y": 2200
+      },
+      "dragging": false
+    },
+    {
+      "id": "amlonline",
+      "type": "azureNode",
+      "position": {
+        "x": 680,
+        "y": 80
+      },
+      "data": {
+        "label": "AML Online Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T18:52:34.530Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-ml-search",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2340,
+        "y": 2160
+      },
+      "dragging": false
+    },
+    {
+      "id": "keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 190,
+        "y": 150
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T18:52:34.536Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-security-ops",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3670,
+        "y": 230
+      },
+      "dragging": false
+    },
+    {
+      "id": "firewall",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 430
+      },
+      "data": {
+        "label": "Azure Firewall",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10084-icon-service-Firewalls.svg",
+        "pricing": {
+          "estimatedCost": 11.68,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB",
+          "lastUpdated": "2026-02-12T18:52:34.536Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-security-ops",
+      "extent": "parent",
+      "width": 142,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 510
+      }
+    },
+    {
+      "id": "appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 1180
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T18:52:34.536Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-security-ops",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 1260
+      }
+    },
+    {
+      "id": "loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 860,
+        "y": 800
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T18:52:34.537Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-security-ops",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 4340,
+        "y": 880
+      },
+      "dragging": false
+    },
+    {
+      "id": "azuremonitor",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 930
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-02-12T18:52:34.536Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-security-ops",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 1010
+      }
+    },
+    {
+      "id": "defender",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 680
+      },
+      "data": {
+        "label": "Microsoft Defender for Cloud",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/10241-icon-service-Microsoft-Defender-for-Cloud.svg",
+        "pricing": {
+          "estimatedCost": 0.8759999999999999,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-12T18:52:34.537Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-security-ops",
+      "extent": "parent",
+      "width": 171,
+      "height": 153,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 760
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "frontdoor",
+      "target": "cdn",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Serve cached static assets at edge; fall back to origin when cache-miss occurs",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional",
+        "direction": "reverse",
+        "baseFlowAnimated": false,
+        "flowAnimated": false,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "frontdoor",
+      "target": "appgw",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Route accelerated dynamic traffic to regional WAF ingress based on latency/health probes",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "appgw",
+      "target": "apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward API calls (checkout, payments, orders, inventory) through managed API gateway policies",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "entra",
+      "target": "apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Validate OAuth2/OIDC access tokens and enforce per-client scopes for protected APIs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "apim",
+      "target": "aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Invoke backend microservices with rate limits and request/response transformations",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "aks",
+      "target": "redis",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read/write session and cart state with low-latency caching during browsing and checkout",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 439,
+        "labelOffsetY": 234
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "aks",
+      "target": "cosmos",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Query globally distributed product catalog and regional inventory snapshots for product pages",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 432,
+        "labelOffsetY": 337
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "cosmos",
+      "target": "search",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Populate and refresh faceted search index from catalog changes",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "aks",
+      "target": "search",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Execute faceted search queries and autocomplete for browse and discovery experiences",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 478,
+        "labelOffsetY": 557
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "aks",
+      "target": "amlonline",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit real-time fraud scoring request per transaction and enforce allow/deny/manual-review decision",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "aml",
+      "target": "amlonline",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy approved fraud/recommendation model versions to low-latency online endpoint",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "aks",
+      "target": "amlonline",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Request personalized recommendations for user/session context to rank products on key pages",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "aks",
+      "target": "servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish OrderCreated message for downstream orchestration (payment capture, fulfillment, notifications)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 67,
+        "labelOffsetY": -122
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-13",
+      "source": "servicebus",
+      "target": "aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Consume order orchestration messages to drive payment status updates and fulfillment steps",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 28,
+        "labelOffsetY": 75
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "aks",
+      "target": "sqldb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Persist finalized order records, payment references, and multi-currency totals after fraud approval",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 232,
+        "labelOffsetY": 343
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "aks",
+      "target": "keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve payment provider API keys/certificates and encrypt sensitive configuration at runtime",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "functions",
+      "target": "servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit InventoryUpdated events after warehouse webhook processing to keep carts and PDP stock accurate",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": -115,
+        "labelOffsetY": -144
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-17",
+      "source": "servicebus",
+      "target": "functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Trigger inventory sync jobs per warehouse region when stock reservations/allocations occur",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "bidirectional",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "pulse",
+        "labelOffsetX": 238,
+        "labelOffsetY": 66
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-18",
+      "source": "aks",
+      "target": "functions",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Call inventory webhook adapter to push reservations/ship confirmations to each regional warehouse endpoint",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "servicebus",
+      "target": "logicapps",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Trigger abandoned-cart workflow when CartAbandoned event exceeds configured inactivity threshold",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-21",
+      "source": "aks",
+      "target": "storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store and retrieve product images, static assets, and export artifacts for customer communications",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-22",
+      "source": "aks",
+      "target": "appinsights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit distributed traces and dependency telemetry for checkout latency and fraud scoring SLA tracking",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-23",
+      "source": "functions",
+      "target": "appinsights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Record webhook processing durations, failures, and retries for warehouse integrations",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-24",
+      "source": "appinsights",
+      "target": "loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Centralize application logs and traces for correlation across AKS, Functions, and API gateway",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-25",
+      "source": "azuremonitor",
+      "target": "loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Stream platform metrics and alerts (queue depth, CPU, error rate) into a unified workspace",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-26",
+      "source": "defender",
+      "target": "loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send security posture findings and threat alerts for compliance review and incident triage",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-27",
+      "source": "firewall",
+      "target": "loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Log allowed/blocked outbound flows to payment providers and warehouse endpoints for auditability",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "source": "logicapps",
+      "sourceHandle": "right",
+      "target": "apim",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Invoke recovery APIs to generate cart restore links and apply promotions/experiments per segment",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      },
+      "id": "reactflow__edge-logicappsright-apimtop"
+    }
+  ],
+  "viewport": {
+    "x": 200.80959834234045,
+    "y": 46.160979066820346,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T18:59:13.655Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User traffic enters via global acceleration and edge caching; dynamic requests route to WAF-protected ingress.",
+      "services": [
+        "frontdoor",
+        "cdn",
+        "appgw"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API calls are authenticated and governed at the gateway using Entra-issued tokens and API policies.",
+      "services": [
+        "entra",
+        "apim"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Microservices on AKS serve product pages using Redis for session/cart state and Cosmos DB for globally distributed catalog reads.",
+      "services": [
+        "aks",
+        "redis",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Faceted product search executes against Cognitive Search; index updates flow from catalog changes.",
+      "services": [
+        "search",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "During checkout, the transaction is scored in real time by an AML Online Endpoint to approve/deny within the latency budget.",
+      "services": [
+        "aks",
+        "amlonline",
+        "aml"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "After fraud approval, the order is written to the transactional store and an OrderCreated message is published for orchestration.",
+      "services": [
+        "aks",
+        "sqldb",
+        "servicebus"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Inventory reservations and updates are synchronized with 12 warehouses using Functions webhook adapters and inventory events.",
+      "services": [
+        "servicebus",
+        "functions",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Abandoned cart events trigger Logic Apps to run recovery workflows and call back into APIs to generate restore links and offers.",
+      "services": [
+        "servicebus",
+        "logicapps",
+        "apim"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Security controls and observability capture secrets access, application traces, platform metrics, and security findings for PCI readiness.",
+      "services": [
+        "keyvault",
+        "appinsights",
+        "azuremonitor",
+        "loganalytics",
+        "defender",
+        "firewall"
+      ]
+    }
+  ],
+  "architecturePrompt": "A Black Friday-ready e-commerce platform handling 50,000 orders/hour peak with real-time inventory sync across 12 regional warehouses, ML-powered fraud detection scoring each transaction in under 200ms, personalized recommendations engine, multi-currency payment processing with PCI-DSS compliance, abandoned cart recovery workflows, using Azure Kubernetes Service for microservices, Cosmos DB for product catalog with global distribution, Redis Cache for session and cart state, Service Bus for order orchestration, Azure Functions for inventory webhooks, Cognitive Search for faceted product search, and CDN with dynamic site acceleration"
+}

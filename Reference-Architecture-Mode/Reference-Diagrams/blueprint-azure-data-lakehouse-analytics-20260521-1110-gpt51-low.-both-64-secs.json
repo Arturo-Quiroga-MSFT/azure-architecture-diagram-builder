@@ -1,0 +1,246 @@
+{
+  "title": "Azure Data Lakehouse Analytics Platform",
+  "canvas": {
+    "width": 1600,
+    "height": 1000
+  },
+  "zones": [
+    {
+      "id": "azure",
+      "label": "Azure Subscription",
+      "kind": "azure",
+      "x": 594,
+      "y": 252,
+      "width": 626,
+      "height": 656
+    },
+    {
+      "id": "compute",
+      "label": "Compute & Orchestration",
+      "kind": "subsystem",
+      "x": 638,
+      "y": 296,
+      "width": 538,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage",
+      "kind": "subsystem",
+      "x": 788,
+      "y": 676,
+      "width": 238,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "external_authors",
+      "label": "Authors & Analysts",
+      "kind": "external",
+      "x": 16,
+      "y": 276,
+      "width": 508,
+      "height": 468
+    },
+    {
+      "id": "external_consumers",
+      "label": "Business Consumption",
+      "kind": "external",
+      "x": 1290,
+      "y": 296,
+      "width": 238,
+      "height": 383
+    }
+  ],
+  "nodes": [
+    {
+      "id": "data_engineers",
+      "name": "Data Engineers",
+      "category": "general",
+      "kind": "persona",
+      "x": 60,
+      "y": 320,
+      "zone": "external_authors"
+    },
+    {
+      "id": "bi_devs",
+      "name": "BI Developers",
+      "category": "general",
+      "kind": "persona",
+      "x": 60,
+      "y": 515,
+      "zone": "external_authors"
+    },
+    {
+      "id": "data_scientists",
+      "name": "Data Scientists",
+      "category": "general",
+      "kind": "persona",
+      "x": 330,
+      "y": 600,
+      "zone": "external_authors"
+    },
+    {
+      "id": "adf",
+      "name": "Azure Data Factory",
+      "category": "integration",
+      "kind": "service",
+      "x": 682,
+      "y": 340,
+      "zone": "compute"
+    },
+    {
+      "id": "synapse",
+      "name": "Azure Synapse Analytics",
+      "category": "analytics",
+      "kind": "service",
+      "x": 982,
+      "y": 340,
+      "zone": "compute"
+    },
+    {
+      "id": "adls",
+      "name": "Azure Data Lake Storage",
+      "category": "storage",
+      "kind": "database",
+      "x": 832,
+      "y": 720,
+      "zone": "data"
+    },
+    {
+      "id": "powerbi",
+      "name": "Power BI Embedded",
+      "category": "analytics",
+      "kind": "service",
+      "x": 1334,
+      "y": 340,
+      "zone": "external_consumers"
+    },
+    {
+      "id": "business_users",
+      "name": "Business Users",
+      "category": "general",
+      "kind": "persona",
+      "x": 1334,
+      "y": 535,
+      "zone": "external_consumers"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "data_engineers",
+      "to": "adf",
+      "step": 1,
+      "label": "Author pipelines",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e2",
+      "from": "adf",
+      "to": "adls",
+      "step": 2,
+      "label": "Ingest to raw",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e3",
+      "from": "adf",
+      "to": "synapse",
+      "step": 3,
+      "label": "Trigger transforms",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e4",
+      "from": "synapse",
+      "to": "adls",
+      "step": 4,
+      "label": "Write curated",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e5",
+      "from": "data_scientists",
+      "to": "synapse",
+      "step": 5,
+      "label": "Run SQL/Spark",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e6",
+      "from": "synapse",
+      "to": "powerbi",
+      "step": 6,
+      "label": "Expose datasets",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e7",
+      "from": "bi_devs",
+      "to": "powerbi",
+      "step": 7,
+      "label": "Design reports",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e8",
+      "from": "powerbi",
+      "to": "business_users",
+      "step": 8,
+      "label": "Share dashboards",
+      "routing": "orthogonal",
+      "style": "solid"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Data Engineers design and schedule ETL/ELT pipelines in Azure Data Factory."
+    },
+    {
+      "step": 2,
+      "description": "Azure Data Factory ingests data from various sources into Azure Data Lake Storage raw layers."
+    },
+    {
+      "step": 3,
+      "description": "Azure Data Factory triggers Azure Synapse Analytics SQL and Spark jobs for data transformation."
+    },
+    {
+      "step": 4,
+      "description": "Azure Synapse Analytics writes cleaned and modeled data into curated and serving layers in Azure Data Lake Storage."
+    },
+    {
+      "step": 5,
+      "description": "Data Scientists run ad-hoc SQL and Spark notebooks in Azure Synapse Analytics over lakehouse data."
+    },
+    {
+      "step": 6,
+      "description": "Azure Synapse Analytics exposes analytical datasets and views for Power BI consumption."
+    },
+    {
+      "step": 7,
+      "description": "BI Developers connect Power BI to Synapse datasets and design semantic models, reports, and dashboards."
+    },
+    {
+      "step": 8,
+      "description": "Business Users access published Power BI dashboards and reports for data-driven decision making."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3457,
+    "completionTokens": 3236,
+    "totalTokens": 6693,
+    "elapsedTimeMs": 48333,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-21T15:10:24.817Z"
+}

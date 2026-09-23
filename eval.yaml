@@ -1,0 +1,17 @@
+name: aadb-application-quality-v1
+dataset:
+  name: aadb-eval-seed
+  version: v1
+  local_uri: .foundry/datasets/aadb-eval-seed-v1.jsonl
+evaluators:
+  - relevance
+  - coherence
+  - name: aadb_architecture_quality
+    local_uri: .foundry/evaluators/aadb-architecture-quality-v1.md
+options:
+  eval_model: gpt-5.4-mini
+  pass_threshold: 0.8
+  max_samples: 14
+  generation_instruction: >-
+    Evaluate captured AADB architecture-generation outputs. Treat deterministic
+    graph and Azure validation checks as authoritative for computable defects.

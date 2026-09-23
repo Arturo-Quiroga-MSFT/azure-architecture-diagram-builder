@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-02-01T21:12:55.087Z" agent="Azure Architecture Diagram Builder" version="1.0" type="device">
+  <diagram id="azure-architecture" name="Untitled Architecture">
+    <mxGraphModel dx="0" dy="0" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2530" pageHeight="1555" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      <mxCell id="cell-2" value="Ingestion" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f9fafb;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="-30" y="-5" width="1020" height="460" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-3" value="Data Layer" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="1030" y="-30" width="920" height="460" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-4" value="ML Training &amp; Inference" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="450" y="945" width="1980" height="510" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-5" value="Security &amp; Monitoring" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#6b7280;fontStyle=1;startSize=30;rounded=1;arcSize=8;" vertex="1" parent="1">
+        <mxGeometry x="-30" y="345" width="2460" height="710" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-6" value="Event Hubs&#xa;$27.60/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-2">
+        <mxGeometry x="180" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-7" value="Azure Functions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-2">
+        <mxGeometry x="660" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-8" value="Data Lake&#xa;$0.02/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-3">
+        <mxGeometry x="180" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-9" value="Azure Cosmos DB&#xa;$0.02/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-3">
+        <mxGeometry x="560" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-10" value="Azure Machine Learning&#xa;$50.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-4">
+        <mxGeometry x="1140" y="260" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-11" value="Container Registry&#xa;$20.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-4">
+        <mxGeometry x="1620" y="260" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-12" value="App Service&#xa;$69.35/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-4">
+        <mxGeometry x="760" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-13" value="Api Management&#xa;$100.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-4">
+        <mxGeometry x="180" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-14" value="Microsoft Entra ID&#xa;$6.00/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="180" y="460" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-15" value="Key Vault&#xa;$21.90/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="180" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-16" value="Application Insights&#xa;$0.10/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="1620" y="210" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-17" value="Log Analytics&#xa;$2.30/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="2100" y="310" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-18" value="Monitor&#xa;$2.30/mo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f4f6;strokeColor=#6b7280;strokeWidth=2;fontStyle=0;verticalAlign=bottom;spacingBottom=8;" vertex="1" parent="cell-5">
+        <mxGeometry x="1620" y="460" width="140" height="90" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-19" value="Event stream trigger for validation/enrichment" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-6" target="cell-7">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-20" value="Write raw/curated data and feature sets" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-7" target="cell-8">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-21" value="Read training/validation data for pipelines" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-8" target="cell-10">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-22" value="Build and publish model serving images" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-10" target="cell-11">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-23" value="Route external inference requests to backend API" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-13" target="cell-12">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-24" value="Invoke managed online endpoint for scoring" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-12" target="cell-10">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-25" value="Persist predictions and request context" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-12" target="cell-9">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-26" value="Authenticate/authorize API consumers (OAuth2/OIDC)" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-14" target="cell-13">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-27" value="Retrieve secrets and connection details" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-15" target="cell-7">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-28" value="Retrieve secrets and certificates" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-15" target="cell-12">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-29" value="Emit traces and custom telemetry" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-7" target="cell-16">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-30" value="Emit API traces and dependency telemetry" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-12" target="cell-16">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-31" value="Centralize logs for analytics and correlation" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-16" target="cell-17">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="cell-32" value="Alert-driven investigations and log queries" style="edgeStyle=orthogonalEdgeStyle;curved=1;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;strokeWidth=2;strokeColor=#6b7280;endArrow=classic;endFill=1;labelBackgroundColor=#fef9c3;labelBorderColor=#374151;spacingTop=2;spacingBottom=2;spacingLeft=6;spacingRight=6;fontSize=12;fontColor=#1f2937;fontStyle=1;" edge="1" parent="1" source="cell-18" target="cell-17">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

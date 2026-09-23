@@ -1,0 +1,150 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Streaming Ingress"
+    },
+    {
+      "id": "ai-processing",
+      "label": "Multi-Modal AI Processing"
+    },
+    {
+      "id": "observability",
+      "label": "Model Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Streaming ingest for real-time data",
+      "groupId": "ingress"
+    },
+    {
+      "id": "speech-services",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Real-time transcription",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Multilingual support",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Text and vision processing",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "application-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Model observability and monitoring",
+      "groupId": "observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "event-hubs",
+      "to": "speech-services",
+      "label": "Stream audio for real-time transcription",
+      "type": "async"
+    },
+    {
+      "from": "speech-services",
+      "to": "translator",
+      "label": "Send transcribed text for multilingual translation",
+      "type": "sync"
+    },
+    {
+      "from": "translator",
+      "to": "azure-openai",
+      "label": "Forward translated text for AI text and vision analysis",
+      "type": "sync"
+    },
+    {
+      "from": "azure-openai",
+      "to": "application-insights",
+      "label": "Emit model traces and performance metrics",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Ingest multi-modal streams into Event Hubs for processing",
+      "services": [
+        "event-hubs",
+        "speech-services"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Transcribe incoming audio in real time with Speech Services",
+      "services": [
+        "event-hubs",
+        "speech-services"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Translate transcribed text using Translator for multilingual support",
+      "services": [
+        "speech-services",
+        "translator"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Process text and vision inputs with Azure OpenAI",
+      "services": [
+        "translator",
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Capture inference metrics and logs in Application Insights",
+      "services": [
+        "azure-openai",
+        "application-insights"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1423,
+    "completionTokens": 732,
+    "totalTokens": 4572,
+    "elapsedTimeMs": 34160,
+    "model": "grok-4.3",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "grok-4.3",
+    "modelDisplayName": "Grok 4.3",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1423,
+      "completionTokens": 732,
+      "totalTokens": 4572,
+      "elapsedTimeMs": 34160,
+      "model": "grok-4.3",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T19:48:57.144Z",
+    "source": "model-comparison"
+  }
+}

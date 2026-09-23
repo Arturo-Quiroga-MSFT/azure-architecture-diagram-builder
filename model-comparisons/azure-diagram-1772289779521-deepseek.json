@@ -1,0 +1,348 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Ingress & Security"
+    },
+    {
+      "id": "compute",
+      "label": "Compute & APIs"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring"
+    },
+    {
+      "id": "identity",
+      "label": "Identity"
+    }
+  ],
+  "services": [
+    {
+      "id": "app-gateway",
+      "name": "Application Gateway",
+      "type": "Application Gateway",
+      "category": "networking",
+      "description": "Public ingress with WAF, TLS termination, and routing to microservices",
+      "groupId": "ingress"
+    },
+    {
+      "id": "front-door",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global load balancing, CDN, DDoS protection",
+      "groupId": "ingress"
+    },
+    {
+      "id": "api-mgmt",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "API gateway for microservices, authentication, rate limiting, and versioning",
+      "groupId": "ingress"
+    },
+    {
+      "id": "app-service-1",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Containerized microservice #1 (e.g., Order service)",
+      "groupId": "compute"
+    },
+    {
+      "id": "app-service-2",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Containerized microservice #2 (e.g., Payment service)",
+      "groupId": "compute"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless functions for event-driven processing",
+      "groupId": "compute"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Globally distributed NoSQL database for microservices",
+      "groupId": "data"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for static assets and file uploads",
+      "groupId": "data"
+    },
+    {
+      "id": "service-bus",
+      "name": "Service Bus",
+      "type": "Service Bus",
+      "category": "integration",
+      "description": "Message broker for async communication between microservices",
+      "groupId": "data"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Central secrets, certificates, and keys management",
+      "groupId": "identity"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and authorization for users and services",
+      "groupId": "identity"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Centralized monitoring, metrics, alerts",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log collection and analysis",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Application performance monitoring",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "front-door",
+      "to": "app-gateway",
+      "label": "Routes global traffic with SSL offload",
+      "type": "sync"
+    },
+    {
+      "from": "app-gateway",
+      "to": "api-mgmt",
+      "label": "Proxies requests to API Management",
+      "type": "sync"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "app-service-1",
+      "label": "Routes API calls to microservice",
+      "type": "sync"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "app-service-2",
+      "label": "Routes API calls to microservice",
+      "type": "sync"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "functions",
+      "label": "Invokes serverless functions via HTTP triggers",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-1",
+      "to": "cosmosdb",
+      "label": "Reads/writes data",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-2",
+      "to": "cosmosdb",
+      "label": "Reads/writes data",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "cosmosdb",
+      "label": "Reads/writes data",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-1",
+      "to": "service-bus",
+      "label": "Publishes events (async)",
+      "type": "async"
+    },
+    {
+      "from": "service-bus",
+      "to": "app-service-2",
+      "label": "Subscribes to events (async)",
+      "type": "async"
+    },
+    {
+      "from": "app-service-1",
+      "to": "key-vault",
+      "label": "Retrieves secrets and certificates",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-2",
+      "to": "key-vault",
+      "label": "Retrieves secrets and certificates",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "key-vault",
+      "label": "Retrieves secrets and certificates",
+      "type": "sync"
+    },
+    {
+      "from": "api-mgmt",
+      "to": "entra-id",
+      "label": "Validates OAuth2 tokens",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-1",
+      "to": "entra-id",
+      "label": "Uses managed identity for auth",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-2",
+      "to": "entra-id",
+      "label": "Uses managed identity for auth",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "entra-id",
+      "label": "Uses managed identity for auth",
+      "type": "sync"
+    },
+    {
+      "from": "app-service-1",
+      "to": "app-insights",
+      "label": "Sends telemetry",
+      "type": "async"
+    },
+    {
+      "from": "app-service-2",
+      "to": "app-insights",
+      "label": "Sends telemetry",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "app-insights",
+      "label": "Sends telemetry",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "monitor",
+      "label": "Forwards metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "log-analytics",
+      "label": "Stores logs for analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User request arrives via Azure Front Door, which routes to Application Gateway with WAF and TLS termination.",
+      "services": [
+        "front-door",
+        "app-gateway"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Application Gateway forwards the request to API Management, which authenticates using Microsoft Entra ID and routes to the appropriate microservice based on API path.",
+      "services": [
+        "app-gateway",
+        "api-mgmt",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The microservice (App Service or Azure Function) processes the request: reads/writes data from Cosmos DB, retrieves secrets from Key Vault, and may publish events to Service Bus.",
+      "services": [
+        "app-service-1",
+        "app-service-2",
+        "functions",
+        "cosmosdb",
+        "key-vault",
+        "service-bus"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Other microservices asynchronously consume events from Service Bus to perform additional processing, also using Cosmos DB and Key Vault.",
+      "services": [
+        "service-bus",
+        "app-service-1",
+        "app-service-2",
+        "cosmosdb",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "All compute services send telemetry to Application Insights, which forwards to Azure Monitor. Logs are stored in Log Analytics for analysis.",
+      "services": [
+        "app-service-1",
+        "app-service-2",
+        "functions",
+        "app-insights",
+        "monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1420,
+    "completionTokens": 2222,
+    "totalTokens": 3642,
+    "elapsedTimeMs": 31895,
+    "model": "deepseek-v3.2-speciale"
+  },
+  "metadata": {
+    "prompt": "Microservices app with API gateway and auth",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1420,
+      "completionTokens": 2222,
+      "totalTokens": 3642,
+      "elapsedTimeMs": 31895,
+      "model": "deepseek-v3.2-speciale"
+    },
+    "savedAt": "2026-02-28T14:43:00.127Z",
+    "source": "model-comparison"
+  }
+}

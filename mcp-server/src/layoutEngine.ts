@@ -1,0 +1,1002 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+/**
+ * Layout Engine for SpecKit Diagram Rendering
+ *
+ * Uses dagre to compute hierarchical graph layout for Azure architecture
+ * diagrams. Produces positioned nodes and routed edges ready for SVG or
+ * HTML rendering.
+ */
+
+import dagre from '@dagrejs/dagre';
+import { resolveServiceName, SERVICE_CATALOG } from './serviceCatalog.js';
+
+// ── Types ──────────────────────────────────────────────────────────────
+
+export interface DiagramService {
+  name: string;
+  type: string;
+  region?: string;
+  description?: string;
+  groupId?: string;
+}
+
+export interface DiagramConnection {
+  from: string;
+  to: string;
+  label?: string;
+  type?: 'sync' | 'async' | 'optional' | 'association' | 'containment';
+}
+
+export interface DiagramGroup {
+  id: string;
+  label: string;
+}
+
+export interface PositionedNode {
+  name: string;
+  type: string;
+  region?: string;
+  description: string;
+  category: string;
+  groupId: string | null;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  textColor: string;
+  /** Best-effort estimated monthly cost (total, quantity-adjusted). Optional. */
+  estimatedCost?: number;
+  /** Currency code for estimatedCost (e.g. "USD"). Optional. */
+  costCurrency?: string;
+  /** Curated catalog cost range, shown when no firm numeric estimate exists. */
+  costRange?: string;
+  /** True when the service bills by usage (per-token/-transaction/-GB). */
+  isUsageBased?: boolean;
+}
+
+export interface PositionedEdge {
+  from: string;
+  to: string;
+  label: string;
+  type: string;
+  points: Array<{ x: number; y: number }>;
+}
+
+export interface PositionedGroup {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+}
+
+export interface LayoutResult {
+  nodes: PositionedNode[];
+  edges: PositionedEdge[];
+  groups: PositionedGroup[];
+  width: number;
+  height: number;
+  /** Layout flow direction, used by the renderer for orthogonal edge routing. */
+  direction: 'TB' | 'LR';
+}
+
+// ── Azure category colors ──────────────────────────────────────────────
+
+const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  'ai + machine learning':  { bg: '#E8F0FE', border: '#4285F4', text: '#1A73E8' },
+  'app services':           { bg: '#E8F4FD', border: '#0078D4', text: '#004578' },
+  'compute':                { bg: '#E8F4FD', border: '#0078D4', text: '#004578' },
+  'databases':              { bg: '#E6F4EA', border: '#0B8043', text: '#0B6B3A' },
+  'storage':                { bg: '#E6F4EA', border: '#137333', text: '#0B6B3A' },
+  'networking':             { bg: '#FFF3E0', border: '#E65100', text: '#BF360C' },
+  'analytics':              { bg: '#F3E8FD', border: '#7B1FA2', text: '#6A1B9A' },
+  'containers':             { bg: '#E0F7FA', border: '#00838F', text: '#006064' },
+  'integration':            { bg: '#FCE4EC', border: '#C62828', text: '#B71C1C' },
+  'identity':               { bg: '#FFF8E1', border: '#F9A825', text: '#F57F17' },
+  'management + governance':{ bg: '#F1F8E9', border: '#558B2F', text: '#33691E' },
+  'iot':                    { bg: '#E0F2F1', border: '#00695C', text: '#004D40' },
+  'monitor':                { bg: '#EDE7F6', border: '#5E35B1', text: '#4527A0' },
+  'security':               { bg: '#FFEBEE', border: '#C62828', text: '#B71C1C' },
+  'web':                    { bg: '#E3F2FD', border: '#1565C0', text: '#0D47A1' },
+  'other':                  { bg: '#F5F5F5', border: '#616161', text: '#424242' },
+};
+
+const GROUP_COLORS = [
+  { bg: '#F0F6FF', border: '#0078D4' },   // Azure blue
+  { bg: '#F0FFF0', border: '#00B294' },   // Azure green
+  { bg: '#FFF8F0', border: '#FFB900' },   // Azure yellow
+  { bg: '#F8F0FF', border: '#8764B8' },   // Azure purple
+  { bg: '#FFF0F0', border: '#D13438' },   // Azure red
+  { bg: '#F0FFFF', border: '#038387' },   // Azure teal
+];
+
+function getCategoryColor(category: string) {
+  return CATEGORY_COLORS[category] ?? CATEGORY_COLORS['other'];
+}
+
+// Preferred palette index for a group based on tier/label keywords, or -1 when
+// the label doesn't match a known tier. Order matters: more specific tiers win.
+function semanticGroupIndex(label: string): number {
+  const l = label.toLowerCase();
+  if (/identity|entra|\baad\b|auth/.test(l)) return 2;                                       // yellow
+  if (/data|database|storage|\bsql\b|cosmos|cache|persist/.test(l)) return 1;                // green
+  if (/security|\bops\b|monitor|governance|observ|backup|defender|sentinel/.test(l)) return 4; // red
+  if (/analytics|lakehouse|warehouse|synapse|databricks|spark/.test(l)) return 3;            // purple
+  if (/\bapi\b|gateway|apim|integration|messaging|event|queue|bus/.test(l)) return 5;        // teal
+  if (/edge|ingress|front|\bcdn\b|\bdns\b|\bwaf\b|perimeter|network/.test(l)) return 0;      // blue
+  if (/app|compute|web|frontend|backend|application|service|processing|tier|genai|\bml\b|model/.test(l)) return 3; // purple
+  return -1;
+}
+
+// Assign each group a header color, honoring semantic tier preferences but
+// keeping colors as distinct as possible within a single diagram. Previously an
+// index-based fallback could collide with semantically-mapped groups, leaving
+// some palette entries unused (e.g. three red groups while blue went unused).
+function assignGroupColors(labels: string[]): { bg: string; border: string }[] {
+  const n = labels.length;
+  const prefs = labels.map(semanticGroupIndex);
+  const assigned: number[] = new Array(n).fill(-1);
+  const usage = new Array(GROUP_COLORS.length).fill(0);
+
+  // Pass 1: grant each group its preferred color when that color is still free.
+  for (let i = 0; i < n; i++) {
+    const p = prefs[i];
+    if (p >= 0 && usage[p] === 0) { assigned[i] = p; usage[p]++; }
+  }
+  // Pass 2: fill the rest — prefer an entirely unused palette entry, else the
+  // group's semantic preference, else the least-used entry.
+  for (let i = 0; i < n; i++) {
+    if (assigned[i] !== -1) continue;
+    let idx = usage.findIndex(u => u === 0);
+    if (idx === -1) {
+      idx = prefs[i] >= 0 ? prefs[i] : usage.reduce((m, u, k) => (u < usage[m] ? k : m), 0);
+    }
+    assigned[i] = idx; usage[idx]++;
+  }
+  return assigned.map(i => GROUP_COLORS[i]);
+}
+
+// ── Layout computation ─────────────────────────────────────────────────
+
+const NODE_WIDTH = 200;
+const NODE_HEIGHT = 70;
+const PADDING = 40;
+const EDGE_LABEL_MAX_CHARS = 28;
+const EDGE_LABEL_FONT = 10;
+const EDGE_LABEL_HORIZONTAL_PAD = 14;
+const EDGE_LABEL_CORRIDOR_PAD = 16;
+
+function labelAwareRankSep(
+  connections: DiagramConnection[],
+  base: number,
+  direction: 'TB' | 'LR',
+): number {
+  if (direction !== 'LR') return base;
+  const widest = connections.reduce((max, connection) => {
+    const chars = Math.min(EDGE_LABEL_MAX_CHARS, (connection.label ?? '').trim().length);
+    return Math.max(max, chars * EDGE_LABEL_FONT * 0.62 + EDGE_LABEL_HORIZONTAL_PAD);
+  }, 0);
+  return Math.max(base, Math.ceil(widest + EDGE_LABEL_CORRIDOR_PAD));
+}
+
+function computeFlatLayout(
+  services: DiagramService[],
+  connections: DiagramConnection[],
+  groups: DiagramGroup[],
+  direction: 'TB' | 'LR' = 'TB',
+  reserveEdgeLabelCorridors = false,
+): LayoutResult {
+  const g = new dagre.graphlib.Graph({ compound: true });
+
+  // Adaptive spacing: scale up for larger graphs and longer edge labels so
+  // label backgrounds don't collide and edges have room to route cleanly.
+  const svcCount = services.length;
+  const maxLabelLen = connections.reduce(
+    (m, c) => Math.max(m, (c.label ?? '').length),
+    0,
+  );
+  const sizeBoost = svcCount >= 16 ? 1.25 : svcCount >= 10 ? 1.1 : 1.0;
+  const labelBoost = maxLabelLen >= 40 ? 1.2 : maxLabelLen >= 25 ? 1.1 : 1.0;
+  const nodesep = Math.round(60 * sizeBoost * labelBoost);
+  const baseRanksep = Math.round(85 * sizeBoost * labelBoost);
+  const ranksep = reserveEdgeLabelCorridors
+    ? labelAwareRankSep(connections, baseRanksep, direction)
+    : baseRanksep;
+  const edgesep = Math.round(30 * labelBoost);
+
+  g.setGraph({
+    rankdir: direction,
+    nodesep,
+    ranksep,
+    edgesep,
+    marginx: PADDING,
+    marginy: PADDING,
+    // longest-path aligns tiered architectures (edge→app→data) onto clean ranks
+    // and empirically produces far fewer edge crossings than network-simplex /
+    // tight-tree for these graphs.
+    ranker: 'longest-path',
+  });
+
+  g.setDefaultEdgeLabel(() => ({}));
+
+  // Add group nodes (compound parents)
+  const groupMap = new Map(groups.map(gr => [gr.id, gr]));
+  for (const group of groups) {
+    g.setNode(`group-${group.id}`, {
+      label: group.label,
+      clusterLabelPos: 'top',
+      style: 'fill: transparent',
+    });
+  }
+
+  // Add service nodes
+  const serviceCategories = new Map<string, string>();
+  for (const svc of services) {
+    const category = resolveCategory(svc.type);
+    serviceCategories.set(svc.name, category);
+
+    g.setNode(svc.name, {
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+      label: svc.name,
+    });
+
+    // Parent to group if specified
+    if (svc.groupId && groupMap.has(svc.groupId)) {
+      g.setParent(svc.name, `group-${svc.groupId}`);
+    }
+  }
+
+  // Add edges
+  const serviceNames = new Set(services.map(s => s.name));
+  for (const conn of connections) {
+    if (conn.type !== 'association' && conn.type !== 'containment' && serviceNames.has(conn.from) && serviceNames.has(conn.to)) {
+      g.setEdge(conn.from, conn.to, {
+        label: conn.label ?? '',
+        minlen: 1,
+        weight: 1,
+      });
+    }
+  }
+
+  // Run layout
+  dagre.layout(g);
+
+  // Extract positioned nodes
+  const positionedNodes: PositionedNode[] = services.map(svc => {
+    const node = g.node(svc.name);
+    const category = serviceCategories.get(svc.name) ?? 'other';
+    const colors = getCategoryColor(category);
+
+    return {
+      name: svc.name,
+      type: svc.type,
+      region: svc.region,
+      description: svc.description ?? '',
+      category,
+      groupId: svc.groupId ?? null,
+      x: node.x - NODE_WIDTH / 2,
+      y: node.y - NODE_HEIGHT / 2,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+      color: colors.border,
+      textColor: colors.text,
+    };
+  });
+
+  // Extract positioned edges
+  const positionedEdges: PositionedEdge[] = connections
+    .filter(c => serviceNames.has(c.from) && serviceNames.has(c.to))
+    .map(conn => {
+      const edge = g.edge(conn.from, conn.to);
+      return {
+        from: conn.from,
+        to: conn.to,
+        label: conn.label ?? '',
+        type: conn.type ?? 'sync',
+        points: edge?.points ?? [],
+      };
+    });
+
+  // Extract positioned groups
+  const flatGroupColors = assignGroupColors(groups.map(gr => gr.label));
+  const positionedGroups: PositionedGroup[] = groups.map((group, idx) => {
+    const gNode = g.node(`group-${group.id}`);
+    const groupColor = flatGroupColors[idx];
+    if (!gNode) {
+      return {
+        id: group.id,
+        label: group.label,
+        x: 0, y: 0, width: 0, height: 0,
+        color: groupColor.border,
+      };
+    }
+    return {
+      id: group.id,
+      label: group.label,
+      x: gNode.x - (gNode.width ?? 200) / 2,
+      y: gNode.y - (gNode.height ?? 100) / 2,
+      width: gNode.width ?? 200,
+      height: gNode.height ?? 100,
+      color: groupColor.border,
+    };
+  }).filter(g => g.width > 0);
+
+  // Compute canvas bounds
+  const graphInfo = g.graph();
+  const width = (graphInfo.width ?? 800) + PADDING * 2;
+  const height = (graphInfo.height ?? 600) + PADDING * 2;
+
+  return { nodes: positionedNodes, edges: positionedEdges, groups: positionedGroups, width, height, direction };
+}
+
+// ── Grouped (two-level) layout ─────────────────────────────────────────
+// Lays out each group's members independently, then places the groups as
+// non-overlapping meta-nodes. Combined with the renderer's orthogonal router
+// (which only needs edge endpoints), this produces clean lane-based diagrams
+// without the interleaved/overlapping group boxes the compound layout caused.
+
+const GROUP_INNER_PAD = 16;
+const GROUP_HEADER_H = 28;
+
+interface Rect { x: number; y: number; width: number; height: number }
+
+/** Pick border anchor points on two rects that suit the flow direction. */
+function borderAnchor(a: Rect, b: Rect, direction: 'TB' | 'LR'): { s: { x: number; y: number }; t: { x: number; y: number } } {
+  const acx = a.x + a.width / 2, acy = a.y + a.height / 2;
+  const bcx = b.x + b.width / 2, bcy = b.y + b.height / 2;
+  if (direction === 'LR') {
+    if (bcx >= acx) return { s: { x: a.x + a.width, y: acy }, t: { x: b.x, y: bcy } };
+    return { s: { x: a.x, y: acy }, t: { x: b.x + b.width, y: bcy } };
+  }
+  if (bcy >= acy) return { s: { x: acx, y: a.y + a.height }, t: { x: bcx, y: b.y } };
+  return { s: { x: acx, y: a.y }, t: { x: bcx, y: b.y + b.height } };
+}
+
+/** Lay out one group's members; return positions normalized to (0,0) + size. */
+function subLayoutGroup(
+  members: DiagramService[],
+  connections: DiagramConnection[],
+  direction: 'TB' | 'LR',
+  reserveEdgeLabelCorridors: boolean,
+): { pos: Map<string, { x: number; y: number }>; width: number; height: number } {
+  const memberSet = new Set(members.map(m => m.name));
+  const internalConnections = connections.filter(
+    connection => connection.type !== 'association' && connection.type !== 'containment' && memberSet.has(connection.from) && memberSet.has(connection.to) && connection.from !== connection.to,
+  );
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({
+    rankdir: direction,
+    nodesep: 45,
+    ranksep: reserveEdgeLabelCorridors
+      ? labelAwareRankSep(internalConnections, 65, direction)
+      : 65,
+    marginx: 0,
+    marginy: 0,
+    ranker: 'network-simplex',
+  });
+  g.setDefaultEdgeLabel(() => ({}));
+  for (const m of members) g.setNode(m.name, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  for (const c of internalConnections) g.setEdge(c.from, c.to, {});
+  dagre.layout(g);
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const raw = new Map<string, { x: number; y: number }>();
+  for (const m of members) {
+    const n = g.node(m.name);
+    const x = n.x - NODE_WIDTH / 2, y = n.y - NODE_HEIGHT / 2;
+    raw.set(m.name, { x, y });
+    minX = Math.min(minX, x); minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + NODE_WIDTH); maxY = Math.max(maxY, y + NODE_HEIGHT);
+  }
+  const pos = new Map<string, { x: number; y: number }>();
+  for (const [name, p] of raw) pos.set(name, { x: p.x - minX, y: p.y - minY });
+  return { pos, width: maxX - minX, height: maxY - minY };
+}
+
+function computeGroupedLayout(
+  services: DiagramService[],
+  connections: DiagramConnection[],
+  groups: DiagramGroup[],
+  direction: 'TB' | 'LR',
+  reserveEdgeLabelCorridors: boolean,
+): LayoutResult | null {
+  const groupMap = new Map(groups.map(g => [g.id, g]));
+  const validGroups = groups.filter(g => services.some(s => s.groupId === g.id));
+  if (validGroups.length === 0) return null;
+
+  // Phase 1: sub-layout each group's members.
+  const sub = new Map<string, { pos: Map<string, { x: number; y: number }>; width: number; height: number }>();
+  for (const grp of validGroups) {
+    const members = services.filter(s => s.groupId === grp.id);
+    sub.set(grp.id, subLayoutGroup(members, connections, direction, reserveEdgeLabelCorridors));
+  }
+  const ungrouped = services.filter(s => !s.groupId || !groupMap.has(s.groupId));
+
+  // Phase 2: lay out groups (and ungrouped nodes) as meta-nodes.
+  const metaKey = (name: string): string => {
+    const svc = services.find(s => s.name === name);
+    return svc && svc.groupId && groupMap.has(svc.groupId) ? `g:${svc.groupId}` : `n:${name}`;
+  };
+  const mg = new dagre.graphlib.Graph();
+  const sizeBoost = services.length >= 16 ? 1.2 : 1.0;
+  const crossGroupConnections = connections.filter(connection => metaKey(connection.from) !== metaKey(connection.to));
+  mg.setGraph({
+    rankdir: direction,
+    nodesep: Math.round(70 * sizeBoost),
+    ranksep: reserveEdgeLabelCorridors
+      ? labelAwareRankSep(crossGroupConnections, Math.round(110 * sizeBoost), direction)
+      : Math.round(110 * sizeBoost),
+    marginx: PADDING,
+    marginy: PADDING,
+    ranker: 'network-simplex',
+  });
+  mg.setDefaultEdgeLabel(() => ({}));
+  // Effective group width fits both the member layout and the header label.
+  const groupW = new Map<string, number>();
+  for (const grp of validGroups) {
+    const s = sub.get(grp.id)!;
+    const headerW = grp.label.length * 6.8 + 28;
+    const effW = Math.max(s.width, headerW);
+    groupW.set(grp.id, effW);
+    mg.setNode(`g:${grp.id}`, {
+      width: effW + GROUP_INNER_PAD * 2,
+      height: s.height + GROUP_INNER_PAD * 2 + GROUP_HEADER_H,
+    });
+  }
+  for (const svc of ungrouped) mg.setNode(`n:${svc.name}`, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  const seenMeta = new Set<string>();
+  for (const c of connections) {
+    if (c.type === 'association' || c.type === 'containment') continue;
+    const a = metaKey(c.from), b = metaKey(c.to);
+    if (a === b) continue;
+    const key = `${a}\u0000${b}`;
+    if (seenMeta.has(key)) continue;
+    seenMeta.add(key);
+    if (mg.hasNode(a) && mg.hasNode(b)) mg.setEdge(a, b, {});
+  }
+  dagre.layout(mg);
+
+  // Resolve final node positions + group boxes.
+  const serviceCategories = new Map<string, string>();
+  for (const svc of services) serviceCategories.set(svc.name, resolveCategory(svc.type));
+  const nodePos = new Map<string, { x: number; y: number }>();
+  const positionedGroups: PositionedGroup[] = [];
+  const groupedColors = assignGroupColors(validGroups.map(gr => gr.label));
+
+  validGroups.forEach((grp, idx) => {
+    const meta = mg.node(`g:${grp.id}`);
+    const s = sub.get(grp.id)!;
+    const effW = groupW.get(grp.id)!;
+    const boxLeft = meta.x - meta.width / 2;
+    const boxTop = meta.y - meta.height / 2;
+    const areaLeft = boxLeft + GROUP_INNER_PAD;
+    const areaTop = boxTop + GROUP_INNER_PAD + GROUP_HEADER_H;
+    for (const [name, p] of s.pos) nodePos.set(name, { x: areaLeft + p.x, y: areaTop + p.y });
+    const color = groupedColors[idx];
+    positionedGroups.push({
+      id: grp.id, label: grp.label,
+      x: areaLeft, y: areaTop, width: effW, height: s.height,
+      color: color.border,
+    });
+  });
+  for (const svc of ungrouped) {
+    const meta = mg.node(`n:${svc.name}`);
+    nodePos.set(svc.name, { x: meta.x - NODE_WIDTH / 2, y: meta.y - NODE_HEIGHT / 2 });
+  }
+
+  const positionedNodes: PositionedNode[] = services.map(svc => {
+    const p = nodePos.get(svc.name) ?? { x: 0, y: 0 };
+    const category = serviceCategories.get(svc.name) ?? 'other';
+    const colors = getCategoryColor(category);
+    return {
+      name: svc.name, type: svc.type, region: svc.region, description: svc.description ?? '',
+      category, groupId: svc.groupId ?? null,
+      x: p.x, y: p.y, width: NODE_WIDTH, height: NODE_HEIGHT,
+      color: colors.border, textColor: colors.text,
+    };
+  });
+  const rectOf = new Map(positionedNodes.map(n => [n.name, { x: n.x, y: n.y, width: n.width, height: n.height }]));
+
+  // Edges: distributed border ports. Instead of every edge touching a node at
+  // the center of one side (which pinches many edges into a single point), we
+  // group all edges that use the same node side and spread them evenly along
+  // that side, ordered by the opposite endpoint's position to reduce crossings.
+  const serviceNames = new Set(services.map(s => s.name));
+  const validConns = connections.filter(
+    c => serviceNames.has(c.from) && serviceNames.has(c.to) && c.from !== c.to,
+  );
+
+  type Side = 'L' | 'R' | 'T' | 'B';
+  // Pass 1: which side of each endpoint the edge uses (center-to-center).
+  const sides = validConns.map(c => {
+    const a = rectOf.get(c.from)!, b = rectOf.get(c.to)!;
+    const acx = a.x + a.width / 2, acy = a.y + a.height / 2;
+    const bcx = b.x + b.width / 2, bcy = b.y + b.height / 2;
+    if (direction === 'LR') {
+      return bcx >= acx ? { s: 'R' as Side, t: 'L' as Side } : { s: 'L' as Side, t: 'R' as Side };
+    }
+    return bcy >= acy ? { s: 'B' as Side, t: 'T' as Side } : { s: 'T' as Side, t: 'B' as Side };
+  });
+
+  // Pass 2: bucket every edge-end by (node, side).
+  interface EndRef { edgeIdx: number; role: 's' | 't'; sortKey: number }
+  const buckets = new Map<string, EndRef[]>();
+  const perp = (side: Side, other: Rect) =>
+    side === 'L' || side === 'R' ? other.y + other.height / 2 : other.x + other.width / 2;
+  const push = (node: string, side: Side, ref: EndRef) => {
+    const key = `${node}\u0000${side}`;
+    const arr = buckets.get(key); if (arr) arr.push(ref); else buckets.set(key, [ref]);
+  };
+  validConns.forEach((c, i) => {
+    const a = rectOf.get(c.from)!, b = rectOf.get(c.to)!;
+    push(c.from, sides[i].s, { edgeIdx: i, role: 's', sortKey: perp(sides[i].s, b) });
+    push(c.to, sides[i].t, { edgeIdx: i, role: 't', sortKey: perp(sides[i].t, a) });
+  });
+
+  // Pass 3: distribute ports along each side, ordered by sortKey.
+  const anchors: Array<{ s?: { x: number; y: number }; t?: { x: number; y: number } }> =
+    validConns.map(() => ({}));
+  const PORT_MARGIN = 14;
+  for (const [key, list] of buckets) {
+    const sep = key.indexOf('\u0000');
+    const node = key.slice(0, sep);
+    const side = key.slice(sep + 1) as Side;
+    const r = rectOf.get(node)!;
+    list.sort((p, q) => p.sortKey - q.sortKey);
+    const vertical = side === 'L' || side === 'R';
+    const start = vertical ? r.y + PORT_MARGIN : r.x + PORT_MARGIN;
+    const span = (vertical ? r.height : r.width) - 2 * PORT_MARGIN;
+    const fixed = side === 'R' ? r.x + r.width : side === 'L' ? r.x : side === 'B' ? r.y + r.height : r.y;
+    const k = list.length;
+    list.forEach((e, idx) => {
+      const pos = start + (span * (idx + 1)) / (k + 1); // k=1 → center
+      const pt = vertical ? { x: fixed, y: pos } : { x: pos, y: fixed };
+      if (e.role === 's') anchors[e.edgeIdx].s = pt; else anchors[e.edgeIdx].t = pt;
+    });
+  }
+
+  const positionedEdges: PositionedEdge[] = validConns.map((c, i) => {
+    const fallback = borderAnchor(rectOf.get(c.from)!, rectOf.get(c.to)!, direction);
+    const s = anchors[i].s ?? fallback.s;
+    const t = anchors[i].t ?? fallback.t;
+    return { from: c.from, to: c.to, label: c.label ?? '', type: c.type ?? 'sync', points: [s, t] };
+  });
+
+  // Canvas bounds.
+  let maxX = 0, maxY = 0;
+  for (const n of positionedNodes) { maxX = Math.max(maxX, n.x + n.width); maxY = Math.max(maxY, n.y + n.height); }
+  for (const gr of positionedGroups) { maxX = Math.max(maxX, gr.x + gr.width); maxY = Math.max(maxY, gr.y + gr.height); }
+  const width = maxX + PADDING;
+  const height = maxY + PADDING;
+
+  return { nodes: positionedNodes, edges: positionedEdges, groups: positionedGroups, width, height, direction };
+}
+
+/**
+ * Compute a positioned layout for the diagram. When groups are present, uses a
+ * two-level grouped layout (non-overlapping group lanes); otherwise falls back
+ * to a single compound dagre layout.
+ */
+export function computeLayout(
+  services: DiagramService[],
+  connections: DiagramConnection[],
+  groups: DiagramGroup[],
+  direction: 'TB' | 'LR' = 'TB',
+  options: { reserveEdgeLabelCorridors?: boolean } = {},
+): LayoutResult {
+  if (groups && groups.length > 0) {
+    try {
+      const grouped = computeGroupedLayout(
+        services,
+        connections,
+        groups,
+        direction,
+        options.reserveEdgeLabelCorridors ?? false,
+      );
+      if (grouped) return grouped;
+    } catch {
+      // Fall back to the flat compound layout on any grouping error.
+    }
+  }
+  return computeFlatLayout(
+    services,
+    connections,
+    groups,
+    direction,
+    options.reserveEdgeLabelCorridors ?? false,
+  );
+}
+
+function presentationGroupRank(label: string): number {
+  const value = label.toLowerCase();
+  if (/edge|ingress|front|perimeter|dmz|cdn|waf/.test(value)) return 0;
+  if (/app|compute|api|integration|service|processing/.test(value)) return 1;
+  if (/data|database|storage|cache|sql|cosmos/.test(value)) return 2;
+  if (/network|private|connectivity|dns/.test(value)) return 3;
+  if (/identity|security|entra|governance|key vault/.test(value)) return 4;
+  if (/monitor|observ|operations|backup|management/.test(value)) return 5;
+  return 6;
+}
+
+type PresentationNodeRole =
+  | 'edge'
+  | 'policy'
+  | 'identity'
+  | 'network'
+  | 'private-link'
+  | 'dns'
+  | 'ingress'
+  | 'compute'
+  | 'registry'
+  | 'data'
+  | 'secrets'
+  | 'recovery'
+  | 'monitor'
+  | 'telemetry'
+  | 'logs'
+  | 'other';
+
+function presentationNodeRole(node: PositionedNode): PresentationNodeRole {
+  const type = node.type.toLowerCase();
+  const name = node.name.toLowerCase();
+  if (/web application firewall|\bwaf\b/.test(type) || /\bwaf\b/.test(name)) return 'policy';
+  if (/front door|traffic manager|\bcdn\b/.test(type)) return 'edge';
+  if (/entra|identity/.test(type)) return 'identity';
+  if (/private link/.test(type)) return 'private-link';
+  if (/azure dns|private dns/.test(type) || /private dns/.test(name)) return 'dns';
+  if (/virtual network|\bvnet\b/.test(type)) return 'network';
+  if (/api management|application gateway/.test(type)) return 'ingress';
+  if (/container registry/.test(type)) return 'registry';
+  if (/container apps|kubernetes|app service|functions|virtual machines/.test(type)) return 'compute';
+  if (/sql|redis|cosmos|database|storage/.test(type)) return 'data';
+  if (/key vault/.test(type)) return 'secrets';
+  if (/backup|recovery/.test(type) || /recovery/.test(name)) return 'recovery';
+  if (/application insights/.test(type)) return 'telemetry';
+  if (/log analytics/.test(type)) return 'logs';
+  if (/monitor/.test(type)) return 'monitor';
+  return 'other';
+}
+
+function reflowMultiRegionPresentation(layout: LayoutResult): LayoutResult | null {
+  if (layout.groups.length !== 3 || layout.nodes.some(node => !node.groupId)) return null;
+
+  const globalGroup = layout.groups.find(group => /global|edge|perimeter/.test(`${group.id} ${group.label}`.toLowerCase()));
+  const primaryGroup = layout.groups.find(group => /primary|active|production/.test(`${group.id} ${group.label}`.toLowerCase()));
+  const secondaryGroup = layout.groups.find(group => /secondary|\bdr\b|failover|standby/.test(`${group.id} ${group.label}`.toLowerCase()));
+  if (!globalGroup || !primaryGroup || !secondaryGroup) return null;
+
+  const nodes = layout.nodes.map(node => ({ ...node }));
+  const groups = layout.groups.map(group => ({ ...group }));
+  const groupById = new Map(groups.map(group => [group.id, group]));
+  const nodesByGroup = new Map<string, PositionedNode[]>();
+  for (const node of nodes) {
+    const bucket = nodesByGroup.get(node.groupId!);
+    if (bucket) bucket.push(node);
+    else nodesByGroup.set(node.groupId!, [node]);
+  }
+
+  const regionSlots: Record<PresentationNodeRole, { x: number; y: number }> = {
+    edge: { x: 0, y: 0 },
+    policy: { x: 0, y: 0 },
+    identity: { x: 0, y: 0 },
+    network: { x: 0, y: 110 },
+    dns: { x: 0, y: 240 },
+    ingress: { x: 235, y: 0 },
+    'private-link': { x: 235, y: 165 },
+    monitor: { x: 235, y: 350 },
+    compute: { x: 470, y: 0 },
+    registry: { x: 470, y: 110 },
+    recovery: { x: 470, y: 240 },
+    telemetry: { x: 470, y: 350 },
+    data: { x: 705, y: 0 },
+    secrets: { x: 705, y: 220 },
+    logs: { x: 705, y: 350 },
+    other: { x: 0, y: 350 },
+  };
+  const dataOffsets = [0, 110];
+
+  const arrangeRegion = (groupId: string) => {
+    const members = nodesByGroup.get(groupId) ?? [];
+    const occupied = new Set<string>();
+    let dataIndex = 0;
+    let fallbackIndex = 0;
+    for (const node of members) {
+      const role = presentationNodeRole(node);
+      let slot = { ...regionSlots[role] };
+      if (role === 'data') {
+        slot = { x: regionSlots.data.x, y: dataOffsets[Math.min(dataIndex, dataOffsets.length - 1)] + Math.max(0, dataIndex - 1) * 80 };
+        dataIndex++;
+      }
+      let key = `${slot.x}\u0000${slot.y}`;
+      while (occupied.has(key)) {
+        slot = { x: (fallbackIndex % 4) * 235, y: 460 + Math.floor(fallbackIndex / 4) * 110 };
+        fallbackIndex++;
+        key = `${slot.x}\u0000${slot.y}`;
+      }
+      occupied.add(key);
+      node.x = slot.x;
+      node.y = slot.y;
+    }
+    const group = groupById.get(groupId)!;
+    group.width = Math.max(905, ...members.map(node => node.x + node.width));
+    group.height = Math.max(420, ...members.map(node => node.y + node.height));
+  };
+
+  arrangeRegion(primaryGroup.id);
+  arrangeRegion(secondaryGroup.id);
+
+  const globalMembers = nodesByGroup.get(globalGroup.id) ?? [];
+  const globalSlots: Record<PresentationNodeRole, { x: number; y: number }> = {
+    ...regionSlots,
+    policy: { x: 245, y: 0 },
+    edge: { x: 245, y: 110 },
+    identity: { x: 0, y: 110 },
+  };
+  globalMembers.forEach((node, index) => {
+    const slot = globalSlots[presentationNodeRole(node)] ?? { x: index * 235, y: 110 };
+    node.x = slot.x;
+    node.y = slot.y;
+  });
+  const positionedGlobalGroup = groupById.get(globalGroup.id)!;
+  positionedGlobalGroup.width = Math.max(445, ...globalMembers.map(node => node.x + node.width));
+  positionedGlobalGroup.height = Math.max(180, ...globalMembers.map(node => node.y + node.height));
+
+  const primary = groupById.get(primaryGroup.id)!;
+  const secondary = groupById.get(secondaryGroup.id)!;
+  const groupOuterWidth = (group: PositionedGroup) => group.width + 24;
+  const groupOuterHeight = (group: PositionedGroup) => group.height + 48;
+  const columnGap = 72;
+  const rowGap = 88;
+  const regionsOuterWidth = groupOuterWidth(primary) + columnGap + groupOuterWidth(secondary);
+  const regionsOuterX = PADDING;
+  const globalOuterX = regionsOuterX + (regionsOuterWidth - groupOuterWidth(positionedGlobalGroup)) / 2;
+  const globalOuterY = PADDING;
+  const regionsOuterY = globalOuterY + groupOuterHeight(positionedGlobalGroup) + rowGap;
+
+  const placeGroup = (group: PositionedGroup, outerX: number, outerY: number) => {
+    const dx = outerX + 12;
+    const dy = outerY + 36;
+    group.x = dx;
+    group.y = dy;
+    for (const node of nodesByGroup.get(group.id) ?? []) {
+      node.x += dx;
+      node.y += dy;
+    }
+  };
+  placeGroup(positionedGlobalGroup, globalOuterX, globalOuterY);
+  placeGroup(primary, regionsOuterX, regionsOuterY);
+  placeGroup(secondary, regionsOuterX + groupOuterWidth(primary) + columnGap, regionsOuterY);
+
+  const width = regionsOuterX + regionsOuterWidth + PADDING;
+  const height = regionsOuterY + Math.max(groupOuterHeight(primary), groupOuterHeight(secondary)) + PADDING;
+  return {
+    nodes,
+    groups: [positionedGlobalGroup, primary, secondary],
+    edges: reanchorPresentationEdges(nodes, layout.edges.map(edge => ({ ...edge, points: [...edge.points] }))),
+    width,
+    height,
+    direction: 'LR',
+  };
+}
+
+type PortSide = 'L' | 'R' | 'T' | 'B';
+
+function reanchorPresentationEdges(nodes: PositionedNode[], edges: PositionedEdge[]): PositionedEdge[] {
+  const rects = new Map(nodes.map(node => [node.name, {
+    x: node.x,
+    y: node.y,
+    width: node.width,
+    height: node.height,
+  }]));
+  const sides = edges.map(edge => {
+    const source = rects.get(edge.from);
+    const target = rects.get(edge.to);
+    if (!source || !target) return { source: 'R' as PortSide, target: 'L' as PortSide };
+    const sx = source.x + source.width / 2;
+    const sy = source.y + source.height / 2;
+    const tx = target.x + target.width / 2;
+    const ty = target.y + target.height / 2;
+    if (Math.abs(tx - sx) >= Math.abs(ty - sy)) {
+      return tx >= sx
+        ? { source: 'R' as PortSide, target: 'L' as PortSide }
+        : { source: 'L' as PortSide, target: 'R' as PortSide };
+    }
+    return ty >= sy
+      ? { source: 'B' as PortSide, target: 'T' as PortSide }
+      : { source: 'T' as PortSide, target: 'B' as PortSide };
+  });
+
+  interface EndRef { edgeIndex: number; endpoint: 'source' | 'target'; sortKey: number }
+  const buckets = new Map<string, EndRef[]>();
+  const add = (node: string, side: PortSide, ref: EndRef) => {
+    const key = `${node}\u0000${side}`;
+    const bucket = buckets.get(key);
+    if (bucket) bucket.push(ref);
+    else buckets.set(key, [ref]);
+  };
+  const perpendicularCenter = (side: PortSide, rect: Rect) =>
+    side === 'L' || side === 'R' ? rect.y + rect.height / 2 : rect.x + rect.width / 2;
+
+  edges.forEach((edge, edgeIndex) => {
+    const source = rects.get(edge.from);
+    const target = rects.get(edge.to);
+    if (!source || !target) return;
+    add(edge.from, sides[edgeIndex].source, {
+      edgeIndex,
+      endpoint: 'source',
+      sortKey: perpendicularCenter(sides[edgeIndex].source, target),
+    });
+    add(edge.to, sides[edgeIndex].target, {
+      edgeIndex,
+      endpoint: 'target',
+      sortKey: perpendicularCenter(sides[edgeIndex].target, source),
+    });
+  });
+
+  const anchors: Array<{ source?: { x: number; y: number }; target?: { x: number; y: number } }> =
+    edges.map(() => ({}));
+  const portMargin = 14;
+  for (const [key, bucket] of buckets) {
+    const separator = key.indexOf('\u0000');
+    const nodeName = key.slice(0, separator);
+    const side = key.slice(separator + 1) as PortSide;
+    const rect = rects.get(nodeName)!;
+    bucket.sort((left, right) => left.sortKey - right.sortKey);
+    const vertical = side === 'L' || side === 'R';
+    const start = vertical ? rect.y + portMargin : rect.x + portMargin;
+    const span = (vertical ? rect.height : rect.width) - portMargin * 2;
+    const fixed = side === 'R'
+      ? rect.x + rect.width
+      : side === 'L'
+        ? rect.x
+        : side === 'B'
+          ? rect.y + rect.height
+          : rect.y;
+    bucket.forEach((ref, index) => {
+      const variable = start + span * (index + 1) / (bucket.length + 1);
+      const point = vertical ? { x: fixed, y: variable } : { x: variable, y: fixed };
+      anchors[ref.edgeIndex][ref.endpoint] = point;
+    });
+  }
+
+  return edges.map((edge, index) => ({
+    ...edge,
+    points: anchors[index].source && anchors[index].target
+      ? [anchors[index].source!, anchors[index].target!]
+      : edge.points,
+  }));
+}
+
+/**
+ * Reflow a fully grouped, ultra-wide layout into semantic presentation rows.
+ * The primary request path occupies the first row; supporting network,
+ * identity/security, and observability groups occupy the second row.
+ */
+export function reflowLayoutForPresentation(
+  layout: LayoutResult,
+  options: { columnGap?: number } = {},
+): LayoutResult {
+  const multiRegion = reflowMultiRegionPresentation(layout);
+  if (multiRegion) return multiRegion;
+  if (layout.groups.length < 4 || layout.nodes.some(node => !node.groupId)) return layout;
+  if (layout.width / Math.max(layout.height, 1) < 2.4) return layout;
+
+  const nodes = layout.nodes.map(node => ({ ...node }));
+  const groups = layout.groups
+    .map(group => ({ ...group }))
+    .sort((left, right) => {
+      const rank = presentationGroupRank(left.label) - presentationGroupRank(right.label);
+      return rank || left.x - right.x || left.y - right.y;
+    });
+  const columns = Math.min(3, Math.ceil(groups.length / 2));
+  const rows = Math.ceil(groups.length / columns);
+  const columnGap = options.columnGap ?? 72;
+  const rowGap = 88;
+  const outerWidth = (group: PositionedGroup) => group.width + 24;
+  const outerHeight = (group: PositionedGroup) => group.height + 48;
+  const columnWidths = Array.from({ length: columns }, (_, column) =>
+    Math.max(...groups.filter((_, index) => index % columns === column).map(outerWidth)));
+  const rowHeights = Array.from({ length: rows }, (_, row) =>
+    Math.max(...groups.slice(row * columns, (row + 1) * columns).map(outerHeight)));
+  const columnStarts: number[] = [];
+  const rowStarts: number[] = [];
+  let cursor = PADDING;
+  for (const width of columnWidths) {
+    columnStarts.push(cursor);
+    cursor += width + columnGap;
+  }
+  cursor = PADDING;
+  for (const height of rowHeights) {
+    rowStarts.push(cursor);
+    cursor += height + rowGap;
+  }
+
+  const nodeByGroup = new Map<string, PositionedNode[]>();
+  for (const node of nodes) {
+    const bucket = nodeByGroup.get(node.groupId!);
+    if (bucket) bucket.push(node);
+    else nodeByGroup.set(node.groupId!, [node]);
+  }
+  groups.forEach((group, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const outerX = columnStarts[column] + (columnWidths[column] - outerWidth(group)) / 2;
+    const outerY = rowStarts[row] + (rowHeights[row] - outerHeight(group)) / 2;
+    const nextX = outerX + 12;
+    const nextY = outerY + 36;
+    const dx = nextX - group.x;
+    const dy = nextY - group.y;
+    group.x = nextX;
+    group.y = nextY;
+    for (const node of nodeByGroup.get(group.id) ?? []) {
+      node.x += dx;
+      node.y += dy;
+    }
+  });
+
+  const width = Math.max(...groups.map(group => group.x + group.width + 12)) + PADDING;
+  const height = Math.max(...groups.map(group => group.y + group.height + 12)) + PADDING;
+  return {
+    nodes,
+    groups,
+    edges: reanchorPresentationEdges(nodes, layout.edges.map(edge => ({ ...edge, points: [...edge.points] }))),
+    width,
+    height,
+    direction: layout.direction,
+  };
+}
+
+// ── Category resolver ──────────────────────────────────────────────────
+
+const TYPE_TO_CATEGORY: Record<string, string> = {
+  'azure openai': 'ai + machine learning', 'cognitive services': 'ai + machine learning',
+  'computer vision': 'ai + machine learning', 'custom vision': 'ai + machine learning',
+  'speech services': 'ai + machine learning', 'translator': 'ai + machine learning',
+  'language': 'ai + machine learning', 'document intelligence': 'ai + machine learning',
+  'azure machine learning': 'ai + machine learning', 'azure ai search': 'ai + machine learning',
+  'azure cognitive search': 'ai + machine learning',
+  'virtual machines': 'compute', 'functions': 'compute',
+  'app service': 'app services',
+  'container instances': 'containers', 'kubernetes service': 'containers',
+  'container registry': 'containers', 'container apps': 'containers',
+  'azure cosmos db': 'databases', 'sql database': 'databases',
+  'postgresql': 'databases', 'mysql': 'databases', 'redis cache': 'databases',
+  'storage account': 'storage', 'data lake storage': 'storage',
+  'application gateway': 'networking', 'azure front door': 'networking',
+  'cdn': 'networking', 'virtual network': 'networking', 'load balancer': 'networking',
+  'azure firewall': 'networking', 'vpn gateway': 'networking', 'expressroute': 'networking',
+  'traffic manager': 'networking', 'azure bastion': 'networking',
+  'azure ddos protection': 'networking', 'private link': 'networking', 'azure dns': 'networking',
+  'network watcher': 'networking', 'web application firewall': 'networking',
+  'data factory': 'analytics', 'azure synapse analytics': 'analytics',
+  'stream analytics': 'analytics', 'event hubs': 'analytics',
+  'power bi embedded': 'analytics', 'azure workbooks': 'analytics',
+  'service bus': 'integration', 'logic apps': 'integration',
+  'api management': 'integration', 'event grid': 'integration',
+  'azure health data services fhir service': 'integration', 'azure api for fhir': 'integration',
+  'signalr service': 'web', 'static web apps': 'web',
+  'azure monitor': 'monitor', 'application insights': 'monitor', 'log analytics': 'monitor',
+  'azure managed grafana': 'monitor',
+  'key vault': 'security', 'microsoft defender for cloud': 'security',
+  'microsoft sentinel': 'security',
+  'microsoft entra id': 'identity',
+  'backup': 'management + governance', 'azure policy': 'management + governance',
+  'microsoft purview': 'management + governance',
+  'iot hub': 'iot', 'iot central': 'iot', 'digital twins': 'iot', 'notification hubs': 'iot',
+};
+
+function resolveCategory(serviceType: string): string {
+  // Fast path / explicit overrides for exact lowercased type strings.
+  const direct = TYPE_TO_CATEGORY[serviceType.toLowerCase()];
+  if (direct) return direct;
+  // Alias-aware catalog resolution handles real-world type variants like
+  // "Cosmos DB", "Blob Storage", "Azure AI Search", "Azure Cache for Redis".
+  const canonical = resolveServiceName(serviceType);
+  if (canonical) return SERVICE_CATALOG[canonical].category;
+  return 'other';
+}

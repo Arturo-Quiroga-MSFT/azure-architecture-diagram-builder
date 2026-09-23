@@ -1,0 +1,1062 @@
+{
+  "nodes": [
+    {
+      "id": "external-users",
+      "type": "groupNode",
+      "position": {
+        "x": -20,
+        "y": 700
+      },
+      "data": {
+        "label": "External Users",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 242,
+        "height": 241
+      },
+      "width": 242,
+      "height": 241,
+      "positionAbsolute": {
+        "x": -20,
+        "y": 700
+      }
+    },
+    {
+      "id": "app-tier",
+      "type": "groupNode",
+      "position": {
+        "x": 620,
+        "y": 460
+      },
+      "data": {
+        "label": "Application & Orchestration",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 801,
+        "height": 411
+      },
+      "width": 801,
+      "height": 411,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 620,
+        "y": 460
+      },
+      "dragging": false
+    },
+    {
+      "id": "ai-services",
+      "type": "groupNode",
+      "position": {
+        "x": 1960,
+        "y": 160
+      },
+      "data": {
+        "label": "AI Services",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 501,
+        "height": 241
+      },
+      "width": 501,
+      "height": 241,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1960,
+        "y": 160
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "data-layer",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 500
+      },
+      "data": {
+        "label": "Data & Indexing",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 798,
+        "height": 801
+      },
+      "width": 798,
+      "height": 801,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 500
+      },
+      "dragging": false
+    },
+    {
+      "id": "identity",
+      "type": "groupNode",
+      "position": {
+        "x": 1260,
+        "y": 960
+      },
+      "data": {
+        "label": "Identity & Access",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 251,
+        "height": 521
+      },
+      "width": 251,
+      "height": 521,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1260,
+        "y": 960
+      },
+      "dragging": false
+    },
+    {
+      "id": "observability",
+      "type": "groupNode",
+      "position": {
+        "x": 980,
+        "y": -20
+      },
+      "data": {
+        "label": "Observability",
+        "stylePreset": "presentation"
+      },
+      "style": {
+        "width": 898,
+        "height": 241
+      },
+      "width": 898,
+      "height": 241,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 980,
+        "y": -20
+      },
+      "dragging": false
+    },
+    {
+      "id": "enterprise-users",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Enterprise Users",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/other/01848-icon-service-Arc-PostgreSQL .svg",
+        "stylePreset": "presentation"
+      },
+      "parentNode": "external-users",
+      "extent": "parent",
+      "width": 185,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 20,
+        "y": 790
+      }
+    },
+    {
+      "id": "app-service",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 260
+      },
+      "data": {
+        "label": "App Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+        "pricing": {
+          "estimatedCost": 69.35,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "app-tier",
+      "extent": "parent",
+      "width": 150,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 660,
+        "y": 720
+      }
+    },
+    {
+      "id": "azure-ai-foundry",
+      "type": "azureNode",
+      "position": {
+        "x": 595,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure AI Foundry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "stylePreset": "presentation"
+      },
+      "parentNode": "app-tier",
+      "extent": "parent",
+      "width": 189,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1215,
+        "y": 550
+      }
+    },
+    {
+      "id": "azure-openai",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure OpenAI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-openai.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "ai-services",
+      "extent": "parent",
+      "width": 162,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 250
+      }
+    },
+    {
+      "id": "azure-ai-search",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure AI Search",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 245.28,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "data-layer",
+      "extent": "parent",
+      "width": 179,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1940,
+        "y": 590
+      }
+    },
+    {
+      "id": "azure-cache-redis",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 370
+      },
+      "data": {
+        "label": "Azure Cache for Redis",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg",
+        "pricing": {
+          "estimatedCost": 64.24,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "data-layer",
+      "extent": "parent",
+      "width": 226,
+      "height": 150,
+      "positionAbsolute": {
+        "x": 1940,
+        "y": 870
+      }
+    },
+    {
+      "id": "sql-database",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 650
+      },
+      "data": {
+        "label": "SQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/sql-database.svg",
+        "pricing": {
+          "estimatedCost": 29.4,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "data-layer",
+      "extent": "parent",
+      "width": 165,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1940,
+        "y": 1150
+      }
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 595,
+        "y": 90
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": true
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "data-layer",
+      "extent": "parent",
+      "width": 185,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 2495,
+        "y": 590
+      }
+    },
+    {
+      "id": "entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "identity",
+      "extent": "parent",
+      "width": 196,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": 1050
+      }
+    },
+    {
+      "id": "key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 370
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 1.5,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "identity",
+      "extent": "parent",
+      "width": 150,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1300,
+        "y": 1330
+      }
+    },
+    {
+      "id": "azure-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "observability",
+      "extent": "parent",
+      "width": 165,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1020,
+        "y": 70
+      }
+    },
+    {
+      "id": "log-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 720,
+        "y": 90
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-26T20:24:05.482Z",
+          "isCustom": false,
+          "isUsageBased": false
+        },
+        "stylePreset": "presentation"
+      },
+      "parentNode": "observability",
+      "extent": "parent",
+      "width": 160,
+      "height": 128,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": 70
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "enterprise-users",
+      "target": "app-service",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Access RAG web application over HTTPS from browser or mobile client",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "app-service",
+      "target": "entra-id",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Redirect user to Microsoft Entra ID for OAuth2/OpenID Connect sign-in and token issuance",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "app-service",
+      "target": "key-vault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve Azure OpenAI, Azure AI Foundry, Redis, and SQL Database credentials securely",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "app-service",
+      "target": "azure-ai-foundry",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send authenticated RAG orchestration request with user query and context metadata",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "azure-ai-foundry",
+      "target": "azure-cache-redis",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Check and update semantic cache for similar queries and previously generated responses",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "azure-ai-search",
+      "target": "blob-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Access indexed source documents and vectorized content stored in blobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-7",
+      "source": "azure-ai-foundry",
+      "target": "azure-openai",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Call GPT-5 chat completion endpoint with augmented prompt and retrieved context",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "azure-ai-foundry",
+      "target": "sql-database",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Read and persist conversation state, user preferences, and RAG configuration",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "azure-ai-foundry",
+      "target": "app-service",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Return final grounded RAG answer and reasoning metadata to the web application",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "app-service",
+      "target": "azure-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit application telemetry, request traces, dependency metrics, and custom events",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "azure-monitor",
+      "target": "log-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Ingest consolidated logs and metrics into Log Analytics workspace for analysis and dashboards",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "style": {
+        "strokeWidth": 2.5
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "source": "azure-ai-foundry",
+      "sourceHandle": "right",
+      "target": "azure-ai-search",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Execute hybrid vector and keyword search to retrieve relevant enterprise documents",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 15,
+        "fill": "#333",
+        "fontWeight": "600",
+        "opacity": 1
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.95,
+        "stroke": "#000",
+        "strokeWidth": 2,
+        "rx": 6
+      },
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      },
+      "id": "reactflow__edge-azure-ai-foundryright-azure-ai-searchleft"
+    }
+  ],
+  "viewport": {
+    "x": 478.43946479693193,
+    "y": 95.20597930590117,
+    "zoom": 0.7303534296362985
+  },
+  "metadata": {
+    "architectureName": "Enterprise RAG Application on Azure",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-05-26",
+    "savedAt": "2026-05-26T20:28:02.839Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Enterprise user navigates to the RAG web application, which initiates authentication with Microsoft Entra ID.",
+      "services": [
+        "enterprise-users",
+        "app-service",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Upon successful sign-in, App Service retrieves necessary secrets and connection strings from Key Vault to call downstream services.",
+      "services": [
+        "app-service",
+        "key-vault"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "User submits a query; App Service sends an authenticated RAG orchestration request with user context to Azure AI Foundry.",
+      "services": [
+        "enterprise-users",
+        "app-service",
+        "azure-ai-foundry"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure AI Foundry first checks Azure Cache for Redis for a semantically similar query and cached response, updating the cache if needed.",
+      "services": [
+        "azure-ai-foundry",
+        "azure-cache-redis"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "If fresh grounding data is required, Azure AI Foundry calls Azure AI Search to run hybrid vector and keyword retrieval over indexed content in Blob Storage.",
+      "services": [
+        "azure-ai-foundry",
+        "azure-ai-search",
+        "blob-storage"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure AI Foundry composes an augmented prompt using retrieved context and invokes Azure OpenAI GPT-5 for answer generation and reasoning.",
+      "services": [
+        "azure-ai-foundry",
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure AI Foundry persists or updates conversation state, user-specific metadata, and configuration in SQL Database, then returns the final answer to App Service.",
+      "services": [
+        "azure-ai-foundry",
+        "sql-database",
+        "app-service"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "App Service presents the grounded response to the enterprise user and sends telemetry to Azure Monitor, which forwards logs and metrics to Log Analytics for analysis.",
+      "services": [
+        "app-service",
+        "enterprise-users",
+        "azure-monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication"
+}

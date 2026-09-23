@@ -1,0 +1,6 @@
+{
+  "initialJavaScript": {
+    "maxBytes": 1900000,
+    "maxGzipBytes": 500000
+  }
+}

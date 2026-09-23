@@ -1,0 +1,280 @@
+{
+  "groups": [
+    {
+      "id": "grp-edge",
+      "label": "Ingress & API Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application & Payment Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data, Assets & Search"
+    },
+    {
+      "id": "grp-security",
+      "label": "Identity & Secrets"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point for shopper traffic with edge routing.",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "svc-apim",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "Publishes and secures commerce APIs for web and mobile clients.",
+      "groupId": "grp-edge"
+    },
+    {
+      "id": "svc-appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts storefront, cart, checkout, and order APIs.",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-servicebus",
+      "name": "Service Bus",
+      "type": "Service Bus",
+      "category": "integration",
+      "description": "Queues payment commands and decouples checkout from payment execution.",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Processes queued payment requests and updates order payment state.",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-sql",
+      "name": "SQL Database",
+      "type": "SQL Database",
+      "category": "databases",
+      "description": "System of record for products, carts, customers, orders, and payments.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Provides fast product discovery, filtering, and relevance ranking.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores product images, receipts, and static commerce assets.",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Handles customer and admin authentication token issuance.",
+      "groupId": "grp-security"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores payment provider API keys and signing secrets.",
+      "groupId": "grp-security"
+    },
+    {
+      "id": "svc-azmonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects application metrics, traces, and alert signals.",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Central workspace for searchable operational logs and investigations.",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-frontdoor",
+      "to": "svc-apim",
+      "label": "Route shopper HTTPS requests to managed commerce APIs",
+      "type": "sync"
+    },
+    {
+      "from": "svc-apim",
+      "to": "svc-appservice",
+      "label": "Forward authenticated product, cart, and checkout API calls",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-entra",
+      "label": "Validate user tokens and enforce customer/admin access policies",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-sql",
+      "label": "Persist carts, orders, inventory reservations, and payment status",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-search",
+      "label": "Execute full-text product search and facet filtering queries",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-storage",
+      "label": "Read and write product media and customer receipt files",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-servicebus",
+      "label": "Enqueue payment authorization command after checkout submission",
+      "type": "async"
+    },
+    {
+      "from": "svc-servicebus",
+      "to": "svc-functions",
+      "label": "Trigger serverless payment processing from queued checkout events",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-keyvault",
+      "label": "Fetch payment gateway credentials and signing secrets at runtime",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-sql",
+      "label": "Update payment outcome and finalize order transaction records",
+      "type": "sync"
+    },
+    {
+      "from": "svc-appservice",
+      "to": "svc-azmonitor",
+      "label": "Send request latency, conversion funnel, and checkout failure telemetry",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmonitor",
+      "to": "svc-loganalytics",
+      "label": "Stream consolidated metrics and logs for analysis and alert triage",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Customer traffic enters through the edge and is routed to governed APIs.",
+      "services": [
+        "svc-frontdoor",
+        "svc-apim"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API Management forwards storefront and checkout requests to the web application.",
+      "services": [
+        "svc-apim",
+        "svc-appservice"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "The application validates user identity and role permissions before processing actions.",
+      "services": [
+        "svc-appservice",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Product discovery requests are served from search while catalog and order data are read from SQL.",
+      "services": [
+        "svc-appservice",
+        "svc-search",
+        "svc-sql"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Checkout submission writes order intent and publishes an asynchronous payment command.",
+      "services": [
+        "svc-appservice",
+        "svc-sql",
+        "svc-servicebus"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Payment worker consumes queued command, retrieves secrets, and executes gateway transaction logic.",
+      "services": [
+        "svc-servicebus",
+        "svc-functions",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Payment result is persisted to SQL, and application telemetry is centralized for operations.",
+      "services": [
+        "svc-functions",
+        "svc-sql",
+        "svc-azmonitor"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1392,
+    "completionTokens": 2434,
+    "totalTokens": 3826,
+    "elapsedTimeMs": 49023,
+    "model": "gpt-5.3-codex"
+  },
+  "metadata": {
+    "prompt": "E-commerce platform with payments and search",
+    "model": "gpt-5.3-codex",
+    "modelDisplayName": "GPT-5.3 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1392,
+      "completionTokens": 2434,
+      "totalTokens": 3826,
+      "elapsedTimeMs": 49023,
+      "model": "gpt-5.3-codex"
+    },
+    "savedAt": "2026-02-28T14:42:29.406Z",
+    "source": "model-comparison"
+  }
+}

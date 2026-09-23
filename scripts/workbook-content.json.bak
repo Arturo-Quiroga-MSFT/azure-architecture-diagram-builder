@@ -1,0 +1,723 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "label": "Time Range",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                { "durationMs": 3600000 },
+                { "durationMs": 14400000 },
+                { "durationMs": 43200000 },
+                { "durationMs": 86400000 },
+                { "durationMs": 172800000 },
+                { "durationMs": 604800000 },
+                { "durationMs": 2592000000 },
+                { "durationMs": 7776000000 }
+              ],
+              "allowCustom": true
+            },
+            "value": {
+              "durationMs": 86400000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components"
+      },
+      "name": "time-parameters"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "# Azure Diagram Builder — Usage Analytics\n---\nReal-time telemetry from the [Azure Architecture Diagram Builder](https://aka.ms/diagram-builder). Tracks feature usage, AI model performance, user geography, and architecture generation patterns."
+      },
+      "name": "title"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## Overview"
+      },
+      "name": "overview-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Value = dcount(user_Id)\n| extend Label = \"Active Users\"",
+        "size": 4,
+        "title": "Active Users",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles",
+        "tileSettings": {
+          "showBorder": true,
+          "titleContent": {
+            "columnMatch": "Label",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": { "palette": "blue" },
+            "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } }
+          }
+        }
+      },
+      "customWidth": "25",
+      "name": "tile-active-users"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Value = dcount(session_Id)\n| extend Label = \"Sessions\"",
+        "size": 4,
+        "title": "Unique Sessions",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles",
+        "tileSettings": {
+          "showBorder": true,
+          "titleContent": {
+            "columnMatch": "Label",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": { "palette": "green" },
+            "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } }
+          }
+        }
+      },
+      "customWidth": "25",
+      "name": "tile-sessions"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Value = count()\n| extend Label = \"Total Events\"",
+        "size": 4,
+        "title": "Total Events",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles",
+        "tileSettings": {
+          "showBorder": true,
+          "titleContent": {
+            "columnMatch": "Label",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": { "palette": "orange" },
+            "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } }
+          }
+        }
+      },
+      "customWidth": "25",
+      "name": "tile-total-events"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where isnotempty(client_CountryOrRegion)\n| summarize Value = dcount(client_CountryOrRegion)\n| extend Label = \"Countries\"",
+        "size": 4,
+        "title": "Unique Countries",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles",
+        "tileSettings": {
+          "showBorder": true,
+          "titleContent": {
+            "columnMatch": "Label",
+            "formatter": 1
+          },
+          "leftContent": {
+            "columnMatch": "Value",
+            "formatter": 12,
+            "formatOptions": { "palette": "purple" },
+            "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } }
+          }
+        }
+      },
+      "customWidth": "25",
+      "name": "tile-countries"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Events = count() by bin(timestamp, 1h)\n| order by timestamp asc",
+        "size": 0,
+        "title": "Event Volume Over Time",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "linechart",
+        "chartSettings": {
+          "xAxis": "timestamp",
+          "yAxis": ["Events"],
+          "showLegend": true,
+          "seriesLabelSettings": [
+            { "seriesName": "Events", "color": "blue" }
+          ]
+        }
+      },
+      "name": "events-over-time"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## Geographic Insights"
+      },
+      "name": "geo-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where isnotempty(client_CountryOrRegion)\n| summarize Count = count(), Users = dcount(user_Id) by client_CountryOrRegion\n| order by Count desc",
+        "size": 0,
+        "title": "Users by Country",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "map",
+        "mapSettings": {
+          "locInfo": "CountryRegion",
+          "locInfoColumn": "client_CountryOrRegion",
+          "sizeColumn": "Users",
+          "sizeSettings": {
+            "sizeAggregate": "Sum",
+            "minSizePx": 8,
+            "maxSizePx": 40
+          },
+          "legendMetric": "Users",
+          "legendAggregation": "Sum",
+          "itemColorSettings": {
+            "nodeColorField": "Count",
+            "colorAggregation": "Sum",
+            "type": "heatmap",
+            "heatmapPalette": "greenRed"
+          }
+        }
+      },
+      "customWidth": "50",
+      "name": "geo-map"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where isnotempty(client_CountryOrRegion)\n| summarize\n    Events = count(),\n    Users = dcount(user_Id),\n    UniqueIPs = dcount(client_IP),\n    IPs = make_set(client_IP, 5)\n  by client_CountryOrRegion, client_City\n| order by Events desc\n| take 50",
+        "size": 0,
+        "title": "User Locations — Country / City / IP",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Events", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "Users", "formatter": 8, "formatOptions": { "palette": "green" } }
+          ],
+          "sortBy": [{ "itemKey": "Events", "sortOrder": 2 }]
+        }
+      },
+      "customWidth": "50",
+      "name": "geo-detail-table"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## Feature Usage"
+      },
+      "name": "feature-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Count = count(), Users = dcount(user_Id), Sessions = dcount(session_Id) by name\n| order by Count desc",
+        "size": 0,
+        "title": "Feature Usage Breakdown",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "name",
+          "yAxis": ["Count"],
+          "showLegend": true,
+          "seriesLabelSettings": [
+            { "seriesName": "Count", "color": "blue" }
+          ]
+        }
+      },
+      "customWidth": "60",
+      "name": "feature-bar-chart"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Count = count() by name\n| order by Count desc",
+        "size": 0,
+        "title": "Feature Distribution",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "40",
+      "name": "feature-pie-chart"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize\n    TotalInstances = count(),\n    ActiveUsers = dcount(user_Id),\n    UniqueSessions = dcount(session_Id)\n  by name\n| order by TotalInstances desc",
+        "size": 0,
+        "title": "Feature Usage Detail",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "TotalInstances", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "ActiveUsers", "formatter": 8, "formatOptions": { "palette": "green" } },
+            { "columnMatch": "UniqueSessions", "formatter": 8, "formatOptions": { "palette": "orange" } }
+          ],
+          "sortBy": [{ "itemKey": "TotalInstances", "sortOrder": 2 }]
+        }
+      },
+      "name": "feature-detail-table"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## AI Model Analytics"
+      },
+      "name": "model-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"AI_Model_Usage\"\n| extend model = tostring(customDimensions.model)\n| extend operation = tostring(customDimensions.operation)\n| summarize Calls = count() by model, operation\n| order by Calls desc",
+        "size": 0,
+        "title": "Model Usage by Operation",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "model",
+          "yAxis": ["Calls"],
+          "group": "operation",
+          "showLegend": true
+        }
+      },
+      "customWidth": "50",
+      "name": "model-usage-bar"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"AI_Model_Usage\"\n| extend model = tostring(customDimensions.model)\n| extend promptTokens = todouble(customMeasurements.promptTokens)\n| extend completionTokens = todouble(customMeasurements.completionTokens)\n| extend totalTokens = todouble(customMeasurements.totalTokens)\n| extend elapsedMs = todouble(customMeasurements.elapsedTimeMs)\n| summarize\n    TotalCalls = count(),\n    AvgPromptTokens = round(avg(promptTokens), 0),\n    AvgCompletionTokens = round(avg(completionTokens), 0),\n    TotalTokensConsumed = round(sum(totalTokens), 0),\n    AvgResponseTimeSec = round(avg(elapsedMs) / 1000, 1),\n    P95ResponseTimeSec = round(percentile(elapsedMs, 95) / 1000, 1)\n  by model\n| order by TotalTokensConsumed desc",
+        "size": 0,
+        "title": "Token Consumption & Latency by Model",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "TotalCalls", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "TotalTokensConsumed", "formatter": 8, "formatOptions": { "palette": "orange" } },
+            { "columnMatch": "AvgResponseTimeSec", "formatter": 8, "formatOptions": { "palette": "redGreen" } },
+            { "columnMatch": "P95ResponseTimeSec", "formatter": 8, "formatOptions": { "palette": "redGreen" } }
+          ]
+        }
+      },
+      "customWidth": "50",
+      "name": "token-consumption-table"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"AI_Model_Usage\"\n| extend model = tostring(customDimensions.model)\n| extend elapsedSec = todouble(customMeasurements.elapsedTimeMs) / 1000\n| summarize AvgResponseSec = round(avg(elapsedSec), 1), P95ResponseSec = round(percentile(elapsedSec, 95), 1) by bin(timestamp, 1h), model\n| order by timestamp asc",
+        "size": 0,
+        "title": "AI Response Time Trends (seconds)",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "linechart",
+        "chartSettings": {
+          "xAxis": "timestamp",
+          "yAxis": ["AvgResponseSec"],
+          "group": "model",
+          "showLegend": true
+        }
+      },
+      "name": "response-time-trends"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"AI_Model_Usage\"\n| extend model = tostring(customDimensions.model)\n| extend reasoningEffort = tostring(customDimensions.reasoningEffort)\n| where reasoningEffort != \"none\"\n| summarize Calls = count() by model, reasoningEffort\n| order by Calls desc",
+        "size": 0,
+        "title": "Reasoning Effort Selection by Model",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "model",
+          "yAxis": ["Calls"],
+          "group": "reasoningEffort",
+          "showLegend": true
+        }
+      },
+      "name": "reasoning-effort-chart"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## Architecture Generation"
+      },
+      "name": "arch-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Architecture_Generated\"\n| extend model = tostring(customDimensions.model)\n| extend services = todouble(customMeasurements.serviceCount)\n| extend connections = todouble(customMeasurements.connectionCount)\n| extend groups = todouble(customMeasurements.groupCount)\n| extend workflows = todouble(customMeasurements.workflowStepCount)\n| extend tokens = todouble(customMeasurements.totalTokens)\n| extend timeSec = round(todouble(customMeasurements.elapsedTimeMs) / 1000, 1)\n| extend isModification = tostring(customDimensions.isModification)\n| summarize\n    Generations = count(),\n    AvgServices = round(avg(services), 1),\n    AvgConnections = round(avg(connections), 1),\n    AvgGroups = round(avg(groups), 1),\n    AvgWorkflowSteps = round(avg(workflows), 1),\n    AvgTokens = round(avg(tokens), 0),\n    AvgTimeSec = round(avg(timeSec), 1),\n    NewArchitectures = countif(isModification == \"false\"),\n    Modifications = countif(isModification == \"true\")\n  by model\n| order by Generations desc",
+        "size": 0,
+        "title": "Architecture Generation — Complexity by Model",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Generations", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "AvgServices", "formatter": 8, "formatOptions": { "palette": "green" } },
+            { "columnMatch": "AvgTokens", "formatter": 8, "formatOptions": { "palette": "orange" } },
+            { "columnMatch": "NewArchitectures", "formatter": 8, "formatOptions": { "palette": "turquoise" } },
+            { "columnMatch": "Modifications", "formatter": 8, "formatOptions": { "palette": "purple" } }
+          ]
+        }
+      },
+      "customWidth": "60",
+      "name": "arch-complexity-table"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Architecture_Generated\"\n| extend isModification = iff(tostring(customDimensions.isModification) == \"true\", \"Modification\", \"New Architecture\")\n| summarize Count = count() by isModification",
+        "size": 0,
+        "title": "New vs Modification",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "40",
+      "name": "new-vs-modification-pie"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Architecture_Generated\"\n| summarize Generations = count() by bin(timestamp, 1h)\n| order by timestamp asc",
+        "size": 0,
+        "title": "Architecture Generations Over Time",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "areachart",
+        "chartSettings": {
+          "seriesLabelSettings": [
+            { "seriesName": "Generations", "color": "blue" }
+          ]
+        }
+      },
+      "name": "arch-gen-timeline"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## Validation & Well-Architected Framework"
+      },
+      "name": "validation-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Architecture_Validated\"\n| extend model = tostring(customDimensions.model)\n| extend score = todouble(customMeasurements.overallScore)\n| extend findings = todouble(customMeasurements.findingCount)\n| extend services = todouble(customMeasurements.serviceCount)\n| extend timeSec = round(todouble(customMeasurements.elapsedTimeMs) / 1000, 1)\n| summarize\n    Validations = count(),\n    AvgScore = round(avg(score), 1),\n    MaxScore = max(score),\n    MinScore = min(score),\n    AvgFindings = round(avg(findings), 1),\n    AvgServices = round(avg(services), 1),\n    AvgTimeSec = round(avg(timeSec), 1)\n  by model\n| order by Validations desc",
+        "size": 0,
+        "title": "Validation Results by Model",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Validations", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "AvgScore", "formatter": 8, "formatOptions": { "palette": "greenRed" } },
+            { "columnMatch": "AvgFindings", "formatter": 8, "formatOptions": { "palette": "redGreen" } }
+          ]
+        }
+      },
+      "customWidth": "50",
+      "name": "validation-scores-table"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Recommendations_Applied\"\n| extend count_ = todouble(customMeasurements.recommendationCount)\n| summarize\n    TimesApplied = count(),\n    TotalRecommendations = sum(count_),\n    AvgPerSession = round(avg(count_), 1)\n| extend Label = \"Recommendations\"",
+        "size": 4,
+        "title": "Recommendations Applied",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "tiles",
+        "tileSettings": {
+          "showBorder": true,
+          "titleContent": { "columnMatch": "Label", "formatter": 1 },
+          "leftContent": {
+            "columnMatch": "TotalRecommendations",
+            "formatter": 12,
+            "formatOptions": { "palette": "green" },
+            "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 0 } }
+          },
+          "secondaryContent": {
+            "columnMatch": "AvgPerSession",
+            "formatter": 0,
+            "numberFormat": { "unit": 17, "options": { "style": "decimal", "maximumFractionDigits": 1 } }
+          }
+        }
+      },
+      "customWidth": "50",
+      "name": "recommendations-tile"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## Exports & Imports"
+      },
+      "name": "exports-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Diagram_Exported\"\n| extend format = tostring(customDimensions.format)\n| extend serviceCount = todouble(customMeasurements.serviceCount)\n| summarize\n    Exports = count(),\n    AvgServices = round(avg(serviceCount), 1)\n  by format\n| order by Exports desc",
+        "size": 0,
+        "title": "Export Formats",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "format",
+          "yAxis": ["Exports"],
+          "showLegend": true,
+          "seriesLabelSettings": [
+            { "seriesName": "Exports", "color": "blue" }
+          ]
+        }
+      },
+      "customWidth": "33",
+      "name": "export-formats-bar"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Template_Imported\"\n| extend format = tostring(customDimensions.format)\n| extend fileName = tostring(customDimensions.fileName)\n| extend resourceCount = todouble(customMeasurements.resourceCount)\n| summarize\n    Imports = count(),\n    AvgResources = round(avg(resourceCount), 1)\n  by format\n| order by Imports desc",
+        "size": 0,
+        "title": "Template Import Formats",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "format",
+          "yAxis": ["Imports"],
+          "showLegend": true,
+          "seriesLabelSettings": [
+            { "seriesName": "Imports", "color": "green" }
+          ]
+        }
+      },
+      "customWidth": "33",
+      "name": "import-formats-bar"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"Region_Changed\"\n| extend region = tostring(customDimensions.region)\n| summarize Count = count() by region\n| order by Count desc",
+        "size": 0,
+        "title": "Azure Region Preferences",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "piechart"
+      },
+      "customWidth": "33",
+      "name": "region-preferences-pie"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name == \"DeploymentGuide_Generated\"\n| extend model = tostring(customDimensions.model)\n| extend serviceCount = todouble(customMeasurements.serviceCount)\n| extend bicepFiles = todouble(customMeasurements.bicepFileCount)\n| extend timeSec = round(todouble(customMeasurements.elapsedTimeMs) / 1000, 1)\n| summarize\n    Guides = count(),\n    AvgServices = round(avg(serviceCount), 1),\n    AvgBicepFiles = round(avg(bicepFiles), 1),\n    AvgTimeSec = round(avg(timeSec), 1)\n  by model\n| order by Guides desc",
+        "size": 0,
+        "title": "Deployment Guide Generation",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Guides", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "AvgBicepFiles", "formatter": 8, "formatOptions": { "palette": "green" } }
+          ]
+        }
+      },
+      "name": "deployment-guide-table"
+    },
+
+    {
+      "type": 1,
+      "content": {
+        "json": "## User Session Activity"
+      },
+      "name": "session-header"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize\n    Events = count(),\n    Features = make_set(name, 20),\n    FirstSeen = min(timestamp),\n    LastSeen = max(timestamp),\n    Country = take_any(client_CountryOrRegion),\n    City = take_any(client_City),\n    IP = take_any(client_IP)\n  by session_Id, user_Id\n| extend DurationMin = round(datetime_diff('second', LastSeen, FirstSeen) / 60.0, 1)\n| project User = user_Id, Session = session_Id, Events, DurationMin, Features, Country, City, IP, FirstSeen, LastSeen\n| order by LastSeen desc\n| take 50",
+        "size": 0,
+        "title": "Recent User Sessions",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            { "columnMatch": "Events", "formatter": 8, "formatOptions": { "palette": "blue" } },
+            { "columnMatch": "DurationMin", "formatter": 8, "formatOptions": { "palette": "green" } }
+          ],
+          "sortBy": [{ "itemKey": "LastSeen", "sortOrder": 2 }]
+        }
+      },
+      "name": "user-sessions-table"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| summarize Events = count() by bin(timestamp, 1h), name\n| order by timestamp asc",
+        "size": 0,
+        "title": "Feature Usage Timeline (stacked)",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "areachart",
+        "chartSettings": {
+          "xAxis": "timestamp",
+          "yAxis": ["Events"],
+          "group": "name",
+          "showLegend": true
+        }
+      },
+      "name": "feature-timeline-stacked"
+    },
+
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "customEvents\n| where name in (\"Start_Fresh\", \"Version_Operation\", \"Image_Imported\", \"Models_Compared\")\n| extend detail = case(\n    name == \"Version_Operation\", strcat(\"op: \", tostring(customDimensions.operation)),\n    name == \"Models_Compared\", strcat(\"models: \", tostring(customMeasurements.modelsCompared)),\n    \"\")\n| project timestamp, name, detail, user_Id, session_Id, client_CountryOrRegion, client_City, client_IP\n| order by timestamp desc\n| take 100",
+        "size": 0,
+        "title": "Recent Workflow Events",
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.insights/components",
+        "visualization": "table",
+        "gridSettings": {
+          "sortBy": [{ "itemKey": "timestamp", "sortOrder": 2 }]
+        }
+      },
+      "name": "workflow-events-table"
+    }
+  ],
+  "fallbackResourceIds": [],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

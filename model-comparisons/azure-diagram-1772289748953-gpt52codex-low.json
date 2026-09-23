@@ -1,0 +1,279 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress/Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application/Compute"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data/Storage"
+    },
+    {
+      "id": "grp-identity",
+      "label": "Identity/Security"
+    },
+    {
+      "id": "grp-monitor",
+      "label": "Monitoring/Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "afd",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global entry point and routing for the storefront APIs",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "apim",
+      "name": "API Management",
+      "type": "API Management",
+      "category": "integration",
+      "description": "Secures and mediates API access for web and mobile clients",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "appsvc",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "Hosts the e-commerce web API and business logic",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "func",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Processes payment workflows and callbacks",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "sqldb",
+      "name": "SQL Database",
+      "type": "SQL Database",
+      "category": "databases",
+      "description": "Stores orders, customers, and payment records",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Caches product catalog and session data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores product images and invoice artifacts",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Provides full-text search for products",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Handles user authentication and token issuance",
+      "groupId": "grp-identity"
+    },
+    {
+      "id": "azmon",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects platform metrics and application telemetry",
+      "groupId": "grp-monitor"
+    },
+    {
+      "id": "log",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralizes logs for querying and diagnostics",
+      "groupId": "grp-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "afd",
+      "to": "apim",
+      "label": "Route incoming API requests to gateway",
+      "type": "sync"
+    },
+    {
+      "from": "apim",
+      "to": "appsvc",
+      "label": "Forward authenticated storefront API calls",
+      "type": "sync"
+    },
+    {
+      "from": "apim",
+      "to": "func",
+      "label": "Invoke payment processing endpoints",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "func",
+      "label": "Submit payment authorization and capture tasks",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "sqldb",
+      "label": "Read and write orders and customer profiles",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "redis",
+      "label": "Cache and retrieve catalog/session data",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "storage",
+      "label": "Store product images and invoices",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "search",
+      "label": "Update and query product search index",
+      "type": "sync"
+    },
+    {
+      "from": "func",
+      "to": "sqldb",
+      "label": "Persist payment status and transaction IDs",
+      "type": "sync"
+    },
+    {
+      "from": "entra",
+      "to": "apim",
+      "label": "Validate user tokens and enforce access policies",
+      "type": "sync"
+    },
+    {
+      "from": "appsvc",
+      "to": "azmon",
+      "label": "Emit application metrics and traces",
+      "type": "async"
+    },
+    {
+      "from": "azmon",
+      "to": "log",
+      "label": "Stream collected telemetry for analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Client requests enter through global edge and are routed to the API gateway",
+      "services": [
+        "afd",
+        "apim"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "API gateway validates user identity tokens before allowing access",
+      "services": [
+        "apim",
+        "entra"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Gateway forwards storefront operations to the web API",
+      "services": [
+        "apim",
+        "appsvc"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Web API reads cached catalog data and falls back to the database for order details",
+      "services": [
+        "appsvc",
+        "redis",
+        "sqldb"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Web API stores assets and updates the product search index",
+      "services": [
+        "appsvc",
+        "storage",
+        "search"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Web API submits payment authorization to serverless processing",
+      "services": [
+        "appsvc",
+        "func"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Payment processor records transaction outcomes in the database",
+      "services": [
+        "func",
+        "sqldb"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Application telemetry is collected and centralized for diagnostics",
+      "services": [
+        "appsvc",
+        "azmon",
+        "log"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1392,
+    "completionTokens": 2219,
+    "totalTokens": 3611,
+    "elapsedTimeMs": 39051,
+    "model": "gpt-5.2-codex"
+  },
+  "metadata": {
+    "prompt": "E-commerce platform with payments and search",
+    "model": "gpt-5.2-codex",
+    "modelDisplayName": "GPT-5.2 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1392,
+      "completionTokens": 2219,
+      "totalTokens": 3611,
+      "elapsedTimeMs": 39051,
+      "model": "gpt-5.2-codex"
+    },
+    "savedAt": "2026-02-28T14:42:29.255Z",
+    "source": "model-comparison"
+  }
+}

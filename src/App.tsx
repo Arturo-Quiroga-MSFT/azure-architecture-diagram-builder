@@ -1,0 +1,4660 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Connection,
+  Edge,
+  Node,
+  BackgroundVariant,
+  MarkerType,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import type { ExportBackground } from './utils/captureCanvas';
+import { animateEdgeFlow } from './utils/animateEdges';
+import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
+import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
+import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3, RotateCcw } from 'lucide-react';
+import IconPalette from './components/IconPalette';
+import NavRail from './components/NavRail';
+import ReportsPane from './components/ReportsPane';
+import LibraryPane from './components/LibraryPane';
+import SettingsPane from './components/SettingsPane';
+import AzureNode from './components/AzureNode';
+import GroupNode from './components/GroupNode';
+import AIArchitectureGenerator from './components/AIArchitectureGenerator';
+import ArchitectureChatPanel from './components/ArchitectureChatPanel';
+import { DeliverChooser, JourneyStrip, StartChooser, type JourneyStep } from './components/GuidedJourney';
+import HelpLearnPanel from './components/GuidedHelpPanel';
+import ReferenceImageViewer from './components/ReferenceImageViewer';
+import TitleBlock from './components/TitleBlock';
+import ModelBadge from './components/ModelBadge';
+import Legend from './components/Legend';
+import EditableEdge from './components/EditableEdge';
+import AlignmentToolbar from './components/AlignmentToolbar';
+import WorkflowPanel from './components/WorkflowPanel';
+import RegionSelector from './components/RegionSelector';
+import ValidationPanel from './components/ValidationPanel';
+import DeploymentGuideModal from './components/DeploymentGuideModal';
+import SaveSnapshotModal from './components/SaveSnapshotModal';
+import AzureImportModal from './components/AzureImportModal';
+import ModelSettingsPopover from './components/ModelSettingsPopover';
+import ComparePane from './components/ComparePane';
+import { loadIconsFromCategory } from './utils/iconLoader';
+import { getServiceIconMapping } from './data/serviceIconMapping';
+import { layoutArchitecture } from './utils/layoutEngine';
+import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing } from './services/costEstimationService';
+import { usePricingMode } from './stores/pricingModeStore';
+import { prefetchCommonServices } from './services/azurePricingService';
+import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS, RegionInfo } from './services/regionalPricingService';
+import { formatMonthlyCost, getPricingFreshness } from './utils/pricingHelpers';
+import { PRICING_DATA_AS_OF } from './data/azurePricing';
+import { costReportToHtml } from './utils/costReportHtml';
+import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
+import { bandLabel } from './services/wafMaturity';
+import type { DeploymentGuide } from './services/deploymentGuideGenerator';
+import { generateArchitectureWithAI } from './services/azureOpenAI';
+import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
+import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
+import { useNodePricingEditor, closeNodePricingEditor } from './stores/nodePricingEditorStore';
+import { useAppView, setAppView, getAppView } from './stores/appViewStore';
+import { type ExportAction } from './types/exportActions';
+import NodePricingEditor from './components/NodePricingEditor';
+import type { NodePricingConfig } from './types/pricing';
+import { createSnapshot, DiagramVersion } from './services/versionStorageService';
+import { saveDraft, loadDraft, clearDraft, type DiagramDraft } from './services/draftStorageService';
+import type { DeckService } from './services/pptxExporter';
+import { extractArchitectureFromArm, summarizeCoverage } from './services/armExtractor';
+import { buildArchitectureFromResources } from './services/resourceGraphAdapter';
+import { getResources as getAzureResources } from './services/azureImportProvider';
+import { isDelegatedAuthConfigured, getSignedInName, consumeReopenFlag } from './services/msalAuth';
+import {
+  applyLayoutPreset,
+  type LayoutPreset,
+  type LayoutSpacing,
+  type LayoutEdgeStyle,
+  type LayoutEngineType,
+} from './utils/layoutPresets';
+import { deconflictEdgeLabels } from './utils/edgeLabelLayout';
+import { generateModelFilename, setSourceModel, clearSourceModel } from './utils/modelNaming';
+import { fitAllGroupsToContent } from './utils/groupUtils';
+import { preserveManualLayout } from './utils/preserveManualLayout';
+import { resolveValidationFreshness } from './utils/validationFreshness';
+import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh, trackValidationFindings, trackGuidedJourney } from './services/telemetryService';
+import { classifyValidationTopics } from './services/validationConsensus';
+import type { IaCFormat } from './services/azureOpenAI';
+import FeedbackModal from './components/FeedbackModal';
+import FeedbackToast from './components/FeedbackToast';
+import { FEEDBACK_DONE_KEY } from './services/feedbackService';
+import { APP_VERSION } from './appVersion';
+import { useGenerationSession } from './hooks/useGenerationSession';
+import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
+import './App.css';
+
+const ImpactModal = __ENABLE_ADOPTION_IMPACT__
+  ? React.lazy(() => import('./components/ImpactModal'))
+  : null;
+
+type CaptureModule = typeof import('./utils/captureCanvas');
+let captureModulePromise: Promise<CaptureModule> | undefined;
+const loadCaptureModule = () => {
+  captureModulePromise ??= import('./utils/captureCanvas');
+  return captureModulePromise;
+};
+
+const captureDiagramAsPng: CaptureModule['captureDiagramAsPng'] = async (...args) =>
+  (await loadCaptureModule()).captureDiagramAsPng(...args);
+
+const captureDiagramAsSvg: CaptureModule['captureDiagramAsSvg'] = async (...args) =>
+  (await loadCaptureModule()).captureDiagramAsSvg(...args);
+
+const nodeTypes = {
+  azureNode: AzureNode,
+  groupNode: GroupNode,
+};
+
+const edgeTypes = {
+  editableEdge: EditableEdge,
+};
+
+type ExportHistoryKind = 'png' | 'svg' | 'animated-svg' | 'workflow-animation' | 'workflow-md' | 'costs' | 'json' | 'drawio' | 'vsdx' | 'pptx' | 'html';
+
+type ExportHistoryItem = {
+  id: string;
+  kind: ExportHistoryKind;
+  fileName: string;
+  createdAt: number;
+};
+
+const EXPORT_HISTORY_STORAGE_KEY = 'azure-diagram-builder.exportHistory.v1';
+const EXPORT_BACKGROUND_STORAGE_KEY = 'azure-diagram-builder.exportBackground.v1';
+const EDGE_STYLE_STORAGE_KEY = 'azure-diagram-builder.edgeStyle.v1';
+const CANVAS_HINT_STORAGE_KEY = 'azure-diagram-builder.canvasHintDismissed.v1';
+const LAYOUT_HINT_SEEN_STORAGE_KEY = 'azure-diagram-builder.layoutHintSeen.v1';
+const HEADER_COLLAPSED_STORAGE_KEY = 'azure-diagram-builder.headerCollapsed.v1';
+
+// Banners stack below the floating canvas tools bar (top 12px, ~47px tall) rather
+// than over it — the bar is z-index 5 and the banners are 1000, so an overlap
+// makes the tools unclickable. The layout hint then stacks below the banner.
+const CANVAS_BANNER_TOP = '68px';
+
+// Derive a short, human-friendly architecture title from a free-form prompt
+// (used as a fallback when no manifest title is available). Strips common
+// prefixes like "MODIFY EXISTING ARCHITECTURE: ...", "Build a", "Design a",
+// then takes the first ~8 words and title-cases them.
+function deriveTitleFromPrompt(prompt: string | undefined | null): string | undefined {
+  if (!prompt) return undefined;
+  let p = String(prompt).trim();
+  // Strip our own context-prompt prefix if present.
+  const modMatch = p.match(/CHANGE REQUESTED:\s*(.+)$/is);
+  if (modMatch) p = modMatch[1].trim();
+  // Drop leading verbs / fillers.
+  p = p.replace(/^(please\s+)?(build|design|create|generate|make|draw|architect|show|produce)\s+(me\s+)?(a|an|the)?\s*/i, '');
+  // Take first sentence / line.
+  p = p.split(/[\n.!?]/)[0].trim();
+  if (!p) return undefined;
+  const words = p.split(/\s+/).slice(0, 8);
+  if (words.length === 0) return undefined;
+  const titled = words
+    .map((w) => {
+      if (w.length <= 3 && w === w.toUpperCase()) return w; // keep acronyms (IoT, AKS)
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(' ')
+    .replace(/[^\w\s\-/&]/g, '')
+    .trim();
+  return titled.length > 0 ? titled : undefined;
+}
+
+function App() {
+  const [nodes, setNodes, onNodesChangeBase] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const {
+    architecturePrompt,
+    originalPrompt,
+    workflow,
+    setWorkflow,
+    generatedWithModel,
+    setGeneratedWithModel,
+    lastReferenceArchitecture,
+    setLastReferenceArchitecture,
+    lastBlueprintArchitecture,
+    setLastBlueprintArchitecture,
+    beginGeneration,
+    resetGenerationSession,
+    restoreGenerationSession,
+  } = useGenerationSession();
+  // null until the banner is first dragged, so it stays centred by CSS. A
+  // numeric sentinel would misfire once x reaches the canvas's left edge.
+  const [promptBannerPosition, setPromptBannerPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isDraggingBanner, setIsDraggingBanner] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  const [isImportingTemplate, setIsImportingTemplate] = useState(false);
+  const templateInputRef = useRef<HTMLInputElement>(null);
+  const [isAzureImportOpen, setIsAzureImportOpen] = useState(false);
+  // After a delegated sign-in redirect returns, re-open the "Import from Azure"
+  // modal so the user lands back where they left off (now signed in).
+  useEffect(() => {
+    if (!isDelegatedAuthConfigured()) return;
+    getSignedInName().then((name) => {
+      if (name && consumeReopenFlag()) setIsAzureImportOpen(true);
+    });
+  }, []);
+  const [importFormatLabel, setImportFormatLabel] = useState('Template');
+  const [isApplyingRecommendations, setIsApplyingRecommendations] = useState(false);
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  
+  const onNodesChange = useCallback((changes: any[]) => {
+    onNodesChangeBase(changes);
+  }, [onNodesChangeBase]);
+
+  
+  const [highlightedServices, setHighlightedServices] = useState<string[]>([]);
+  const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
+  const [totalMonthlyCost, setTotalMonthlyCost] = useState(0);
+  const [pricingMode] = usePricingMode();
+  // Whether cost estimates are shown at all (persisted, independent of stylePreset).
+  const [pricingPrefs, setPricingPrefs] = usePricingDisplayPrefs();
+  // Node whose per-node cost editor is open (opened from its cost badge).
+  const pricingEditorNodeId = useNodePricingEditor();
+  // Top-level shell pane. The canvas stays mounted when another pane is active
+  // so React Flow state, undo history and selection survive the switch.
+  const [activeView, setActiveView] = useAppView();
+  const isCanvasView = activeView === 'canvas';
+
+  useEffect(() => {
+    if (activeView === 'compare') setHasOpenedCompare(true);
+  }, [activeView]);
+  const [titleBlockData, setTitleBlockData] = useState({
+    architectureName: 'Untitled Architecture',
+    author: 'Azure Architect',
+    version: '1.0',
+    date: new Date().toLocaleDateString(),
+  });
+  
+  // Theme State
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const exportCanvasBackground = isDarkMode ? '#1a1a1a' : '#f8fafc';
+  
+  // Premium Features State
+  const [validationResult, setValidationResult] = useState<ArchitectureValidation | null>(null);
+  const [validationNeedsRefresh, setValidationNeedsRefresh] = useState(false);
+  const [isValidationPanelOpen, setIsValidationPanelOpen] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
+  const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
+  const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+
+  // Version History State
+  const [isSaveSnapshotModalOpen, setIsSaveSnapshotModalOpen] = useState(false);
+  // An autosaved diagram found at startup, offered for restore rather than
+  // applied silently — reloading to get a clean canvas stays a valid intent.
+  const [restorableDraft, setRestorableDraft] = useState<DiagramDraft | null>(null);
+  // Snapshots are saved from a modal outside the Library pane, so the pane needs
+  // a nudge to reload its list.
+  const [libraryReloadToken, setLibraryReloadToken] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatResetSignal, setChatResetSignal] = useState(0);
+  const [isDeliverChooserOpen, setIsDeliverChooserOpen] = useState(false);
+  const [generatorOpenSignal, setGeneratorOpenSignal] = useState(0);
+  const generatorOpenSourceRef = useRef<'first-start' | 'journey-strip' | 'toolbar'>('toolbar');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  // First-run nudge: pulse the Help button until it has been opened once.
+  const [helpSeen, setHelpSeen] = useState<boolean>(() => localStorage.getItem('help.seen') === '1');
+  // Canvas navigation hint: teaches scroll-to-zoom / drag-to-pan / fit-view.
+  // Dismissed permanently once the user closes it (persisted in localStorage).
+  const [showCanvasHint, setShowCanvasHint] = useState<boolean>(() => localStorage.getItem(CANVAS_HINT_STORAGE_KEY) !== '1');
+  const [showLayoutHint, setShowLayoutHint] = useState(false);
+  const layoutHintTimeoutRef = useRef<number | null>(null);
+  // State-backed ref: the banner mounts conditionally, so the measurement effect
+  // must re-run when the element actually attaches.
+  const [promptBannerEl, setPromptBannerEl] = useState<HTMLDivElement | null>(null);
+  const [layoutHintTop, setLayoutHintTop] = useState(16);
+  // Collapses the top toolbar to maximize canvas height. Independent of
+  // the "Focus" button (which collapses the side panels). Persisted so the
+  // user's preference sticks across sessions.
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(() => localStorage.getItem(HEADER_COLLAPSED_STORAGE_KEY) === '1');
+  // Mounted on first visit and kept mounted after, so a multi-model comparison
+  // survives navigating away. Not mounted up-front: it is a large component.
+  const [hasOpenedCompare, setHasOpenedCompare] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isImpactModalOpen, setIsImpactModalOpen] = useState(false);
+  const [isFeedbackToastOpen, setIsFeedbackToastOpen] = useState(false);
+  const [feedbackPreselectedRating, setFeedbackPreselectedRating] = useState<number | undefined>(undefined);
+  const [feedbackFabPulse, setFeedbackFabPulse] = useState(false);
+  // Counts successful AI generations this session so we can ask for feedback
+  // after a "success moment" (the 2nd diagram) rather than nagging up front.
+  const generationCountRef = useRef(0);
+  const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
+  const [panelsCollapsedSignal, setPanelsCollapsedSignal] = useState(0);
+
+  const presentLayoutHint = useCallback(() => {
+    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+    setShowLayoutHint(true);
+
+    let hasSeenLayoutHint = false;
+    try { hasSeenLayoutHint = localStorage.getItem(LAYOUT_HINT_SEEN_STORAGE_KEY) === '1'; } catch { /* ignore */ }
+    if (hasSeenLayoutHint) {
+      layoutHintTimeoutRef.current = window.setTimeout(() => {
+        setShowLayoutHint(false);
+        layoutHintTimeoutRef.current = null;
+      }, 10_000);
+    }
+  }, []);
+
+  useEffect(() => () => {
+    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+  }, []);
+
+  // Focus mode: hides canvas chrome (side panels via the signal above, plus the
+  // "Generated from" prompt banner and the "Generated with" model badge) so only
+  // the diagram itself remains. Toggled by the Focus button.
+  const [focusMode, setFocusMode] = useState(false);
+
+  // The prompt banner wraps to an arbitrary height and is draggable, so the
+  // layout hint tracks its measured bottom edge instead of a fixed offset.
+  useLayoutEffect(() => {
+    if (!showLayoutHint || !promptBannerEl) {
+      setLayoutHintTop(16);
+      return;
+    }
+    const update = () => {
+      const host = promptBannerEl.offsetParent as HTMLElement | null;
+      const hostTop = host ? host.getBoundingClientRect().top : 0;
+      const bottom = Math.round(promptBannerEl.getBoundingClientRect().bottom - hostTop) + 12;
+      // Once the banner is dragged well down the canvas, stop following it.
+      setLayoutHintTop(bottom > 360 ? 16 : Math.max(16, bottom));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(promptBannerEl);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [showLayoutHint, promptBannerEl, promptBannerPosition]);
+
+  const [exportBackground, setExportBackground] = useState<ExportBackground>(() => {
+    const saved = localStorage.getItem(EXPORT_BACKGROUND_STORAGE_KEY);
+    return saved === 'dots' || saved === 'grid' ? saved : 'plain';
+  });
+
+  const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  // Portal target for the canvas object tools; state rather than a ref so the
+  // portal renders once the node exists.
+  const [canvasToolsHost, setCanvasToolsHost] = useState<HTMLDivElement | null>(null);
+  const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
+  const importMenuRef = useRef<HTMLDivElement | null>(null);
+  const layoutMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>('flow-lr');
+  const [layoutSpacing, setLayoutSpacing] = useState<LayoutSpacing>('comfortable');
+  // Default to orthogonal (right-angle) routing — matches the blueprint PNG and
+  // draw.io exports, and is the convention for architecture diagrams. The
+  // user's choice is remembered across sessions (see persistence effect below).
+  const [layoutEdgeStyle, setLayoutEdgeStyle] = useState<LayoutEdgeStyle>(() => {
+    try {
+      const saved = localStorage.getItem(EDGE_STYLE_STORAGE_KEY);
+      if (saved === 'straight' || saved === 'smooth' || saved === 'orthogonal') {
+        return saved;
+      }
+    } catch {
+      /* localStorage unavailable — fall through to default */
+    }
+    return 'orthogonal';
+  });
+  const [layoutEmphasizePrimaryPath, setLayoutEmphasizePrimaryPath] = useState(false);
+  const [layoutEngine, setLayoutEngine] = useState<LayoutEngineType>('dagre');
+  
+  const [isBulkSelectMenuOpen, setIsBulkSelectMenuOpen] = useState(false);
+  const bulkSelectMenuRef = useRef<HTMLDivElement | null>(null);
+  
+  const [isStylePresetMenuOpen, setIsStylePresetMenuOpen] = useState(false);
+  const stylePresetMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
+  const modelSettingsRef = useRef<HTMLDivElement | null>(null);
+  const [stylePreset, setStylePreset] = useState<'detailed' | 'presentation'>('detailed');
+
+  // Collapse / expand all groups
+  const [allGroupsCollapsed, setAllGroupsCollapsed] = useState(false);
+  const preCollapseGroupSizes = useRef<Map<string, { width: number; height: number }>>(new Map());
+
+
+
+  const [exportHistory, setExportHistory] = useState<ExportHistoryItem[]>(() => {
+    try {
+      const raw = localStorage.getItem(EXPORT_HISTORY_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter((v) => v && typeof v === 'object')
+        .slice(0, 25) as ExportHistoryItem[];
+    } catch {
+      return [];
+    }
+  });
+  
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EXPORT_HISTORY_STORAGE_KEY, JSON.stringify(exportHistory.slice(0, 25)));
+    } catch {
+      // ignore
+    }
+  }, [exportHistory]);
+
+  // Remember the chosen edge style across sessions so a user who prefers smooth
+  // (or straight) keeps it instead of reverting to the orthogonal default.
+  useEffect(() => {
+    try {
+      localStorage.setItem(EDGE_STYLE_STORAGE_KEY, layoutEdgeStyle);
+    } catch {
+      // ignore
+    }
+  }, [layoutEdgeStyle]);
+
+  // One-time gentle pulse on the feedback button ~15s after load so it earns a
+  // glance without looping/nagging. Suppressed once feedback has been given.
+  useEffect(() => {
+    let alreadyDone = false;
+    try {
+      alreadyDone = sessionStorage.getItem(FEEDBACK_DONE_KEY) === '1';
+    } catch {
+      /* sessionStorage unavailable — ignore */
+    }
+    if (alreadyDone) return;
+    const startT = window.setTimeout(() => setFeedbackFabPulse(true), 15000);
+    const stopT = window.setTimeout(() => setFeedbackFabPulse(false), 19500);
+    return () => {
+      window.clearTimeout(startT);
+      window.clearTimeout(stopT);
+    };
+  }, []);
+
+  const recordExport = useCallback((kind: ExportHistoryKind, fileName: string) => {
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const item: ExportHistoryItem = { id, kind, fileName, createdAt: Date.now() };
+    setExportHistory((prev) => [item, ...prev].slice(0, 25));
+  }, []);
+
+  const formatTimeAgo = useCallback((ts: number) => {
+    const diffMs = Date.now() - ts;
+    const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+    if (diffSec < 10) return 'just now';
+    if (diffSec < 60) return `${diffSec}s ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  }, []);
+
+  useEffect(() => {
+    const handlePointerDown = (e: PointerEvent) => {
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen && !isImportMenuOpen) return;
+      const target = e.target as unknown as globalThis.Node | null;
+      if (!target) return;
+
+      if (isImportMenuOpen && importMenuRef.current && !importMenuRef.current.contains(target)) {
+        setIsImportMenuOpen(false);
+      }
+
+      if (isLayoutMenuOpen && layoutMenuRef.current && !layoutMenuRef.current.contains(target)) {
+        setIsLayoutMenuOpen(false);
+      }
+
+      if (isBulkSelectMenuOpen && bulkSelectMenuRef.current && !bulkSelectMenuRef.current.contains(target)) {
+        setIsBulkSelectMenuOpen(false);
+      }
+
+      if (isStylePresetMenuOpen && stylePresetMenuRef.current && !stylePresetMenuRef.current.contains(target)) {
+        setIsStylePresetMenuOpen(false);
+      }
+
+      if (isModelSettingsOpen && modelSettingsRef.current && !modelSettingsRef.current.contains(target)) {
+        setIsModelSettingsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLayoutMenuOpen && !isBulkSelectMenuOpen && !isStylePresetMenuOpen && !isModelSettingsOpen && !isImportMenuOpen) return;
+      if (e.key === 'Escape') {
+        setIsImportMenuOpen(false);
+        setIsLayoutMenuOpen(false);
+        setIsBulkSelectMenuOpen(false);
+        setIsStylePresetMenuOpen(false);
+        setIsModelSettingsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLayoutMenuOpen, isBulkSelectMenuOpen, isStylePresetMenuOpen, isModelSettingsOpen, isImportMenuOpen]);
+
+  // Keyboard shortcuts: Delete and Ctrl+D (duplicate)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      // Delete key - remove selected nodes and edges
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const selectedNodes = nodes.filter(n => n.selected);
+        const selectedEdges = edges.filter(e => e.selected);
+        
+        if (selectedNodes.length > 0 || selectedEdges.length > 0) {
+          e.preventDefault();
+          
+          // Remove selected nodes
+          if (selectedNodes.length > 0) {
+            const nodeIdsToRemove = selectedNodes.map(n => n.id);
+            setNodes(nds => nds.filter(n => !nodeIdsToRemove.includes(n.id)));
+            
+            // Also remove edges connected to deleted nodes
+            setEdges(eds => eds.filter(edge => 
+              !nodeIdsToRemove.includes(edge.source) && !nodeIdsToRemove.includes(edge.target)
+            ));
+          }
+          
+          // Remove selected edges
+          if (selectedEdges.length > 0) {
+            const edgeIdsToRemove = selectedEdges.map(e => e.id);
+            setEdges(eds => eds.filter(e => !edgeIdsToRemove.includes(e.id)));
+          }
+        }
+      }
+
+      // Ctrl+D or Cmd+D - duplicate selected nodes
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        const selectedNodes = nodes.filter(n => n.selected);
+        
+        if (selectedNodes.length > 0) {
+          e.preventDefault();
+          
+          const duplicatedNodes = selectedNodes.map(node => {
+            const newId = `${Date.now()}-${Math.random()}`;
+            return {
+              ...node,
+              id: newId,
+              position: {
+                x: node.position.x + 50, // Offset by 50px
+                y: node.position.y + 50,
+              },
+              selected: true, // Select the new nodes
+            };
+          });
+          
+          // Deselect original nodes
+          setNodes(nds => [
+            ...nds.map(n => ({ ...n, selected: false })),
+            ...duplicatedNodes
+          ]);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [nodes, edges, setNodes, setEdges]);
+
+  // Keep edge rendering style in sync even without re-layout.
+  useEffect(() => {
+    setEdges((eds) =>
+      eds.map((e) => ({
+        ...e,
+        data: { ...(e.data ?? {}), pathStyle: layoutEdgeStyle },
+      }))
+    );
+  }, [layoutEdgeStyle, setEdges]);
+
+  const addGroupBox = useCallback(() => {
+    const newNode: Node = {
+      id: `group-${Date.now()}`,
+      type: 'groupNode',
+      position: { x: 250, y: 150 },
+      data: { 
+        label: 'Group Label',
+      },
+      style: {
+        width: 400,
+        height: 300,
+      },
+    };
+    setNodes((nds) => nds.concat(newNode));
+  }, [setNodes]);
+
+  // Apply dark mode class to body and persist preference
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  // Apply dark mode class to body and persist preference
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  // Preload pricing data on mount
+  useEffect(() => {
+    preloadCommonServices().catch(err => 
+      console.warn('Failed to preload regional pricing:', err)
+    );
+    prefetchCommonServices('eastus2').catch(err => 
+      console.warn('Failed to prefetch API pricing:', err)
+    );
+  }, []);
+
+  // Recalculate total cost whenever nodes change
+  useEffect(() => {
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
+    setTotalMonthlyCost(breakdown.totalMonthlyCost);
+  }, [nodes, pricingMode]);
+
+  // Handle region change
+  const handleRegionChange = useCallback(async (region: AzureRegion) => {
+    console.log(`🌍 Region changed to ${region}, updating all node pricing...`);
+    
+    // Update all nodes with new regional pricing
+    const updatedNodes = await Promise.all(
+      nodes.map(async (node) => {
+        if (node.type === 'azureNode' && node.data.label) {
+          const newPricing = await initializeNodePricing(node.data.label, region);
+          if (newPricing) {
+            return { ...node, data: { ...node.data, pricing: newPricing } };
+          }
+        }
+        return node;
+      })
+    );
+    
+    setNodes(updatedNodes);
+  }, [nodes, setNodes]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingBanner) {
+        setPromptBannerPosition({
+          x: e.clientX - dragOffset.x,
+          y: e.clientY - dragOffset.y,
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingBanner(false);
+    };
+
+    if (isDraggingBanner) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingBanner, dragOffset]);
+
+  const handleEdgeLabelChange = useCallback((edgeId: string, newLabel: string) => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return {
+            ...edge,
+            label: newLabel,
+            data: { ...edge.data, onLabelChange: handleEdgeLabelChange },
+          };
+        }
+        return edge;
+      })
+    );
+  }, [setEdges]);
+
+  const handleEdgeLabelOffsetChange = useCallback((edgeId: string, offsetX: number, offsetY: number) => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return {
+            ...edge,
+            data: { 
+              ...edge.data, 
+              labelOffsetX: offsetX, 
+              labelOffsetY: offsetY,
+              labelOffsetSource: 'manual',
+              onLabelChange: handleEdgeLabelChange,
+              onLabelOffsetChange: handleEdgeLabelOffsetChange,
+            },
+          };
+        }
+        return edge;
+      })
+    );
+  }, [setEdges, handleEdgeLabelChange]);
+
+  const onConnect = useCallback(
+    (params: Connection | Edge) => setEdges((eds) => addEdge({ 
+      ...params, 
+      animated: false,
+      type: 'editableEdge',
+      label: '',
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+      labelStyle: { fontSize: 14, fill: '#333', fontWeight: 'bold' },
+      labelBgStyle: { fill: 'white', fillOpacity: 0.9, stroke: '#000', strokeWidth: 1.5 },
+      data: {
+        onLabelChange: handleEdgeLabelChange,
+        onLabelOffsetChange: handleEdgeLabelOffsetChange,
+        connectionType: 'sync',
+        direction: 'forward',
+        baseFlowAnimated: true,
+        flowAnimated: true,
+        flowMode: 'directional',
+        pathStyle: layoutEdgeStyle,
+        labelOffsetX: 0,
+        labelOffsetY: 0,
+      },
+    }, eds)),
+    [setEdges, handleEdgeLabelChange, handleEdgeLabelOffsetChange, layoutEdgeStyle]
+  );
+
+  // Bulk select operations
+  const selectAllNodesOfType = useCallback((serviceType: string) => {
+    setNodes((nds) => 
+      nds.map(node => ({
+        ...node,
+        selected: node.type === 'azureNode' && node.data.label === serviceType
+      }))
+    );
+    setIsBulkSelectMenuOpen(false);
+  }, [setNodes]);
+
+  const selectAllNodes = useCallback(() => {
+    setNodes((nds) => nds.map(node => ({ ...node, selected: true })));
+    setIsBulkSelectMenuOpen(false);
+  }, [setNodes]);
+
+  const deselectAll = useCallback(() => {
+    setNodes((nds) => nds.map(node => ({ ...node, selected: false })));
+    setEdges((eds) => eds.map(edge => ({ ...edge, selected: false })));
+    setIsBulkSelectMenuOpen(false);
+  }, [setNodes, setEdges]);
+
+  // Toggle collapse / expand all group nodes
+  const toggleCollapseAllGroups = useCallback(() => {
+    if (!allGroupsCollapsed) {
+      // Save current sizes before collapsing
+      const sizeMap = new Map<string, { width: number; height: number }>();
+      nodes.forEach(n => {
+        if (n.type === 'groupNode') {
+          sizeMap.set(n.id, {
+            width: (n.style?.width as number) || (n.width as number) || 400,
+            height: (n.style?.height as number) || (n.height as number) || 300,
+          });
+        }
+      });
+      preCollapseGroupSizes.current = sizeMap;
+
+      // Collapse all groups to fit content
+      const collapsed = fitAllGroupsToContent(nodes);
+      setNodes(collapsed);
+      setAllGroupsCollapsed(true);
+
+      // Zoom out to show the full picture
+      setTimeout(() => {
+        reactFlowInstance?.fitView?.({ padding: 0.3, duration: 300 });
+      }, 50);
+    } else {
+      // Restore saved sizes
+      const sizeMap = preCollapseGroupSizes.current;
+      setNodes(nds =>
+        nds.map(n => {
+          if (n.type === 'groupNode' && sizeMap.has(n.id)) {
+            const { width, height } = sizeMap.get(n.id)!;
+            return { ...n, style: { ...n.style, width, height } };
+          }
+          return n;
+        })
+      );
+      setAllGroupsCollapsed(false);
+      preCollapseGroupSizes.current = new Map();
+
+      setTimeout(() => {
+        reactFlowInstance?.fitView?.({ padding: 0.2, duration: 300 });
+      }, 50);
+    }
+  }, [allGroupsCollapsed, nodes, setNodes, reactFlowInstance]);
+
+  // Get unique service types from current diagram
+  const getServiceTypes = useCallback(() => {
+    const types = new Set<string>();
+    nodes.forEach((node) => {
+      if (node.type === 'azureNode' && node.data.label) {
+        types.add(node.data.label);
+      }
+    });
+    return Array.from(types).sort();
+  }, [nodes]);
+
+  // Style preset functions
+  const applyStylePreset = useCallback((preset: 'detailed' | 'presentation') => {
+    setStylePreset(preset);
+
+    // Update nodes with style data
+    setNodes((nds) =>
+      nds.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          stylePreset: preset,
+        },
+      }))
+    );
+
+    // Update edges based on preset (non-destructive: don't wipe labels)
+    setEdges((eds) =>
+      eds.map((edge) => {
+        const nextStyle: any = { ...(edge.style ?? {}) };
+        const nextLabelStyle: any = { ...(edge.labelStyle ?? {}) };
+        const nextLabelBgStyle: any = { ...(edge.labelBgStyle ?? {}) };
+
+        switch (preset) {
+          case 'presentation':
+            nextStyle.strokeWidth = 2.5;
+            delete nextStyle.strokeDasharray;
+            nextLabelStyle.opacity = 1;
+            nextLabelStyle.fontSize = 15;
+            nextLabelStyle.fontWeight = '600';
+            nextLabelBgStyle.fillOpacity = 0.95;
+            nextLabelBgStyle.strokeWidth = 2;
+            nextLabelBgStyle.rx = 6;
+            break;
+          case 'detailed':
+          default:
+            delete nextStyle.strokeWidth;
+            delete nextStyle.strokeDasharray;
+            nextLabelStyle.opacity = 1;
+            nextLabelBgStyle.fillOpacity = 0.9;
+            nextLabelBgStyle.strokeWidth = 1.5;
+            break;
+        }
+
+        return {
+          ...edge,
+          style: nextStyle,
+          labelStyle: nextLabelStyle,
+          labelBgStyle: nextLabelBgStyle,
+        };
+      })
+    );
+
+    setIsStylePresetMenuOpen(false);
+  }, [setEdges, setNodes]);
+
+  const applyLayout = useCallback(async () => {
+    const selectedAzureNodeId = nodes.find((n) => n.type === 'azureNode' && (n as any).selected)?.id;
+    const shouldEmphasize =
+      layoutEmphasizePrimaryPath && (layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb');
+
+    const result = await applyLayoutPreset(nodes as any, edges as any, {
+      preset: layoutPreset,
+      spacing: layoutSpacing,
+      edgeStyle: layoutEdgeStyle,
+      emphasizePrimaryPath: shouldEmphasize,
+      selectedNodeId: selectedAzureNodeId,
+      layoutEngine,
+    });
+
+    setNodes(result.nodes as any);
+    setEdges(deconflictEdgeLabels(result.nodes as any, result.edges as any) as any);
+
+    requestAnimationFrame(() => {
+      reactFlowInstance?.fitView?.({ padding: 0.2, duration: 250 });
+    });
+  }, [
+    nodes,
+    edges,
+    layoutPreset,
+    layoutSpacing,
+    layoutEdgeStyle,
+    layoutEmphasizePrimaryPath,
+    layoutEngine,
+    reactFlowInstance,
+    setNodes,
+    setEdges,
+  ]);
+
+  const layoutPresetLabel: Record<LayoutPreset, string> = {
+    'flow-lr': 'Flow (L→R)',
+    'flow-tb': 'Flow (Top→Bottom)',
+    swimlanes: 'Swimlanes by Group',
+    radial: 'Radial',
+  };
+
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      setEdges((eds) => {
+        // Remove the old edge and add the new connection
+        const filtered = eds.filter(e => e.id !== oldEdge.id);
+        return addEdge({
+          ...newConnection,
+          animated: false,
+          type: oldEdge.type,
+          label: oldEdge.label,
+          markerEnd: oldEdge.markerEnd,
+          markerStart: (oldEdge as any).markerStart,
+          labelStyle: oldEdge.labelStyle,
+          labelBgStyle: oldEdge.labelBgStyle,
+          data: oldEdge.data,
+        }, filtered);
+      });
+    },
+    [setEdges]
+  );
+
+  const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.preventDefault();
+    setEdgeContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      edgeId: edge.id,
+    });
+  }, []);
+
+  // Right-drag pans the canvas (panOnDrag includes button 2), so the browser's
+  // native menu is never wanted here. Releasing that menu over its Back/Reload
+  // entries discards the diagram, which is not saved anywhere.
+  const suppressNativeContextMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+  }, []);
+
+  const closeEdgeContextMenu = useCallback(() => {
+    setEdgeContextMenu(null);
+  }, []);
+
+  const setEdgeDirection = useCallback((edgeId: string, direction: 'forward' | 'reverse' | 'bidirectional') => {
+    setEdges((eds) => eds.map((edge) => {
+      if (edge.id === edgeId) {
+        let markerEnd: any = undefined;
+        let markerStart: any = undefined;
+        const baseFlowAnimated = Boolean(edge.data?.baseFlowAnimated ?? edge.data?.flowAnimated ?? true);
+        const flowAnimated = baseFlowAnimated;
+        const flowMode = direction === 'bidirectional' ? 'pulse' : 'directional';
+        
+        switch (direction) {
+          case 'forward':
+            markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            break;
+          case 'reverse':
+            markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            break;
+          case 'bidirectional':
+            markerEnd = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            markerStart = { type: MarkerType.ArrowClosed, color: '#0078d4' };
+            break;
+        }
+        
+        return {
+          ...edge,
+          markerEnd,
+          markerStart,
+          animated: false,
+          data: { 
+            ...edge.data, 
+            direction, 
+            baseFlowAnimated, 
+            flowAnimated, 
+            flowMode,
+            onLabelChange: handleEdgeLabelChange,
+            onLabelOffsetChange: handleEdgeLabelOffsetChange,
+          }
+        };
+      }
+      return edge;
+    }));
+    closeEdgeContextMenu();
+  }, [setEdges, closeEdgeContextMenu]);
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  // Handle node deletion - convert child nodes to absolute positions when parent group is deleted
+  const onNodesDelete = useCallback((deleted: any[]) => {
+    const deletedGroupIds = deleted.filter(n => n.type === 'groupNode').map(n => n.id);
+    
+    if (deletedGroupIds.length > 0) {
+      setNodes((nds) => nds.map((node) => {
+        // If this node's parent is being deleted, convert to absolute position
+        if (node.parentNode && deletedGroupIds.includes(node.parentNode)) {
+          const parentGroup = deleted.find(n => n.id === node.parentNode);
+          
+          if (parentGroup) {
+            // Convert from parent-relative to absolute canvas coordinates
+            const absolutePosition = {
+              x: parentGroup.position.x + node.position.x,
+              y: parentGroup.position.y + node.position.y,
+            };
+            
+            return {
+              ...node,
+              parentNode: undefined,
+              position: absolutePosition,
+              extent: undefined,
+            };
+          }
+
+          return {
+            ...node,
+            parentNode: undefined,
+            extent: undefined,
+          };
+        }
+        return node;
+      }));
+    }
+  }, [setNodes]);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      if (!reactFlowInstance) return;
+
+      const type = event.dataTransfer.getData('application/reactflow');
+      const iconPath = event.dataTransfer.getData('iconPath');
+      const iconName = event.dataTransfer.getData('iconName');
+
+      if (typeof type === 'undefined' || !type) {
+        return;
+      }
+
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // Check if dropped inside a group
+      let parentGroup: Node | undefined = undefined;
+      const currentNodes = reactFlowInstance.getNodes();
+      
+      for (const node of currentNodes) {
+        if (node.type === 'groupNode') {
+          // Check if position is within group bounds
+          const groupX = node.position.x;
+          const groupY = node.position.y;
+          // Get dimensions from style first, then measured width/height, then defaults
+          const groupWidth = (node.style?.width as number) || node.width || 400;
+          const groupHeight = (node.style?.height as number) || node.height || 300;
+          
+          if (
+            position.x >= groupX &&
+            position.x <= groupX + groupWidth &&
+            position.y >= groupY &&
+            position.y <= groupY + groupHeight
+          ) {
+            parentGroup = node;
+            break; // Use first matching group
+          }
+        }
+      }
+
+      const newNode: Node = {
+        id: `${Date.now()}`,
+        type,
+        position: parentGroup ? {
+          // If inside group, position relative to group
+          x: position.x - parentGroup.position.x,
+          y: position.y - parentGroup.position.y,
+        } : position,
+        data: { 
+          label: iconName,
+          iconPath: iconPath,
+        },
+        parentNode: parentGroup?.id,
+        extent: parentGroup ? 'parent' : undefined,
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+
+      // Initialize pricing asynchronously with current region
+      const currentRegion = getActiveRegion();
+      initializeNodePricing(iconName, currentRegion).then(pricing => {
+        if (pricing) {
+          setNodes((nds) => 
+            nds.map(n => 
+              n.id === newNode.id 
+                ? { ...n, data: { ...n.data, pricing } }
+                : n
+            )
+          );
+        }
+      }).catch(err => console.warn('Failed to initialize pricing:', err));
+    },
+    [reactFlowInstance, setNodes]
+  );
+
+  // Reports-pane exports run against `reactFlowWrapper.current`, but on any
+  // non-canvas view that element is `.canvas-container.is-hidden` (opacity: 0,
+  // per NavRail.css). A DOM capture taken while it's hidden serialises that
+  // opacity, producing a blank image regardless of format — html-to-image
+  // captures does not skip an invisible ancestor. Switch to canvas first and
+  // restore the caller's view afterward, whether the capture succeeds or not.
+  const withCanvasViewForCapture = useCallback(async (run: () => Promise<void>) => {
+    const returnTo = getAppView();
+    const alreadyOnCanvas = returnTo === 'canvas';
+    if (!alreadyOnCanvas) {
+      setAppView('canvas');
+      await new Promise(res => setTimeout(res, 250));
+    }
+    try {
+      await run();
+    } finally {
+      if (!alreadyOnCanvas) setAppView(returnTo);
+    }
+  }, []);
+
+  const exportDiagram = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
+      return;
+    }
+
+    await withCanvasViewForCapture(async () => {
+      // Fit all nodes into view with no animation for immediate rendering
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+      // Wait for fitView to settle, then capture
+      await new Promise(res => setTimeout(res, 800));
+      try {
+        const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: exportCanvasBackground,
+          exportBackground,
+        });
+
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const fileName = generateModelFilename('azure-diagram', 'png');
+        link.download = fileName;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('png', fileName);
+        trackExport('png', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
+      } catch (err) {
+        console.error('Error exporting diagram:', err);
+        alert('Failed to export diagram. Please try again.');
+      }
+    });
+  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
+
+  const exportAsSvg = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
+      return;
+    }
+
+    await withCanvasViewForCapture(async () => {
+      // Fit all nodes into view with no animation for immediate rendering
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+      // Wait for fitView to settle, then capture
+      await new Promise(res => setTimeout(res, 800));
+      try {
+        // captureDiagramAsSvg serialises the DOM natively — SVG edge paths
+        // (curves, dashes, orthogonal bends) are preserved as vector data.
+        const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: exportCanvasBackground,
+          excludePanels: true,
+          exportBackground,
+        });
+
+        const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = generateModelFilename('azure-diagram', 'svg');
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('svg', fileName);
+        trackExport('svg', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
+      } catch (err) {
+        console.error('Error exporting SVG:', err);
+        alert('Failed to export SVG. Please try again.');
+      }
+    });
+  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
+
+  // Export the workflow narrative (title, prompt, services, step-by-step flow,
+  // connections, optional validation/cost) as a Markdown document.
+  const exportWorkflowMarkdown = useCallback(() => {
+    if (nodes.filter(n => n.type === 'azureNode').length === 0) {
+      alert('Add or generate an architecture first, then export its workflow narrative.');
+      return;
+    }
+    try {
+      const md = buildWorkflowMarkdown({
+        title: titleBlockData,
+        prompt: architecturePrompt,
+        model: generatedWithModel,
+        nodes,
+        edges,
+        workflow,
+        validationScore: validationResult ? validationResult.overallScore : null,
+        totalMonthlyCost,
+        pricingMode,
+        region: getActiveRegion(),
+      });
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = generateModelFilename('azure-diagram-workflow', 'md');
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+      recordExport('workflow-md', fileName);
+      trackExport('workflow-md', nodes.filter(n => n.type === 'azureNode').length);
+    } catch (err) {
+      console.error('Error exporting workflow markdown:', err);
+      alert('Failed to export workflow narrative. Please try again.');
+    }
+  }, [nodes, edges, workflow, titleBlockData, architecturePrompt, generatedWithModel, validationResult, totalMonthlyCost, pricingMode, recordExport]);
+
+  // Export as an Animated SVG: same vector capture as exportAsSvg, but with
+  // flowing data-flow circles injected onto each edge. Pure client-side — the
+  // motion is carried by the SVG (open in a browser to view). For README/Teams
+  // surfaces that strip SVG animation, export a GIF/WebP instead.
+  const exportAsAnimatedSvg = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
+      return;
+    }
+
+    await withCanvasViewForCapture(async () => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+      await new Promise(res => setTimeout(res, 800));
+      try {
+        const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: exportCanvasBackground,
+          excludePanels: true,
+          exportBackground,
+        });
+        const animatedSvg = animateEdgeFlow(svgText);
+
+        const blob = new Blob([animatedSvg], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = generateModelFilename('azure-diagram-animated', 'svg');
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('animated-svg', fileName);
+        trackExport('animated-svg', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
+      } catch (err) {
+        console.error('Error exporting animated SVG:', err);
+        alert('Failed to export animated SVG. Please try again.');
+      }
+    });
+  }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
+
+  // Export a SEQUENCED "workflow animation" SVG: plays the diagram's workflow
+  // steps chronologically (one edge flows at a time) with a caption per step and
+  // pulsing highlights on the involved nodes. Client-side; the motion is carried
+  // by the SVG (open in a browser). Requires a workflow on the diagram.
+  const exportWorkflowAnimation = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) {
+      return;
+    }
+    if (!workflow || workflow.length === 0) {
+      alert('This diagram has no workflow steps to animate. Generate a diagram with a workflow first.');
+      return;
+    }
+
+    await withCanvasViewForCapture(async () => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+      await new Promise(res => setTimeout(res, 800));
+      try {
+        const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: exportCanvasBackground,
+          excludePanels: true,
+          exportBackground,
+        });
+        const sequenced = sequenceWorkflowSvg(svgText, { nodes, edges, workflow, stepDurSec: 3 });
+
+        const blob = new Blob([sequenced], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fileName = generateModelFilename('azure-diagram-workflow', 'svg');
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+        recordExport('workflow-animation', fileName);
+        trackExport('workflow-animation', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
+      } catch (err) {
+        console.error('Error exporting workflow animation:', err);
+        alert('Failed to export workflow animation. Please try again.');
+      }
+    });
+  }, [reactFlowInstance, recordExport, nodes, edges, workflow, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
+
+  const exportAsDrawio = useCallback(async () => {
+    try {
+      const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      const { exportAndDownloadDrawio } = await import('./services/drawioExporter');
+      const fileName = await exportAndDownloadDrawio(nodes, edges, diagramName);
+      recordExport('drawio', fileName);
+      trackExport('drawio', nodes.filter(n => n.type === 'azureNode').length);
+    } catch (err) {
+      console.error('Error exporting Draw.io:', err);
+      alert('Failed to export Draw.io file. Please try again.');
+    }
+  }, [nodes, edges, titleBlockData.architectureName, recordExport]);
+
+  const exportAsVsdx = useCallback(async () => {
+    if (nodes.filter(n => n.type === 'azureNode').length === 0) {
+      alert('Add or generate an architecture first, then export to Visio.');
+      return;
+    }
+    try {
+      const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      const { buildVsdxBlob } = await import('./services/visioVsdxExporter');
+      const blob = await buildVsdxBlob(nodes, edges, diagramName);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = generateModelFilename('azure-diagram', 'vsdx');
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+      recordExport('vsdx', fileName);
+      trackExport('vsdx', nodes.filter(n => n.type === 'azureNode').length);
+    } catch (err) {
+      console.error('Error exporting Visio VSDX:', err);
+      alert('Failed to export Visio file. Please try again.');
+    }
+  }, [nodes, edges, titleBlockData.architectureName, recordExport]);
+
+  const exportAsHtml = useCallback(async () => {
+    try {
+      const diagramName = titleBlockData.architectureName || 'Azure Architecture';
+      const { exportDiagramAsHtml } = await import('./services/htmlDiagramExporter');
+      exportDiagramAsHtml(nodes, edges, diagramName);
+      const fileName = `${diagramName.replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-').toLowerCase()}.html`;
+      recordExport('html', fileName);
+      trackExport('html', nodes.filter(n => n.type === 'azureNode').length);
+    } catch (err) {
+      console.error('Error exporting HTML diagram:', err);
+      alert('Failed to export HTML diagram. Please try again.');
+    }
+  }, [nodes, edges, titleBlockData.architectureName, recordExport]);
+
+  const exportAsPptx = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) return;
+
+    await withCanvasViewForCapture(async () => {
+      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+      await new Promise(res => setTimeout(res, 800));
+      try {
+        const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: exportCanvasBackground,
+          excludePanels: true,
+          exportBackground,
+        });
+
+        const { exportDiagramAsPptx } = await import('./services/pptxExporter');
+        const fileName = await exportDiagramAsPptx(imageDataUrl, {
+          diagramName: titleBlockData.architectureName || 'Azure Architecture',
+          author: titleBlockData.author || 'Azure Architect',
+          date: titleBlockData.date || new Date().toLocaleDateString(),
+          isDarkMode,
+        });
+
+        recordExport('pptx', fileName);
+        trackExport('pptx', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
+      } catch (err) {
+        console.error('Error exporting PPTX:', err);
+        alert('Failed to export PowerPoint slide. Please try again.');
+      }
+    });
+  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
+
+  const exportCustomerDeck = useCallback(async () => {
+    if (!reactFlowWrapper.current || !reactFlowInstance) return;
+
+    const azureNodes = nodes.filter(n => n.type === 'azureNode');
+    if (azureNodes.length === 0) {
+      alert('Add or generate an architecture first, then export a customer deck.');
+      return;
+    }
+
+    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+
+    await withCanvasViewForCapture(async () => {
+      await new Promise(res => setTimeout(res, 800));
+      try {
+        const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          backgroundColor: exportCanvasBackground,
+          excludePanels: true,
+          exportBackground,
+        });
+
+        // Service inventory from the diagram nodes. Group membership is via
+        // React Flow's parent link (parentNode/parentId) → the group node's
+        // label; category is derived from the icon path (/Icons/<category>/…).
+        const groupLabelById = new Map<string, string>();
+        nodes.filter(n => n.type === 'groupNode').forEach(g => {
+          const label = (g.data?.label as string) || '';
+          if (label) groupLabelById.set(g.id, label);
+        });
+        const categoryFromIcon = (iconPath?: string): string | undefined => {
+          const m = iconPath?.match(/\/Icons\/([^/]+)\//i);
+          if (!m) return undefined;
+          return m[1].replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        };
+        const services: DeckService[] = azureNodes.map(n => {
+          const parentId = (n as Node & { parentNode?: string; parentId?: string }).parentNode
+            ?? (n as Node & { parentNode?: string; parentId?: string }).parentId;
+          return {
+            name: (n.data?.label as string) || 'Unnamed service',
+            category: categoryFromIcon(n.data?.iconPath as string),
+            group: (parentId ? groupLabelById.get(parentId) : undefined) || undefined,
+          };
+        });
+
+        // Optional WAF review
+        const validation = validationResult ? {
+          overallScore: validationResult.overallScore,
+          overallLabel: bandLabel(validationResult.overallScore),
+          summary: validationResult.summary,
+          pillars: validationResult.pillars.map(p => ({ pillar: p.pillar, score: p.score, maturity: bandLabel(p.score) })),
+          findings: (validationResult.quickWins.length > 0
+            ? validationResult.quickWins
+            : validationResult.pillars.flatMap(p => p.findings)
+          )
+            .slice()
+            .sort((a, b) => {
+              const rank = { critical: 0, high: 1, medium: 2, low: 3 } as Record<string, number>;
+              return (rank[a.severity] ?? 9) - (rank[b.severity] ?? 9);
+            })
+            .slice(0, 6)
+            .map(f => ({ severity: f.severity, category: f.category, issue: f.issue, recommendation: f.recommendation })),
+          modelUsed: validationResult.modelUsed,
+        } : null;
+
+        // Optional cost estimate — enriched to mirror the Cost Intelligence
+        // report (annual projection, fixed vs usage split, top drivers %, and
+        // an optional multi-region comparison).
+        const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
+        const hasCost = breakdown.totalMonthlyCost > 0;
+
+        // Multi-region comparison (best-effort; reprices over local pricing data)
+        let regions: Array<{ name: string; flag?: string; monthly: number; annual: number; isCurrent: boolean; isCheapest: boolean }> | undefined;
+        if (hasCost) {
+          try {
+            const results: { info: RegionInfo; total: number }[] = [];
+            for (const rInfo of AVAILABLE_REGIONS) {
+              try {
+                const repriced = await refreshAllNodePricing(nodes, rInfo.id);
+                const rb = calculateCostBreakdown(repriced, rInfo.id, pricingMode);
+                results.push({ info: rInfo, total: rb.totalMonthlyCost });
+              } catch { /* skip a region that fails to reprice */ }
+            }
+            results.sort((a, b) => a.total - b.total);
+            if (results.length > 1) {
+              const min = results[0].total;
+              const activeRegion = getActiveRegion();
+              regions = results.map(r => ({
+                name: r.info.displayName,
+                flag: r.info.flag,
+                monthly: r.total,
+                annual: r.total * 12,
+                isCurrent: r.info.id === activeRegion,
+                isCheapest: r.total === min,
+              }));
+            }
+          } catch { /* multi-region is optional */ }
+        }
+
+        const azureServiceNodes = nodes.filter(n => n.type === 'azureNode');
+        const fixedCost = hasCost
+          ? breakdown.byService
+              .filter(svc => { const node = azureServiceNodes.find(n => n.id === svc.nodeId); return !(node?.data?.pricing as any)?.isUsageBased; })
+              .reduce((sum, svc) => sum + svc.cost, 0)
+          : 0;
+        const cost = hasCost ? {
+          totalMonthly: breakdown.totalMonthlyCost,
+          annual: breakdown.totalMonthlyCost * 12,
+          currency: breakdown.currency || 'USD',
+          term: breakdown.pricingTerm,
+          region: breakdown.region,
+          pricesAsOf: breakdown.pricesAsOf,
+          fixedCost,
+          usageCost: breakdown.totalMonthlyCost - fixedCost,
+          byCategory: breakdown.byCategory
+            .slice()
+            .sort((a, b) => b.cost - a.cost)
+            .map(c => ({ category: c.category, cost: c.cost, percentage: c.percentage })),
+          topServices: breakdown.byService
+            .slice()
+            .sort((a, b) => b.cost - a.cost)
+            .slice(0, 10)
+            .map(s => ({
+              serviceName: s.serviceName,
+              cost: s.cost,
+              tier: s.tier,
+              percentage: breakdown.totalMonthlyCost > 0 ? (s.cost / breakdown.totalMonthlyCost) * 100 : 0,
+            })),
+          regions,
+        } : null;
+
+        const { exportArchitectureDeck } = await import('./services/pptxExporter');
+        const fileName = await exportArchitectureDeck(imageDataUrl, {
+          diagramName: titleBlockData.architectureName || 'Azure Architecture',
+          author: titleBlockData.author || 'Azure Architect',
+          date: titleBlockData.date || new Date().toLocaleDateString(),
+          isDarkMode,
+          prompt: (originalPrompt || architecturePrompt) || undefined,
+          model: generatedWithModel?.name,
+          services,
+          validation,
+          cost,
+        });
+
+        recordExport('pptx', fileName);
+        trackExport('pptx-deck', azureNodes.length, exportBackground);
+      } catch (err) {
+        console.error('Error exporting customer deck:', err);
+        alert('Failed to export the customer deck. Please try again.');
+      }
+    });
+  }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, validationResult, pricingMode, architecturePrompt, originalPrompt, generatedWithModel, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
+
+  // ── az prototype export removed (feature unused) ───────────────────────
+
+  const saveDiagram = useCallback(() => {
+    const flow = reactFlowInstance?.toObject();
+    const diagramData = {
+      ...flow,
+      metadata: {
+        ...titleBlockData,
+        savedAt: new Date().toISOString(),
+      },
+      workflow: workflow.length > 0 ? workflow : undefined,
+      architecturePrompt: architecturePrompt || undefined,
+      originalPrompt: originalPrompt || architecturePrompt || undefined,
+    };
+    const dataStr = JSON.stringify(diagramData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', dataUri);
+    const fileName = generateModelFilename('azure-diagram', 'json');
+    link.setAttribute('download', fileName);
+    link.click();
+    recordExport('json', fileName);
+    trackExport('json', nodes.filter(n => n.type === 'azureNode').length);
+  }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt, originalPrompt, nodes]);
+
+  const exportCostBreakdown = useCallback(() => {
+    // Calculate the cost breakdown
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
+    
+    // Check if there's any cost data
+    if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
+      alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
+      return;
+    }
+
+    // Export as CSV
+    const csvData = exportCostBreakdownCSV(breakdown, nodes);
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const baseName = generateModelFilename('azure-cost-breakdown', 'csv');
+    // Insert region before the extension for cost exports
+    const region = getActiveRegion();
+    const fileName = baseName.replace('.csv', `-${region}.csv`);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+    recordExport('costs', fileName);
+    trackExport('csv', nodes.filter(n => n.type === 'azureNode').length);
+  }, [nodes, recordExport, pricingMode]);
+
+  const exportCostBreakdownZip = useCallback(async () => {
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
+    if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
+      alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
+      return;
+    }
+
+    // ── Multi-region comparison ──────────────────────────────────────────────
+    type RegionResult = { info: RegionInfo; total: number; annual: number; breakdown: ReturnType<typeof calculateCostBreakdown> };
+    const regionResults: RegionResult[] = [];
+    for (const rInfo of AVAILABLE_REGIONS) {
+      try {
+        const repricedNodes = await refreshAllNodePricing(nodes, rInfo.id);
+        const rb = calculateCostBreakdown(repricedNodes, rInfo.id, pricingMode);
+        regionResults.push({ info: rInfo, total: rb.totalMonthlyCost, annual: rb.totalMonthlyCost * 12, breakdown: rb });
+      } catch {
+        // If a region fails to reprice (e.g. missing data), skip it gracefully
+      }
+    }
+    regionResults.sort((a, b) => a.total - b.total);
+    const cheapest = regionResults[0];
+    const mostExpensive = regionResults[regionResults.length - 1];
+
+    // Build intelligent analysis text
+    const region = getActiveRegion();
+    const regionInfo = AVAILABLE_REGIONS.find(r => r.id === region);
+    const annual = breakdown.totalMonthlyCost * 12;
+    const sortedServices = [...breakdown.byService].sort((a, b) => b.cost - a.cost);
+    const topDrivers = sortedServices.slice(0, 5);
+    const topService = sortedServices[0];
+    const topServicePct = breakdown.totalMonthlyCost > 0 ? (topService.cost / breakdown.totalMonthlyCost) * 100 : 0;
+    const azureServiceNodes = nodes.filter(n => n.type === 'azureNode');
+    const usageBasedCount = breakdown.byService.filter(svc => {
+      const node = azureServiceNodes.find(n => n.id === svc.nodeId);
+      return (node?.data?.pricing as any)?.isUsageBased;
+    }).length;
+    const fixedCost = breakdown.byService
+      .filter(svc => { const node = azureServiceNodes.find(n => n.id === svc.nodeId); return !(node?.data?.pricing as any)?.isUsageBased; })
+      .reduce((sum, svc) => sum + svc.cost, 0);
+    const usageCost = breakdown.totalMonthlyCost - fixedCost;
+
+    // ── Build intelligent analysis as Markdown ───────────────────────────────
+    const mdBar = (pct: number) => '█'.repeat(Math.max(0, Math.round(pct / 5))).padEnd(20, '░');
+    const fixedPct = breakdown.totalMonthlyCost > 0 ? ((fixedCost / breakdown.totalMonthlyCost) * 100).toFixed(1) : '0.0';
+    const usagePct = breakdown.totalMonthlyCost > 0 ? ((usageCost / breakdown.totalMonthlyCost) * 100).toFixed(1) : '0.0';
+
+    const analysisLines: string[] = [
+      '# Azure Architecture — Cost Intelligence Report',
+      '',
+      `_Generated ${new Date().toLocaleString()} · Region: \`${regionInfo ? `${regionInfo.displayName} (${regionInfo.id})` : region}\` · ${azureServiceNodes.length} service(s) on diagram_`,
+      '',
+    ];
+
+    // TL;DR callout
+    analysisLines.push('> **TL;DR**');
+    analysisLines.push(`> Estimated **$${breakdown.totalMonthlyCost.toFixed(2)}/mo** (**$${annual.toFixed(2)}/yr**).`);
+    if (cheapest) {
+      analysisLines.push(`> Cheapest region: **${cheapest.info.flag} ${cheapest.info.displayName}** at $${cheapest.total.toFixed(2)}/mo.`);
+    }
+    {
+      const currentResult = regionResults.find(r => r.info.id === region);
+      if (currentResult && cheapest && currentResult.info.id !== cheapest.info.id) {
+        const savingsMonthly = currentResult.total - cheapest.total;
+        analysisLines.push(`> Potential saving by switching region: ~$${savingsMonthly.toFixed(2)}/mo ($${(savingsMonthly * 12).toFixed(2)}/yr).`);
+      } else if (currentResult && cheapest && currentResult.info.id === cheapest.info.id) {
+        analysisLines.push('> Already on the cheapest available region. ✅');
+      }
+    }
+    analysisLines.push('');
+
+    // Cost summary
+    analysisLines.push('## Cost summary');
+    analysisLines.push('');
+    analysisLines.push('| Metric | Value |');
+    analysisLines.push('| --- | ---: |');
+    analysisLines.push(`| Monthly estimate | **$${breakdown.totalMonthlyCost.toFixed(2)}** |`);
+    analysisLines.push(`| Annual projection | $${annual.toFixed(2)} |`);
+    analysisLines.push(`| Fixed costs | $${fixedCost.toFixed(2)}/mo (${fixedPct}%) |`);
+    analysisLines.push(`| Usage-based costs | $${usageCost.toFixed(2)}/mo (${usagePct}%) — actual may vary |`);
+    analysisLines.push('');
+
+    // Top cost drivers
+    analysisLines.push('## Top cost drivers');
+    analysisLines.push('');
+    analysisLines.push('| # | Service | Monthly cost | Share | |');
+    analysisLines.push('| ---: | --- | ---: | ---: | --- |');
+    topDrivers.forEach((svc, i) => {
+      const pct = breakdown.totalMonthlyCost > 0 ? (svc.cost / breakdown.totalMonthlyCost) * 100 : 0;
+      analysisLines.push(`| ${i + 1} | ${svc.serviceName.replace(/\|/g, '\\|')} | $${svc.cost.toFixed(2)} | ${pct.toFixed(1)}% | \`${mdBar(pct)}\` |`);
+    });
+    analysisLines.push('');
+    // Pie chart of the top cost drivers (per-service): top 8 services + an
+    // aggregated "Other services" slice gives a meaningful distribution every
+    // time, unlike the category breakdown which often collapses to "Other".
+    {
+      const nonZero = sortedServices.filter(s => s.cost > 0);
+      const pieRows: { label: string; value: number }[] = nonZero
+        .slice(0, 8)
+        .map(s => ({ label: s.serviceName, value: s.cost }));
+      const rest = nonZero.slice(8).reduce((sum, s) => sum + s.cost, 0);
+      if (rest > 0) pieRows.push({ label: 'Other services', value: rest });
+      if (pieRows.length > 0) {
+        analysisLines.push('```mermaid');
+        analysisLines.push('pie showData title Top cost drivers (monthly USD)');
+        pieRows.forEach(r => {
+          const label = r.label.replace(/"/g, "'");
+          analysisLines.push(`    "${label}" : ${r.value.toFixed(2)}`);
+        });
+        analysisLines.push('```');
+        analysisLines.push('');
+      }
+    }
+
+    // Flags & recommendations
+    analysisLines.push('## Flags & recommendations');
+    analysisLines.push('');
+    let hasFlags = false;
+    if (topServicePct > 50) {
+      analysisLines.push(`- ⚠️ **Cost concentration:** "${topService.serviceName}" is ${topServicePct.toFixed(0)}% of total. Consider reviewing tier/quantity or splitting the workload.`);
+      hasFlags = true;
+    }
+    if (usageBasedCount > 0) {
+      analysisLines.push(`- ℹ️ **${usageBasedCount} usage-based service(s)** detected (e.g. Functions, OpenAI). Actual monthly spend may differ significantly from estimates.`);
+      hasFlags = true;
+    }
+    if (annual > 100000) {
+      analysisLines.push('- 💡 **Annual spend >$100k** — consider Azure Reserved Instances / Savings Plans (typically 30–40% savings on compute with a 1- or 3-year commitment).');
+      hasFlags = true;
+    } else if (annual > 12000) {
+      analysisLines.push('- 💡 Azure Reserved Instances may offer savings on compute-heavy services.');
+      hasFlags = true;
+    }
+    if (!hasFlags) {
+      analysisLines.push('- ✅ No cost concentration or optimization flags raised for this architecture.');
+    }
+    analysisLines.push('');
+
+    // Multi-region comparison
+    analysisLines.push('## Multi-region cost comparison');
+    analysisLines.push('');
+    if (regionResults.length === 0) {
+      analysisLines.push('_Regional pricing data unavailable for comparison._');
+      analysisLines.push('');
+    } else {
+      analysisLines.push('| Rank | Region | Monthly | Annual | vs Cheapest | vs Current |');
+      analysisLines.push('| ---: | --- | ---: | ---: | ---: | ---: |');
+      const currentTotal = breakdown.totalMonthlyCost;
+      regionResults.forEach((r, idx) => {
+        const isCurrent = r.info.id === region;
+        const isCheapestRegion = idx === 0;
+        const vsCheapest = isCheapestRegion ? 'baseline' : `+${(((r.total - cheapest.total) / cheapest.total) * 100).toFixed(1)}%`;
+        const vsCurrent = isCurrent
+          ? 'current'
+          : r.total < currentTotal
+            ? `−${(((currentTotal - r.total) / currentTotal) * 100).toFixed(1)}% 💰`
+            : `+${(((r.total - currentTotal) / currentTotal) * 100).toFixed(1)}%`;
+        const marker = isCheapestRegion ? ' ★' : isCurrent ? ' ◀' : '';
+        analysisLines.push(`| ${idx + 1}${marker} | ${r.info.flag} ${r.info.displayName} (\`${r.info.id}\`) | $${r.total.toFixed(2)} | $${r.annual.toFixed(2)} | ${vsCheapest} | ${vsCurrent} |`);
+      });
+      analysisLines.push('');
+      if (cheapest) {
+        analysisLines.push(`- ★ **Cheapest:** ${cheapest.info.flag} ${cheapest.info.displayName} — $${cheapest.total.toFixed(2)}/mo ($${cheapest.annual.toFixed(2)}/yr)`);
+      }
+      if (mostExpensive) {
+        const premiumPct = cheapest && cheapest.total > 0 ? (((mostExpensive.total - cheapest.total) / cheapest.total) * 100).toFixed(1) : '0.0';
+        analysisLines.push(`- 🔥 **Priciest:** ${mostExpensive.info.flag} ${mostExpensive.info.displayName} — $${mostExpensive.total.toFixed(2)}/mo (+${premiumPct}% above cheapest)`);
+      }
+      const currentResult = regionResults.find(r => r.info.id === region);
+      if (currentResult && cheapest && currentResult.info.id !== cheapest.info.id) {
+        const savingsMonthly = currentResult.total - cheapest.total;
+        analysisLines.push(`- 💡 **Potential savings:** switching ${currentResult.info.displayName} → ${cheapest.info.displayName} saves ~$${savingsMonthly.toFixed(2)}/mo ($${(savingsMonthly * 12).toFixed(2)}/yr) — verify service availability before migrating.`);
+      } else if (currentResult && cheapest && currentResult.info.id === cheapest.info.id) {
+        analysisLines.push('- ✅ You are already on the cheapest available region for this architecture.');
+      }
+      analysisLines.push('');
+
+      // Per-service regional variance — top 3 services with biggest price spread
+      if (regionResults.length >= 2) {
+        const serviceVariance: { name: string; min: number; max: number; spread: number }[] = [];
+        breakdown.byService.forEach(svc => {
+          const prices = regionResults
+            .map(r => r.breakdown.byService.find(s => s.nodeId === svc.nodeId)?.cost ?? 0)
+            .filter(p => p > 0);
+          if (prices.length > 1) {
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+            serviceVariance.push({ name: svc.serviceName, min: minP, max: maxP, spread: maxP - minP });
+          }
+        });
+        serviceVariance.sort((a, b) => b.spread - a.spread);
+        const top3 = serviceVariance.slice(0, 3);
+        if (top3.length > 0) {
+          analysisLines.push('### Top services by regional price variance');
+          analysisLines.push('');
+          analysisLines.push('| Service | Min | Max | Spread |');
+          analysisLines.push('| --- | ---: | ---: | ---: |');
+          top3.forEach(sv => {
+            const spreadPct = sv.min > 0 ? (((sv.max - sv.min) / sv.min) * 100).toFixed(1) : '0.0';
+            analysisLines.push(`| ${sv.name.replace(/\|/g, '\\|')} | $${sv.min.toFixed(2)} | $${sv.max.toFixed(2)} | ${spreadPct}% |`);
+          });
+          analysisLines.push('');
+        }
+      }
+    }
+
+    // Cost by group
+    analysisLines.push('## Cost by group');
+    analysisLines.push('');
+    if (breakdown.byGroup.length === 0) {
+      analysisLines.push('_No groups defined in this diagram._');
+    } else {
+      analysisLines.push('| Group | Monthly cost | Services | Share |');
+      analysisLines.push('| --- | ---: | ---: | ---: |');
+      breakdown.byGroup.forEach(grp => {
+        const pct = breakdown.totalMonthlyCost > 0 ? ((grp.cost / breakdown.totalMonthlyCost) * 100).toFixed(1) : '0.0';
+        analysisLines.push(`| ${grp.groupLabel.replace(/\|/g, '\\|')} | $${grp.cost.toFixed(2)} | ${grp.serviceCount} | ${pct}% |`);
+      });
+    }
+    analysisLines.push('');
+    analysisLines.push('---');
+    analysisLines.push('');
+    analysisLines.push('_Generated by Azure Architecture Diagram Builder. Estimates are indicative and exclude taxes, bandwidth egress, and support plans unless modeled explicitly._');
+
+
+    // Build ZIP
+    const { default: JSZip } = await import('jszip');
+    const zip = new JSZip();
+    const baseName = generateModelFilename('azure-cost', 'zip').replace('.zip', '');
+    const fileBase = `${baseName}-${region}`;
+
+    const summaryMd = getCostSummaryMarkdown(breakdown);
+    const analysisMd = analysisLines.join('\n');
+    // Combined "one file to read": summary first, then the full analysis.
+    const combinedMd = [
+      summaryMd,
+      '',
+      '<br />',
+      '',
+      analysisMd,
+    ].join('\n');
+
+    zip.file(`${fileBase}.csv`, exportCostBreakdownCSV(breakdown, nodes));
+    zip.file(`${fileBase}.json`, exportCostBreakdownJSON(breakdown));
+    zip.file(`${fileBase}-summary.md`, summaryMd);
+    zip.file(`${fileBase}-analysis.md`, analysisMd);
+    zip.file(`${fileBase}-report.md`, combinedMd);
+    // HTML render of the combined report for non-Markdown viewers.
+    zip.file(`${fileBase}-report.html`, costReportToHtml('Azure Architecture Cost Report', combinedMd));
+    // Tiny manifest explaining each file in the bundle.
+    zip.file('README.md', [
+      '# Azure Architecture Cost Export',
+      '',
+      `Generated ${new Date().toLocaleString()} for region \`${region}\` by Azure Architecture Diagram Builder.`,
+      '',
+      'This bundle contains the same cost estimate in several formats — open whichever suits your tooling:',
+      '',
+      '| File | Format | Best for |',
+      '| --- | --- | --- |',
+      `| \`${fileBase}-report.md\` | Markdown | **Start here** — combined summary + full analysis in one file |`,
+      `| \`${fileBase}-report.html\` | HTML | Same combined report, viewable in any browser (Mermaid pie chart included) |`,
+      `| \`${fileBase}-summary.md\` | Markdown | Quick cost summary tables (by service, group, category) |`,
+      `| \`${fileBase}-analysis.md\` | Markdown | Detailed intelligence report (drivers, flags, multi-region comparison) |`,
+      `| \`${fileBase}.csv\` | CSV | Per-service breakdown for Excel / spreadsheets |`,
+      `| \`${fileBase}.json\` | JSON | Structured data for programmatic use / automation |`,
+      `| \`${fileBase}-multiregion-comparison.csv\` | CSV | Per-service pricing across all regions, side by side |`,
+      '',
+      '> Estimates are indicative and exclude taxes, bandwidth egress, and support plans unless modeled explicitly.',
+      '> Usage-based services (e.g. Functions, OpenAI) may vary with actual consumption.',
+    ].join('\n'));
+
+    // Multi-region comparison CSV
+    if (regionResults.length > 0) {
+      const mrLines: string[] = [
+        'Region,Region ID,Geography,Flag,Type,Monthly Cost (USD),Annual Cost (USD),vs Cheapest (%),vs Current Region (%)',
+      ];
+      const currentTotal = breakdown.totalMonthlyCost;
+      regionResults.forEach(r => {
+        const vsCheapest = cheapest && cheapest.total > 0
+          ? r.info.id === cheapest.info.id ? '0.00' : (((r.total - cheapest.total) / cheapest.total) * 100).toFixed(2)
+          : '';
+        const vsCurrent = currentTotal > 0
+          ? r.info.id === region ? '0.00' : (((r.total - currentTotal) / currentTotal) * 100).toFixed(2)
+          : '';
+        mrLines.push(`"${r.info.displayName}",${r.info.id},"${r.info.geography}",${r.info.flag},${r.info.regionType},${r.total.toFixed(2)},${r.annual.toFixed(2)},${vsCheapest},${vsCurrent}`);
+      });
+      // Per-service per-region detail sheet
+      mrLines.push('');
+      mrLines.push('Service,Node ID,' + regionResults.map(r => r.info.displayName).join(','));
+      breakdown.byService.forEach(svc => {
+        const prices = regionResults.map(r => {
+          const match = r.breakdown.byService.find(s => s.nodeId === svc.nodeId);
+          return match ? match.cost.toFixed(2) : '';
+        });
+        mrLines.push(`"${svc.serviceName}",${svc.nodeId},${prices.join(',')}`);
+      });
+      zip.file(`${fileBase}-multiregion-comparison.csv`, mrLines.join('\n'));
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fileBase}-all-formats.zip`;
+    link.click();
+    URL.revokeObjectURL(url);
+    recordExport('costs', `${fileBase}-all-formats.zip`);
+    trackExport('csv', azureServiceNodes.length);
+  }, [nodes, recordExport, pricingMode]);
+
+  const applyFlowObject = useCallback(
+    (flow: any) => {
+      if (!flow || typeof flow !== 'object') {
+        throw new Error('Invalid diagram payload');
+      }
+
+      if (flow.nodes) setNodes(flow.nodes || []);
+      // Normalize edge handle ids. Some scenes (e.g. exported by the MCP server
+      // or hand-authored) use bare position names for handles, but AzureNode's
+      // handles are asymmetric: valid sources are top-source/left-source/right/
+      // bottom; valid targets are top/left/right-target/bottom-target. A bare
+      // sourceHandle "top"/"left" or targetHandle "bottom"/"right" points at a
+      // non-existent handle, so the edge silently fails to render. Remap the
+      // invalid bare names to the correct handle id (valid ids pass through).
+      if (flow.edges) {
+        const SRC_FIX: Record<string, string> = { top: 'top-source', left: 'left-source' };
+        const TGT_FIX: Record<string, string> = { bottom: 'bottom-target', right: 'right-target' };
+        const fixedEdges = (flow.edges || []).map((edge: any) => {
+          const next = { ...edge };
+          if (typeof next.sourceHandle === 'string' && SRC_FIX[next.sourceHandle]) {
+            next.sourceHandle = SRC_FIX[next.sourceHandle];
+          }
+          if (typeof next.targetHandle === 'string' && TGT_FIX[next.targetHandle]) {
+            next.targetHandle = TGT_FIX[next.targetHandle];
+          }
+          return next;
+        });
+        setEdges(fixedEdges);
+      }
+
+      if (flow.viewport && reactFlowInstance?.setViewport) {
+        reactFlowInstance.setViewport(flow.viewport);
+      }
+
+      // Restore metadata if present
+      if (flow.metadata && typeof flow.metadata === 'object') {
+        setTitleBlockData({
+          architectureName: flow.metadata.architectureName || 'Untitled Architecture',
+          author: flow.metadata.author || 'Azure Architect',
+          version: flow.metadata.version || '1.0',
+          date: flow.metadata.date || new Date().toLocaleDateString(),
+        });
+      }
+
+      restoreGenerationSession({
+        workflow: flow.workflow,
+        architecturePrompt: flow.architecturePrompt,
+        originalPrompt: flow.originalPrompt,
+      });
+    },
+    [setNodes, setEdges, reactFlowInstance, restoreGenerationSession]
+  );
+
+
+
+  // Load version from URL hash (for "Open in New Tab" feature)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#version-')) {
+      try {
+        const encodedData = hash.substring(9); // Remove '#version-'
+        const decodedData = atob(encodedData);
+        const diagramData = JSON.parse(decodedData);
+        
+        // Apply the diagram data
+        applyFlowObject(diagramData);
+        
+        // Clear the hash
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (error) {
+        console.error('Failed to load version from URL:', error);
+      }
+    }
+  }, [applyFlowObject]);
+
+
+
+  const loadDiagram = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const flow = JSON.parse(e.target?.result as string);
+        applyFlowObject(flow);
+      } catch (error) {
+        console.error('Error loading diagram:', error);
+        alert('Error loading diagram file');
+      }
+    };
+    reader.readAsText(file);
+  }, [applyFlowObject]);
+
+  // Should leave the app as a browser refresh would: everything about *this*
+  // diagram gone, and with it the layout/style choices the app deliberately
+  // does not persist. Genuine preferences (dark mode, edge style, export
+  // background) and export history are read from localStorage, so they stay.
+  // Deliberate exception: a model comparison is its own workspace and may be
+  // mid-run, so it is left alone.
+  const startFreshSession = useCallback(() => {
+    trackStartFresh();
+    setNodes([]);
+    setEdges([]);
+    // Clearing is deliberate, so the autosaved copy must go too — otherwise the
+    // next reload offers back the diagram the user just discarded.
+    setRestorableDraft(null);
+    clearDraft();
+    resetGenerationSession();
+    clearSourceModel();
+    setReferenceImageUrl(null);
+    setPromptBannerPosition(null);
+    setHighlightedServices([]);
+    setEdgeContextMenu(null);
+    setShowLayoutHint(false);
+    setValidationResult(null);
+    setValidationNeedsRefresh(false);
+    setIsValidationPanelOpen(false);
+    setDeploymentGuide(null);
+    setIsDeploymentGuideModalOpen(false);
+    setIsChatOpen(false);
+    setChatResetSignal(v => v + 1);
+    setFocusMode(false);
+    setAllGroupsCollapsed(false);
+    setStylePreset('detailed');
+    setLayoutPreset('flow-lr');
+    setLayoutSpacing('comfortable');
+    setLayoutEngine('dagre');
+    setLayoutEmphasizePrimaryPath(false);
+    setTitleBlockData({ architectureName: 'Untitled Architecture', author: 'Azure Architect', date: new Date().toISOString().split('T')[0], version: '1.0' });
+  }, [resetGenerationSession]);
+
+  // Restore a version from history
+  const restoreVersion = useCallback((version: DiagramVersion) => {
+    try {
+      setNodes(version.nodes);
+      setEdges(version.edges);
+      
+      if (version.titleBlockData) {
+        setTitleBlockData(version.titleBlockData);
+      }
+      
+      restoreGenerationSession({
+        workflow: version.workflow,
+        architecturePrompt: version.architecturePrompt,
+        originalPrompt: version.originalPrompt,
+      });
+      
+      console.log('✅ Version restored successfully');
+      trackVersionOperation('restore');
+    } catch (error) {
+      console.error('Failed to restore version:', error);
+      alert('Failed to restore version');
+    }
+  }, []);
+
+  // Manual snapshot save handler
+  const handleSaveSnapshot = useCallback(async (notes: string) => {
+    try {
+      await createSnapshot(
+        nodes,
+        edges,
+        titleBlockData.architectureName,
+        {
+          architecturePrompt,
+          originalPrompt: originalPrompt || architecturePrompt || undefined,
+          validationScore: validationResult?.overallScore,
+          notes: notes || 'Manual snapshot',
+          metadata: titleBlockData,
+          workflow,
+        }
+      );
+      console.log('✅ Manual snapshot saved successfully');
+      trackVersionOperation('save');
+      setLibraryReloadToken(t => t + 1);
+    } catch (error) {
+      console.error('Failed to save manual snapshot:', error);
+      throw error;
+    }
+  }, [nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow]);
+
+  // Look for an autosaved diagram once at startup. The banner that offers it is
+  // additionally gated on an empty canvas, so a diagram arriving from a shared
+  // link cannot be interrupted by it.
+  useEffect(() => {
+    let cancelled = false;
+    loadDraft().then(draft => {
+      if (!cancelled && draft?.nodes?.length) setRestorableDraft(draft);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Autosave, debounced so a drag writes once at the end rather than per frame.
+  // Guarded on a non-empty canvas: without that, mounting or clearing would
+  // immediately overwrite a recoverable draft with an empty one.
+  useEffect(() => {
+    if (nodes.length === 0) return;
+    const timer = setTimeout(() => {
+      saveDraft({
+        savedAt: Date.now(),
+        diagramName: titleBlockData.architectureName,
+        nodes,
+        edges,
+        architecturePrompt,
+        originalPrompt: originalPrompt || architecturePrompt || undefined,
+        workflow,
+        titleBlockData,
+      });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [nodes, edges, titleBlockData, architecturePrompt, originalPrompt, workflow]);
+
+  const restoreDraft = useCallback(() => {
+    if (!restorableDraft) return;
+    restoreVersion(restorableDraft as unknown as DiagramVersion);
+    setRestorableDraft(null);
+  }, [restorableDraft, restoreVersion]);
+
+  const discardDraft = useCallback(() => {
+    setRestorableDraft(null);
+    clearDraft();
+  }, []);
+
+  const handleAIGenerate = useCallback(async (
+    architecture: any,
+    prompt: string,
+    autoSnapshot: boolean = true,
+    preserveValidationForRecheck: boolean = false,
+  ) => {
+    try {
+      console.log('Generating architecture from:', architecture);
+      // A generation while a diagram already exists is a refinement (the modal
+      // builds a modification prompt); only the first, from-empty generation
+      // establishes the original brief.
+      const isRefinement = nodes.length > 0;
+      const validationTransition = resolveValidationFreshness(
+        validationResult !== null,
+        preserveValidationForRecheck,
+      );
+      if (!validationTransition.keepResult) {
+        setValidationResult(null);
+      }
+      setValidationNeedsRefresh(validationTransition.needsRefresh);
+      // Capture (or clear) the editorial reference-architecture payload so the
+      // Export menu can re-emit the publication-style PNG on demand.
+      setLastReferenceArchitecture(architecture?.__referenceArchitecture ?? null);
+      const { services, connections, workflow: workflowSteps } = architecture;
+      let { groups } = architecture;
+      
+      if (!services || services.length === 0) {
+        alert('No services were identified in your description. Please try a more detailed description.');
+        return;
+      }
+
+      // ── Guard: remove empty groups & reassign orphaned services ──
+      if (groups && Array.isArray(groups) && services && Array.isArray(services)) {
+        const groupIds = new Set((groups as any[]).map((g: any) => g.id));
+        const populated = new Set<string>();
+        for (const s of services) {
+          if (s.groupId && groupIds.has(s.groupId)) populated.add(s.groupId);
+        }
+        const emptyGroupIds = (groups as any[]).filter((g: any) => !populated.has(g.id)).map((g: any) => g.id);
+        if (emptyGroupIds.length > 0) {
+          console.warn(`⚠️ Removing ${emptyGroupIds.length} empty group(s): ${emptyGroupIds.join(', ')}`);
+          groups = (groups as any[]).filter((g: any) => populated.has(g.id));
+          // Clear any service groupId that points to a removed group
+          for (const s of services) {
+            if (s.groupId && !populated.has(s.groupId)) {
+              console.warn(`  → Clearing orphaned groupId "${s.groupId}" on service "${s.id}"`);
+              s.groupId = null;
+            }
+          }
+        }
+      }
+
+      console.log(`Processing ${services.length} services, ${connections?.length || 0} connections, ${groups?.length || 0} groups`);
+
+      // Auto-save snapshot before regenerating (if enabled and there are existing nodes)
+      if (autoSnapshot && nodes.length > 0) {
+        console.log('📸 Auto-saving snapshot before regeneration...');
+        console.log(`Current state: ${nodes.length} nodes, ${edges.length} edges, name: "${titleBlockData.architectureName}"`);
+        try {
+          await createSnapshot(
+            nodes,
+            edges,
+            titleBlockData.architectureName,
+            {
+              architecturePrompt: architecturePrompt || 'Previous version',
+              originalPrompt: originalPrompt || architecturePrompt || undefined,
+              validationScore: validationResult?.overallScore,
+              notes: 'Auto-saved before AI regeneration',
+              metadata: titleBlockData,
+              workflow,
+            }
+          );
+          console.log('✅ Snapshot saved successfully!');
+        } catch (err) {
+          console.error('❌ Failed to save snapshot:', err);
+        }
+      } else {
+        console.log('ℹ️ No existing nodes to snapshot');
+      }
+
+      // Fresh generations replace an empty canvas. Refinements keep the
+      // current canvas visible until the merged topology is ready, preventing
+      // layout flicker and preserving the user's editorial context.
+      if (!isRefinement) {
+        setNodes([]);
+        setEdges([]);
+      }
+      beginGeneration(prompt, isRefinement);
+
+      // Pick up an architecture name from the AI payload (manifest.title in
+      // Both mode) or derive a short title from the prompt so the banner
+      // doesn't read "Untitled Architecture" after every generation.
+      const incomingName: string | undefined = (architecture?.architectureName && String(architecture.architectureName).trim())
+        || deriveTitleFromPrompt(prompt);
+      if (incomingName && incomingName !== 'Untitled Architecture') {
+        // A refinement describes a tweak, not the architecture, so it must not
+        // rename a title already established by the original ask or by hand.
+        setTitleBlockData((prev) => {
+          const hasEstablishedName = Boolean(prev.architectureName)
+            && prev.architectureName !== 'Untitled Architecture';
+          if (isRefinement && hasEstablishedName) return prev;
+          return { ...prev, architectureName: incomingName };
+        });
+      }
+
+      if (workflowSteps && workflowSteps.length > 0) {
+        setWorkflow(workflowSteps);
+        // setShowWorkflow(true); // Automatically show workflow panel for new generations
+      } else {
+        setWorkflow([]);
+      }
+
+      const newNodes: Node[] = [];
+      const serviceMap = new Map();
+
+    // Load all required icons first
+    const iconCache = new Map();
+    
+    // Category correction map - AI categorizes services differently than icon folders
+    const correctCategory = (serviceType: string, aiCategory: string): string => {
+      // Check SERVICE_ICON_MAP first for authoritative category
+      const mapping = getServiceIconMapping(serviceType);
+      if (mapping) return mapping.category;
+      
+      const corrections: Record<string, string> = {
+        'Azure Functions': 'compute',
+        'Logic Apps': 'integration',
+        'API Management': 'integration',
+      };
+      return corrections[serviceType] || aiCategory;
+    };
+    
+    // Load icons in parallel with timeout protection
+    console.log(`⏳ Loading icons for ${services.length} services...`);
+    const iconLoadingPromises = services.map(async (service: any) => {
+      try {
+        // FIRST: Try using serviceIconMapping for exact matches
+        // Try service.name first (preferred), then service.type
+        let mapping = getServiceIconMapping(service.name);
+        if (!mapping) {
+          mapping = getServiceIconMapping(service.type);
+        }
+        if (mapping) {
+          console.log(`  🎯 Found mapping for "${service.name}" (type: ${service.type}): ${mapping.iconFile}`);
+          const iconPath = `/Azure_Public_Service_Icons/Icons/${mapping.iconCategory ?? mapping.category}/${mapping.iconFile}.svg`;
+          return { 
+            serviceId: service.id, 
+            icon: {
+              name: mapping.displayName,
+              path: iconPath,
+              category: mapping.category
+            }
+          };
+        }
+        
+        // SECOND: Fall back to category search if no mapping found
+        const correctedCategory = correctCategory(service.type, service.category);
+        const icons = await Promise.race([
+          loadIconsFromCategory(correctedCategory),
+          new Promise<any[]>((_, reject) => 
+            setTimeout(() => reject(new Error('Icon loading timeout')), 5000)
+          )
+        ]);
+        
+        console.log(`🎨 Loaded ${icons.length} icons for: ${service.name} (${correctedCategory})`);
+        
+        if (icons.length > 0) {
+          // Try to find the best matching icon
+          let icon = null;
+          
+          console.log(`  🔍 Searching for: "${service.type}"`);
+          
+          // First: Try exact match (case-insensitive)
+          icon = icons.find(i => 
+            i.name.toLowerCase() === service.type.toLowerCase()
+          );
+          if (icon) console.log(`  ✅ Exact match: ${icon.name}`);
+          
+          // Third: Try to match all significant words (skip common words like "Azure", "Service")
+          if (!icon) {
+            const serviceWords = service.type.toLowerCase()
+              .split(/[\s-]+/)
+              .filter((w: string) => !['azure', 'service', 'microsoft'].includes(w));
+            
+            icon = icons.find(i => {
+              const iconWords = i.name.toLowerCase().split(/[\s-]+/);
+              return serviceWords.every((word: string) => 
+                iconWords.some((iw: string) => iw.includes(word) || word.includes(iw))
+              );
+            });
+            if (icon) console.log(`  ✅ Multi-word match: ${icon.name}`);
+          }
+          
+          // Fourth: Try matching just the primary word (first meaningful word)
+          if (!icon) {
+            const primaryWord = service.type.toLowerCase()
+              .split(/[\s-]+/)
+              .find((w: string) => !['azure', 'microsoft', 'service'].includes(w));
+            
+            if (primaryWord) {
+              icon = icons.find(i => 
+                i.name.toLowerCase().includes(primaryWord)
+              );
+              if (icon) console.log(`  ✅ Primary word match: ${icon.name}`);
+            }
+          }
+          
+          // Fifth: Fallback to first icon in category
+          if (!icon) {
+            icon = icons[0];
+            console.log(`  ⚠️ Using fallback: ${icon.name}`);
+          }
+          
+          return { serviceId: service.id, icon };
+        } else {
+          console.warn(`  ❌ No icons found for: ${service.name}`);
+          return { serviceId: service.id, icon: null };
+        }
+      } catch (error) {
+        console.error(`  ❌ Error loading icon for ${service.name}:`, error);
+        return { serviceId: service.id, icon: null };
+      }
+    });
+    
+    // Wait for all icon loading with overall timeout
+    const iconResults = await Promise.race([
+      Promise.all(iconLoadingPromises),
+      new Promise<any[]>((_, reject) => 
+        setTimeout(() => reject(new Error('Overall icon loading timeout')), 15000)
+      )
+    ]).catch(error => {
+      console.error('Icon loading failed:', error);
+      return services.map((s: any) => ({ serviceId: s.id, icon: null }));
+    });
+    
+    // Build icon cache from results
+    iconResults.forEach((result: any) => {
+      if (result.icon) {
+        iconCache.set(result.serviceId, result.icon);
+      }
+    });
+    
+    console.log(`✅ Icon loading complete. Loaded ${iconCache.size}/${services.length} icons`);
+
+    // ============================================================================
+    // LAYOUT ENGINE: Calculate optimal positions using selected algorithm
+    // ============================================================================
+    const engineLabel = layoutEngine === 'elk' ? 'ELK' : 'Dagre';
+    console.log(`📐 Calculating layout with ${engineLabel} algorithm...`);
+    console.log('📦 Groups before layout:', groups);
+
+    let positionedServices: any[];
+    let positionedGroups: any[];
+
+    if (layoutEngine === 'elk') {
+      const { layoutArchitecture: elkLayoutArchitecture } = await import('./utils/elkLayoutEngine');
+      const result = await elkLayoutArchitecture(
+        services,
+        connections,
+        groups || [],
+        { direction: 'LR' }
+      );
+      positionedServices = result.services;
+      positionedGroups = result.groups;
+    } else {
+      const result = layoutArchitecture(
+        services,
+        connections,
+        groups || [],
+        { direction: 'LR' }
+      );
+      positionedServices = result.services;
+      positionedGroups = result.groups;
+    }
+    console.log('📦 Positioned groups after layout:', positionedGroups);
+
+    // Create group nodes with calculated positions and sizes
+    if (positionedGroups && positionedGroups.length > 0) {
+      positionedGroups.forEach((group: any) => {
+        const groupNode: Node = {
+          id: group.id,
+          type: 'groupNode',
+          position: group.position,
+          data: {
+            label: group.label || group.id || 'Unnamed Group',
+            note: group.note,
+          },
+          style: {
+            width: group.width,
+            height: group.height,
+          },
+        };
+        newNodes.push(groupNode);
+      });
+    }
+
+    // Create service nodes with calculated positions
+    positionedServices.forEach((service: any) => {
+      const icon = iconCache.get(service.id);
+      
+      const node: Node = {
+        id: service.id,
+        type: 'azureNode',
+        position: service.position,  // ✅ Use position from layout engine
+        data: {
+          label: service.name,
+          iconPath: icon?.path || '',
+        },
+        parentNode: service.groupId || undefined,  // Link to group if exists
+        extent: service.groupId ? 'parent' : undefined,  // Keep within parent bounds
+      };
+
+      newNodes.push(node);
+      serviceMap.set(service.id, node);
+    });
+
+    // Build absolute position map for smart edge routing
+    // Services inside groups have relative positions, so we add the group's position
+    const absolutePositions = new Map<string, { x: number; y: number }>();
+    const groupPositionMap = new Map<string, { x: number; y: number }>();
+    positionedGroups.forEach((g: any) => groupPositionMap.set(g.id, g.position));
+
+    positionedServices.forEach((service: any) => {
+      if (service.groupId && groupPositionMap.has(service.groupId)) {
+        const gp = groupPositionMap.get(service.groupId)!;
+        absolutePositions.set(service.id, {
+          x: gp.x + service.position.x,
+          y: gp.y + service.position.y,
+        });
+      } else {
+        absolutePositions.set(service.id, service.position);
+      }
+    });
+
+    // Smart handle selection based on relative node positions
+    // Picks handles that create the shortest, least-crossing edge paths
+    const getConnectionPositions = (sourceId: string, targetId: string, _conn: any) => {
+      const srcPos = absolutePositions.get(sourceId);
+      const tgtPos = absolutePositions.get(targetId);
+
+      if (!srcPos || !tgtPos) {
+        return { sourceHandle: 'right', targetHandle: 'left' };
+      }
+
+      const dx = tgtPos.x - srcPos.x;
+
+      // Azure architecture convention: LEFT = input, RIGHT = output
+      // Always exit from the right side and enter from the left side
+      if (dx >= 0) {
+        // Target is to the right → standard flow
+        return { sourceHandle: 'right', targetHandle: 'left' };
+      } else {
+        // Target is to the left → reverse flow
+        return { sourceHandle: 'left-source', targetHandle: 'right-target' };
+      }
+    };
+
+    // Function to determine arrow direction based on edge label
+    const determineEdgeDirection = (label: string): { direction: 'forward' | 'reverse' | 'bidirectional', markerEnd?: any, markerStart?: any, flowMode: 'directional' | 'pulse' } => {
+      const lowerLabel = label.toLowerCase();
+      
+      // Keywords that indicate reverse flow
+      const reverseKeywords = ['response', 'callback', 'return', 'acknowledge', 'ack', 'reply'];
+      
+      // Keywords that indicate bidirectional flow
+      const bidirectionalKeywords = ['sync', 'bidirectional', 'two-way', 'exchange', 'communicate'];
+      
+      // Check for bidirectional
+      if (bidirectionalKeywords.some(keyword => lowerLabel.includes(keyword))) {
+        return {
+          direction: 'bidirectional',
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+          markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+          flowMode: 'pulse',
+        };
+      }
+      
+      // Check for reverse
+      if (reverseKeywords.some(keyword => lowerLabel.includes(keyword))) {
+        return {
+          direction: 'reverse',
+          markerStart: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+          markerEnd: undefined,
+          flowMode: 'directional',
+        };
+      }
+      
+      // Default to forward
+      return {
+        direction: 'forward',
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#0078d4' },
+        markerStart: undefined,
+        flowMode: 'directional',
+      };
+    };
+
+    // Create edges from connections
+    const newEdges: Edge[] = connections.map((conn: any, index: number) => {
+      const positions = getConnectionPositions(conn.from, conn.to, conn);
+      
+      // Determine edge direction based on label
+      let edgeDirection = determineEdgeDirection(conn.label || '');
+      
+      // Determine edge style based on connection type
+      const connectionType = conn.type || 'sync';
+      let edgeStyle = {};
+      let baseFlowAnimated = true;
+      
+      switch (connectionType) {
+        case 'async':
+          // Dashed line for asynchronous
+          edgeStyle = { strokeDasharray: '5, 5' };
+          baseFlowAnimated = true;
+          break;
+        case 'optional':
+          // Dotted line for optional
+          edgeStyle = { strokeDasharray: '2, 4', opacity: 0.6 };
+          baseFlowAnimated = false;
+          break;
+        case 'association':
+          edgeStyle = { stroke: '#64748b', strokeDasharray: '3, 4', opacity: 0.8 };
+          baseFlowAnimated = false;
+          edgeDirection = {
+            direction: 'forward',
+            markerStart: undefined,
+            markerEnd: undefined,
+            flowMode: 'directional',
+          };
+          break;
+        case 'containment':
+          edgeStyle = { stroke: '#0f766e', strokeDasharray: '2, 5', opacity: 0.75 };
+          baseFlowAnimated = false;
+          edgeDirection = {
+            direction: 'forward',
+            markerStart: undefined,
+            markerEnd: undefined,
+            flowMode: 'directional',
+          };
+          break;
+        case 'sync':
+        default:
+          // Solid line for synchronous (default)
+          edgeStyle = {};
+          baseFlowAnimated = true;
+          break;
+      }
+
+      const flowAnimated = baseFlowAnimated;
+      const isSemanticRelationship = connectionType === 'association' || connectionType === 'containment';
+      const semanticTextColor = connectionType === 'containment' ? '#0f766e' : '#475569';
+      const semanticBorderColor = connectionType === 'containment' ? '#5eead4' : '#94a3b8';
+      
+      return {
+        id: `edge-${index}`,
+        source: conn.from,
+        target: conn.to,
+        sourceHandle: positions.sourceHandle,
+        targetHandle: positions.targetHandle,
+        animated: false,
+        type: 'editableEdge',
+        label: conn.label || '',
+        markerEnd: edgeDirection.markerEnd,
+        markerStart: edgeDirection.markerStart,
+        labelStyle: {
+          fontSize: isSemanticRelationship ? 12 : 14,
+          fill: isSemanticRelationship ? semanticTextColor : '#333',
+          fontWeight: isSemanticRelationship ? 600 : 'bold',
+          fontStyle: isSemanticRelationship ? 'italic' : 'normal',
+        },
+        labelBgStyle: {
+          fill: 'white',
+          fillOpacity: 0.9,
+          stroke: isSemanticRelationship ? semanticBorderColor : '#000',
+          strokeWidth: isSemanticRelationship ? 1 : 1.5,
+        },
+        style: edgeStyle,
+        data: {
+          connectionType,
+          direction: edgeDirection.direction,
+          baseFlowAnimated,
+          flowAnimated,
+          flowMode: edgeDirection.flowMode,
+          pathStyle: layoutEdgeStyle,
+          onLabelChange: handleEdgeLabelChange,
+          onLabelOffsetChange: handleEdgeLabelOffsetChange,
+          labelOffsetX: 0,
+          labelOffsetY: 0,
+        },
+      };
+    });
+
+    // Existing services/groups retain their manually edited geometry during a
+    // refinement. New elements use the generated layout positions.
+    const finalNodes = isRefinement
+      ? preserveManualLayout(nodes, newNodes)
+      : newNodes;
+
+    // Add the new nodes and edges
+    console.log(`Setting ${finalNodes.length} nodes and ${newEdges.length} edges`);
+    setNodes(finalNodes);
+    setEdges(deconflictEdgeLabels(newNodes, newEdges));
+    presentLayoutHint();
+
+    // Set the model badge from metrics
+    if (architecture.metrics) {
+      const modelKey = (Object.keys(MODEL_CONFIG) as ModelType[]).find(
+        model => DEPLOYMENT_NAMES[model] === architecture.metrics!.model
+          || model === architecture.metrics!.model
+          || MODEL_CONFIG[model].displayName === architecture.metrics!.model
+      );
+      const displayName = modelKey
+        ? MODEL_CONFIG[modelKey].displayName
+        : architecture.metrics.model || 'AI';
+      setGeneratedWithModel({ name: displayName, timeMs: architecture.metrics.elapsedTimeMs });
+
+      if (modelKey) {
+        const metricReasoning = architecture.metrics.reasoningEffort;
+        const sourceReasoning: ReasoningEffort = ['none', 'low', 'medium', 'high'].includes(metricReasoning || '')
+          ? metricReasoning as ReasoningEffort
+          : 'none';
+        setSourceModel(modelKey, sourceReasoning);
+      }
+    }
+
+    // Initialize pricing for all service nodes asynchronously (uses active region)
+    const currentRegion = getActiveRegion();
+    console.log(`💰 Initializing pricing for ${services.length} services in region: ${currentRegion}`);
+    
+    const pricingPromises = services.map(async (service: any) => {
+      console.log(`  → Fetching pricing for: ${service.name} (type: ${service.type}, ID: ${service.id})`);
+      const pricing = await initializeNodePricing(service.name, currentRegion);
+      console.log(`  ${pricing ? '✅' : '❌'} Pricing result for ${service.name}:`, pricing ? 'Found' : 'Not found');
+      return { id: service.id, pricing };
+    });
+    
+    Promise.all(pricingPromises)
+      .then(pricingResults => {
+        console.log(`📊 Pricing results ready, updating ${pricingResults.length} nodes`);
+        const resultsWithPricing = pricingResults.filter(r => r.pricing);
+        console.log(`  → ${resultsWithPricing.length}/${pricingResults.length} nodes have pricing data`);
+        
+        setNodes((nds) => 
+          nds.map(node => {
+            const result = pricingResults.find(r => r.id === node.id);
+            if (result?.pricing) {
+              console.log(`  💵 Adding pricing to node ${node.id}:`, result.pricing.estimatedCost);
+              return { ...node, data: { ...node.data, pricing: result.pricing } };
+            }
+            return node;
+          })
+        );
+        console.log(`✅ Pricing initialization complete`);
+      })
+      .catch(err => console.error('❌ Failed to initialize pricing for AI nodes:', err));
+
+    // Collapse all panels to maximize diagram view
+    setPanelsCollapsedSignal(prev => prev + 1);
+
+    // Track architecture generation telemetry
+    const aiMetrics = (architecture as any)?.metrics || {};
+    const aiIntegrity = (architecture as any)?.integrity || {};
+    trackArchitectureGeneration({
+      model: aiMetrics.model,
+      reasoningEffort: aiMetrics.reasoningEffort,
+      promptLength: prompt?.length,
+      serviceCount: services?.length,
+      connectionCount: connections?.length,
+      groupCount: groups?.length,
+      workflowStepCount: workflowSteps?.length,
+      elapsedTimeMs: aiMetrics.elapsedTimeMs,
+      totalTokens: aiMetrics.totalTokens,
+      isModification: nodes.length > 0,
+      orphanCount: aiIntegrity.orphanCount,
+      repairedEdges: aiIntegrity.repairedEdges,
+      droppedEdges: aiIntegrity.droppedEdges,
+      semanticRepairs: aiIntegrity.semanticRepairs,
+    });
+
+    // ── Success-moment feedback ask ──────────────────────────────────────
+    // After the 2nd successful generation this session, surface the one-click
+    // toast — the user now has a real opinion. Fires once and only if they
+    // haven't already given feedback.
+    generationCountRef.current += 1;
+    let feedbackAlreadyDone = false;
+    try {
+      feedbackAlreadyDone = sessionStorage.getItem(FEEDBACK_DONE_KEY) === '1';
+    } catch {
+      /* sessionStorage unavailable — ignore */
+    }
+    if (!feedbackAlreadyDone && generationCountRef.current === 2 && !isFeedbackModalOpen) {
+      setIsFeedbackToastOpen(true);
+    }
+
+    // A refinement keeps the user's pan/zoom. Only frame a newly generated
+    // diagram, where no prior editorial viewport exists.
+    if (!isRefinement) {
+      setTimeout(() => {
+        reactFlowInstance?.fitView({ padding: 0.2 });
+      }, 100);
+    }
+    } catch (error) {
+      console.error('Error in handleAIGenerate:', error);
+      alert('Failed to generate diagram. Check console for details.');
+    }
+  }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle, presentLayoutHint]);
+
+  // ── az prototype import ──────────────────────────────────────────────
+  // (Import az prototype UI removed — feature unused.)
+
+  /** Detect IaC format from file extension and content */
+  const detectIaCFormat = useCallback((filename: string, text: string): { format: IaCFormat; label: string } | null => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+
+    if (ext === 'bicep') {
+      if (/\b(resource|module)\b/.test(text)) {
+        return { format: 'bicep', label: 'Bicep' };
+      }
+      alert(`Invalid Bicep file: "${filename}" does not contain resource or module declarations.`);
+      return null;
+    }
+
+    if (ext === 'tf') {
+      if (/\b(resource|provider|module|data)\b/.test(text)) {
+        return { format: 'terraform-hcl', label: 'Terraform' };
+      }
+      alert(`Invalid Terraform file: "${filename}" does not contain resource or provider blocks.`);
+      return null;
+    }
+
+    if (ext === 'json') {
+      try {
+        const json = JSON.parse(text);
+        // Terraform state file
+        if (json.version !== undefined && json.resources && json.terraform_version) {
+          return { format: 'terraform-state', label: 'Terraform State' };
+        }
+        // ARM template
+        if (json.$schema && json.resources) {
+          return { format: 'arm', label: 'ARM' };
+        }
+        alert(`Unrecognized JSON file: "${filename}". Expected an ARM template ($schema + resources) or Terraform state file.`);
+        return null;
+      } catch {
+        alert(`Invalid JSON in "${filename}".`);
+        return null;
+      }
+    }
+
+    alert(`Unsupported file type: .${ext}. Supported formats: .bicep, .tf, .json`);
+    return null;
+  }, []);
+
+  const uploadTemplate = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsImportingTemplate(true);
+
+    try {
+      // Read all selected files
+      const fileContents: { name: string; text: string }[] = [];
+      for (const file of Array.from(files)) {
+        const text = await file.text();
+        fileContents.push({ name: file.name, text });
+      }
+
+      // Detect format from the first file
+      const detection = detectIaCFormat(fileContents[0].name, fileContents[0].text);
+      if (!detection) {
+        setIsImportingTemplate(false);
+        event.target.value = '';
+        return;
+      }
+
+      setImportFormatLabel(detection.label);
+      const filenames = fileContents.map(f => f.name);
+      const extraCount = filenames.length > 1 ? ` (+${filenames.length - 1} files)` : '';
+
+      // ── ARM: deterministic extraction (faithful mirror of the template) ──
+      // Parse resources + real dependsOn/resourceId edges directly instead of
+      // asking the LLM to interpret. Falls back to the LLM path only when the
+      // template contains no recognizable resources.
+      if (detection.format === 'arm') {
+        const template = JSON.parse(fileContents[0].text);
+        const { architecture, coverage } = extractArchitectureFromArm(template);
+        if (architecture.services.length > 0) {
+          clearSourceModel();
+          const promptLabel = `ARM Template: ${filenames[0]}${extraCount} — ${summarizeCoverage(coverage)}`;
+          trackTemplateImport('arm', filenames[0], filenames.length);
+          handleAIGenerate(architecture, promptLabel);
+          return;
+        }
+        console.warn('Deterministic ARM extraction found no mappable resources; falling back to LLM.');
+      }
+
+      let content: string | object;
+      if (detection.format === 'arm') {
+        content = JSON.parse(fileContents[0].text);
+      } else if (detection.format === 'terraform-state') {
+        content = JSON.parse(fileContents[0].text);
+      } else {
+        // Bicep or Terraform HCL — concatenate multiple files with headers
+        content = fileContents
+          .map(f => `// === ${f.name} ===\n${f.text}`)
+          .join('\n\n');
+      }
+
+      const { generateArchitectureFromIaC } = await import('./services/azureOpenAI');
+      const result = await generateArchitectureFromIaC({
+        format: detection.format,
+        content,
+        filenames,
+      });
+
+      clearSourceModel();
+
+      // Build descriptive prompt label
+      const promptLabel = `${detection.label} Template: ${filenames[0]}${extraCount}`;
+
+      trackTemplateImport(detection.format, filenames[0], filenames.length);
+      handleAIGenerate(result, promptLabel);
+    } catch (error: any) {
+      console.error('Template import error:', error);
+      alert(`Failed to import template: ${error.message}`);
+    } finally {
+      setIsImportingTemplate(false);
+      setImportFormatLabel('Template');
+      event.target.value = '';
+    }
+  }, [handleAIGenerate, detectIaCFormat]);
+
+  // Reverse-engineer a live Azure resource group into a diagram via Azure
+  // Resource Graph (Reader-sufficient, returns only real top-level resources).
+  // Edges are inferred from resource IDs embedded in properties. The same
+  // deterministic mapping is used as the file-based ARM import.
+  const importFromAzure = useCallback(async (subscriptionId: string, resourceGroup: string) => {
+    const resources = await getAzureResources(subscriptionId, resourceGroup);
+    const { architecture, coverage } = buildArchitectureFromResources(resources);
+    if (architecture.services.length === 0) {
+      throw new Error('No mappable Azure resources were found in this resource group.');
+    }
+    clearSourceModel();
+    const promptLabel = `Azure RG: ${resourceGroup} — ${summarizeCoverage(coverage)}`;
+    trackTemplateImport('arm', `rg:${resourceGroup}`, 1);
+    handleAIGenerate(architecture, promptLabel);
+  }, [handleAIGenerate]);
+
+  const handleAlign = useCallback((type: string) => {
+    const selectedNodes = nodes.filter(n => n.selected);
+    if (selectedNodes.length < 2) return;
+
+    const updatedNodes = [...nodes];
+    
+    switch (type) {
+      case 'left': {
+        const minX = Math.min(...selectedNodes.map(n => n.position.x));
+        selectedNodes.forEach(node => {
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, x: minX } };
+        });
+        break;
+      }
+      case 'right': {
+        const maxX = Math.max(...selectedNodes.map(n => n.position.x + (n.width || 150)));
+        selectedNodes.forEach(node => {
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          const nodeWidth = node.width || 150;
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, x: maxX - nodeWidth } };
+        });
+        break;
+      }
+      case 'center-h': {
+        const minX = Math.min(...selectedNodes.map(n => n.position.x));
+        const maxX = Math.max(...selectedNodes.map(n => n.position.x + (n.width || 150)));
+        const centerX = (minX + maxX) / 2;
+        selectedNodes.forEach(node => {
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          const nodeWidth = node.width || 150;
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, x: centerX - nodeWidth / 2 } };
+        });
+        break;
+      }
+      case 'top': {
+        const minY = Math.min(...selectedNodes.map(n => n.position.y));
+        selectedNodes.forEach(node => {
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, y: minY } };
+        });
+        break;
+      }
+      case 'bottom': {
+        const maxY = Math.max(...selectedNodes.map(n => n.position.y + (n.height || 100)));
+        selectedNodes.forEach(node => {
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          const nodeHeight = node.height || 100;
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, y: maxY - nodeHeight } };
+        });
+        break;
+      }
+      case 'center-v': {
+        const minY = Math.min(...selectedNodes.map(n => n.position.y));
+        const maxY = Math.max(...selectedNodes.map(n => n.position.y + (n.height || 100)));
+        const centerY = (minY + maxY) / 2;
+        selectedNodes.forEach(node => {
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          const nodeHeight = node.height || 100;
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, y: centerY - nodeHeight / 2 } };
+        });
+        break;
+      }
+      case 'distribute-h': {
+        const sorted = [...selectedNodes].sort((a, b) => a.position.x - b.position.x);
+        const minX = sorted[0].position.x;
+        const maxX = sorted[sorted.length - 1].position.x;
+        const spacing = (maxX - minX) / (sorted.length - 1);
+        sorted.forEach((node, i) => {
+          if (i === 0 || i === sorted.length - 1) return;
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, x: minX + spacing * i } };
+        });
+        break;
+      }
+      case 'distribute-v': {
+        const sorted = [...selectedNodes].sort((a, b) => a.position.y - b.position.y);
+        const minY = sorted[0].position.y;
+        const maxY = sorted[sorted.length - 1].position.y;
+        const spacing = (maxY - minY) / (sorted.length - 1);
+        sorted.forEach((node, i) => {
+          if (i === 0 || i === sorted.length - 1) return;
+          const idx = updatedNodes.findIndex(n => n.id === node.id);
+          updatedNodes[idx] = { ...updatedNodes[idx], position: { ...updatedNodes[idx].position, y: minY + spacing * i } };
+        });
+        break;
+      }
+    }
+
+    setNodes(updatedNodes);
+  }, [nodes, setNodes]);
+
+  // Premium Feature Handlers
+  const handleValidateArchitecture = useCallback(async () => {
+    if (nodes.length === 0) {
+      alert('Please create an architecture diagram first.');
+      return;
+    }
+
+    // Capture diagram snapshot BEFORE opening the modal overlay
+    let diagramImageDataUrl: string | undefined;
+    if (reactFlowWrapper.current && reactFlowInstance) {
+      try {
+        reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+        // Brief delay for fitView to settle before capture
+        await new Promise(resolve => setTimeout(resolve, 400));
+        const isDark = document.body.classList.contains('dark-mode');
+        diagramImageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
+          backgroundColor: isDark ? '#1a1a2e' : '#f8fafc',
+        });
+        console.log('\uD83D\uDCF8 Diagram snapshot captured for validation report');
+      } catch (err) {
+        console.warn('Could not capture diagram snapshot:', err);
+      }
+    }
+
+    // Now show the panel and start validation
+    setIsValidating(true);
+    setIsValidationPanelOpen(true);
+
+    try {
+      // Extract services data
+      const services = nodes
+        .filter(n => n.type === 'azureNode')
+        .map(n => ({
+          name: n.data.label || n.data.serviceName || 'Unknown Service',
+          type: n.data.serviceName || n.data.label || 'Unknown',
+          category: n.data.category || 'General',
+        }));
+
+      // Extract connections
+      const connections = edges.map(e => ({
+        from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+        to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+        label: String(e.label || ''),
+      }));
+
+      // Extract groups
+      const groups = nodes
+        .filter(n => n.type === 'groupNode')
+        .map(n => ({
+          name: n.data.label || 'Group',
+          services: nodes
+            .filter(child => child.parentNode === n.id)
+            .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+        }));
+
+      const result = await validateArchitecture(
+        services,
+        connections,
+        groups,
+        architecturePrompt || titleBlockData.architectureName
+      );
+
+      // Attach diagram snapshot to results
+      if (diagramImageDataUrl) {
+        result.diagramImageDataUrl = diagramImageDataUrl;
+      }
+      setValidationResult(result);
+      setValidationNeedsRefresh(false);
+      trackValidation({
+        model: result.metrics?.model,
+        overallScore: result.overallScore,
+        serviceCount: services.length,
+        findingCount: result.pillars?.reduce((sum: number, p: any) => sum + (p.findings?.length || 0), 0),
+        elapsedTimeMs: result.metrics?.elapsedTimeMs,
+      });
+      trackValidationFindings({
+        source: 'single',
+        model: result.metrics?.model,
+        overallScore: result.overallScore,
+        serviceCount: services.length,
+        topics: classifyValidationTopics(result).map(t => ({ id: t.id, label: t.label, pillar: t.pillar, severity: t.severity })),
+      });
+      // Collapse panels to maximize diagram view
+      setPanelsCollapsedSignal(prev => prev + 1);
+    } catch (error: any) {
+      console.error('Validation error:', error);
+      alert(`Failed to validate architecture: ${error.message}`);
+      setIsValidationPanelOpen(false);
+    } finally {
+      setIsValidating(false);
+    }
+  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, reactFlowInstance, isFeedbackModalOpen]);
+
+  const handleGenerateDeploymentGuide = useCallback(async () => {
+    if (nodes.length === 0) {
+      alert('Please create an architecture diagram first.');
+      return;
+    }
+
+    setIsGeneratingGuide(true);
+    setIsDeploymentGuideModalOpen(true);
+
+    try {
+      // Extract services data
+      const services = nodes
+        .filter(n => n.type === 'azureNode')
+        .map(n => ({
+          name: n.data.label || n.data.serviceName || 'Unknown Service',
+          type: n.data.serviceName || n.data.label || 'Unknown',
+          category: n.data.category || 'General',
+        }));
+
+      // Extract connections
+      const connections = edges.map(e => ({
+        from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+        to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+        label: String(e.label || ''),
+      }));
+
+      // Extract groups
+      const groups = nodes
+        .filter(n => n.type === 'groupNode')
+        .map(n => ({
+          name: n.data.label || 'Group',
+          services: nodes
+            .filter(child => child.parentNode === n.id)
+            .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+        }));
+
+      const { generateDeploymentGuide } = await import('./services/deploymentGuideGenerator');
+      const guide = await generateDeploymentGuide(
+        services,
+        connections,
+        groups,
+        architecturePrompt || titleBlockData.architectureName,
+        totalMonthlyCost
+      );
+
+      setDeploymentGuide(guide);
+      trackDeploymentGuide({
+        model: guide.metrics?.model,
+        serviceCount: services.length,
+        bicepFileCount: guide.bicepTemplates?.length,
+        elapsedTimeMs: guide.metrics?.elapsedTimeMs,
+      });
+    } catch (error: any) {
+      console.error('Guide generation error:', error);
+      alert(`Failed to generate deployment guide: ${error.message}`);
+      setIsDeploymentGuideModalOpen(false);
+    } finally {
+      setIsGeneratingGuide(false);
+    }
+  }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, totalMonthlyCost]);
+
+  const openGeneratorFrom = (source: 'first-start' | 'journey-strip' | 'toolbar') => {
+    generatorOpenSourceRef.current = source;
+    setGeneratorOpenSignal(value => value + 1);
+  };
+
+  const openGuidedChat = (source: 'first-start' | 'journey-strip' | 'toolbar') => {
+    trackGuidedJourney({
+      action: source === 'journey-strip' ? 'step-selected' : 'path-selected',
+      step: nodes.length > 0 ? 'refine' : 'create',
+      path: 'guided-chat',
+      source,
+      hasDiagram: nodes.length > 0,
+    });
+    setIsChatOpen(true);
+  };
+
+  const handleJourneyStep = (step: JourneyStep) => {
+    const hasDiagram = nodes.some(node => node.type === 'azureNode');
+    trackGuidedJourney({
+      action: 'step-selected',
+      step,
+      path: step === 'refine' ? 'guided-chat' : step === 'deliver' ? 'export' : undefined,
+      source: 'journey-strip',
+      hasDiagram,
+    });
+
+    if (step === 'create') {
+      if (hasDiagram) openGeneratorFrom('journey-strip');
+      else setIsChatOpen(false); // Reveal the three-path start chooser.
+      return;
+    }
+    if (step === 'refine') {
+      setIsChatOpen(true);
+      return;
+    }
+    if (step === 'validate') {
+      void handleValidateArchitecture();
+      return;
+    }
+    if (!hasDiagram) {
+      alert('Create or import a diagram before sharing or building artifacts.');
+      return;
+    }
+    setIsDeliverChooserOpen(true);
+  };
+
+  const azureNodeCount = nodes.filter(n => n.type === 'azureNode').length;
+
+  // Renders each architecture on the real canvas to capture it, so the canvas has
+  // to be the visible pane — it is only `visibility: hidden` behind Compare, and a
+  // hidden subtree captures blank.
+  const handleCaptureBatch = useCallback(async (
+    items: Array<{ architecture: any; prompt: string; filename: string }>,
+  ) => {
+    const returnTo = getAppView();
+    setAppView('canvas');
+    await new Promise(res => setTimeout(res, 250));
+    try {
+      for (const item of items) {
+        try {
+          // No auto-snapshot: avoids spamming history with N intermediate states.
+          await handleAIGenerate(item.architecture, item.prompt, false);
+          await new Promise(res => setTimeout(res, 1500));
+          if (reactFlowInstance) {
+            reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+            await new Promise(res => setTimeout(res, 400));
+          }
+          if (!reactFlowWrapper.current) continue;
+          const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
+            backgroundColor: exportCanvasBackground,
+            exportBackground,
+          });
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = item.filename;
+          a.click();
+          await new Promise(res => setTimeout(res, 350));
+        } catch (err) {
+          console.error(`Failed to capture PNG for ${item.filename}:`, err);
+        }
+      }
+    } finally {
+      setAppView(returnTo);
+    }
+  }, [handleAIGenerate, reactFlowInstance, exportCanvasBackground, exportBackground]);
+
+  // Findings and workflow steps both name services by node id OR by label (scenes
+  // exported by the MCP server use labels). The glow CSS targets nodes by id.
+  const highlightServiceRefs = useCallback((refs: string[]) => {
+    const list = refs || [];
+    const ids = list.flatMap((ref) => {
+      const refLc = String(ref).toLowerCase();
+      return nodes
+        .filter((n) => n.type === 'azureNode'
+          && (n.id === ref || String(n.data?.label ?? '').toLowerCase() === refLc))
+        .map((n) => n.id);
+    });
+    // Fall back to the raw refs — they may already be node ids we failed to match.
+    setHighlightedServices(ids.length > 0 ? ids : list);
+  }, [nodes]);
+
+  // Single definition per export, rendered by both the toolbar dropdown and the
+  // Reports pane so the two lists cannot drift.
+  const exportActions: ExportAction[] = useMemo(() => {
+    const needsDiagram = azureNodeCount === 0 ? 'Add services to the diagram first' : undefined;
+    const needsCost = totalMonthlyCost === 0 ? 'Add services to estimate costs first' : undefined;
+
+    return [
+      {
+        id: 'png',
+        label: 'Export PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Raster image of the current canvas.',
+        run: exportDiagram,
+      },
+      {
+        id: 'editorial-png',
+        label: 'Export Editorial PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Publication-style reference-architecture render.',
+        disabledReason: lastReferenceArchitecture
+          ? undefined
+          : 'Generate a diagram in Reference Architecture mode to enable this',
+        run: () => {
+          if (!lastReferenceArchitecture) return;
+          void import('./utils/exportReferencePng')
+            .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
+            .catch((err) => {
+              console.error('Editorial PNG export failed:', err);
+              alert('Editorial PNG export failed. See console for details.');
+            });
+        },
+      },
+      {
+        id: 'blueprint-png',
+        label: 'Export Blueprint PNG',
+        group: 'images',
+        icon: Download,
+        description: 'Hand-drawn whiteboard-style render.',
+        disabledReason: lastBlueprintArchitecture
+          ? undefined
+          : 'Generate a diagram in Blueprint mode to enable this',
+        run: () => {
+          if (!lastBlueprintArchitecture) return;
+          const savedLegend = localStorage.getItem('aiGenerator.blueprintLegendPosition');
+          const legendPosition =
+            savedLegend === 'bottom' || savedLegend === 'right' || savedLegend === 'auto'
+              ? (savedLegend as 'bottom' | 'right' | 'auto')
+              : 'auto';
+          void import('./utils/exportBlueprintPng')
+            .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
+            .catch((err) => {
+              console.error('Blueprint PNG export failed:', err);
+              alert('Blueprint PNG export failed. See console for details.');
+            });
+        },
+      },
+      {
+        id: 'svg',
+        label: 'Export SVG',
+        group: 'images',
+        icon: Download,
+        description: 'Vector image that scales without quality loss.',
+        run: exportAsSvg,
+      },
+      {
+        id: 'animated-svg',
+        label: 'Export Animated SVG',
+        group: 'images',
+        icon: Download,
+        description: 'Flowing data-flow arrows. Open in a browser to see motion.',
+        run: exportAsAnimatedSvg,
+      },
+      {
+        id: 'workflow-animation',
+        label: 'Export Workflow Animation',
+        group: 'images',
+        icon: Download,
+        description: 'Plays the workflow step-by-step with captions.',
+        disabledReason: workflow.length === 0 ? 'No workflow steps in this diagram to animate' : undefined,
+        run: exportWorkflowAnimation,
+      },
+      {
+        id: 'workflow-md',
+        label: 'Export Workflow (Markdown)',
+        group: 'documents',
+        icon: FileText,
+        description: 'Services, step-by-step flow and connections as Markdown.',
+        disabledReason: needsDiagram,
+        run: exportWorkflowMarkdown,
+      },
+      {
+        id: 'pptx-slide',
+        label: 'Export PPTX Slide',
+        group: 'documents',
+        icon: Presentation,
+        description: 'The current diagram as a single PowerPoint slide.',
+        run: exportAsPptx,
+      },
+      {
+        id: 'pptx-deck',
+        label: 'Export Customer Deck (PPTX)',
+        group: 'documents',
+        icon: Presentation,
+        description: 'Title, diagram and services, plus WAF review and cost estimate when available.',
+        disabledReason: needsDiagram,
+        run: exportCustomerDeck,
+      },
+      {
+        id: 'drawio',
+        label: 'Export Draw.io',
+        group: 'interchange',
+        icon: Download,
+        description: 'Editable diagram for Draw.io / diagrams.net.',
+        run: exportAsDrawio,
+      },
+      {
+        id: 'vsdx',
+        label: 'Export Visio (VSDX)',
+        group: 'interchange',
+        icon: Download,
+        description: 'Native Visio drawing with editable shapes and connectors.',
+        disabledReason: needsDiagram,
+        run: exportAsVsdx,
+      },
+      {
+        id: 'html',
+        label: 'Export Interactive HTML',
+        group: 'interchange',
+        icon: FileCode,
+        description: 'Self-contained page with pan, zoom and tooltips.',
+        disabledReason: needsDiagram,
+        run: exportAsHtml,
+      },
+      {
+        id: 'costs-csv',
+        label: 'Export Costs (CSV)',
+        group: 'cost',
+        icon: DollarSign,
+        description: 'Per-service cost breakdown as a spreadsheet.',
+        disabledReason: needsCost,
+        run: exportCostBreakdown,
+      },
+      {
+        id: 'costs-all',
+        label: 'Export Costs (All Formats)',
+        group: 'cost',
+        icon: DollarSign,
+        description: 'CSV, JSON, summary and intelligent analysis as a ZIP.',
+        disabledReason: needsCost,
+        run: exportCostBreakdownZip,
+      },
+      {
+        id: 'deployment-guide',
+        label: isGeneratingGuide ? 'Generating guide…' : 'Generate Deployment Guide',
+        group: 'deployment',
+        icon: FileText,
+        description: 'Step-by-step deployment steps and Bicep for this architecture.',
+        disabledReason: isGeneratingGuide ? 'Already generating' : needsDiagram,
+        isGenerate: true,
+        run: handleGenerateDeploymentGuide,
+      },
+      {
+        id: 'deployment-guide-view',
+        label: 'View Last Deployment Guide',
+        group: 'deployment',
+        icon: FileText,
+        description: 'Reopen the guide generated for this session.',
+        disabledReason: deploymentGuide ? undefined : 'Generate a deployment guide first',
+        isGenerate: true,
+        run: () => setIsDeploymentGuideModalOpen(true),
+      },
+    ];
+  }, [
+    azureNodeCount, totalMonthlyCost, workflow.length,
+    lastReferenceArchitecture, lastBlueprintArchitecture,
+    exportDiagram, exportAsSvg, exportAsAnimatedSvg, exportWorkflowAnimation,
+    exportWorkflowMarkdown, exportAsPptx, exportCustomerDeck,
+    exportAsDrawio, exportAsVsdx, exportAsHtml,
+    exportCostBreakdown, exportCostBreakdownZip,
+    isGeneratingGuide, deploymentGuide, handleGenerateDeploymentGuide,
+  ]);
+
+  return (
+    <div className="app">
+      <header className={`app-header${isHeaderCollapsed ? ' header-collapsed' : ''}`}>
+        <div className="header-content">
+          <div className="header-brand">
+            <img src={microsoftLogoWhite} alt="Microsoft" className="microsoft-logo" />
+            <div className="header-brand-text">
+              <h1>Azure Architecture Diagram Builder</h1>
+              <span className="app-version">v{APP_VERSION}</span>
+            </div>
+          </div>
+          {/* The toolbar and journey strip act on the diagram, so they are canvas-only. */}
+          {isCanvasView && (
+          <>
+          <div className="header-actions-wrapper">
+            <div className="header-actions">
+              <div className="toolbar-group">
+                <RegionSelector onRegionChange={handleRegionChange} />
+                {totalMonthlyCost > 0 && (
+                  <>
+                    <button
+                      className={`cost-visibility-toggle${pricingPrefs.showCostBadges ? '' : ' is-off'}`}
+                      onClick={() => setPricingPrefs({ showCostBadges: !pricingPrefs.showCostBadges })}
+                      aria-pressed={pricingPrefs.showCostBadges}
+                      title={
+                        pricingPrefs.showCostBadges
+                          ? 'Hide cost estimates. They are indicative catalog values (quantity 1, default tier) — hide them if they do not reflect your commercial terms.'
+                          : 'Show cost estimates'
+                      }
+                    >
+                      {pricingPrefs.showCostBadges ? <Eye size={14} /> : <EyeOff size={14} />}
+                      {pricingPrefs.showCostBadges ? 'Cost' : 'Cost hidden'}
+                    </button>
+                  </>
+                )}
+                {totalMonthlyCost > 0 && pricingPrefs.showCostBadges && (
+                  <>
+                    <div className="cost-indicator" title="Total estimated monthly cost for all services (pay-as-you-go estimate)">
+                      💰 {formatMonthlyCost(totalMonthlyCost)}
+                    </div>
+                    {(() => {
+                      const f = getPricingFreshness(PRICING_DATA_AS_OF);
+                      return (
+                        <div
+                          className={`pricing-freshness pricing-freshness--${f.level}`}
+                          title={
+                            f.isStale
+                              ? `⚠️ Azure pricing data is ${f.ageLabel} (as of ${f.dateLabel}). Refresh with "npm run pricing:refresh" so estimates stay accurate.`
+                              : `Azure pricing data as of ${f.dateLabel} (${f.ageLabel}).`
+                          }
+                          role="status"
+                        >
+                          {f.isStale && <span aria-hidden="true">⚠️ </span>}
+                          <span className="pricing-freshness-label">as of {f.dateLabel}</span>
+                          {f.isStale && (
+                            <span className="pricing-freshness-age"> · {f.ageLabel}</span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
+              </div>
+
+              <div className="toolbar-group">
+                <AIArchitectureGenerator 
+                  openSignal={generatorOpenSignal}
+                  onOpen={() => {
+                    const source = generatorOpenSourceRef.current;
+                    trackGuidedJourney({
+                      action: 'path-selected',
+                      step: nodes.length > 0 ? 'refine' : 'create',
+                      path: 'brief-image',
+                      source,
+                      hasDiagram: nodes.length > 0,
+                    });
+                    generatorOpenSourceRef.current = 'toolbar';
+                  }}
+                  onGenerate={(arch, prompt, autoSnap, refImageUrl) => {
+                    clearSourceModel();
+                    if (refImageUrl) setReferenceImageUrl(refImageUrl);
+                    handleAIGenerate(arch, prompt, autoSnap);
+                  }}
+                  onReferenceArchitecture={(ref) => {
+                    // Reference mode does not push a topology onto the canvas;
+                    // just remember the ref so the toolbar can re-export the PNG.
+                    setLastReferenceArchitecture(ref ?? null);
+                  }}
+                  onBlueprintArchitecture={(bp) => {
+                    // Blueprint mode is also PNG-only; stash for re-export.
+                    setLastBlueprintArchitecture(bp ?? null);
+                  }}
+                  currentArchitecture={{
+                    nodes,
+                    edges,
+                    architectureName: titleBlockData.architectureName
+                  }}
+                  onContinueInChat={() => {
+                    trackGuidedJourney({ action: 'post-generation-action', step: 'refine', path: 'guided-chat', source: 'generator-success', hasDiagram: true });
+                    setIsChatOpen(true);
+                  }}
+                  onReview={() => {
+                    trackGuidedJourney({ action: 'post-generation-action', step: 'refine', path: 'canvas', source: 'generator-success', hasDiagram: true });
+                    window.setTimeout(() => reactFlowInstance?.fitView({ padding: 0.2, duration: 300 }), 100);
+                  }}
+                  onValidate={() => {
+                    trackGuidedJourney({ action: 'post-generation-action', step: 'validate', source: 'generator-success', hasDiagram: true });
+                    void handleValidateArchitecture();
+                  }}
+                />
+                <ModelSettingsPopover
+                  ref={modelSettingsRef}
+                  isOpen={isModelSettingsOpen}
+                  onToggle={() => setIsModelSettingsOpen(v => !v)}
+                />
+                <button
+                  className={`btn btn-ai-chat${isChatOpen ? ' active' : ''}`}
+                  onClick={() => {
+                    if (isChatOpen) setIsChatOpen(false);
+                    else openGuidedChat('toolbar');
+                  }}
+                  aria-pressed={isChatOpen}
+                  title={isChatOpen
+                    ? 'Close Guided Chat'
+                    : 'Guided Chat — best for conversational creation and ongoing refinement'}
+                >
+                  <MessagesSquare size={18} />
+                  Guided Chat
+                </button>
+                <button
+                  onClick={handleValidateArchitecture}
+                  className="btn btn-premium"
+                  title="Validate architecture against Azure Well-Architected Framework"
+                  disabled={nodes.length === 0}
+                >
+                  <Shield size={18} />
+                  Validate Architecture
+                </button>
+                {validationResult && (
+                  <button
+                    onClick={() => setIsValidationPanelOpen(true)}
+                    className="btn btn-secondary"
+                    title={validationNeedsRefresh
+                      ? 'Architecture changed after recommendations. Open the previous results and revalidate.'
+                      : 'Open last validation results'}
+                  >
+                    {validationNeedsRefresh ? <RefreshCw size={18} /> : <Shield size={18} />}
+                    {validationNeedsRefresh
+                      ? 'Revalidate Needed'
+                      : `Validation: ${bandLabel(validationResult.overallScore)}`}
+                  </button>
+                )}
+                <button
+                  className={`btn btn-help${helpSeen ? '' : ' nudge'}`}
+                  onClick={() => {
+                    setIsHelpOpen(true);
+                    if (!helpSeen) {
+                      setHelpSeen(true);
+                      localStorage.setItem('help.seen', '1');
+                    }
+                  }}
+                  title="How to use the tool &amp; learn the features"
+                >
+                  <HelpCircle size={18} />
+                  Help
+                </button>
+                <div className="toolbar-dropdown" ref={importMenuRef}>
+                  <button
+                    onClick={() => setIsImportMenuOpen((v) => !v)}
+                    className={`btn btn-secondary${isImportingTemplate ? ' btn-parsing' : ''}`}
+                    title="Start from an existing template or a live Azure resource group"
+                    aria-haspopup="menu"
+                    aria-expanded={isImportMenuOpen}
+                  >
+                    {isImportingTemplate ? <Loader size={18} className="spin-icon" /> : <DownloadCloud size={18} />}
+                    {isImportingTemplate ? 'Parsing...' : 'Import'}
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isImportMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Import options">
+                      <label className="toolbar-dropdown-item" role="menuitem">
+                        <FileCode size={18} />
+                        Template file
+                        <input
+                          ref={templateInputRef}
+                          type="file"
+                          accept=".json,.bicep,.tf"
+                          multiple
+                          onChange={(e) => { setIsImportMenuOpen(false); uploadTemplate(e); }}
+                          style={{ display: 'none' }}
+                          disabled={isImportingTemplate}
+                        />
+                      </label>
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
+                        Bicep, Terraform or ARM
+                      </div>
+                      <div className="toolbar-dropdown-separator" role="separator" />
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={() => { setIsImportMenuOpen(false); setIsAzureImportOpen(true); }}
+                      >
+                        <DownloadCloud size={18} />
+                        From Azure
+                      </button>
+                      <div className="toolbar-dropdown-hint toolbar-dropdown-hint--muted">
+                        Reverse-engineer a live resource group
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Signpost, not a menu — the Reports pane owns the export list. */}
+                <button
+                  onClick={() => setActiveView('reports')}
+                  className="btn btn-primary"
+                  title="Open the Reports pane to export this architecture"
+                >
+                  <Download size={18} />
+                  Export
+                </button>
+              </div>
+
+              <div className="toolbar-group">
+                <button onClick={saveDiagram} className="btn btn-secondary" title="Save diagram">
+                  <Save size={18} />
+                  Save
+                </button>
+
+                <label className="btn btn-secondary" title="Load diagram">
+                  <Upload size={18} />
+                  Load
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={loadDiagram}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+
+              <div className="toolbar-group">
+                <button
+                  onClick={() => {
+                    if (window.confirm('Start a fresh session? This will clear the current diagram and all unsaved changes.')) {
+                      startFreshSession();
+                    }
+                  }}
+                  className="btn btn-secondary"
+                  title="Clear diagram and start fresh"
+                >
+                  <RefreshCw size={18} />
+                </button>
+              </div>
+
+              {/* Object tools act on canvas items, so they render over the canvas.
+                  Portalled rather than moved so the dropdown markup and its
+                  outside-click wiring stay exactly as they were. */}
+              {canvasToolsHost && createPortal(
+                <div className="canvas-tools">
+                <div className="toolbar-dropdown" ref={layoutMenuRef}>
+                  <button
+                    onClick={() => setIsLayoutMenuOpen((v) => !v)}
+                    className="btn btn-secondary"
+                    title="Layout presets"
+                    aria-haspopup="menu"
+                    aria-expanded={isLayoutMenuOpen}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 4h7v7H4z" />
+                      <path d="M13 4h7v7h-7z" />
+                      <path d="M4 13h7v7H4z" />
+                      <path d="M13 13h7v7h-7z" />
+                    </svg>
+                    Layout
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isLayoutMenuOpen && (
+                    <div className="toolbar-dropdown-menu toolbar-dropdown-menu--layout" role="menu" aria-label="Layout options">
+                      <div className="toolbar-dropdown-heading">Preset</div>
+                      <select
+                        className="toolbar-dropdown-select"
+                        value={layoutPreset}
+                        onChange={(e) => setLayoutPreset(e.target.value as LayoutPreset)}
+                        aria-label="Layout preset"
+                      >
+                        <option value="flow-lr">Flow (L→R)</option>
+                        <option value="flow-tb">Flow (Top→Bottom)</option>
+                        <option value="swimlanes">Swimlanes by Group</option>
+                        <option value="radial">Radial</option>
+                      </select>
+
+                      <div className="toolbar-dropdown-separator" role="separator" />
+
+                      <div className="toolbar-dropdown-row">
+                        <label className="toolbar-dropdown-label" htmlFor="layoutEngine">
+                          Engine
+                        </label>
+                        <select
+                          id="layoutEngine"
+                          className="toolbar-dropdown-select"
+                          value={layoutEngine}
+                          onChange={(e) => setLayoutEngine(e.target.value as LayoutEngineType)}
+                        >
+                          <option value="dagre">Dagre</option>
+                          <option value="elk">ELK</option>
+                        </select>
+                      </div>
+
+                      <div className="toolbar-dropdown-separator" role="separator" />
+
+                      <div className="toolbar-dropdown-row">
+                        <label className="toolbar-dropdown-label" htmlFor="layoutSpacing">
+                          Spacing
+                        </label>
+                        <select
+                          id="layoutSpacing"
+                          className="toolbar-dropdown-select"
+                          value={layoutSpacing}
+                          onChange={(e) => setLayoutSpacing(e.target.value as LayoutSpacing)}
+                        >
+                          <option value="compact">Compact</option>
+                          <option value="comfortable">Comfortable</option>
+                        </select>
+                      </div>
+
+                      <div className="toolbar-dropdown-row">
+                        <label className="toolbar-dropdown-label" htmlFor="edgeStyle">
+                          Edge style
+                        </label>
+                        <select
+                          id="edgeStyle"
+                          className="toolbar-dropdown-select"
+                          value={layoutEdgeStyle}
+                          onChange={(e) => setLayoutEdgeStyle(e.target.value as LayoutEdgeStyle)}
+                        >
+                          <option value="straight">Straight</option>
+                          <option value="smooth">Smooth</option>
+                          <option value="orthogonal">Orthogonal</option>
+                        </select>
+                      </div>
+
+                      <label className="toolbar-dropdown-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={layoutEmphasizePrimaryPath}
+                          onChange={(e) => setLayoutEmphasizePrimaryPath(e.target.checked)}
+                          disabled={!(layoutPreset === 'flow-lr' || layoutPreset === 'flow-tb')}
+                        />
+                        Emphasize primary path
+                      </label>
+
+                      <div className="toolbar-dropdown-hint">
+                        Current: {layoutPresetLabel[layoutPreset]} • Engine: {layoutEngine === 'elk' ? 'ELK' : 'Dagre'}
+                        {layoutPreset === 'radial' ? ' (centers on selected node when possible)' : ''}
+                      </div>
+
+                      <div className="toolbar-dropdown-separator" role="separator" />
+
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        disabled={nodes.length === 0}
+                        onClick={() => {
+                          setIsLayoutMenuOpen(false);
+                          applyLayout();
+                        }}
+                        title={nodes.length === 0 ? 'Add services first' : 'Apply selected layout preset'}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 12a9 9 0 1 1-9-9" />
+                          <path d="M21 3v9h-9" />
+                        </svg>
+                        Apply Layout
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="toolbar-dropdown" ref={bulkSelectMenuRef}>
+                  <button
+                    onClick={() => setIsBulkSelectMenuOpen((v) => !v)}
+                    className="btn btn-secondary"
+                    title="Bulk select operations"
+                    aria-haspopup="menu"
+                    aria-expanded={isBulkSelectMenuOpen}
+                    disabled={nodes.length === 0}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    Select
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isBulkSelectMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Bulk select options">
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={selectAllNodes}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                        Select All Nodes
+                      </button>
+                      <button
+                        className="toolbar-dropdown-item"
+                        role="menuitem"
+                        onClick={deselectAll}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                        </svg>
+                        Deselect All
+                      </button>
+                      
+                      {getServiceTypes().length > 0 && (
+                        <>
+                          <div className="toolbar-dropdown-separator" role="separator" />
+                          <div className="toolbar-dropdown-heading">Select by Service Type</div>
+                          {getServiceTypes().map(serviceType => (
+                            <button
+                              key={serviceType}
+                              className="toolbar-dropdown-item"
+                              role="menuitem"
+                              onClick={() => selectAllNodesOfType(serviceType)}
+                            >
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                              </svg>
+                              {serviceType}
+                            </button>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="toolbar-dropdown" ref={stylePresetMenuRef}>
+                  <button
+                    onClick={() => setIsStylePresetMenuOpen((v) => !v)}
+                    className="btn btn-secondary"
+                    title="Change diagram style"
+                    aria-haspopup="menu"
+                    aria-expanded={isStylePresetMenuOpen}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                    </svg>
+                    Style
+                    <ChevronDown size={16} style={{ marginLeft: 2 }} />
+                  </button>
+
+                  {isStylePresetMenuOpen && (
+                    <div className="toolbar-dropdown-menu" role="menu" aria-label="Style preset options">
+                      <div className="toolbar-dropdown-heading">Visual Style</div>
+                      <button
+                        className={`toolbar-dropdown-item ${stylePreset === 'detailed' ? 'active' : ''}`}
+                        role="menuitem"
+                        onClick={() => applyStylePreset('detailed')}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <path d="M3 9h18M3 15h18M9 3v18" />
+                        </svg>
+                        Detailed (Default)
+                      </button>
+                      <button
+                        className={`toolbar-dropdown-item ${stylePreset === 'presentation' ? 'active' : ''}`}
+                        role="menuitem"
+                        onClick={() => applyStylePreset('presentation')}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="3" width="20" height="14" rx="2" />
+                          <path d="M8 21h8M12 17v4" />
+                        </svg>
+                        Presentation (Professional)
+                      </button>
+                      <div className="toolbar-dropdown-separator" role="separator" />
+                      <div className="toolbar-dropdown-hint">
+                        {stylePreset === 'detailed' && 'Shows all labels, pricing, and details'}
+                        {stylePreset === 'presentation' && 'Professional look with bold connections'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => {
+                    setFocusMode(prev => {
+                      const next = !prev;
+                      // Entering focus also collapses the side panels & legend
+                      // (their existing one-way signal behavior).
+                      if (next) setPanelsCollapsedSignal(p => p + 1);
+                      return next;
+                    });
+                  }}
+                  className={`btn btn-secondary${focusMode ? ' btn-active' : ''}`}
+                  title={focusMode ? 'Show panels and diagram info' : 'Hide panels and diagram info for maximum diagram space'}
+                  aria-pressed={focusMode}
+                >
+                  <PanelLeftClose size={18} />
+                  {focusMode ? 'Exit Focus' : 'Focus'}
+                </button>
+
+                <button onClick={addGroupBox} className="btn btn-secondary" title="Add grouping box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 4" />
+                  </svg>
+                  Add Group
+                </button>
+
+                <button
+                  onClick={toggleCollapseAllGroups}
+                  className={`btn btn-secondary${allGroupsCollapsed ? ' btn-active' : ''}`}
+                  title={allGroupsCollapsed ? 'Expand all groups to original size' : 'Collapse all groups to fit their content'}
+                  disabled={nodes.filter(n => n.type === 'groupNode').length === 0}
+                >
+                  {allGroupsCollapsed ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
+                  {allGroupsCollapsed ? 'Expand Groups' : 'Collapse Groups'}
+                </button>
+                </div>,
+                canvasToolsHost,
+              )}
+            </div>
+          </div>
+          <button
+            className="header-collapse-toggle"
+            onClick={() => {
+              setIsHeaderCollapsed(v => {
+                const next = !v;
+                try { localStorage.setItem(HEADER_COLLAPSED_STORAGE_KEY, next ? '1' : '0'); } catch { /* ignore */ }
+                return next;
+              });
+            }}
+            title={isHeaderCollapsed ? 'Show the toolbar' : 'Hide the toolbar for more canvas space'}
+            aria-label={isHeaderCollapsed ? 'Show the toolbar' : 'Hide the toolbar'}
+            aria-pressed={isHeaderCollapsed}
+          >
+            {isHeaderCollapsed ? <PanelTopOpen size={18} /> : <PanelTopClose size={18} />}
+            <span>{isHeaderCollapsed ? 'Show Toolbar' : 'Hide Toolbar'}</span>
+          </button>
+          </>
+          )}
+        </div>
+        {isCanvasView && (
+        <JourneyStrip
+          hasDiagram={nodes.some(node => node.type === 'azureNode')}
+          hasValidation={validationResult !== null}
+          hasDeploymentGuide={deploymentGuide !== null}
+          isValidating={isValidating}
+          isGeneratingGuide={isGeneratingGuide}
+          onStep={handleJourneyStep}
+        />
+        )}
+      </header>
+      
+      <div className="workspace">
+        <NavRail />
+
+        {isCanvasView && (
+          <IconPalette forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
+        )}
+
+        {activeView === 'reports' && (
+          <ReportsPane
+            actions={exportActions}
+            history={exportHistory}
+            formatTimeAgo={formatTimeAgo}
+            exportBackground={exportBackground}
+            onExportBackgroundChange={(next) => {
+              setExportBackground(next);
+              try { localStorage.setItem(EXPORT_BACKGROUND_STORAGE_KEY, next); } catch { /* ignore */ }
+            }}
+            hasDiagram={azureNodeCount > 0}
+            onGoToCanvas={() => setActiveView('canvas')}
+          />
+        )}
+
+        {activeView === 'library' && (
+          <LibraryPane
+            onRestoreVersion={restoreVersion}
+            onSaveSnapshot={() => setIsSaveSnapshotModalOpen(true)}
+            canSnapshot={nodes.length > 0}
+            onGoToCanvas={() => setActiveView('canvas')}
+            reloadToken={libraryReloadToken}
+          />
+        )}
+
+        {activeView === 'settings' && (
+          <SettingsPane isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />
+        )}
+
+        {hasOpenedCompare && (
+          <ComparePane
+            isActive={activeView === 'compare'}
+            onExit={() => setActiveView('canvas')}
+            onApplyArchitecture={(architecture, prompt, sourceModel, sourceReasoningEffort) => {
+              trackModelComparison({ selectedModel: sourceModel });
+              if (sourceModel && sourceReasoningEffort) {
+                setSourceModel(sourceModel, sourceReasoningEffort);
+              }
+              handleAIGenerate(architecture, prompt, true);
+            }}
+            onApplyValidation={(validation) => {
+              setValidationResult(validation);
+              setValidationNeedsRefresh(false);
+              setIsValidationPanelOpen(true);
+              setPanelsCollapsedSignal(prev => prev + 1);
+            }}
+            onCaptureBatch={handleCaptureBatch}
+            services={nodes
+              .filter(n => n.type === 'azureNode')
+              .map(n => ({
+                name: n.data.label || n.data.serviceName || 'Unknown Service',
+                type: n.data.serviceName || n.data.label || 'Unknown',
+                category: n.data.category || 'General',
+              }))}
+            connections={edges.map(e => ({
+              from: nodes.find(n => n.id === e.source)?.data?.label || e.source,
+              to: nodes.find(n => n.id === e.target)?.data?.label || e.target,
+              label: String(e.label || ''),
+            }))}
+            groups={nodes
+              .filter(n => n.type === 'groupNode')
+              .map(n => ({
+                name: n.data.label || 'Group',
+                services: nodes
+                  .filter(child => child.parentNode === n.id)
+                  .map(child => child.data.label || child.data.serviceName || 'Unknown'),
+              }))}
+            architectureDescription={architecturePrompt || titleBlockData.architectureName}
+          />
+        )}
+
+        <div className={`canvas-container${isCanvasView ? '' : ' is-hidden'}`} ref={reactFlowWrapper}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodesDelete={onNodesDelete}
+            onConnect={onConnect}
+            onReconnect={onReconnect}
+            onEdgeContextMenu={onEdgeContextMenu}
+            onNodeContextMenu={suppressNativeContextMenu}
+            onSelectionContextMenu={suppressNativeContextMenu}
+            onPaneContextMenu={suppressNativeContextMenu}
+            onInit={setReactFlowInstance}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            fitView
+            snapToGrid={true}
+            snapGrid={[20, 20]}
+            selectionOnDrag={true}
+            panOnDrag={[1, 2]}
+            elevateNodesOnSelect={false}
+            reconnectRadius={20}
+            attributionPosition="bottom-left"
+          >
+            <Controls />
+            <MiniMap
+              pannable
+              zoomable
+              position="bottom-right"
+              className="nav-minimap"
+              style={{ bottom: 84 }}
+              ariaLabel="Mini-map — drag or scroll to navigate the canvas"
+              nodeColor="#60a5fa"
+              nodeStrokeColor="#3b82f6"
+              maskColor="rgba(30, 41, 59, 0.45)"
+            />
+            <Background 
+              variant={BackgroundVariant.Dots} 
+              gap={20} 
+              size={2.5} 
+              color="#60a5fa"
+              style={{ backgroundColor: '#f8fafc' }}
+            />
+            {/* Canvas navigation hint — teaches pan/zoom so large diagrams
+                aren't perceived as "stuck" or too big to view. Shown only when
+                a diagram exists and until the user dismisses it. */}
+            {restorableDraft && nodes.length === 0 && (
+              <div className="canvas-restore-banner" role="status" style={{ top: CANVAS_BANNER_TOP }}>
+                <RotateCcw size={16} />
+                <span className="canvas-restore-banner-text">
+                  Unsaved diagram <strong>{restorableDraft.diagramName}</strong> from{' '}
+                  {new Date(restorableDraft.savedAt).toLocaleString()}
+                </span>
+                <button type="button" className="canvas-restore-banner-primary" onClick={restoreDraft}>
+                  Restore
+                </button>
+                <button type="button" className="canvas-restore-banner-dismiss" onClick={discardDraft}>
+                  Discard
+                </button>
+              </div>
+            )}
+
+            {showCanvasHint && nodes.length > 0 && (
+              <div className="canvas-nav-hint" role="note" aria-label="Canvas navigation tips">
+                <div className="canvas-nav-hint-tips">
+                  <span className="canvas-nav-hint-tip"><ZoomIn size={15} /> Scroll to zoom in / out</span>
+                  <span className="canvas-nav-hint-sep" aria-hidden="true">·</span>
+                  <span className="canvas-nav-hint-tip"><Hand size={15} /> Right-click + drag to pan</span>
+                  <span className="canvas-nav-hint-sep" aria-hidden="true">·</span>
+                  <button
+                    type="button"
+                    className="canvas-nav-hint-fit"
+                    onClick={() => reactFlowInstance?.fitView?.({ padding: 0.2, duration: 400 })}
+                    title="Zoom to fit the whole diagram in view"
+                  >
+                    <Frame size={15} /> Fit to view
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="canvas-nav-hint-close"
+                  onClick={() => {
+                    setShowCanvasHint(false);
+                    try { localStorage.setItem(CANVAS_HINT_STORAGE_KEY, '1'); } catch { /* ignore */ }
+                  }}
+                  title="Dismiss (won't show again)"
+                  aria-label="Dismiss navigation tips"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+            {showLayoutHint && nodes.length > 0 && !focusMode && (
+              <div
+                className="canvas-layout-hint"
+                role="note"
+                aria-label="Diagram layout guidance"
+                style={{ top: layoutHintTop }}
+              >
+                <Move size={18} aria-hidden="true" />
+                <div className="canvas-layout-hint-copy">
+                  <strong>Make this layout yours</strong>
+                  <span>AI arranged the first draft, but visual grouping and spacing are subjective. Drag services and groups into the positions that best communicate your architecture.</span>
+                </div>
+                <button
+                  type="button"
+                  className="canvas-layout-hint-close"
+                  onClick={() => {
+                    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+                    layoutHintTimeoutRef.current = null;
+                    setShowLayoutHint(false);
+                    try { localStorage.setItem(LAYOUT_HINT_SEEN_STORAGE_KEY, '1'); } catch { /* ignore */ }
+                  }}
+                  title="Dismiss layout guidance"
+                  aria-label="Dismiss layout guidance"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            )}
+            {/* Empty-canvas chooser: first-time users intentionally select a
+                creation path instead of having Chat auto-open for them. */}
+            {nodes.length === 0 && !isChatOpen && (
+              <StartChooser
+                onGuidedChat={() => openGuidedChat('first-start')}
+                onGenerate={() => openGeneratorFrom('first-start')}
+                onImportTemplate={() => {
+                  trackGuidedJourney({ action: 'path-selected', step: 'create', path: 'template-import', source: 'first-start', hasDiagram: false });
+                  templateInputRef.current?.click();
+                }}
+                onImportAzure={() => {
+                  trackGuidedJourney({ action: 'path-selected', step: 'create', path: 'azure-import', source: 'first-start', hasDiagram: false });
+                  setIsAzureImportOpen(true);
+                }}
+              />
+            )}
+            <style>
+              {highlightedServices.map(id => 
+                `.react-flow__node[data-id="${id}"] {
+                  filter: drop-shadow(0 0 12px rgba(96, 165, 250, 1)) drop-shadow(0 0 24px rgba(96, 165, 250, 0.9)) drop-shadow(0 0 36px rgba(96, 165, 250, 0.6)) !important;
+                  z-index: 1000 !important;
+                  animation: pulse-glow 1.5s ease-in-out infinite;
+                }
+                @keyframes pulse-glow {
+                  0%, 100% { filter: drop-shadow(0 0 12px rgba(96, 165, 250, 1)) drop-shadow(0 0 24px rgba(96, 165, 250, 0.9)) drop-shadow(0 0 36px rgba(96, 165, 250, 0.6)); }
+                  50% { filter: drop-shadow(0 0 18px rgba(96, 165, 250, 1)) drop-shadow(0 0 32px rgba(96, 165, 250, 1)) drop-shadow(0 0 48px rgba(96, 165, 250, 0.8)); }
+                }
+                
+                body:not(.dark-mode) .react-flow__node[data-id="${id}"] {
+                  filter: drop-shadow(0 0 8px rgba(0, 120, 212, 1)) drop-shadow(0 0 16px rgba(0, 120, 212, 0.8)) !important;
+                }
+                body:not(.dark-mode) @keyframes pulse-glow {
+                  0%, 100% { filter: drop-shadow(0 0 8px rgba(0, 120, 212, 1)) drop-shadow(0 0 16px rgba(0, 120, 212, 0.8)); }
+                  50% { filter: drop-shadow(0 0 12px rgba(0, 120, 212, 1)) drop-shadow(0 0 24px rgba(0, 120, 212, 0.9)); }
+                }`
+              ).join('\n')}
+            </style>
+            {/* Loading banner for applying recommendations */}
+            {isApplyingRecommendations && (
+              <div
+                className="prompt-banner loading-banner"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: CANVAS_BANNER_TOP,
+                  transform: 'translateX(-50%)',
+                  zIndex: 1001,
+                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)',
+                  border: '2px solid #60a5fa',
+                  padding: '1rem 2.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2)',
+                  maxWidth: '700px',
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              >
+                <div className="prompt-text" style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.3px' }}>
+                  <strong style={{ fontSize: '1.2rem' }}>⏳ Applying recommendations...</strong> Regenerating architecture with improvements
+                </div>
+              </div>
+            )}
+
+            {/* Loading banner for template parsing */}
+            {isImportingTemplate && (
+              <div
+                className="prompt-banner loading-banner"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: CANVAS_BANNER_TOP,
+                  transform: 'translateX(-50%)',
+                  zIndex: 1001,
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)',
+                  border: '2px solid #a78bfa',
+                  padding: '1rem 2.5rem',
+                  borderRadius: '12px',
+                  boxShadow: '0 0 20px rgba(139, 92, 246, 0.5), 0 0 60px rgba(139, 92, 246, 0.2)',
+                  maxWidth: '700px',
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              >
+                <div className="prompt-text" style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '0.3px' }}>
+                  <strong style={{ fontSize: '1.2rem' }}>📄 Parsing {importFormatLabel} Template...</strong> Analyzing resources and generating architecture diagram
+                </div>
+              </div>
+            )}
+
+            {/* Architecture generation prompt banner */}
+            {architecturePrompt && !focusMode && (
+              <div
+                className="prompt-banner draggable"
+                ref={setPromptBannerEl}
+                style={{
+                  position: 'absolute',
+                  left: promptBannerPosition ? `${promptBannerPosition.x}px` : '50%',
+                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : CANVAS_BANNER_TOP,
+                  transform: promptBannerPosition ? 'none' : 'translateX(-50%)',
+                  cursor: isDraggingBanner ? 'grabbing' : 'grab',
+                  zIndex: 1000,
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const el = e.currentTarget;
+                  const rect = el.getBoundingClientRect();
+                  const parent = el.offsetParent?.getBoundingClientRect();
+                  const currentX = rect.left - (parent?.left ?? 0);
+                  const currentY = rect.top - (parent?.top ?? 0);
+                  // left/top resolve against the containing block, so the drag
+                  // offset has to map viewport coords into that same space.
+                  setDragOffset({ x: e.clientX - currentX, y: e.clientY - currentY });
+                  setPromptBannerPosition({ x: currentX, y: currentY });
+                  setIsDraggingBanner(true);
+                }}
+              >
+                <div className="prompt-text">
+                  <strong>Generated from:</strong> {architecturePrompt}
+                </div>
+              </div>
+            )}
+
+            {nodes.some(node => node.type === 'azureNode') && (
+              <TitleBlock
+                architectureName={titleBlockData.architectureName}
+                author={titleBlockData.author}
+                version={titleBlockData.version}
+                date={titleBlockData.date}
+                onUpdate={(data) => setTitleBlockData({ ...titleBlockData, ...data })}
+              />
+            )}
+            {generatedWithModel && !focusMode && (
+              <ModelBadge
+                modelName={generatedWithModel.name}
+                elapsedTimeMs={generatedWithModel.timeMs}
+              />
+            )}
+            {nodes.some(node => node.type === 'azureNode') && (
+              <Legend forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
+            )}
+            {referenceImageUrl && (
+              <ReferenceImageViewer
+                imageUrl={referenceImageUrl}
+                onDismiss={() => setReferenceImageUrl(null)}
+              />
+            )}
+            {/* Inside ReactFlow because its container is already the positioned
+                ancestor. Making .canvas-container relative instead re-parented
+                the prompt banner's coordinates and broke its drag. */}
+            <div className="canvas-tools-host" ref={setCanvasToolsHost} />
+          </ReactFlow>
+          <AlignmentToolbar 
+            selectedNodes={nodes.filter(n => n.selected)}
+            onAlign={handleAlign}
+          />
+        </div>
+        {isCanvasView && workflow.length > 0 && (
+          <WorkflowPanel 
+            workflow={workflow}
+            onServiceHover={(refs) => highlightServiceRefs(refs || [])}
+            onServiceLeave={() => setHighlightedServices([])}
+            forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined}
+          />
+        )}
+        
+        {/* Edge Context Menu */}
+        {edgeContextMenu && (
+          <>
+            <div 
+              className="edge-context-menu-overlay"
+              onClick={closeEdgeContextMenu}
+            />
+            <div 
+              className="edge-context-menu"
+              style={{
+                position: 'fixed',
+                top: edgeContextMenu.y,
+                left: edgeContextMenu.x,
+                zIndex: 10000,
+              }}
+            >
+              <div className="context-menu-header">Edge Direction</div>
+              <button
+                className="context-menu-item"
+                onClick={() => setEdgeDirection(edgeContextMenu.edgeId, 'forward')}
+              >
+                <span className="menu-icon">→</span>
+                <span>One-way (Forward)</span>
+              </button>
+              <button
+                className="context-menu-item"
+                onClick={() => setEdgeDirection(edgeContextMenu.edgeId, 'reverse')}
+              >
+                <span className="menu-icon">←</span>
+                <span>One-way (Reverse)</span>
+              </button>
+              <button
+                className="context-menu-item"
+                onClick={() => setEdgeDirection(edgeContextMenu.edgeId, 'bidirectional')}
+              >
+                <span className="menu-icon">↔</span>
+                <span>Bidirectional</span>
+              </button>
+            </div>
+          </>
+        )}
+
+      {/* Docked inside the workspace so the canvas shrinks beside it and stays visible. */}
+      <ValidationPanel
+        validation={validationResult}
+        isOpen={isValidationPanelOpen && isCanvasView}
+        onClose={() => setIsValidationPanelOpen(false)}
+        onHighlightResources={highlightServiceRefs}
+        isLoading={isValidating}
+        isStale={validationNeedsRefresh}
+        onRevalidate={handleValidateArchitecture}
+        onApplyRecommendations={async (selectedFindings) => {
+          console.log('📝 User selected recommendations to apply:', selectedFindings);
+          
+          // Close the validation panel and show loading state
+          setIsValidationPanelOpen(false);
+          setIsApplyingRecommendations(true);
+          
+          // Get current architecture state
+          const currentServices = nodes
+            .filter(n => n.type === 'azureNode')
+            .map(n => ({
+              id: n.id,
+              name: n.data.label,
+              type: n.data.serviceName || n.data.service || n.data.label,
+              category: n.data.category || 'General',
+              description: n.data.description || '',
+            }));
+          
+          const currentConnections = edges.map(e => ({
+            from: e.source,
+            to: e.target,
+            label: e.label || '',
+            type: e.data?.type || 'sync'
+          }));
+          
+          const currentGroups = nodes
+            .filter(n => n.type === 'groupNode')
+            .map(n => ({
+              id: n.id,
+              label: n.data.label,
+            }));
+          
+          // Format recommendations for the prompt
+          const recommendationsText = selectedFindings
+            .map((f, i) => `${i + 1}. [${f.severity.toUpperCase()}] ${f.category}: ${f.recommendation}`)
+            .join('\n');
+          
+          // Build regeneration prompt
+          const regenerationPrompt = `You are regenerating an existing Azure architecture with improvements based on Well-Architected Framework recommendations.
+
+CURRENT ARCHITECTURE:
+Services: ${currentServices.map(s => `${s.name} (${s.type})`).join(', ')}
+Connections: ${currentConnections.length} connections
+Groups: ${currentGroups.map(g => g.label).join(', ')}
+
+SELECTED RECOMMENDATIONS TO APPLY:
+${recommendationsText}
+
+CRITICAL INSTRUCTIONS:
+1. Keep all existing services that are working well and not affected by recommendations
+2. Add new services recommended (e.g., Azure DevOps, Azure Monitor, Application Insights, Azure Front Door, Redis Cache, etc.)
+3. **IMPORTANT**: Place ALL new services into appropriate logical groups:
+   - DevOps/CI/CD services → "DevOps & Deployment" or "CI/CD Pipeline" group
+   - Monitoring services → Add to existing monitoring group or create "Monitoring & Observability" group
+   - Security services → Add to existing security group or create "Security & Compliance" group
+   - Caching services → Add to "Data & Cache" or similar group
+   - Never leave services ungrouped unless they are truly standalone
+4. Update connections to reflect security improvements, monitoring, and best practices
+5. Maintain and extend the logical grouping structure - create new groups as needed for new service categories
+6. Ensure the architecture implements the selected recommendations
+
+MULTI-REGION RESILIENCY — CRITICAL:
+When a recommendation involves multi-region, failover, geo-redundancy, or disaster recovery:
+- **ADD DUPLICATE SERVICES** in a secondary region. For example, if the primary has "API Management", add a second node "API Management (Secondary)" in a separate region group.
+- **CREATE REGION GROUPS**: Replace a single "Application & AI" group with "Primary Region (East US)" and "Secondary Region (West US)" groups, each containing their own instances of the affected services.
+- **SHOW FAILOVER ROUTING**: Add Azure Front Door or Traffic Manager as the entry point that routes to both regional deployments via origin groups or priority routing.
+- **DATABASE REPLICATION**: For Cosmos DB, add a second node "Azure Cosmos DB (Replica)" in the secondary region group with a replication connection between the two.
+- **DO NOT just change edge labels** to mention "primary" or "failover" — that is NOT implementing multi-region. You must ADD actual service nodes in a secondary region.
+- Target 14-18 services total for multi-region architectures (roughly double the region-scoped services).
+
+SERVICE MAPPING — CRITICAL:
+- When adding private connectivity, keep application traffic connected directly to the protected PaaS service. Do NOT add a "Private Endpoint - <resource>" node, a Virtual Network → Private Endpoint containment edge, or an App Service → Virtual Network "VNet Integration" edge per resource. Include exactly one "Virtual Network" node and, when DNS resolution matters, one "Private DNS Zone" node; the application groups both into a single "Private Connectivity" boundary and annotates it with the protected resource names — you do not need to connect them to each resource. Never place Azure Private Link between workload services as middleware.
+- When adding WAF capabilities, add "Web Application Firewall" as a service node if not already covered by Application Gateway or Azure Front Door.
+- When adding SIEM/security monitoring, add "Microsoft Sentinel" as a service node.
+- Always use exact service names from the known services list in the system prompt.
+
+LAYOUT RULES:
+7. Limit total connections to 12-18. Only show primary data/control flow, not obvious implicit relationships. Show only 1 representative Key Vault edge, not one per service.
+8. For monitoring: connect ONLY the primary compute service to Azure Monitor, then a SINGLE edge to Log Analytics. Maximum 2-3 monitoring edges total.
+9. Arrange groups in directional flow: Ingress → Application → Data (left-to-right). Security at bottom-left, Monitoring at bottom-right.
+10. Minimize cross-group edges. Place tightly-coupled services in the SAME group. Aim for 1-2 outgoing edges per group.
+11. Total service count: 8-18 depending on complexity. Multi-region architectures will have more services. Only add security/identity services when the recommendations explicitly require them.
+
+Return the IMPROVED architecture in the same JSON format as before with proper group assignments.`;
+
+          console.log('🔄 Regenerating architecture with recommendations...');
+          console.log('📋 Prompt:', regenerationPrompt);
+          
+          // Call Azure OpenAI to regenerate
+          try {
+            const improvedArchitecture = await generateArchitectureWithAI(regenerationPrompt);
+            
+            if (improvedArchitecture) {
+              // Detect newly added services
+              const existingServiceNames = new Set(currentServices.map(s => s.name.toLowerCase()));
+              const newServices = improvedArchitecture.services
+                .filter((s: any) => !existingServiceNames.has(s.name.toLowerCase()))
+                .map((s: any) => s.name);
+              
+              // Build descriptive banner text
+              let bannerText = `Original architecture improved with ${selectedFindings.length} WAF recommendation${selectedFindings.length > 1 ? 's' : ''}`;
+              if (newServices.length > 0) {
+                bannerText += `. Added: ${newServices.join(', ')}`;
+              }
+              
+              // Apply the improved architecture
+              await handleAIGenerate(improvedArchitecture, bannerText, true, true);
+              trackRecommendationsApplied(selectedFindings.length);
+              
+              setIsApplyingRecommendations(false);
+              alert(`✅ Architecture regenerated successfully!\n\nApplied ${selectedFindings.length} recommendations.\n${newServices.length > 0 ? `\nAdded ${newServices.length} new services: ${newServices.join(', ')}` : ''}`);
+            }
+          } catch (error) {
+            console.error('❌ Failed to regenerate architecture:', error);
+            setIsApplyingRecommendations(false);
+            alert('Failed to regenerate architecture. Please try again.');
+          }
+        }}
+      />
+      </div>
+
+      <DeploymentGuideModal
+        guide={deploymentGuide}
+        isOpen={isDeploymentGuideModalOpen}
+        onClose={() => setIsDeploymentGuideModalOpen(false)}
+        isLoading={isGeneratingGuide}
+      />
+      <SaveSnapshotModal
+        isOpen={isSaveSnapshotModalOpen}
+        onClose={() => setIsSaveSnapshotModalOpen(false)}
+        onSave={handleSaveSnapshot}
+        diagramName={titleBlockData.architectureName}
+        serviceCount={nodes.filter(n => n.type === 'azureNode').length}
+      />
+      <AzureImportModal
+        isOpen={isAzureImportOpen}
+        onClose={() => setIsAzureImportOpen(false)}
+        onImport={importFromAzure}
+      />
+      {ImpactModal && (
+        <button
+          className="impact-launcher"
+          onClick={() => setIsImpactModalOpen(true)}
+          title="Share adoption context or an outcome"
+        >
+          <BarChart3 size={18} />
+          <span>Adoption &amp; Impact</span>
+        </button>
+      )}
+      <button
+        className={`feedback-fab${feedbackFabPulse ? ' pulse-once' : ''}`}
+        onClick={() => setIsFeedbackModalOpen(true)}
+        title="Share feedback"
+      >
+        <MessageSquare size={18} />
+        Feedback
+      </button>
+      <ArchitectureChatPanel
+        isOpen={isChatOpen}
+        resetSignal={chatResetSignal}
+        onClose={() => setIsChatOpen(false)}
+        currentArchitecture={{
+          nodes,
+          edges,
+          architectureName: titleBlockData.architectureName,
+        }}
+        onApply={handleAIGenerate}
+      />
+      <HelpLearnPanel
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
+      <FeedbackToast
+        isOpen={isFeedbackToastOpen}
+        onClose={() => setIsFeedbackToastOpen(false)}
+        onAddComment={(rating) => {
+          setIsFeedbackToastOpen(false);
+          setFeedbackPreselectedRating(rating);
+          setIsFeedbackModalOpen(true);
+        }}
+        context={{
+          diagramName: titleBlockData.architectureName,
+          serviceCount: nodes.filter(n => n.type === 'azureNode').length,
+          model: generatedWithModel?.name,
+        }}
+      />
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => {
+          setIsFeedbackModalOpen(false);
+          setFeedbackPreselectedRating(undefined);
+        }}
+        preselectedRating={feedbackPreselectedRating}
+        context={{
+          diagramName: titleBlockData.architectureName,
+          serviceCount: nodes.filter(n => n.type === 'azureNode').length,
+          model: generatedWithModel?.name,
+        }}
+      />
+      {ImpactModal && (
+        <React.Suspense fallback={null}>
+          <ImpactModal isOpen={isImpactModalOpen} onClose={() => setIsImpactModalOpen(false)} />
+        </React.Suspense>
+      )}
+      {isDeliverChooserOpen && (
+        <DeliverChooser
+          isBuilding={isGeneratingGuide}
+          onClose={() => setIsDeliverChooserOpen(false)}
+          onShare={() => {
+            trackGuidedJourney({ action: 'path-selected', step: 'deliver', path: 'export', source: 'journey-strip', hasDiagram: true });
+            setIsDeliverChooserOpen(false);
+            setActiveView('reports');
+          }}
+          onBuild={() => {
+            trackGuidedJourney({ action: 'path-selected', step: 'deliver', path: 'deployment-guide', source: 'journey-strip', hasDiagram: true });
+            setIsDeliverChooserOpen(false);
+            void handleGenerateDeploymentGuide();
+          }}
+        />
+      )}
+      {(() => {
+        if (!pricingEditorNodeId) return null;
+        const node = nodes.find(n => n.id === pricingEditorNodeId);
+        const nodePricing = node?.data?.pricing as NodePricingConfig | undefined;
+        if (!node || !nodePricing) return null;
+        return (
+          <NodePricingEditor
+            serviceType={node.data.label}
+            pricing={nodePricing}
+            onClose={closeNodePricingEditor}
+            onApply={(updated) => {
+              // Total cost recalculates from `nodes` via the existing effect.
+              setNodes(nds =>
+                nds.map(n =>
+                  n.id === pricingEditorNodeId
+                    ? { ...n, data: { ...n.data, pricing: updated } }
+                    : n,
+                ),
+              );
+            }}
+          />
+        );
+      })()}
+    </div>
+  );
+}
+
+export default App;

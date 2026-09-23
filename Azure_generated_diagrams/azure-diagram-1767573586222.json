@@ -1,0 +1,139 @@
+{
+  "nodes": [
+    {
+      "id": "aks-1",
+      "type": "azureNode",
+      "position": {
+        "x": -107,
+        "y": 88
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10023-icon-service-Kubernetes-Services.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -107,
+        "y": 88
+      },
+      "dragging": false
+    },
+    {
+      "id": "apim-1",
+      "type": "azureNode",
+      "position": {
+        "x": 396.5,
+        "y": 109.5
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 133,
+      "height": 107,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 396.5,
+        "y": 109.5
+      },
+      "dragging": false
+    },
+    {
+      "id": "sb-1",
+      "type": "azureNode",
+      "position": {
+        "x": 33.5,
+        "y": 387
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10042-icon-service-API-Management-Services.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 33.5,
+        "y": 387
+      },
+      "dragging": false
+    },
+    {
+      "id": "redis-1",
+      "type": "azureNode",
+      "position": {
+        "x": 207,
+        "y": 370
+      },
+      "data": {
+        "label": "Azure Cache for Redis",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 207,
+        "y": 370
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "apim-1",
+      "target": "aks-1",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Routes API requests to microservices",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "aks-1",
+      "target": "sb-1",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Publishes and consumes messages",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "aks-1",
+      "target": "redis-1",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Reads/writes cached data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 258.5,
+    "y": -3.5,
+    "zoom": 2
+  }
+}

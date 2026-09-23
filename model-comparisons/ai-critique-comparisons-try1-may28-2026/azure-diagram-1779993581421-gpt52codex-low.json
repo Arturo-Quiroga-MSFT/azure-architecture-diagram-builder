@@ -1,0 +1,175 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress/Edge"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application/Compute"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data/Storage"
+    },
+    {
+      "id": "grp-integration",
+      "label": "Integration/Events"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global traffic routing and acceleration for multi-region access",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "appservice",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "E-commerce web and API tier serving customers",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Session state and cart caching for low-latency access",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Globally distributed product catalog and order data",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Eventing backbone for order processing workflows",
+      "groupId": "grp-integration"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Order processing handlers reacting to order events",
+      "groupId": "grp-integration"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontdoor",
+      "to": "appservice",
+      "label": "Route user traffic to nearest healthy regional app",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "redis",
+      "label": "Read and update session and cart state",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "cosmos",
+      "label": "Query global product catalog and persist orders",
+      "type": "sync"
+    },
+    {
+      "from": "appservice",
+      "to": "eventgrid",
+      "label": "Publish order-created and payment-confirmed events",
+      "type": "async"
+    },
+    {
+      "from": "eventgrid",
+      "to": "functions",
+      "label": "Deliver order events to processing handlers",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "cosmos",
+      "label": "Update order status and inventory reservations",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Customer traffic is routed to the closest healthy region",
+      "services": [
+        "frontdoor",
+        "appservice"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Application retrieves session and cart state for the user",
+      "services": [
+        "appservice",
+        "redis"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Product catalog and pricing are read from the global database",
+      "services": [
+        "appservice",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Order submission triggers an event for downstream processing",
+      "services": [
+        "appservice",
+        "eventgrid"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Event-driven functions process the order and update records",
+      "services": [
+        "eventgrid",
+        "functions",
+        "cosmos"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1425,
+    "completionTokens": 1026,
+    "totalTokens": 2451,
+    "elapsedTimeMs": 9979,
+    "model": "gpt-5.2-codex",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "gpt-5.2-codex",
+    "modelDisplayName": "GPT-5.2 Codex",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1425,
+      "completionTokens": 1026,
+      "totalTokens": 2451,
+      "elapsedTimeMs": 9979,
+      "model": "gpt-5.2-codex",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T18:39:41.725Z",
+    "source": "model-comparison"
+  }
+}

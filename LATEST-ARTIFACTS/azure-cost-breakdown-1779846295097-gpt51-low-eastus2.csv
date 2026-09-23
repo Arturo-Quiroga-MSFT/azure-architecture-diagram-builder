@@ -1,0 +1,20 @@
+Azure Architecture Cost Breakdown
+Total Monthly Cost,$234.30
+Region,eastus2
+Date,2026-05-26
+
+Service Name,Service Type,Tier,Quantity,Monthly Cost,Pricing Type
+"Azure Stream Analytics",Other,Standard,1,$80.30,Fixed
+"Azure Machine Learning",Other,Standard,1,$50.00,Fixed
+"Azure Digital Twins",Other,Standard,1,$50.00,Usage-based (estimate)
+"Azure IoT Hub",Other,Standard,1,$25.00,Usage-based (estimate)
+"Azure Data Lake Storage",Other,Standard,1,$18.40,Usage-based (estimate)
+"Microsoft Entra ID",Other,Standard,1,$6.00,Fixed
+"Azure Monitor",Other,Standard,1,$2.30,Fixed
+"Log Analytics",Other,Standard,1,$2.30,Fixed
+
+Group Name,Service Count,Monthly Cost
+"Ungrouped",8,$234.30
+
+Category,Monthly Cost,Percentage
+Other,$234.30,100.0%

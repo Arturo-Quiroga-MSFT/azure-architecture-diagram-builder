@@ -1,0 +1,192 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Document Ingress"
+    },
+    {
+      "id": "processing",
+      "label": "AI Processing Pipeline"
+    },
+    {
+      "id": "data",
+      "label": "Data and Search Layer"
+    }
+  ],
+  "services": [
+    {
+      "id": "blob-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Stores uploaded documents for retention",
+      "groupId": "ingress"
+    },
+    {
+      "id": "azure-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Orchestrates the document processing workflow",
+      "groupId": "processing"
+    },
+    {
+      "id": "doc-intelligence",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "Performs OCR and extracts text from documents",
+      "groupId": "processing"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates summaries from extracted text",
+      "groupId": "processing"
+    },
+    {
+      "id": "cog-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Indexes document content and summaries for search",
+      "groupId": "data"
+    },
+    {
+      "id": "cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores document metadata and processing results",
+      "groupId": "data"
+    }
+  ],
+  "connections": [
+    {
+      "from": "blob-storage",
+      "to": "azure-functions",
+      "label": "Notify on new document upload via event trigger",
+      "type": "async"
+    },
+    {
+      "from": "azure-functions",
+      "to": "doc-intelligence",
+      "label": "Submit document for OCR text extraction",
+      "type": "sync"
+    },
+    {
+      "from": "doc-intelligence",
+      "to": "azure-functions",
+      "label": "Return structured OCR results",
+      "type": "sync"
+    },
+    {
+      "from": "azure-functions",
+      "to": "openai",
+      "label": "Request summarization of extracted content",
+      "type": "sync"
+    },
+    {
+      "from": "openai",
+      "to": "azure-functions",
+      "label": "Provide AI-generated summary",
+      "type": "sync"
+    },
+    {
+      "from": "azure-functions",
+      "to": "cosmos",
+      "label": "Persist document metadata and summary",
+      "type": "sync"
+    },
+    {
+      "from": "azure-functions",
+      "to": "cog-search",
+      "label": "Index extracted text and summary for search",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Document uploaded to Storage Account triggering Azure Functions",
+      "services": [
+        "blob-storage",
+        "azure-functions"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure Functions invokes Document Intelligence to perform OCR",
+      "services": [
+        "azure-functions",
+        "doc-intelligence"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Document Intelligence returns extracted text and layout data",
+      "services": [
+        "doc-intelligence",
+        "azure-functions"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Functions sends extracted text to Azure OpenAI for summarization",
+      "services": [
+        "azure-functions",
+        "openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure OpenAI returns generated summary to Azure Functions",
+      "services": [
+        "openai",
+        "azure-functions"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Functions stores metadata and summary in Cosmos DB",
+      "services": [
+        "azure-functions",
+        "cosmos"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure Functions indexes document content and summary in Cognitive Search",
+      "services": [
+        "azure-functions",
+        "cog-search"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1416,
+    "completionTokens": 830,
+    "totalTokens": 5589,
+    "elapsedTimeMs": 48923,
+    "model": "grok-4.3",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "grok-4.3",
+    "modelDisplayName": "Grok 4.3",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1416,
+      "completionTokens": 830,
+      "totalTokens": 5589,
+      "elapsedTimeMs": 48923,
+      "model": "grok-4.3",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T18:35:30.279Z",
+    "source": "model-comparison"
+  }
+}

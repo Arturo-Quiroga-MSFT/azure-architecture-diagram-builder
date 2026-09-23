@@ -1,0 +1,240 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Document Ingestion"
+    },
+    {
+      "id": "processing",
+      "label": "AI Processing"
+    },
+    {
+      "id": "search",
+      "label": "Search & Indexing"
+    },
+    {
+      "id": "storage",
+      "label": "Data Storage"
+    },
+    {
+      "id": "observability",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "blob-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Document retention and staging",
+      "groupId": "ingress"
+    },
+    {
+      "id": "doc-intelligence",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "OCR and document extraction",
+      "groupId": "processing"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Document summarization",
+      "groupId": "processing"
+    },
+    {
+      "id": "cognitive-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Vector indexing and retrieval",
+      "groupId": "search"
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Metadata and summaries storage",
+      "groupId": "storage"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Pipeline orchestration",
+      "groupId": "processing"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Application performance monitoring",
+      "groupId": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log aggregation",
+      "groupId": "observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "blob-storage",
+      "to": "functions",
+      "label": "Trigger document processing workflow",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "doc-intelligence",
+      "label": "Submit documents for OCR extraction",
+      "type": "sync"
+    },
+    {
+      "from": "doc-intelligence",
+      "to": "functions",
+      "label": "Return extracted text and structure",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "openai",
+      "label": "Send extracted content for summarization",
+      "type": "sync"
+    },
+    {
+      "from": "openai",
+      "to": "functions",
+      "label": "Return document summaries",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "cognitive-search",
+      "label": "Index extracted text and embeddings",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "cosmos-db",
+      "label": "Store metadata and summaries",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "app-insights",
+      "label": "Send pipeline telemetry",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "log-analytics",
+      "label": "Forward metrics and traces",
+      "type": "async"
+    },
+    {
+      "from": "cognitive-search",
+      "to": "cosmos-db",
+      "label": "Store search result metadata",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Documents uploaded to Blob Storage trigger Azure Functions",
+      "services": [
+        "blob-storage",
+        "functions"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Functions invoke Document Intelligence for OCR extraction",
+      "services": [
+        "functions",
+        "doc-intelligence"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Extracted content processed by Azure OpenAI for summarization",
+      "services": [
+        "functions",
+        "openai"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Functions store summaries and metadata in Cosmos DB",
+      "services": [
+        "functions",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Extracted content indexed in Cognitive Search for semantic retrieval",
+      "services": [
+        "functions",
+        "cognitive-search"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Search index metadata synchronized to Cosmos DB",
+      "services": [
+        "cognitive-search",
+        "cosmos-db"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Pipeline telemetry collected by Application Insights",
+      "services": [
+        "functions",
+        "app-insights"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Logs aggregated in Log Analytics for monitoring",
+      "services": [
+        "app-insights",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1402,
+    "completionTokens": 1232,
+    "totalTokens": 2634,
+    "elapsedTimeMs": 11677,
+    "model": "grok-4-1-fast-non-reasoning"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1402,
+      "completionTokens": 1232,
+      "totalTokens": 2634,
+      "elapsedTimeMs": 11677,
+      "model": "grok-4-1-fast-non-reasoning"
+    },
+    "savedAt": "2026-03-06T19:31:31.571Z",
+    "source": "model-comparison"
+  }
+}

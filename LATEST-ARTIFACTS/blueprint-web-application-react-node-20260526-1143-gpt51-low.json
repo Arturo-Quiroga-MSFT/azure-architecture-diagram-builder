@@ -1,0 +1,288 @@
+{
+  "title": "Web Application with React, Node.js, PostgreSQL, and Blob Storage",
+  "canvas": {
+    "width": 2116,
+    "height": 1000
+  },
+  "zones": [
+    {
+      "id": "azure",
+      "label": "Azure",
+      "kind": "azure",
+      "x": 344,
+      "y": 32,
+      "width": 1752,
+      "height": 914
+    },
+    {
+      "id": "external-clients",
+      "label": "External Clients",
+      "kind": "external",
+      "x": 36,
+      "y": 376,
+      "width": 238,
+      "height": 188
+    },
+    {
+      "id": "identity",
+      "label": "Identity & Access",
+      "kind": "subsystem",
+      "x": 388,
+      "y": 96,
+      "width": 238,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "observability",
+      "label": "Observability",
+      "kind": "subsystem",
+      "x": 1544,
+      "y": 76,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    },
+    {
+      "id": "compute",
+      "label": "Application & API",
+      "kind": "subsystem",
+      "x": 696,
+      "y": 256,
+      "width": 778,
+      "height": 388,
+      "parent": "azure"
+    },
+    {
+      "id": "data",
+      "label": "Data Storage",
+      "kind": "subsystem",
+      "x": 648,
+      "y": 714,
+      "width": 508,
+      "height": 188,
+      "parent": "azure"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "web-user",
+      "name": "Web User",
+      "category": "general",
+      "kind": "persona",
+      "x": 80,
+      "y": 420,
+      "zone": "external-clients"
+    },
+    {
+      "id": "front-door",
+      "name": "Azure Front Door",
+      "category": "networking",
+      "kind": "cloud",
+      "x": 740,
+      "y": 500,
+      "zone": "compute"
+    },
+    {
+      "id": "static-web-apps",
+      "name": "Azure Static Web Apps",
+      "category": "web",
+      "kind": "service",
+      "x": 1000,
+      "y": 300,
+      "zone": "compute"
+    },
+    {
+      "id": "apim",
+      "name": "API Management",
+      "category": "integration",
+      "kind": "service",
+      "x": 1010,
+      "y": 500,
+      "zone": "compute"
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "category": "app services",
+      "kind": "service",
+      "x": 1280,
+      "y": 500,
+      "zone": "compute"
+    },
+    {
+      "id": "postgres",
+      "name": "Azure Database for PostgreSQL",
+      "category": "databases",
+      "kind": "database",
+      "x": 962,
+      "y": 758,
+      "zone": "data"
+    },
+    {
+      "id": "blob-storage",
+      "name": "Storage Account",
+      "category": "storage",
+      "kind": "database",
+      "x": 692,
+      "y": 758,
+      "zone": "data"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "category": "monitor",
+      "kind": "service",
+      "x": 1588,
+      "y": 120,
+      "zone": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "category": "monitor",
+      "kind": "service",
+      "x": 1858,
+      "y": 120,
+      "zone": "observability"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "category": "identity",
+      "kind": "service",
+      "x": 432,
+      "y": 140,
+      "zone": "identity"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "web-user",
+      "to": "front-door",
+      "step": 1,
+      "label": "Browse app",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e2",
+      "from": "front-door",
+      "to": "static-web-apps",
+      "step": 2,
+      "label": "Serve frontend",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e3",
+      "from": "static-web-apps",
+      "to": "apim",
+      "step": 3,
+      "label": "Call APIs",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e4",
+      "from": "apim",
+      "to": "app-service",
+      "step": 4,
+      "label": "Forward API",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e5",
+      "from": "app-service",
+      "to": "postgres",
+      "step": 5,
+      "label": "Read/write data",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e6",
+      "from": "app-service",
+      "to": "blob-storage",
+      "step": 6,
+      "label": "Store images",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e7",
+      "from": "app-service",
+      "to": "azure-monitor",
+      "step": 7,
+      "label": "Send metrics",
+      "routing": "orthogonal",
+      "style": "dashed"
+    },
+    {
+      "id": "e8",
+      "from": "app-service",
+      "to": "log-analytics",
+      "step": 8,
+      "label": "Send logs",
+      "routing": "orthogonal",
+      "style": "dashed"
+    },
+    {
+      "id": "e9",
+      "from": "static-web-apps",
+      "to": "entra-id",
+      "step": 9,
+      "label": "Validate user",
+      "routing": "orthogonal",
+      "style": "solid"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "The web user accesses the application via a browser, sending requests through Azure Front Door."
+    },
+    {
+      "step": 2,
+      "description": "Azure Front Door routes the request to Azure Static Web Apps to serve the React frontend."
+    },
+    {
+      "step": 3,
+      "description": "The React frontend hosted in Azure Static Web Apps invokes backend APIs via Azure API Management."
+    },
+    {
+      "step": 4,
+      "description": "Azure API Management validates, secures, and forwards API calls to the Node.js backend running on Azure App Service."
+    },
+    {
+      "step": 5,
+      "description": "The Node.js backend reads and writes relational application data in Azure Database for PostgreSQL."
+    },
+    {
+      "step": 6,
+      "description": "The Node.js backend stores and retrieves image files as blob objects in Azure Storage."
+    },
+    {
+      "step": 7,
+      "description": "Azure App Service emits platform and custom application metrics to Azure Monitor for health and performance tracking."
+    },
+    {
+      "step": 8,
+      "description": "Azure App Service sends application and infrastructure logs to Log Analytics for centralized querying and analysis."
+    },
+    {
+      "step": 9,
+      "description": "Azure Static Web Apps integrates with Microsoft Entra ID to validate user identities and enforce access control for the web application."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3501,
+    "completionTokens": 5764,
+    "totalTokens": 9265,
+    "elapsedTimeMs": 41294,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-26T15:43:52.248Z"
+}

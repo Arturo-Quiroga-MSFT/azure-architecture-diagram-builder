@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Azure Architecture Diagram Builder — AI-powered Azure architecture design</title>
+<meta name="description" content="Design, validate, cost, and export Azure architectures from plain English. Built by Arturo Quiroga, Senior Partner Solutions Architect, Microsoft." />
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--cp-panel-strong);
+  border-bottom: 1px solid var(--cp-border);
+  backdrop-filter: blur(8px);
+}
+.topbar .wrap { display: flex; align-items: center; gap: 12px; height: 60px; }
+.brand { font-weight: 700; letter-spacing: -0.01em; font-size: 0.98rem; }
+.brand span { color: var(--cp-text-muted); font-weight: 500; }
+.topbar nav { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+.topbar nav a {
+  color: var(--cp-text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+}
+.topbar nav a:hover { color: var(--cp-text); }
+.themebtn {
+  border: 1px solid var(--cp-border); background: var(--cp-surface); color: var(--cp-text);
+  border-radius: 0.625rem; padding: 6px 10px; cursor: pointer; font-size: 0.85rem;
+  font-family: inherit;
+}
+.themebtn:hover { border-color: var(--cp-border-strong); }
+
+/* ---------- hero ---------- */
+.hero { padding: 72px 0 40px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--cp-accent-soft); color: var(--cp-accent);
+  border: 1px solid var(--cp-highlight);
+  border-radius: 999px; padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 20px;
+}
+h1 {
+  font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.1; margin: 0 0 18px;
+  letter-spacing: -0.03em; font-weight: 700; max-width: 18ch;
+}
+.lede { font-size: clamp(1.05rem, 2vw, 1.25rem); color: var(--cp-text-muted); max-width: 62ch; margin: 0 0 28px; }
+.lede strong { color: var(--cp-text); font-weight: 600; }
+
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 0.625rem; padding: 11px 20px; font-size: 0.95rem; font-weight: 600;
+  text-decoration: none; border: 1px solid transparent; transition: all .15s ease;
+}
+.btn-primary { background: var(--cp-accent); color: var(--cp-accent-fg); }
+.btn-primary:hover { background: var(--cp-accent-hover); }
+.btn-ghost { background: var(--cp-surface); color: var(--cp-text); border-color: var(--cp-border); }
+.btn-ghost:hover { border-color: var(--cp-border-strong); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-size: 0.8rem; color: var(--cp-text-soft); background: var(--cp-surface-soft);
+  border: 1px solid var(--cp-border); border-radius: 999px; padding: 4px 12px;
+}
+
+/* ---------- figures ---------- */
+figure { margin: 0; }
+.shot {
+  margin-top: 40px; border: 1px solid var(--cp-border); border-radius: 16px;
+  overflow: hidden; background: var(--cp-surface);
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption {
+  padding: 12px 18px; font-size: 0.85rem; color: var(--cp-text-muted);
+  border-top: 1px solid var(--cp-border); background: var(--cp-surface-soft);
+}
+
+/* ---------- sections ---------- */
+section { padding: 56px 0; border-top: 1px solid var(--cp-border); scroll-margin-top: 72px; }
+section:first-of-type { border-top: none; }
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.02em; margin: 0 0 12px; font-weight: 700;
+}
+.sub { color: var(--cp-text-muted); max-width: 65ch; margin: 0 0 32px; }
+
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.card {
+  background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px;
+  padding: 22px; box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.card h3 { margin: 0 0 8px; font-size: 1.02rem; font-weight: 650; letter-spacing: -0.01em; }
+.card p { margin: 0; color: var(--cp-text-muted); font-size: 0.92rem; }
+.card .tag {
+  display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--cp-accent); background: var(--cp-accent-soft);
+  border-radius: 4px; padding: 2px 7px; margin-left: 8px; vertical-align: middle;
+}
+
+/* ---------- stats ---------- */
+.stats { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.stat {
+  background: var(--cp-bg-elevated); border: 1px solid var(--cp-border);
+  border-radius: 16px; padding: 20px; text-align: center;
+}
+.stat b { display: block; font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+.stat span { font-size: 0.82rem; color: var(--cp-text-muted); }
+
+/* ---------- lists ---------- */
+.checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.checklist li { padding-left: 26px; position: relative; color: var(--cp-text-muted); font-size: 0.94rem; }
+.checklist li::before {
+  content: "→"; position: absolute; left: 0; top: 0; color: var(--cp-accent); font-weight: 700;
+}
+.checklist strong { color: var(--cp-text); font-weight: 600; }
+
+.two { display: grid; gap: 40px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+code {
+  font-family: Consolas, "Courier New", Courier, monospace;
+  background: var(--cp-surface-soft); border: 1px solid var(--cp-border);
+  border-radius: 4px; padding: 1px 6px; font-size: 0.87em;
+}
+
+/* ---------- note ---------- */
+.note {
+  background: var(--cp-surface); border: 1px solid var(--cp-border);
+  border-left: 3px solid var(--cp-warning);
+  border-radius: 0.625rem; padding: 16px 20px; font-size: 0.9rem; color: var(--cp-text-muted);
+}
+.note strong { color: var(--cp-text); }
+
+/* ---------- footer ---------- */
+footer {
+  border-top: 1px solid var(--cp-border); padding: 40px 0 60px;
+  color: var(--cp-text-soft); font-size: 0.88rem;
+}
+footer a { color: var(--cp-link); }
+.author { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%; flex: none;
+  background: var(--cp-accent); color: var(--cp-accent-fg);
+  display: grid; place-items: center; font-weight: 700; font-size: 1rem;
+}
+.author div b { display: block; color: var(--cp-text); font-size: 0.95rem; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand">Azure Architecture Diagram Builder <span>v1.9.0</span></div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#built">Under the hood</a>
+      <button class="themebtn" id="themeToggle" type="button">Theme</button>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Internal tool · Built by a Microsoft PSA</div>
+    <h1>From plain English to a costed Azure architecture</h1>
+    <p class="lede">
+      Describe a solution in a sentence. Get an <strong>editable architecture diagram</strong> with official
+      Azure icons, <strong>real pricing</strong> from the Azure Retail Prices API, <strong>Well-Architected
+      validation</strong>, and a deployment guide — in about a minute.
+    </p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://aka.ms/diagram-builder" target="_blank" rel="noopener">Launch the app →</a>
+      <a class="btn btn-ghost" href="https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder" target="_blank" rel="noopener">View source on GitHub</a>
+    </div>
+    <div class="chips">
+      <span class="chip">15 AI models</span>
+      <span class="chip">95-service Azure catalog</span>
+      <span class="chip">Live retail pricing · 14 regions</span>
+      <span class="chip">WAF validation</span>
+      <span class="chip">Bicep &amp; ARM export</span>
+      <span class="chip">MCP server included</span>
+    </div>
+
+    <figure class="shot">
+      <img src="images/hero-canvas.png" alt="The Azure Architecture Diagram Builder canvas showing a Microsoft Fabric analytics platform with grouped services, per-service monthly cost badges, and labeled data flows." />
+      <figcaption>
+        A Microsoft Fabric analytics platform generated from a single prompt — grouped by tier, priced per
+        service, with action-oriented flow labels. Captured from the live v1.9.0 build.
+      </figcaption>
+    </figure>
+  </header>
+
+  <section id="why">
+    <h2>Why it exists</h2>
+    <p class="sub">
+      Architecture design sessions stall on the same three things: drawing the picture, agreeing what it costs,
+      and proving it follows Microsoft guidance. This tool collapses all three into one canvas.
+    </p>
+    <div class="stats">
+      <div class="stat"><b>~1 min</b><span>Prompt to full diagram</span></div>
+      <div class="stat"><b>95</b><span>Azure services in catalog</span></div>
+      <div class="stat"><b>5</b><span>WAF pillars scored</span></div>
+      <div class="stat"><b>14</b><span>Regions priced</span></div>
+    </div>
+  </section>
+
+  <section id="features">
+    <h2>What it does</h2>
+    <p class="sub">Every capability works on the same live canvas, so the diagram stays the single source of truth.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>AI generation from a prompt</h3>
+        <p>Describe the workload in plain English. Choose from 14 models across Azure OpenAI and Azure AI
+        deployments — GPT-5.x, DeepSeek, Grok, Mistral, and Kimi — and get a grouped, labeled diagram.</p>
+      </div>
+      <div class="card">
+        <h3>Conversational refinement</h3>
+        <p>"Add Front Door with a WAF policy." "Now make it zone-redundant." Each turn reads the live canvas,
+        so follow-ups build on what you already have. Manual positioning is preserved.</p>
+      </div>
+      <div class="card">
+        <h3>Real cost estimates</h3>
+        <p>Per-service monthly costs pulled from the Azure Retail Prices API, with a running total in the
+        toolbar. Switch regions and the whole diagram reprices.</p>
+      </div>
+      <div class="card">
+        <h3>Well-Architected validation</h3>
+        <p>Scores the design across Security, Reliability, Performance, Cost, and Operational Excellence —
+        then regenerates an improved architecture from the recommendations you select.</p>
+      </div>
+      <div class="card">
+        <h3>Semantic relationships</h3>
+        <p>Distinguishes traffic flow from association and containment, so private endpoints, WAF policies,
+        and VNet integration are modelled the way Azure actually works — not as fake network hops.</p>
+      </div>
+      <div class="card">
+        <h3>Blueprint diagrams <span class="tag">Beta</span></h3>
+        <p>Generate a whiteboard-style blueprint PNG with nested zones and numbered flow arrows — the format
+        people actually want in a deck or a design review.</p>
+      </div>
+      <div class="card">
+        <h3>Import what you already have</h3>
+        <p>Upload a screenshot, a whiteboard photo, or an ARM template and get back an editable diagram.
+        Or pull live topology straight from an Azure subscription.</p>
+      </div>
+      <div class="card">
+        <h3>Multi-model comparison</h3>
+        <p>Run one prompt through several models side by side and compare service counts, WAF scores, latency,
+        and token usage — then apply the winner to the canvas.</p>
+      </div>
+      <div class="card">
+        <h3>Agent-ready</h3>
+        <p>Ships with an MCP server, so Copilot and other agents can render diagrams, estimate costs, validate
+        against WAF, and generate Bicep or Terraform directly.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <h2>See it work</h2>
+    <p class="sub">Two things architects ask for most: a presentable picture, and refinement that doesn't destroy their layout.</p>
+
+    <figure class="shot" style="margin-top:0">
+      <img src="images/blueprint.png" alt="A whiteboard-style blueprint diagram of an enterprise RAG application on Azure, with nested zones and numbered flow arrows." />
+      <figcaption>
+        <strong>Blueprint mode</strong> — an enterprise RAG architecture rendered as a presentation-ready
+        blueprint, with nested Azure/VNet zones and a numbered end-to-end flow.
+      </figcaption>
+    </figure>
+
+    <figure class="shot">
+      <img src="images/refine-layout.png" alt="Before and after comparison showing that adding Front Door and a WAF policy through chat left every existing service position and group anchor unchanged." />
+      <figcaption>
+        <strong>Refinement preserves human work</strong> — adding Front Door and a WAF policy via chat left all
+        8 existing service positions and 4 group anchors exactly where the architect put them.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="built">
+    <h2>Under the hood</h2>
+    <div class="two">
+      <div>
+        <h3 style="margin-top:0;font-size:1rem;">Stack</h3>
+        <ul class="checklist">
+          <li><strong>React 18 + TypeScript</strong> on Vite, with React Flow for the canvas</li>
+          <li><strong>Dagre</strong> for automatic layout, tuned against human-repositioned samples</li>
+          <li><strong>Azure OpenAI + Azure AI</strong> model deployments behind a token-broker backend</li>
+          <li><strong>Azure Retail Prices API</strong> snapshots, refreshed on a schedule</li>
+          <li><strong>Azure Container Apps</strong> with VNet integration and managed identity</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-top:0;font-size:1rem;">Engineering practices</h3>
+        <ul class="checklist">
+          <li>Every release passes a <strong>15-check gate</strong> — typecheck, lint, build, bundle budget, determinism, and browser smoke tests</li>
+          <li><strong>Immutable image tags</strong> pinned to the git SHA, health-gated revisions, and one-command rollback</li>
+          <li>Deterministic <strong>post-processing repairs</strong> the model's output, so correctness doesn't depend on prompting alone</li>
+          <li>Pricing accuracy is <strong>measured, not assumed</strong> — a wrong real price is worse than an honest estimate</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="who">
+    <h2>Who it's for</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Solution architects</h3>
+        <p>Sketch and price a greenfield design live in a customer or partner workshop, instead of promising
+        a diagram "by end of week".</p>
+      </div>
+      <div class="card">
+        <h3>Presales &amp; CSAs</h3>
+        <p>Turn a discovery conversation into a costed, WAF-checked picture before the meeting ends.</p>
+      </div>
+      <div class="card">
+        <h3>Anyone writing a design doc</h3>
+        <p>Export a clean topology diagram or a blueprint PNG, plus a deployment guide with Bicep and ARM
+        templates to hand to the implementation team.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="scope">
+    <h2>Scope &amp; honest limits</h2>
+    <p class="sub">Worth knowing before you use it in front of a customer.</p>
+    <div class="note">
+      <p style="margin:0 0 10px"><strong>Greenfield and Azure-only.</strong> The tool is built for sketching,
+      validating, and costing <em>new</em> Azure solutions. It does not model other clouds.</p>
+      <p style="margin:0 0 10px"><strong>WAF validation is a design-time signal.</strong> It assesses the
+      diagram, not a deployed environment. It is not an audit, and it is not a substitute for review by a
+      qualified architect before anything ships.</p>
+      <p style="margin:0"><strong>Cost figures are estimates.</strong> They come from the public Retail Prices
+      API and exclude discounts, reservations, and negotiated agreements.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="author">
+      <div class="avatar">AQ</div>
+      <div>
+        <b>Arturo Quiroga</b>
+        Senior Partner Solutions Architect, Microsoft
+      </div>
+    </div>
+    <p style="margin:0 0 10px">
+      <a href="https://aka.ms/diagram-builder" target="_blank" rel="noopener">aka.ms/diagram-builder</a>
+      &nbsp;·&nbsp;
+      <a href="https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder" target="_blank" rel="noopener">Source on GitHub</a>
+    </p>
+    <p style="margin:0; max-width:70ch;">
+      A personal engineering project, built and maintained independently and running on Azure Container Apps
+      as a working demo. It is not an officially supported Microsoft product or service. Feedback and issues
+      are welcome on the GitHub repo.
+    </p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById("themeToggle").addEventListener("click", () => {
+    const el = document.documentElement;
+    el.setAttribute("data-theme", el.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+</script>
+
+</body>
+</html>

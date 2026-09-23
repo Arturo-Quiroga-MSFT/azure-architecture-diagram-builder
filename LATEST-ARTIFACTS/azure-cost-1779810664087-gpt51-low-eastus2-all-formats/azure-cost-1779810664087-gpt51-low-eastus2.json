@@ -1,0 +1,95 @@
+{
+  "totalMonthlyCost": 298.67,
+  "byService": [
+    {
+      "serviceName": "Azure Database for PostgreSQL",
+      "serviceType": "Other",
+      "nodeId": "postgres-db",
+      "cost": 109.86,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "App Service",
+      "serviceType": "Other",
+      "nodeId": "app-service",
+      "cost": 69.35,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "API Management",
+      "serviceType": "Other",
+      "nodeId": "api-management",
+      "cost": 50.26,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "Azure Front Door",
+      "serviceType": "Other",
+      "nodeId": "azure-front-door",
+      "cost": 35,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "Storage Account",
+      "serviceType": "Other",
+      "nodeId": "storage-account",
+      "cost": 14.6,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "Azure Static Web Apps",
+      "serviceType": "Other",
+      "nodeId": "azure-static-web-apps",
+      "cost": 9,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "Microsoft Entra ID",
+      "serviceType": "Other",
+      "nodeId": "microsoft-entra-id",
+      "cost": 6,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "Azure Monitor",
+      "serviceType": "Other",
+      "nodeId": "azure-monitor",
+      "cost": 2.3,
+      "quantity": 1,
+      "tier": "Standard"
+    },
+    {
+      "serviceName": "Log Analytics",
+      "serviceType": "Other",
+      "nodeId": "log-analytics",
+      "cost": 2.3,
+      "quantity": 1,
+      "tier": "Standard"
+    }
+  ],
+  "byGroup": [
+    {
+      "groupId": "ungrouped",
+      "groupLabel": "Ungrouped",
+      "cost": 298.67,
+      "serviceCount": 9
+    }
+  ],
+  "byCategory": [
+    {
+      "category": "Other",
+      "cost": 298.67,
+      "percentage": 100
+    }
+  ],
+  "region": "eastus2",
+  "currency": "USD",
+  "lastCalculated": "2026-05-26T15:50:53.787Z"
+}

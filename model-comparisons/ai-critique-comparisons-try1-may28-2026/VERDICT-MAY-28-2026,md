@@ -1,0 +1,78 @@
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026)
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-Model-Comparison.md#1-1), lines 1 to 200
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-Model-Comparison.md#200-200), lines 200 to 506
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-AI-Critique-by-GPT51.md)
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-AI-Critique-by-GPT52.md)
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-AI-Critique-by-GPT54.md)
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-AI-Critique-by-DeepSeekV4Pro.md)
+
+Read [](file:///Users/arturoquiroga/GITHUB/AZURE-DIAGRAMS/model-comparisons/ai-critique-comparisons-may28-2026/MultiRegionCommerceSystem-AI-Critique-by-Grok43.md)
+
+Updated todo list
+
+I read all 5 critiques and verified every concrete claim against the actual generated diagrams. Here's the truth-check:
+
+## Ground-truth facts (verified from the architectures)
+
+| Fact | Verified |
+|---|---|
+| GPT-5.4 lists App Service & Redis **twice** in services | ✅ TRUE (rows 4-5 and 8-9) |
+| GPT-5.1 calls Redis sessions "optionally using" | ✅ TRUE (workflow step 2) |
+| GPT-5.1 has Cosmos→EventGrid (change feed) connection | ✅ TRUE |
+| GPT-5.1 has FrontDoor→Storage for static assets | ✅ TRUE |
+| GPT-5.2 adds Key Vault + Entra ID | ✅ TRUE |
+| GPT-5.2 labels Functions→Redis as "optional" | ✅ TRUE |
+| GPT-5.4 Mini has 10 sync / 2 async (=12) connections | ✅ TRUE (I counted) |
+| DeepSeek V4 Pro **has no Functions in service list** | ✅ TRUE (only Storage→EventGrid) |
+| DeepSeek V4 Pro workflow says "function or logic app (conceptual)" | ✅ TRUE (step 6) |
+| DeepSeek V3.2 has `function→redis` "Invalidate cache" | ✅ TRUE |
+| Grok 4.1 Fast inserts Application Gateway between FD and App Svc | ✅ TRUE |
+| Grok 4.3 routes FrontDoor→Functions directly (no App Service) | ✅ TRUE |
+| GPT-5.3 Codex has `eventgrid→appservice` lifecycle notifications | ✅ TRUE |
+
+## Critic accuracy scorecard
+
+| Critic | Claims checked | Wrong | Accuracy | Self-critical? | Picked itself? |
+|---|---|---|---|---|---|
+| **DeepSeek V4 Pro** | 12 | 0 | **100%** | ✅ explicitly flagged its own "conceptual" weakness | ❌ ranked self 6th |
+| **GPT-5.4** | 7 | 0 | **100%** | ✅ admitted own missing identity/secrets | ❌ ranked self 6th |
+| **GPT-5.1** | 10 | 0 | **100%** | partial (mild) | ❌ ranked self 5th |
+| **Grok 4.3** | 12 | **1** | 92% | ✅ honest about its own FD→Functions issue | ❌ ranked self 7th |
+| **GPT-5.2** | 9 | 0 | **100%** | ❌ self-promoting | ✅ ranked self #1 |
+
+**Grok 4.3's one error:** claims GPT-5.1's Storage Account is included "without clarifying how Front Door or CDN would serve them" — but GPT-5.1 literally has the connection `svc-frontdoor → svc-storage` labeled "Serve static assets such as images and scripts for product pages." Grok missed it.
+
+## What they agree on (rock-solid signals)
+
+5/5 critics flag: DeepSeek V4 Pro missing concrete Functions, Grok 4.1's unjustified App Gateway, Grok 4.3's odd FD→Functions topology.  
+4/5 flag: GPT-5.4's duplicate services, GPT-5.4 Mini's over-synchronous design.  
+3/5 flag: GPT-5.1's "optional Redis" violating the requirement.
+
+## Verdict — most truthful critic
+
+**🥇 DeepSeek V4 Pro is the truest-to-form critic.**
+
+Reasons:
+1. Most detailed (12 distinct verifiable claims, vs 7–10 for others)
+2. 100% factual accuracy
+3. Caught nuances others missed: Cosmos change feed pattern in GPT-5.1, static-asset gap in GPT-5.3 Codex, the precise 10/12 sync count
+4. **Intellectually honest** — ranked itself 6th and openly flagged its own "function or logic app (conceptual)" weakness as the reason
+5. Recommended GPT-5.1 (the strongest architecture by completeness), not itself
+
+**🥈 GPT-5.4** — equally accurate but less detailed, also non-self-promoting.
+
+**🥉 GPT-5.1** — accurate and concise; recommends GPT-5.3 Codex on solid grounds.
+
+**Weakest critic: GPT-5.2** — 100% accurate but the only one that ranked itself #1, which is the classic LLM self-preference bias. Its evaluation isn't wrong, just suspiciously self-serving.
+
+**Surprise:** Grok 4.3, despite being a newer model, made the only factual error and was the slowest/most expensive in the run (51.9s, 6,041 tokens).
+
+If you want a model to do **AI-as-judge** validation in your app, **DeepSeek V4 Pro** is now my recommendation over GPT-5.2 for the `validation` feature override.
+
+Updated todo list

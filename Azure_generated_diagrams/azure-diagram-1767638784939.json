@@ -1,0 +1,370 @@
+{
+  "nodes": [
+    {
+      "id": "grp-network-security",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Network & Security"
+      },
+      "style": {
+        "width": 800,
+        "height": 560
+      },
+      "width": 800,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-container-platform",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 100
+      },
+      "data": {
+        "label": "Container Platform"
+      },
+      "style": {
+        "width": 860,
+        "height": 560
+      },
+      "width": 860,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-ops-storage",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "data": {
+        "label": "Operations & Storage"
+      },
+      "style": {
+        "width": 820,
+        "height": 560
+      },
+      "width": 820,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "svc-internet-users",
+      "type": "azureNode",
+      "position": {
+        "x": 150,
+        "y": 600
+      },
+      "data": {
+        "label": "Client Users",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/03328-icon-service-Application-Gateway-Containers.svg"
+      },
+      "width": 120,
+      "height": 108,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 600
+      }
+    },
+    {
+      "id": "svc-azure-firewall",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Firewall",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/03311-icon-service-Azure-Communications-Gateway.svg"
+      },
+      "width": 120,
+      "height": 108,
+      "positionAbsolute": {
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-vnet",
+      "type": "azureNode",
+      "position": {
+        "x": 380,
+        "y": 180
+      },
+      "data": {
+        "label": "Virtual Network (VNet)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/10063-icon-service-Virtual-Network-Gateways.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "positionAbsolute": {
+        "x": 380,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-containerapps-env",
+      "type": "azureNode",
+      "position": {
+        "x": 1080,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Container Apps Environment",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "positionAbsolute": {
+        "x": 1080,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-containerapp",
+      "type": "azureNode",
+      "position": {
+        "x": 1280,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Container App",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "positionAbsolute": {
+        "x": 1280,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 1480,
+        "y": 180
+      },
+      "data": {
+        "label": "Azure Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "positionAbsolute": {
+        "x": 1480,
+        "y": 180
+      }
+    },
+    {
+      "id": "svc-managed-identity",
+      "type": "azureNode",
+      "position": {
+        "x": 1080,
+        "y": 360
+      },
+      "data": {
+        "label": "Managed Identity",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10227-icon-service-Entra-Managed-Identities.svg"
+      },
+      "width": 137,
+      "height": 108,
+      "positionAbsolute": {
+        "x": 1080,
+        "y": 360
+      }
+    },
+    {
+      "id": "svc-storage-logs",
+      "type": "azureNode",
+      "position": {
+        "x": 1980,
+        "y": 180
+      },
+      "data": {
+        "label": "Storage Account (Logs)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg"
+      },
+      "width": 148,
+      "height": 123,
+      "positionAbsolute": {
+        "x": 1980,
+        "y": 180
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-internet-users",
+      "target": "svc-azure-firewall",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Inbound HTTPS",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-azure-firewall",
+      "target": "svc-vnet",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Filtered traffic into VNet",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-vnet",
+      "target": "svc-containerapps-env",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "VNet integration / routing",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-containerapps-env",
+      "target": "svc-containerapp",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Hosts",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-containerapp",
+      "target": "svc-managed-identity",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Uses identity for resource access",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-managed-identity",
+      "target": "svc-acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Authenticate to pull images",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-acr",
+      "target": "svc-containerapp",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Image pull",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-containerapp",
+      "target": "svc-storage-logs",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Write logs/diagnostics",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 96.87022900763361,
+    "y": 347.42239185750634,
+    "zoom": 0.5979643765903307
+  }
+}

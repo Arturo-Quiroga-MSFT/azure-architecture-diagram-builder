@@ -1,0 +1,356 @@
+/* Model Settings Popover – toolbar dropdown styles */
+
+.toolbar-dropdown-menu.toolbar-dropdown-menu--model-settings {
+  width: min(600px, calc(100vw - 24px));
+  right: 0;
+  left: auto;
+  box-sizing: border-box;
+}
+
+.app-header:has(.toolbar-dropdown-menu--model-settings) {
+  z-index: 901;
+}
+
+/* Trigger button – must stand out on the blue header in both modes */
+.model-popover-trigger {
+  position: relative;
+  gap: 8px !important;
+  padding: 9px 16px !important;
+  font-size: 1.05rem !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(200, 160, 255, 0.28) 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.model-popover-trigger:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, rgba(200, 160, 255, 0.38) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 0 14px rgba(200, 160, 255, 0.35) !important;
+}
+
+.model-popover-label {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: white;
+}
+
+.model-popover-reasoning {
+  font-size: 0.85rem;
+  opacity: 1;
+  text-transform: capitalize;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  font-weight: 700;
+  color: white;
+}
+
+.model-popover-override-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background: #f59e0b;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Model selection buttons */
+.msp-model-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0.25rem 0.4rem 0.4rem;
+}
+
+.msp-model-btn {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 6px;
+  background: rgba(17, 24, 39, 0.03);
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .toolbar-dropdown-menu.toolbar-dropdown-menu--model-settings {
+    position: fixed;
+    top: 72px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
+  }
+
+  .msp-model-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .msp-model-btn {
+    min-height: 42px;
+    padding-inline: 8px;
+    white-space: normal;
+    line-height: 1.15;
+  }
+}
+
+.msp-model-btn:hover {
+  background: rgba(0, 120, 212, 0.08);
+  border-color: rgba(0, 120, 212, 0.3);
+}
+
+.msp-model-btn.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: white;
+}
+
+/* Reasoning row */
+.msp-reasoning-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.4rem;
+}
+
+.msp-reasoning-label {
+  font-size: 0.82rem;
+  font-weight: 650;
+  opacity: 0.9;
+}
+
+.msp-reasoning-buttons {
+  display: flex;
+  gap: 3px;
+}
+
+.msp-reasoning-btn {
+  padding: 4px 10px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 5px;
+  background: transparent;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.msp-reasoning-btn:hover {
+  background: rgba(0, 120, 212, 0.08);
+  border-color: rgba(0, 120, 212, 0.3);
+}
+
+.msp-reasoning-btn.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: white;
+}
+
+/* Per-Feature Overrides heading with reset button */
+.toolbar-dropdown-menu--model-settings .toolbar-dropdown-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.msp-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  background: transparent;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.msp-reset-btn:hover {
+  background: #fef2f2;
+}
+
+/* Feature rows */
+.msp-features {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 0.2rem;
+}
+
+.msp-feature-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.msp-feature-row.overridden {
+  background: rgba(0, 120, 212, 0.06);
+}
+
+.msp-feature-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.msp-feature-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.msp-feature-effective {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.msp-feature-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.msp-feature-select {
+  padding: 5px 8px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+}
+
+.msp-feature-select:hover {
+  border-color: rgba(0, 120, 212, 0.4);
+}
+
+.msp-feature-select:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+.msp-reasoning-select {
+  padding: 4px 6px;
+  border: 1px solid rgba(17, 24, 39, 0.15);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  width: 60px;
+}
+
+.msp-reasoning-select:hover {
+  border-color: rgba(0, 120, 212, 0.4);
+}
+
+.msp-reasoning-select:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.1);
+}
+
+/* Dark mode */
+body.dark-mode .toolbar-dropdown-menu--model-settings {
+  background: rgba(17, 24, 39, 0.92);
+  color: #f9fafb;
+}
+
+body.dark-mode .msp-model-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-model-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+body.dark-mode .msp-model-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+body.dark-mode .msp-reasoning-btn {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-reasoning-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+body.dark-mode .msp-reasoning-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+body.dark-mode .msp-feature-name {
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-feature-effective {
+  color: #64748b;
+}
+
+body.dark-mode .msp-feature-select,
+body.dark-mode .msp-reasoning-select {
+  background: rgba(17, 24, 39, 0.75);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+body.dark-mode .msp-feature-row.overridden {
+  background: rgba(96, 165, 250, 0.08);
+}
+
+body.dark-mode .msp-reset-btn {
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+
+body.dark-mode .msp-reset-btn:hover {
+  background: rgba(127, 29, 29, 0.3);
+}
+
+body.dark-mode .model-popover-reasoning {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .ai-modal-active-model {
+  background: rgba(30, 58, 95, 0.5);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #93c5fd;
+}
+
+body.dark-mode .ai-modal-active-model .model-change-hint {
+  color: #64748b;
+}

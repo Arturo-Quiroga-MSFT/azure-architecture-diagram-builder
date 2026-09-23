@@ -1,0 +1,35 @@
+{
+	// Azure Architecture Diagram Builder (AADB) MCP server.
+	// Two ways to use it in GitHub Copilot agent mode:
+	//   1. azure-diagram-builder       — the deployed remote server (recommended).
+	//   2. azure-diagram-builder-local — run this repo's server locally over stdio.
+	// The bearer token is supplied via an input prompt (never hardcoded); VS Code
+	// asks for it once and stores it securely. Token value lives in .env.mcp.
+	"servers": {
+		// Deployed remote MCP server on Azure Container Apps (12 tools + resources + prompts).
+		"azure-diagram-builder": {
+			"type": "http",
+			"url": "https://<your-mcp-host>/mcp",
+			"headers": {
+				"Authorization": "Bearer ${input:aadb-token}"
+			}
+		},
+		// Local development server built from this repo (no auth needed over stdio).
+		// Run `cd mcp-server && npm run build` first so dist/index.js exists.
+		"azure-diagram-builder-local": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"${workspaceFolder}/mcp-server/dist/index.js"
+			]
+		}
+	},
+	"inputs": [
+		{
+			"id": "aadb-token",
+			"type": "promptString",
+			"description": "AADB MCP bearer token (from .env.mcp)",
+			"password": true
+		}
+	]
+}

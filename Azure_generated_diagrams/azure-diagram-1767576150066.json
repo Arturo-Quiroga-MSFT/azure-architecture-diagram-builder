@@ -1,0 +1,178 @@
+{
+  "nodes": [
+    {
+      "id": "static-web-apps",
+      "type": "azureNode",
+      "position": {
+        "x": -78,
+        "y": 47
+      },
+      "data": {
+        "label": "Static Web Apps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg"
+      },
+      "width": 131,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -78,
+        "y": 47
+      },
+      "dragging": false
+    },
+    {
+      "id": "app-service-api",
+      "type": "azureNode",
+      "position": {
+        "x": -111.5,
+        "y": 252.5
+      },
+      "data": {
+        "label": "App Service (Node.js API)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -111.5,
+        "y": 252.5
+      },
+      "dragging": false
+    },
+    {
+      "id": "postgres-db",
+      "type": "azureNode",
+      "position": {
+        "x": 145.75126950623945,
+        "y": 407.66622444258917
+      },
+      "data": {
+        "label": "Azure Database for PostgreSQL",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 145.75126950623945,
+        "y": 407.66622444258917
+      },
+      "dragging": false
+    },
+    {
+      "id": "blob-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 423.4470927542872,
+        "y": 276.3183128185653
+      },
+      "data": {
+        "label": "Storage Account (Blob Storage)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 147,
+      "height": 122,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 423.4470927542872,
+        "y": 276.3183128185653
+      },
+      "dragging": false
+    },
+    {
+      "id": "group-1767576031066",
+      "type": "groupNode",
+      "position": {
+        "x": 314.66125226105146,
+        "y": 242.04425551860209
+      },
+      "data": {
+        "label": "Group Label"
+      },
+      "style": {
+        "width": 400,
+        "height": 300
+      },
+      "width": 400,
+      "height": 300,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 314.66125226105146,
+        "y": 242.04425551860209
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "static-web-apps",
+      "target": "app-service-api",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Frontend calls backend API",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "app-service-api",
+      "target": "postgres-db",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "API reads/writes data",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "app-service-api",
+      "target": "blob-storage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "API stores and retrieves images",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "static-web-apps",
+      "target": "blob-storage",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Frontend fetches images for display",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 315.4358757480206,
+    "y": 39.90583277812215,
+    "zoom": 1.624985432717674
+  }
+}

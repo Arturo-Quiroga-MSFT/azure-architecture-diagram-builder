@@ -1,0 +1,813 @@
+{
+  "nodes": [
+    {
+      "id": "ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 45
+      },
+      "data": {
+        "label": "Data Ingestion"
+      },
+      "style": {
+        "width": 920,
+        "height": 460
+      },
+      "width": 920,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 45
+      }
+    },
+    {
+      "id": "training",
+      "type": "groupNode",
+      "position": {
+        "x": 930,
+        "y": -30
+      },
+      "data": {
+        "label": "Model Training"
+      },
+      "style": {
+        "width": 1020,
+        "height": 560
+      },
+      "width": 1020,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 930,
+        "y": -30
+      }
+    },
+    {
+      "id": "inference",
+      "type": "groupNode",
+      "position": {
+        "x": 1410,
+        "y": 420
+      },
+      "data": {
+        "label": "Inference and API Layer"
+      },
+      "style": {
+        "width": 1020,
+        "height": 960
+      },
+      "width": 1020,
+      "height": 960,
+      "positionAbsolute": {
+        "x": 1410,
+        "y": 420
+      }
+    },
+    {
+      "id": "security",
+      "type": "groupNode",
+      "position": {
+        "x": 2470,
+        "y": 145
+      },
+      "data": {
+        "label": "Security and Identity"
+      },
+      "style": {
+        "width": 540,
+        "height": 860
+      },
+      "width": 540,
+      "height": 860,
+      "positionAbsolute": {
+        "x": 2470,
+        "y": 145
+      }
+    },
+    {
+      "id": "monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 2470,
+        "y": 895
+      },
+      "data": {
+        "label": "Monitoring and Logging"
+      },
+      "style": {
+        "width": 540,
+        "height": 485
+      },
+      "width": 540,
+      "height": 485,
+      "positionAbsolute": {
+        "x": 2470,
+        "y": 895
+      }
+    },
+    {
+      "id": "eventhubs1",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg",
+        "pricing": {
+          "estimatedCost": 27.6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-01T20:24:11.486Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ingestion",
+      "extent": "parent",
+      "width": 123,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 150,
+        "y": 225
+      }
+    },
+    {
+      "id": "datalake1",
+      "type": "azureNode",
+      "position": {
+        "x": 560,
+        "y": 180
+      },
+      "data": {
+        "label": "Data Lake Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-01T20:24:11.492Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ingestion",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 530,
+        "y": 225
+      }
+    },
+    {
+      "id": "azureml1",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 255
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-01T20:24:11.505Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "training",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1110,
+        "y": 225
+      }
+    },
+    {
+      "id": "containerregistry1",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 180
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 20,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Second",
+          "lastUpdated": "2026-02-01T20:24:11.504Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "training",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1590,
+        "y": 150
+      }
+    },
+    {
+      "id": "apim1",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 505
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10048-icon-service-API-Connections.svg",
+        "pricing": {
+          "estimatedCost": 99.99978,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-02-01T20:24:11.486Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "inference",
+      "extent": "parent",
+      "width": 164,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1590,
+        "y": 925
+      }
+    },
+    {
+      "id": "azuremlendpoint1",
+      "type": "azureNode",
+      "position": {
+        "x": 660,
+        "y": 230
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/03513-icon-service-AI-Studio.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-01T20:24:11.506Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "inference",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2070,
+        "y": 650
+      }
+    },
+    {
+      "id": "keyvault1",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 255
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/10244-icon-service-Application-Security-Groups.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-01T20:24:11.503Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 2650,
+        "y": 400
+      }
+    },
+    {
+      "id": "entra1",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 580
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/02680-icon-service-Entra-Identity-Custom-Roles.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-01T20:24:11.485Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2650,
+        "y": 725
+      }
+    },
+    {
+      "id": "appinsights1",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 205
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-01T20:24:11.504Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "monitoring",
+      "extent": "parent",
+      "width": 170,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2650,
+        "y": 1100
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "eventhubs1",
+      "target": "datalake1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store ingested data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "datalake1",
+      "target": "azureml1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Load training data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "azureml1",
+      "target": "containerregistry1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish model container image",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "containerregistry1",
+      "target": "azuremlendpoint1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy container for inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "apim1",
+      "target": "azuremlendpoint1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward inference requests",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "azuremlendpoint1",
+      "target": "keyvault1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve secrets for inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "apim1",
+      "target": "entra1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate API calls",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "azureml1",
+      "target": "keyvault1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve training secrets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "apim1",
+      "target": "appinsights1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Log API usage and metrics",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "azuremlendpoint1",
+      "target": "appinsights1",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Log inference telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 187.60032894736844,
+    "y": 364.8675986842105,
+    "zoom": 0.5616776315789473
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-01",
+    "savedAt": "2026-02-01T20:57:24.713Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Event Hubs ingests streaming data from various sources, feeding it into Data Lake Storage for persistent raw and processed data storage.",
+      "services": [
+        "eventhubs1",
+        "datalake1"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure Machine Learning pulls training data from Data Lake Storage to train machine learning models securely by retrieving needed secrets from Key Vault.",
+      "services": [
+        "datalake1",
+        "azureml1",
+        "keyvault1"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Trained machine learning models are containerized and pushed to Container Registry for versioning and deployment.",
+      "services": [
+        "azureml1",
+        "containerregistry1"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "The model container images are deployed to Azure Machine Learning endpoints which serve real-time inference requests securely fetching necessary secrets from Key Vault.",
+      "services": [
+        "containerregistry1",
+        "azuremlendpoint1",
+        "keyvault1"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Api Management acts as a secure API gateway exposing the inference endpoints and authenticating incoming requests using Microsoft Entra ID.",
+      "services": [
+        "apim1",
+        "azuremlendpoint1",
+        "entra1"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Application Insights collects telemetry and monitoring data from both the API Management service and ML endpoints to provide diagnostics and performance insights.",
+      "services": [
+        "apim1",
+        "azuremlendpoint1",
+        "appinsights1"
+      ]
+    }
+  ],
+  "architecturePrompt": "A machine learning pipeline with data ingestion, training, and inference endpoints"
+}

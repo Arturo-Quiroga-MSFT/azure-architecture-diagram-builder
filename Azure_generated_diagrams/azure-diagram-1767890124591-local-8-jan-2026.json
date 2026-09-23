@@ -1,0 +1,939 @@
+{
+  "nodes": [
+    {
+      "id": "grp-edge-clients",
+      "type": "groupNode",
+      "position": {
+        "x": -80,
+        "y": -200
+      },
+      "data": {
+        "label": "Clients & Edge Delivery"
+      },
+      "style": {
+        "width": 850,
+        "height": 740
+      },
+      "width": 850,
+      "height": 740,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -80,
+        "y": -200
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-api-realtime",
+      "type": "groupNode",
+      "position": {
+        "x": 940,
+        "y": -140
+      },
+      "data": {
+        "label": "API & Real-time"
+      },
+      "style": {
+        "width": 1380,
+        "height": 680
+      },
+      "width": 1380,
+      "height": 680,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 940,
+        "y": -140
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-gamecompute",
+      "type": "groupNode",
+      "position": {
+        "x": 2440,
+        "y": -40
+      },
+      "data": {
+        "label": "Game Session Compute"
+      },
+      "style": {
+        "width": 850,
+        "height": 560
+      },
+      "width": 850,
+      "height": 560,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2440,
+        "y": -40
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": 640
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 540,
+        "height": 560
+      },
+      "width": 540,
+      "height": 560,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 640
+      },
+      "resizing": false
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 1900,
+        "y": 740
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 1450,
+        "height": 560
+      },
+      "width": 1450,
+      "height": 560,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": 740
+      }
+    },
+    {
+      "id": "svc-game-clients",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "data": {
+        "label": "Game Clients (PC/Console/Mobile)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/03291-icon-service-API-Center.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 40,
+        "y": 60
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-frontdoor",
+      "type": "azureNode",
+      "position": {
+        "x": 440,
+        "y": -100
+      },
+      "data": {
+        "label": "Azure Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/10073-icon-service-Front-Door-and-CDN-Profiles.svg"
+      },
+      "width": 166,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 440,
+        "y": -100
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cdn",
+      "type": "azureNode",
+      "position": {
+        "x": 120,
+        "y": 360
+      },
+      "data": {
+        "label": "Azure CDN",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/10073-icon-service-Front-Door-and-CDN-Profiles.svg"
+      },
+      "width": 121,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 120,
+        "y": 360
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-blob-assets",
+      "type": "azureNode",
+      "position": {
+        "x": 480,
+        "y": 360
+      },
+      "data": {
+        "label": "Azure Blob Storage (Game Assets)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 480,
+        "y": 360
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 1060,
+        "y": 260
+      },
+      "data": {
+        "label": "Azure API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1060,
+        "y": 260
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appservice-api",
+      "type": "azureNode",
+      "position": {
+        "x": 1480,
+        "y": 240
+      },
+      "data": {
+        "label": "Azure App Service (Player Services API)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1480,
+        "y": 240
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-signalr",
+      "type": "azureNode",
+      "position": {
+        "x": 1900,
+        "y": -60
+      },
+      "data": {
+        "label": "Azure SignalR Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1900,
+        "y": -60
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 2080,
+        "y": 140
+      },
+      "data": {
+        "label": "Azure Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10042-icon-service-API-Management-Services.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2080,
+        "y": 140
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aks",
+      "type": "azureNode",
+      "position": {
+        "x": 2800,
+        "y": 240
+      },
+      "data": {
+        "label": "Azure Kubernetes Service (Dedicated Game Servers)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10023-icon-service-Kubernetes-Services.svg"
+      },
+      "width": 171,
+      "height": 195,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2800,
+        "y": 240
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 2520,
+        "y": 40
+      },
+      "data": {
+        "label": "Azure Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2520,
+        "y": 40
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 1080,
+        "y": 820
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 1080,
+        "y": 820
+      }
+    },
+    {
+      "id": "svc-redis",
+      "type": "azureNode",
+      "position": {
+        "x": 1280,
+        "y": 820
+      },
+      "data": {
+        "label": "Azure Cache for Redis",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 1280,
+        "y": 820
+      }
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1960,
+        "y": 1060
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1960,
+        "y": 1060
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 2340,
+        "y": 860
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2340,
+        "y": 860
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 3040,
+        "y": 860
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 155,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 3040,
+        "y": 860
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-azuremonitor",
+      "type": "azureNode",
+      "position": {
+        "x": 2980,
+        "y": 1080
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00438-icon-service-Azure-Monitors-for-SAP-Solutions.svg"
+      },
+      "width": 144,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2980,
+        "y": 1080
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-game-clients",
+      "target": "svc-frontdoor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "HTTPS API requests (login, matchmaking, leaderboards)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-frontdoor",
+      "target": "svc-apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Route API traffic to gateway",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-apim",
+      "target": "svc-appservice-api",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Forward validated API calls",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-game-clients",
+      "target": "svc-signalr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "WebSocket/HTTP for real-time lobby and notifications",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-appservice-api",
+      "target": "svc-signalr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Publish real-time events (match found, party updates)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-appservice-api",
+      "target": "svc-servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Enqueue matchmaking/session provisioning commands",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-servicebus",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Session provisioning and matchmaking work items",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-appservice-api",
+      "target": "svc-cosmos",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Read/write player profiles and session metadata",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-appservice-api",
+      "target": "svc-redis",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Update/query leaderboards and matchmaking cache",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-aks",
+      "target": "svc-cosmos",
+      "sourceHandle": "bottom",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Persist match results and session state (metadata)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-aks",
+      "target": "svc-redis",
+      "sourceHandle": "bottom",
+      "targetHandle": "right",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Fast reads for matchmaking/room state and leaderboard updates",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-acr",
+      "target": "svc-aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Pull game server images for deployments",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-game-clients",
+      "target": "svc-cdn",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Download assets (patches/DLC) over HTTPS",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-cdn",
+      "target": "svc-blob-assets",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "CDN origin fetch on cache miss",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-appservice-api",
+      "target": "svc-keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets/certificates via managed identity",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "svc-aks",
+      "target": "svc-keyvault",
+      "sourceHandle": "bottom",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets (e.g., DB/cache endpoints) via managed identity",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "svc-appservice-api",
+      "target": "svc-appinsights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Telemetry (requests, dependencies, exceptions)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "svc-signalr",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Diagnostics and metrics",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "svc-aks",
+      "target": "svc-loganalytics",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Container logs and Kubernetes diagnostics",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "svc-appinsights",
+      "target": "svc-azuremonitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Alert rules and dashboards from telemetry",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-20",
+      "source": "svc-loganalytics",
+      "target": "svc-azuremonitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Centralized monitoring, queries, and alerts",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 118,
+    "y": 243.5,
+    "zoom": 0.5
+  }
+}

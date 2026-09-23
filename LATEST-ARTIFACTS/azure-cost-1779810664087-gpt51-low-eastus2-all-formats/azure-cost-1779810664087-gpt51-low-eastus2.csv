@@ -1,0 +1,21 @@
+Azure Architecture Cost Breakdown
+Total Monthly Cost,$298.67
+Region,eastus2
+Date,2026-05-26
+
+Service Name,Service Type,Tier,Quantity,Monthly Cost,Pricing Type
+"Azure Database for PostgreSQL",Other,Standard,1,$109.86,Fixed
+"App Service",Other,Standard,1,$69.35,Fixed
+"API Management",Other,Standard,1,$50.26,Fixed
+"Azure Front Door",Other,Standard,1,$35.00,Fixed
+"Storage Account",Other,Standard,1,$14.60,Usage-based (estimate)
+"Azure Static Web Apps",Other,Standard,1,$9.00,Usage-based (estimate)
+"Microsoft Entra ID",Other,Standard,1,$6.00,Fixed
+"Azure Monitor",Other,Standard,1,$2.30,Fixed
+"Log Analytics",Other,Standard,1,$2.30,Fixed
+
+Group Name,Service Count,Monthly Cost
+"Ungrouped",9,$298.67
+
+Category,Monthly Cost,Percentage
+Other,$298.67,100.0%

@@ -1,0 +1,79 @@
+{
+  "description": "Sample input shape for the AADB MCP tools. Use this as a reference when constructing service/connection/group definitions for render_diagram, validate_architecture, estimate_costs, generate_manifest, or export_reactflow_scene.",
+  "services": [
+    {
+      "name": "Web Frontend",
+      "type": "Container Apps",
+      "description": "Static frontend serving the user interface",
+      "groupId": "app"
+    },
+    {
+      "name": "Backend API",
+      "type": "Container Apps",
+      "description": "Node.js Express API with business logic",
+      "groupId": "app"
+    },
+    {
+      "name": "Identity Provider",
+      "type": "Microsoft Entra ID",
+      "description": "Authentication and authorization via Entra ID",
+      "groupId": "identity"
+    },
+    {
+      "name": "Secrets Store",
+      "type": "Key Vault",
+      "description": "Centralized secrets, certificates, and encryption keys",
+      "groupId": "infra"
+    },
+    {
+      "name": "Container Registry",
+      "type": "Container Registry",
+      "description": "ACR hosting container images",
+      "groupId": "infra"
+    },
+    {
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "description": "Centralized logging and diagnostics",
+      "groupId": "observe"
+    }
+  ],
+  "connections": [
+    {
+      "from": "Web Frontend",
+      "to": "Backend API",
+      "label": "REST API calls",
+      "type": "sync"
+    },
+    {
+      "from": "Backend API",
+      "to": "Identity Provider",
+      "label": "Token validation",
+      "type": "sync"
+    },
+    {
+      "from": "Backend API",
+      "to": "Secrets Store",
+      "label": "Fetch secrets",
+      "type": "sync"
+    },
+    {
+      "from": "Backend API",
+      "to": "Log Analytics",
+      "label": "Telemetry",
+      "type": "async"
+    },
+    {
+      "from": "Backend API",
+      "to": "Container Registry",
+      "label": "Image pull",
+      "type": "sync"
+    }
+  ],
+  "groups": [
+    { "id": "app", "label": "Application Tier" },
+    { "id": "identity", "label": "Identity & Access" },
+    { "id": "infra", "label": "Infrastructure" },
+    { "id": "observe", "label": "Observability" }
+  ]
+}

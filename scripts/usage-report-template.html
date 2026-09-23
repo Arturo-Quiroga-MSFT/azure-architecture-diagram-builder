@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Azure Diagram Builder — Usage Report</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<!--__CHARTJS__-->
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+
+header.report {
+  background: var(--cp-bg-elevated);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  padding: 32px 34px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  margin-bottom: 22px;
+}
+.brandrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--cp-accent); flex: none; }
+header.report h1 { margin: 0; font-size: 1.9rem; letter-spacing: -0.02em; }
+.subtitle { color: var(--cp-text-muted); margin: 10px 0 0; font-size: 1.02rem; }
+.meta { color: var(--cp-text-soft); font-size: 0.85rem; margin-top: 14px; display: flex; gap: 8px 18px; flex-wrap: wrap; }
+.meta code { font-family: Consolas, "Courier New", Courier, monospace; background: var(--cp-surface-soft); padding: 1px 7px; border-radius: 6px; border: 1px solid var(--cp-border); }
+
+.callout {
+  margin-top: 20px;
+  border-left: 4px solid var(--cp-warning);
+  background: var(--cp-accent-soft);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 0.9rem;
+  color: var(--cp-text-muted);
+}
+.callout strong { color: var(--cp-text); }
+.callout ul { margin: 8px 0 0; padding-left: 20px; }
+.callout li { margin: 3px 0; }
+
+section { margin-top: 34px; }
+.section-title { font-size: 1.25rem; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+.section-title::before { content: ""; width: 4px; height: 20px; border-radius: 3px; background: var(--cp-accent); display: inline-block; }
+.section-sub { color: var(--cp-text-soft); font-size: 0.88rem; margin: 0 0 18px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.kpi {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.kpi .val { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.02em; color: var(--cp-accent); }
+.kpi .lbl { font-size: 0.82rem; color: var(--cp-text-muted); margin-top: 2px; }
+.kpi .sub { font-size: 0.74rem; color: var(--cp-text-soft); margin-top: 6px; }
+
+.cards { display: grid; gap: 18px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+.card {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+.card h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.card .hint { color: var(--cp-text-soft); font-size: 0.8rem; margin: 0 0 14px; }
+.chart-box { position: relative; height: 300px; }
+.chart-box.tall { height: 380px; }
+
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--cp-border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--cp-border); white-space: nowrap; }
+th { background: var(--cp-surface-soft); color: var(--cp-text-muted); font-weight: 600; position: sticky; top: 0; }
+tbody tr:hover { background: var(--cp-accent-soft); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.mono { font-family: Consolas, "Courier New", Courier, monospace; font-size: 0.8rem; color: var(--cp-text-muted); }
+
+footer.report { margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--cp-border); color: var(--cp-text-soft); font-size: 0.82rem; }
+.theme-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 50;
+  background: var(--cp-surface); color: var(--cp-text);
+  border: 1px solid var(--cp-border); border-radius: 999px;
+  padding: 7px 14px; font-size: 0.8rem; cursor: pointer;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  font-family: inherit;
+}
+.theme-toggle:hover { border-color: var(--cp-border-strong); }
+@media print {
+  .theme-toggle { display: none; }
+  body { background: #fff; }
+  .card, .kpi, header.report { box-shadow: none; break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle">◐ Theme</button>
+<div class="wrap">
+
+  <header class="report">
+    <div class="brandrow"><span class="brand-dot"></span><h1>Azure Diagram Builder — Usage Report</h1></div>
+    <p class="subtitle">Executive usage analysis for the <strong>Azure Architecture Diagram Builder</strong> (<a href="https://aka.ms/diagram-builder" style="color:var(--cp-link)">aka.ms/diagram-builder</a>).</p>
+    <div class="meta" id="metaRow"></div>
+    <div class="callout">
+      <strong>Data coverage &amp; methodology — read first</strong>
+      <ul>
+        <li id="coverageNote"></li>
+        <li><strong>"Users" = unique anonymous browsers</strong> (cookie-based ID), a reach proxy — cleared cookies / incognito / new device each count as a new user, so counts may overstate unique people.</li>
+        <li>Counts use Application Insights <code>dcount()</code> (~1–2% approximation); browser telemetry is not bot-filtered. Volumes are organically distributed, so confidence is high.</li>
+      </ul>
+    </div>
+  </header>
+
+  <section id="kpis">
+    <h2 class="section-title">Headline KPIs</h2>
+    <p class="section-sub">Totals across the coverage window.</p>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </section>
+
+  <section id="growth">
+    <h2 class="section-title">Adoption &amp; growth</h2>
+    <p class="section-sub">Monthly active users, sessions and events. The latest month may be partial. Strong, accelerating adoption.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Monthly activity</h3><p class="hint">Users &amp; sessions (bars, left axis) vs. events (line, right axis)</p><div class="chart-box"><canvas id="growthChart"></canvas></div></div>
+      <div class="card"><h3>Feature growth over time</h3><p class="hint">Events per feature per month — usage broadening across capabilities</p><div class="chart-box"><canvas id="featureGrowthChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <section id="features">
+    <h2 class="section-title">Feature usage</h2>
+    <p class="section-sub">AI generation is the core loop; export and validation show downstream value realization.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Events by feature</h3><p class="hint">Total instances over the window</p><div class="chart-box tall"><canvas id="featureChart"></canvas></div></div>
+      <div class="card"><h3>Export formats</h3><p class="hint">Users take real artifacts away</p><div class="chart-box tall"><canvas id="exportChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <section id="models">
+    <h2 class="section-title">AI model usage</h2>
+    <p class="section-sub" id="modelSub"></p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Calls by model (top 12)</h3><p class="hint">Share of AI calls</p><div class="chart-box tall"><canvas id="modelChart"></canvas></div></div>
+      <div class="card"><h3>Avg latency by model (top 12)</h3><p class="hint">Avg latency (s) — reasoning-heavy models cost more time</p><div class="chart-box tall"><canvas id="latencyChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <section id="geo">
+    <h2 class="section-title">Geographic reach</h2>
+    <p class="section-sub">Global footprint; US-led with strong EMEA and APAC presence.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Top 12 countries by users</h3><div class="chart-box tall"><canvas id="countryChart"></canvas></div></div>
+      <div class="card"><h3>Azure region preferences</h3><p class="hint">Pricing region selected in-app (region changes)</p><div class="chart-box tall"><canvas id="regionChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <section id="quality">
+    <h2 class="section-title">Quality &amp; feedback</h2>
+    <p class="section-sub">In-app ratings and Well-Architected validation scores.</p>
+    <div class="cards grid-2">
+      <div class="card"><h3>Feedback rating distribution</h3><p class="hint" id="ratingHint"></p><div class="chart-box"><canvas id="ratingChart"></canvas></div></div>
+      <div class="card"><h3>WAF validation score by model</h3><p class="hint">Avg Well-Architected score (models with ≥3 validations)</p><div class="chart-box"><canvas id="wafChart"></canvas></div></div>
+    </div>
+  </section>
+
+  <section id="power">
+    <h2 class="section-title">Power users</h2>
+    <p class="section-sub">Top 12 by event volume — a committed core driving deep, repeat engagement.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>User (anon)</th><th class="num">Events</th><th class="num">Sessions</th><th class="num">Features</th><th>Country</th><th>City</th></tr></thead>
+        <tbody id="powerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="report">
+    <p><strong>Methodology.</strong> Data pulled from Azure Application Insights custom events emitted by the Diagram Builder web app, filtered to first-party feature events (Foundry agent traces sharing the resource are excluded). "Users"/"Sessions" via <code>dcount(user_Id)</code> / <code>dcount(session_Id)</code>. Verbatim feedback comments are stored in Cosmos DB (not shown here for privacy).</p>
+    <p id="footMeta"></p>
+  </footer>
+
+</div>
+
+<script>
+const DATA = __DATA__;
+
+// ---- render meta + KPIs ----
+(function(){
+  const m = DATA.meta;
+  document.getElementById('metaRow').innerHTML =
+    `<span><strong>Requested window:</strong> ${m.requestedStart} → ${m.requestedEnd}</span>` +
+    `<span><strong>Actual data coverage:</strong> ${m.coverageStart} → ${m.coverageEnd} (~${m.coverageDays} days)</span>` +
+    `<span>Source: <code>${m.appInsights}</code></span>` +
+    `<span>Generated ${m.generated}</span>`;
+  document.getElementById('coverageNote').innerHTML =
+    `<strong>Telemetry coverage begins ${m.coverageStart}.</strong> Any window starting earlier shows no data before that date; every figure reflects the ~${m.coverageDays}-day window.`;
+  document.getElementById('footMeta').innerHTML =
+    `Generated ${m.generated} · Coverage ${m.coverageStart} → ${m.coverageEnd} · Azure Architecture Diagram Builder`;
+  document.getElementById('modelSub').textContent = DATA.modelSub || '';
+  document.getElementById('ratingHint').textContent = DATA.ratingHint || '';
+
+  const g = document.getElementById('kpiGrid');
+  DATA.kpis.forEach(k=>{
+    const d = document.createElement('div'); d.className='kpi';
+    d.innerHTML = `<div class="val">${k.val}</div><div class="lbl">${k.lbl}</div><div class="sub">${k.sub||''}</div>`;
+    g.appendChild(d);
+  });
+
+  const b = document.getElementById('powerBody');
+  DATA.power.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="num">${i+1}</td><td class="mono">${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td>`;
+    b.appendChild(tr);
+  });
+})();
+
+// ---- charts ----
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function palette(n){
+  const base = ["#b11f4b","#d4517a","#e88aa6","#8a1a41","#c76b8e","#f0a9c0","#e0648a","#a83d63","#d98fac","#7a1638","#cf7b98","#efb6c9"];
+  const out=[]; for(let i=0;i<n;i++) out.push(base[i%base.length]); return out;
+}
+function chartDefaults(){
+  const text = cssVar('--cp-text-muted') || '#5c5c5c';
+  const grid = cssVar('--cp-border') || '#dedede';
+  Chart.defaults.color = text;
+  Chart.defaults.font.family = '"Segoe UI", Aptos, Calibri, sans-serif';
+  Chart.defaults.borderColor = grid;
+  return { text, grid };
+}
+let CHARTS = [];
+function destroyAll(){ CHARTS.forEach(c=>c.destroy()); CHARTS = []; }
+
+function buildCharts(){
+  destroyAll();
+  const { grid } = chartDefaults();
+  const accent = cssVar('--cp-accent'); const link = cssVar('--cp-link');
+  const success = cssVar('--cp-success'); const warning = cssVar('--cp-warning'); const danger = cssVar('--cp-danger');
+  const gridCfg = { grid: { color: grid, drawBorder:false } };
+
+  CHARTS.push(new Chart(document.getElementById('growthChart'), {
+    data: { labels: DATA.months, datasets: [
+      { type:'bar', label:'Users', data:DATA.monthlyUsers, backgroundColor:accent, yAxisID:'y', borderRadius:6 },
+      { type:'bar', label:'Sessions', data:DATA.monthlySessions, backgroundColor:link, yAxisID:'y', borderRadius:6 },
+      { type:'line', label:'Events', data:DATA.monthlyEvents, borderColor:warning, backgroundColor:warning, yAxisID:'y1', tension:0.35, borderWidth:3, pointRadius:4 } ] },
+    options: { responsive:true, maintainAspectRatio:false,
+      scales:{ y:{ ...gridCfg, position:'left', title:{display:true,text:'Users / Sessions'} },
+               y1:{ position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Events'} } },
+      plugins:{ legend:{ position:'bottom' } } }
+  }));
+
+  const fgKeys = Object.keys(DATA.featureGrowth); const fgColors = palette(fgKeys.length);
+  CHARTS.push(new Chart(document.getElementById('featureGrowthChart'), {
+    type:'line',
+    data:{ labels:DATA.months, datasets:fgKeys.map((k,i)=>({ label:k, data:DATA.featureGrowth[k], borderColor:fgColors[i], backgroundColor:fgColors[i]+'33', tension:0.35, borderWidth:2.5, pointRadius:3, fill:false })) },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{...gridCfg}, x:{grid:{display:false}} }, plugins:{ legend:{position:'bottom'} } }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('featureChart'), {
+    type:'bar',
+    data:{ labels:DATA.features.map(f=>f[0]), datasets:[{ data:DATA.features.map(f=>f[1]), backgroundColor:palette(DATA.features.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('exportChart'), {
+    type:'bar',
+    data:{ labels:DATA.exports.map(f=>f[0]), datasets:[{ data:DATA.exports.map(f=>f[1]), backgroundColor:palette(DATA.exports.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('modelChart'), {
+    type:'doughnut',
+    data:{ labels:DATA.models.map(m=>m[0]), datasets:[{ data:DATA.models.map(m=>m[1]), backgroundColor:palette(DATA.models.length), borderWidth:2, borderColor:cssVar('--cp-surface') }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'right', labels:{boxWidth:12, font:{size:11}}} }, cutout:'55%' }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('latencyChart'), {
+    type:'bar',
+    data:{ labels:DATA.models.map(m=>m[0]), datasets:[{ label:'Avg latency (s)', data:DATA.models.map(m=>m[2]), backgroundColor:palette(DATA.models.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg, title:{display:true,text:'seconds'}}, y:{grid:{display:false}} } }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('countryChart'), {
+    type:'bar',
+    data:{ labels:DATA.countries.map(c=>c[0]), datasets:[{ data:DATA.countries.map(c=>c[1]), backgroundColor:accent, borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('regionChart'), {
+    type:'bar',
+    data:{ labels:DATA.regions.map(r=>r[0]), datasets:[{ data:DATA.regions.map(r=>r[1]), backgroundColor:link, borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg}, y:{grid:{display:false}} } }
+  }));
+
+  const rlabels = Object.keys(DATA.ratings);
+  const rcolors = rlabels.map(l=>{ const n=parseInt(l); return n>=4?success:(n===3?warning:danger); });
+  CHARTS.push(new Chart(document.getElementById('ratingChart'), {
+    type:'bar',
+    data:{ labels:rlabels, datasets:[{ data:Object.values(DATA.ratings), backgroundColor:rcolors, borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{...gridCfg}, x:{grid:{display:false}} } }
+  }));
+
+  CHARTS.push(new Chart(document.getElementById('wafChart'), {
+    type:'bar',
+    data:{ labels:DATA.waf.map(w=>w[0]), datasets:[{ label:'Avg WAF score', data:DATA.waf.map(w=>w[1]), backgroundColor:palette(DATA.waf.length), borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{...gridCfg, min:0, max:100, title:{display:true,text:'score / 100'}}, y:{grid:{display:false}} } }
+  }));
+}
+
+buildCharts();
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', cur==='dark'?'light':'dark');
+  buildCharts();
+});
+</script>
+</body>
+</html>

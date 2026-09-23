@@ -1,0 +1,139 @@
+/* Copyright (c) Microsoft Corporation.
+   Licensed under the MIT License. */
+
+.settings-pane {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.settings-pane-inner {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.75rem 2rem 3rem;
+}
+
+.settings-pane-header h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.settings-pane-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.settings-section {
+  margin-top: 1.75rem;
+}
+
+.settings-section h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.settings-section-hint {
+  margin: -0.4rem 0 0.75rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.settings-row-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.settings-row-desc {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.settings-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* The model controls were built for a narrow dropdown; give them room here. */
+.settings-models-body {
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.settings-models-body .msp-model-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.4rem;
+}
+
+.settings-models-body .msp-feature-row {
+  padding: 0.5rem 0;
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+
+body.dark-mode .settings-pane {
+  background: #1a1a1a;
+}
+
+body.dark-mode .settings-pane-header h2 {
+  color: #e5e7eb;
+}
+
+body.dark-mode .settings-pane-header p,
+body.dark-mode .settings-section h3,
+body.dark-mode .settings-section-hint,
+body.dark-mode .settings-row-desc {
+  color: #9ca3af;
+}
+
+body.dark-mode .settings-row,
+body.dark-mode .settings-models-body {
+  background: #242424;
+  border-color: #2d2d2d;
+}
+
+body.dark-mode .settings-row-label {
+  color: #e5e7eb;
+}
+
+body.dark-mode .settings-switch {
+  color: #d1d5db;
+}

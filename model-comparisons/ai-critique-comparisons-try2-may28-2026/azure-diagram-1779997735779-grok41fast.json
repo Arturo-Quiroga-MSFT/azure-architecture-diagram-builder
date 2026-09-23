@@ -1,0 +1,233 @@
+{
+  "groups": [
+    {
+      "id": "edge-ingress",
+      "label": "Edge & Streaming Ingress"
+    },
+    {
+      "id": "ai-processing",
+      "label": "Multi-Modal AI Processing"
+    },
+    {
+      "id": "observability",
+      "label": "Observability & Monitoring"
+    },
+    {
+      "id": "identity-security",
+      "label": "Identity & Security"
+    }
+  ],
+  "services": [
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Real-time streaming data ingest",
+      "groupId": "edge-ingress"
+    },
+    {
+      "id": "azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Text and vision model inference",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "speech-services",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Real-time audio transcription",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Multilingual translation",
+      "groupId": "ai-processing"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "AI model performance telemetry",
+      "groupId": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log aggregation",
+      "groupId": "observability"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and authorization",
+      "groupId": "identity-security"
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "API keys and secrets management",
+      "groupId": "identity-security"
+    }
+  ],
+  "connections": [
+    {
+      "from": "event-hubs",
+      "to": "azure-openai",
+      "label": "Stream text/vision payloads for inference",
+      "type": "async"
+    },
+    {
+      "from": "event-hubs",
+      "to": "speech-services",
+      "label": "Stream audio for real-time transcription",
+      "type": "async"
+    },
+    {
+      "from": "speech-services",
+      "to": "translator",
+      "label": "Send transcribed text for translation",
+      "type": "sync"
+    },
+    {
+      "from": "azure-openai",
+      "to": "translator",
+      "label": "Pipe vision/text results for multilingual processing",
+      "type": "sync"
+    },
+    {
+      "from": "azure-openai",
+      "to": "app-insights",
+      "label": "Emit model inference telemetry",
+      "type": "async"
+    },
+    {
+      "from": "speech-services",
+      "to": "app-insights",
+      "label": "Report transcription latency metrics",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "log-analytics",
+      "label": "Aggregate AI observability logs",
+      "type": "async"
+    },
+    {
+      "from": "entra-id",
+      "to": "azure-openai",
+      "label": "Authenticate API requests",
+      "type": "sync"
+    },
+    {
+      "from": "key-vault",
+      "to": "azure-openai",
+      "label": "Retrieve model deployment keys",
+      "type": "optional"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Ingest multi-modal streams (text, vision, audio)",
+      "services": [
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Route streams to parallel AI processors",
+      "services": [
+        "event-hubs",
+        "azure-openai",
+        "speech-services"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Perform real-time speech transcription",
+      "services": [
+        "speech-services"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Execute vision/text inference concurrently",
+      "services": [
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Translate transcribed and inferred content",
+      "services": [
+        "speech-services",
+        "azure-openai",
+        "translator"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Emit telemetry from AI services",
+      "services": [
+        "azure-openai",
+        "speech-services",
+        "app-insights"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Aggregate observability data for analysis",
+      "services": [
+        "app-insights",
+        "log-analytics"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Enforce authentication across AI endpoints",
+      "services": [
+        "entra-id",
+        "azure-openai",
+        "speech-services"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1409,
+    "completionTokens": 1218,
+    "totalTokens": 2627,
+    "elapsedTimeMs": 9505,
+    "model": "grok-4-1-fast-non-reasoning",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1409,
+      "completionTokens": 1218,
+      "totalTokens": 2627,
+      "elapsedTimeMs": 9505,
+      "model": "grok-4-1-fast-non-reasoning",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T19:48:56.992Z",
+    "source": "model-comparison"
+  }
+}

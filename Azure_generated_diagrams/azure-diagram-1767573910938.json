@@ -1,0 +1,135 @@
+{
+  "nodes": [
+    {
+      "id": "iot-hub-1",
+      "type": "azureNode",
+      "position": {
+        "x": -45.5,
+        "y": 87.5
+      },
+      "data": {
+        "label": "IoT Hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -45.5,
+        "y": 87.5
+      },
+      "dragging": false
+    },
+    {
+      "id": "azure-functions-1",
+      "type": "azureNode",
+      "position": {
+        "x": 300,
+        "y": 100
+      },
+      "data": {
+        "label": "Azure Functions",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 129,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 300,
+        "y": 100
+      }
+    },
+    {
+      "id": "cosmosdb-1",
+      "type": "azureNode",
+      "position": {
+        "x": 100,
+        "y": 300
+      },
+      "data": {
+        "label": "Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 300
+      }
+    },
+    {
+      "id": "powerbi-1",
+      "type": "azureNode",
+      "position": {
+        "x": 361,
+        "y": 382.5
+      },
+      "data": {
+        "label": "Power BI",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/03332-icon-service-Power-BI-Embedded.svg"
+      },
+      "width": 120,
+      "height": 107,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 361,
+        "y": 382.5
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "iot-hub-1",
+      "target": "azure-functions-1",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Sends device telemetry to",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "azure-functions-1",
+      "target": "cosmosdb-1",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Writes processed data to",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "cosmosdb-1",
+      "target": "powerbi-1",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Provides data for visualization",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 276.5,
+    "y": 11.5,
+    "zoom": 2
+  }
+}

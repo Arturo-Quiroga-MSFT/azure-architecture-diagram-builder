@@ -1,0 +1,836 @@
+{
+  "nodes": [
+    {
+      "id": "data-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -30,
+        "y": 20
+      },
+      "data": {
+        "label": "Data Ingestion & Preparation"
+      },
+      "style": {
+        "width": 1020,
+        "height": 460
+      },
+      "width": 1020,
+      "height": 460,
+      "positionAbsolute": {
+        "x": -30,
+        "y": 20
+      }
+    },
+    {
+      "id": "ml-training",
+      "type": "groupNode",
+      "position": {
+        "x": 1030,
+        "y": -30
+      },
+      "data": {
+        "label": "Model Training"
+      },
+      "style": {
+        "width": 1020,
+        "height": 510
+      },
+      "width": 1020,
+      "height": 510,
+      "positionAbsolute": {
+        "x": 1030,
+        "y": -30
+      }
+    },
+    {
+      "id": "ml-inference",
+      "type": "groupNode",
+      "position": {
+        "x": 1500,
+        "y": 380
+      },
+      "data": {
+        "label": "Inference Endpoints & Serving"
+      },
+      "style": {
+        "width": 540,
+        "height": 710
+      },
+      "width": 540,
+      "height": 710,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1500,
+        "y": 380
+      },
+      "dragging": false
+    },
+    {
+      "id": "security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 480,
+        "y": 980
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 2080,
+        "height": 710
+      },
+      "width": 2080,
+      "height": 710,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 480,
+        "y": 980
+      },
+      "dragging": false
+    },
+    {
+      "id": "storage-account",
+      "type": "azureNode",
+      "position": {
+        "x": 530,
+        "y": 120
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:15:02.785Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-ingestion",
+      "extent": "parent",
+      "width": 163,
+      "height": 111,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 500,
+        "y": 140
+      },
+      "dragging": false
+    },
+    {
+      "id": "data-factory",
+      "type": "azureNode",
+      "position": {
+        "x": 50,
+        "y": 200
+      },
+      "data": {
+        "label": "Azure Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/data-factory.svg",
+        "pricing": {
+          "estimatedCost": 5,
+          "tier": "Cloud",
+          "skuName": "Cloud",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Month",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "data-ingestion",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 20,
+        "y": 220
+      },
+      "dragging": false
+    },
+    {
+      "id": "aml-managed-compute",
+      "type": "azureNode",
+      "position": {
+        "x": 690,
+        "y": 110
+      },
+      "data": {
+        "label": "AML Managed Compute",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/compute/virtual-machines.svg",
+        "pricing": {
+          "estimatedCost": 200,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "ml-training",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1720,
+        "y": 80
+      },
+      "dragging": false
+    },
+    {
+      "id": "azure-machine-learning",
+      "type": "azureNode",
+      "position": {
+        "x": 110,
+        "y": 130
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "ml-training",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1140,
+        "y": 100
+      },
+      "dragging": false
+    },
+    {
+      "id": "aml-online-endpoint",
+      "type": "azureNode",
+      "position": {
+        "x": 310,
+        "y": 150
+      },
+      "data": {
+        "label": "AML Online Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "ml-inference",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1810,
+        "y": 530
+      },
+      "dragging": false
+    },
+    {
+      "id": "aml-batch-endpoint",
+      "type": "azureNode",
+      "position": {
+        "x": 110,
+        "y": 470
+      },
+      "data": {
+        "label": "AML Batch Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "ml-inference",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1610,
+        "y": 850
+      },
+      "dragging": false
+    },
+    {
+      "id": "key-vault",
+      "type": "azureNode",
+      "position": {
+        "x": 180,
+        "y": 180
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-monitoring",
+      "extent": "parent",
+      "width": 120,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 660,
+        "y": 1160
+      }
+    },
+    {
+      "id": "application-insights",
+      "type": "azureNode",
+      "position": {
+        "x": 1720,
+        "y": 305
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Basic",
+          "skuName": "Basic",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2200,
+        "y": 1285
+      }
+    },
+    {
+      "id": "microsoft-entra-id",
+      "type": "azureNode",
+      "position": {
+        "x": 740,
+        "y": 200
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-02-12T20:15:02.832Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "security-monitoring",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1220,
+        "y": 1180
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "data-factory",
+      "target": "storage-account",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Stage raw and transformed data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "storage-account",
+      "target": "azure-machine-learning",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide training data as dataset input",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "azure-machine-learning",
+      "target": "aml-managed-compute",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Submit ML training jobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "aml-managed-compute",
+      "target": "azure-machine-learning",
+      "sourceHandle": "left-source",
+      "targetHandle": "right-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Return trained model artifact",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "azure-machine-learning",
+      "target": "aml-online-endpoint",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy model for real-time inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 87,
+        "labelOffsetY": 124
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "azure-machine-learning",
+      "target": "aml-batch-endpoint",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deploy model for batch inference",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 155,
+        "labelOffsetY": 167
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "aml-online-endpoint",
+      "target": "application-insights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send real-time telemetry on inference requests",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "aml-batch-endpoint",
+      "target": "application-insights",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Log batch inference telemetry",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "key-vault",
+      "target": "azure-machine-learning",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide secrets and credentials for workspace and endpoints",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "microsoft-entra-id",
+      "target": "azure-machine-learning",
+      "sourceHandle": "top-source",
+      "targetHandle": "bottom-target",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate users and service principals",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 662.3316687677144,
+    "y": 152.77144293713332,
+    "zoom": 0.623820447302808
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-02-12",
+    "savedAt": "2026-02-12T20:15:38.517Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Data Factory ingests and transforms raw data into Storage Account",
+      "services": [
+        "data-factory",
+        "storage-account"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure Machine Learning retrieves input datasets from Storage Account",
+      "services": [
+        "azure-machine-learning",
+        "storage-account"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Machine Learning initiates ML training jobs via AML Managed Compute",
+      "services": [
+        "azure-machine-learning",
+        "aml-managed-compute"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "AML Managed Compute trains the model and returns the trained artifact",
+      "services": [
+        "aml-managed-compute",
+        "azure-machine-learning"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Machine Learning deploys trained model to AML Online Endpoint for real-time inference",
+      "services": [
+        "azure-machine-learning",
+        "aml-online-endpoint"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Machine Learning deploys model to AML Batch Endpoint for scheduled inference processing",
+      "services": [
+        "azure-machine-learning",
+        "aml-batch-endpoint"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "AML Online Endpoint processes real-time inference requests and sends telemetry to Application Insights",
+      "services": [
+        "aml-online-endpoint",
+        "application-insights"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "AML Batch Endpoint processes batch inference requests and logs results and metrics",
+      "services": [
+        "aml-batch-endpoint",
+        "application-insights"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Azure Machine Learning and endpoints authenticate users and permissions using Microsoft Entra ID",
+      "services": [
+        "azure-machine-learning",
+        "microsoft-entra-id"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Azure Machine Learning retrieves required secrets and credentials from Key Vault to govern workspace and endpoints",
+      "services": [
+        "azure-machine-learning",
+        "key-vault"
+      ]
+    }
+  ],
+  "architecturePrompt": "A machine learning pipeline with data ingestion, training, and inference endpoints"
+}

@@ -1,0 +1,87 @@
+{
+  "name": "aadb-eval-seed",
+  "stage": "seed",
+  "version": "v2",
+  "mode": "topology",
+  "description": "Synthetic current-app topology generation cases captured through the AADB v2 prompt and post-processing contract.",
+  "datasetFile": ".foundry/datasets/aadb-eval-seed-v2.jsonl",
+  "datasetSha256": "0528c33f3abd6d81b3369a1bddc1a26643cb5d82d46c323fba06ba85150c35b3",
+  "rowCount": 48,
+  "scenarioCount": 8,
+  "attemptCount": 48,
+  "generationSuccessCount": 48,
+  "generationFailureCount": 0,
+  "generationSuccessRate": 1,
+  "statusCounts": {
+    "success": 48
+  },
+  "modelCounts": {
+    "gpt-5.6-luna": 16,
+    "gpt-5.2": 16,
+    "kimi-k2-7-code": 16
+  },
+  "scenarioCounts": {
+    "three-tier-web-concise": 6,
+    "event-driven-orders-detailed": 6,
+    "private-paas-zero-trust": 6,
+    "enterprise-rag-agent": 6,
+    "intelligent-document-processing-v2": 6,
+    "iot-real-time-analytics": 6,
+    "fabric-medallion-current": 6,
+    "multi-region-regulated-tension": 6
+  },
+  "configFile": "evaluations/aadb/cases.v2.json",
+  "configSha256": "a719d0795958f97c6db114d47dc5926460dc48027c9d52288efede5f2324e9e1",
+  "captureFile": ".foundry/captures/aadb-v2-attempts.jsonl",
+  "captureSha256": "8e50a004c56ceca0844cfee6efdbc94aad963c20d3238bff8cc7c914c6dc5ef4",
+  "captureSummaryFile": ".foundry/captures/aadb-v2-capture.json",
+  "captureSummarySha256": "f93a260c35a4f037f81607a1bb8fc40085f54f44f6add70723fdde8ab1674beb",
+  "topologyContractVersion": "v2",
+  "topologyContractSha256": "6a72f6ec1b86524b826f4cb32978109784678acc8a780e9f5bb9add089f890bf",
+  "sourceFingerprintSha256": "f88ca535d86e9df9f163aac6974af133835e6f62f35c3527f8f772c14f95c759",
+  "appCommit": "71ef7e82e354aefb738bb92082216ae4e9326875",
+  "appBranch": "feature/scout-integration-improvements",
+  "dirtyWorktree": true,
+  "dirtyFiles": [
+    "M mcp-server/src/pricing.generated.json",
+    " M package.json",
+    " M scripts/pull-nomination-telemetry.sh",
+    " M src/services/azureOpenAI.ts",
+    "?? .foundry/",
+    "?? eval.yaml",
+    "?? evaluations/",
+    "?? infra/main.json",
+    "?? mcp-server/DEPLOYMENT.md",
+    "?? scripts/evaluations/",
+    "?? scripts/gen-post3-banner.py",
+    "?? src/services/architectureGenerationContract.ts",
+    "?? src/services/architecturePostProcessing.ts"
+  ],
+  "models": [
+    {
+      "role": "current-default",
+      "model": "gpt-5.6-luna",
+      "displayName": "GPT-5.6 Luna",
+      "deployment": "gpt-5.6-luna",
+      "apiFormat": "responses",
+      "reasoningEffort": "medium"
+    },
+    {
+      "role": "recommended-generation",
+      "model": "gpt-5.2",
+      "displayName": "GPT-5.2",
+      "deployment": "gpt-5.2",
+      "apiFormat": "responses",
+      "reasoningEffort": "medium"
+    },
+    {
+      "role": "provider-diversity",
+      "model": "kimi-k2-7-code",
+      "displayName": "Kimi K2.7 Code",
+      "deployment": "Kimi-K2.7-Code",
+      "apiFormat": "chat-completions",
+      "reasoningEffort": "none"
+    }
+  ],
+  "builtFromCaptureAt": "2026-08-12T13:41:48.193Z"
+}

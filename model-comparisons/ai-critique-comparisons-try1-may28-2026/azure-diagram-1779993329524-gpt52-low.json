@@ -1,0 +1,274 @@
+{
+  "groups": [
+    {
+      "id": "grp-ingress",
+      "label": "Ingress / Document Intake"
+    },
+    {
+      "id": "grp-app",
+      "label": "Application / AI Processing"
+    },
+    {
+      "id": "grp-data",
+      "label": "Data / Storage"
+    },
+    {
+      "id": "grp-identity-security",
+      "label": "Identity / Security"
+    },
+    {
+      "id": "grp-monitoring",
+      "label": "Monitoring / Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "svc-storage",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for document uploads and long-term retention of originals and processed artifacts",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-eventgrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Emits events when new documents land in Blob Storage to trigger processing",
+      "groupId": "grp-ingress"
+    },
+    {
+      "id": "svc-functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Orchestrates OCR, summarization, persistence, and search indexing workflows",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-docintel",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "Performs OCR and document extraction to produce structured text and fields",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Generates summaries and enrichments from extracted document text",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Indexes document content and metadata for full-text search and retrieval",
+      "groupId": "grp-app"
+    },
+    {
+      "id": "svc-cosmos",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores document metadata, processing status, summaries, and index pointers",
+      "groupId": "grp-data"
+    },
+    {
+      "id": "svc-entra",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Issues identities/tokens and supports validation for secured pipeline operations",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets/keys (e.g., service credentials, connection strings) used by the orchestrator",
+      "groupId": "grp-identity-security"
+    },
+    {
+      "id": "svc-azmonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central collection point for application metrics and logs from the primary compute service",
+      "groupId": "grp-monitoring"
+    },
+    {
+      "id": "svc-loganalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Stores and queries centralized logs and traces for investigations and alerting",
+      "groupId": "grp-monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-storage",
+      "to": "svc-eventgrid",
+      "label": "Publish BlobCreated event when a new document is uploaded",
+      "type": "async"
+    },
+    {
+      "from": "svc-eventgrid",
+      "to": "svc-functions",
+      "label": "Trigger document-processing function on new document arrival",
+      "type": "async"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-storage",
+      "label": "Download original document and persist extracted text/summaries as artifacts",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-docintel",
+      "label": "Submit document for OCR/extraction and retrieve structured text/fields",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-openai",
+      "label": "Send extracted text for summarization and enrichment generation",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-cosmos",
+      "label": "Upsert metadata, processing status, extracted fields, and generated summary",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-search",
+      "label": "Push content + metadata to indexing pipeline and request index update",
+      "type": "sync"
+    },
+    {
+      "from": "svc-search",
+      "to": "svc-storage",
+      "label": "Fetch blob content (or processed artifacts) as a search data source for indexing",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-keyvault",
+      "label": "Read secrets/keys required to call AI services and data stores",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-entra",
+      "label": "Validate access tokens for protected processing and administrative operations",
+      "type": "sync"
+    },
+    {
+      "from": "svc-functions",
+      "to": "svc-azmonitor",
+      "label": "Emit application logs, custom metrics, and dependency traces",
+      "type": "sync"
+    },
+    {
+      "from": "svc-azmonitor",
+      "to": "svc-loganalytics",
+      "label": "Ingest collected logs/metrics for query, alerting, and retention",
+      "type": "sync"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "A document is uploaded to Blob Storage for retention and downstream processing.",
+      "services": [
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Blob Storage emits a creation event and Event Grid delivers it to the orchestrator.",
+      "services": [
+        "svc-storage",
+        "svc-eventgrid",
+        "svc-functions"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Azure Functions downloads the document and submits it to Document Intelligence for OCR/extraction.",
+      "services": [
+        "svc-functions",
+        "svc-storage",
+        "svc-docintel"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure Functions sends extracted text to Azure OpenAI to generate a concise summary and enrichments.",
+      "services": [
+        "svc-functions",
+        "svc-openai",
+        "svc-docintel"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Functions persists metadata, extracted fields, and summaries to Cosmos DB for tracking and retrieval.",
+      "services": [
+        "svc-functions",
+        "svc-cosmos"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure Functions updates Azure Cognitive Search with content/metadata; Search can also read blob artifacts for indexing.",
+      "services": [
+        "svc-functions",
+        "svc-search",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Operational visibility is captured via Azure Monitor and stored in Log Analytics for querying and alerts.",
+      "services": [
+        "svc-functions",
+        "svc-azmonitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1429,
+    "completionTokens": 2529,
+    "totalTokens": 3958,
+    "elapsedTimeMs": 25749,
+    "model": "gpt-5.2",
+    "reasoningEffort": "low"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "gpt-5.2",
+    "modelDisplayName": "GPT-5.2",
+    "reasoningEffort": "low",
+    "metrics": {
+      "promptTokens": 1429,
+      "completionTokens": 2529,
+      "totalTokens": 3958,
+      "elapsedTimeMs": 25749,
+      "model": "gpt-5.2",
+      "reasoningEffort": "low"
+    },
+    "savedAt": "2026-05-28T18:35:29.675Z",
+    "source": "model-comparison"
+  }
+}

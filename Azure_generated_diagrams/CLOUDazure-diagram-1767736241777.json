@@ -1,0 +1,566 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion-api",
+      "type": "groupNode",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "label": "Ingestion & API Layer"
+      },
+      "style": {
+        "width": 850,
+        "height": 520
+      },
+      "width": 850,
+      "height": 520,
+      "positionAbsolute": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "grp-ai-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 1000,
+        "y": -171.98348701895998
+      },
+      "data": {
+        "label": "AI Processing"
+      },
+      "style": {
+        "width": 900,
+        "height": 850
+      },
+      "width": 900,
+      "height": 850,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": -171.98348701895998
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-data-security",
+      "type": "groupNode",
+      "position": {
+        "x": 2301.9834870189597,
+        "y": 98.01651298104002
+      },
+      "data": {
+        "label": "Data & Security"
+      },
+      "style": {
+        "width": 520,
+        "height": 520
+      },
+      "width": 520,
+      "height": 520,
+      "selected": false,
+      "dragging": false,
+      "resizing": false,
+      "positionAbsolute": {
+        "x": 2301.9834870189597,
+        "y": 98.01651298104002
+      }
+    },
+    {
+      "id": "grp-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 557.01651298104,
+        "y": 758.01651298104
+      },
+      "data": {
+        "label": "Monitoring"
+      },
+      "style": {
+        "width": 1341,
+        "height": 520
+      },
+      "width": 1341,
+      "height": 520,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 557.01651298104,
+        "y": 758.01651298104
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 178.01651298104002,
+        "y": 166.11559086728028
+      },
+      "data": {
+        "label": "API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 166,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 178.01651298104002,
+        "y": 166.11559086728028
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-function",
+      "type": "azureNode",
+      "position": {
+        "x": 661.655156692314,
+        "y": 304.95968219447747
+      },
+      "data": {
+        "label": "Azure Functions (Orchestrator)",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 661.655156692314,
+        "y": 304.95968219447747
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-docint",
+      "type": "azureNode",
+      "position": {
+        "x": 1062.1486168293607,
+        "y": -113.55607880607405
+      },
+      "data": {
+        "label": "Azure AI Document Intelligence",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1062.1486168293607,
+        "y": -113.55607880607405
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-computervision",
+      "type": "azureNode",
+      "position": {
+        "x": 1514.0514682372752,
+        "y": -42.15054612351548
+      },
+      "data": {
+        "label": "Computer Vision",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 163,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1514.0514682372752,
+        "y": -42.15054612351548
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-speech",
+      "type": "azureNode",
+      "position": {
+        "x": 1551.4055326825583,
+        "y": 471.5725917871141
+      },
+      "data": {
+        "label": "Speech Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 155,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1551.4055326825583,
+        "y": 471.5725917871141
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-textanalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 1153.3890197015187,
+        "y": 532.5633706495165
+      },
+      "data": {
+        "label": "Text Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10044-icon-service-Cognitive-Search.svg"
+      },
+      "width": 143,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1153.3890197015187,
+        "y": 532.5633706495165
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-cosmosdb",
+      "type": "azureNode",
+      "position": {
+        "x": 2531.409391270869,
+        "y": 176.0330259620801
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2531.409391270869,
+        "y": 176.0330259620801
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 2527.1102283179926,
+        "y": 406.11752016143544
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 156,
+      "height": 113,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2527.1102283179926,
+        "y": 406.11752016143544
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 659.5007519804885,
+        "y": 1032.398240839116
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 659.5007519804885,
+        "y": 1032.398240839116
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 1476.3652148770364,
+        "y": 879.6697403791993
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1476.3652148770364,
+        "y": 879.6697403791993
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-apim",
+      "target": "svc-function",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Invoke processing & query endpoints (HTTP)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-function",
+      "target": "svc-keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve API keys/secrets",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-function",
+      "target": "svc-docint",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Submit documents for form extraction",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-function",
+      "target": "svc-computervision",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Analyze images (OCR/vision features)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-function",
+      "target": "svc-speech",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Transcribe audio to text",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-function",
+      "target": "svc-textanalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Run sentiment analysis on text",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-function",
+      "target": "svc-cosmosdb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Store extracted results & metadata",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-apim",
+      "target": "svc-cosmosdb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Expose results via API (read patterns, optional direct integration)",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "2, 4",
+        "opacity": 0.6
+      },
+      "data": {
+        "connectionType": "optional"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-apim",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "API telemetry",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-function",
+      "target": "svc-appinsights",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Function traces and dependencies",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Export/centralize logs",
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#666",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 121.48834802978513,
+    "y": 340.5206577232723,
+    "zoom": 0.5902757754849919
+  }
+}

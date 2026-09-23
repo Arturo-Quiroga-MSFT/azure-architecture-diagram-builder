@@ -1,0 +1,221 @@
+{
+  "groups": [
+    {
+      "id": "group-ingest",
+      "label": "Streaming Ingest"
+    },
+    {
+      "id": "group-ai",
+      "label": "AI Processing"
+    },
+    {
+      "id": "group-monitor",
+      "label": "Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "event-hubs",
+      "name": "Event Hubs",
+      "type": "Event Hubs",
+      "category": "analytics",
+      "description": "Ingests real-time streaming data for multi-modal processing",
+      "groupId": "group-ingest"
+    },
+    {
+      "id": "azure-openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "Processes text and vision inputs using GPT-4 and DALL-E models",
+      "groupId": "group-ai"
+    },
+    {
+      "id": "speech-services",
+      "name": "Speech Services",
+      "type": "Speech Services",
+      "category": "ai + machine learning",
+      "description": "Performs real-time speech-to-text transcription and text-to-speech synthesis",
+      "groupId": "group-ai"
+    },
+    {
+      "id": "translator",
+      "name": "Translator",
+      "type": "Translator",
+      "category": "ai + machine learning",
+      "description": "Provides multilingual translation for text and transcribed speech",
+      "groupId": "group-ai"
+    },
+    {
+      "id": "computer-vision",
+      "name": "Computer Vision",
+      "type": "Computer Vision",
+      "category": "ai + machine learning",
+      "description": "Analyzes images and video frames for object detection and OCR",
+      "groupId": "group-ai"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Monitors model performance, latency, and usage telemetry",
+      "groupId": "group-monitor"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Aggregates and queries observability logs",
+      "groupId": "group-monitor"
+    },
+    {
+      "id": "azure-monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central observability hub for the AI platform",
+      "groupId": "group-monitor"
+    }
+  ],
+  "connections": [
+    {
+      "from": "event-hubs",
+      "to": "azure-openai",
+      "label": "Streams text and vision events for AI inference",
+      "type": "async"
+    },
+    {
+      "from": "event-hubs",
+      "to": "speech-services",
+      "label": "Routes audio streams for real-time transcription",
+      "type": "async"
+    },
+    {
+      "from": "speech-services",
+      "to": "translator",
+      "label": "Sends transcribed text for multilingual translation",
+      "type": "sync"
+    },
+    {
+      "from": "translator",
+      "to": "azure-openai",
+      "label": "Feeds translated text as enriched context to LLM",
+      "type": "sync"
+    },
+    {
+      "from": "computer-vision",
+      "to": "azure-openai",
+      "label": "Provides extracted visual features for multi-modal reasoning",
+      "type": "sync"
+    },
+    {
+      "from": "event-hubs",
+      "to": "computer-vision",
+      "label": "Forwards image and video frames for analysis",
+      "type": "async"
+    },
+    {
+      "from": "azure-openai",
+      "to": "app-insights",
+      "label": "Emits model invocation metrics and token usage telemetry",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "azure-monitor",
+      "label": "Forwards application telemetry to central monitoring hub",
+      "type": "async"
+    },
+    {
+      "from": "azure-monitor",
+      "to": "log-analytics",
+      "label": "Routes aggregated logs and metrics for query and analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Multi-modal data (text, audio, images) is ingested into Event Hubs as streaming events.",
+      "services": [
+        "event-hubs"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Event Hubs routes audio streams to Speech Services for real-time transcription and image/video frames to Computer Vision for analysis.",
+      "services": [
+        "event-hubs",
+        "speech-services",
+        "computer-vision"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Speech Services transcribes audio and sends the text to Translator for multilingual conversion.",
+      "services": [
+        "speech-services",
+        "translator"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Translated text and visual features from Computer Vision are sent to Azure OpenAI as enriched context.",
+      "services": [
+        "translator",
+        "computer-vision",
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure OpenAI performs multi-modal reasoning combining text, translated content, and visual features to generate a response.",
+      "services": [
+        "azure-openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Azure OpenAI emits invocation metrics, token usage, and latency data to Application Insights.",
+      "services": [
+        "azure-openai",
+        "app-insights"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Application Insights forwards telemetry to Azure Monitor, which routes aggregated logs to Log Analytics for querying and dashboarding.",
+      "services": [
+        "app-insights",
+        "azure-monitor",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1459,
+    "completionTokens": 1382,
+    "totalTokens": 2841,
+    "elapsedTimeMs": 33528,
+    "model": "default",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-modal AI platform with Azure OpenAI for text and vision, Azure AI Speech for real-time transcription, Azure AI Translator for multilingual support, Event Hubs for streaming ingest, and Application Insights for model observability",
+    "model": "deepseek-v4-pro",
+    "modelDisplayName": "DeepSeek V4 Pro",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1459,
+      "completionTokens": 1382,
+      "totalTokens": 2841,
+      "elapsedTimeMs": 33528,
+      "model": "default",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T19:48:56.841Z",
+    "source": "model-comparison"
+  }
+}

@@ -1,0 +1,280 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Document Ingress"
+    },
+    {
+      "id": "processing",
+      "label": "AI Processing"
+    },
+    {
+      "id": "storage",
+      "label": "Data Storage"
+    },
+    {
+      "id": "search",
+      "label": "Search & Query"
+    },
+    {
+      "id": "security",
+      "label": "Security & Identity"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring"
+    }
+  ],
+  "services": [
+    {
+      "id": "blob",
+      "name": "Storage Account",
+      "type": "Storage Account",
+      "category": "storage",
+      "description": "Blob storage for raw uploaded documents and processed output retention",
+      "groupId": "ingress"
+    },
+    {
+      "id": "document-intelligence",
+      "name": "Document Intelligence",
+      "type": "Document Intelligence",
+      "category": "ai + machine learning",
+      "description": "OCR and document extraction service",
+      "groupId": "processing"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "GPT model for summarization and content analysis",
+      "groupId": "processing"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Stores document metadata, extracted fields, and summaries",
+      "groupId": "storage"
+    },
+    {
+      "id": "cognitive-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Indexes content and metadata for search queries",
+      "groupId": "search"
+    },
+    {
+      "id": "function",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Serverless orchestrator to coordinate processing pipeline",
+      "groupId": "processing"
+    },
+    {
+      "id": "keyvault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Stores secrets, keys, and connection strings",
+      "groupId": "security"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "Authentication and identity management",
+      "groupId": "security"
+    },
+    {
+      "id": "monitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Collects metrics and logs from pipeline components",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized log storage and analysis",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "blob",
+      "to": "function",
+      "label": "Triggers on new blob upload",
+      "type": "async"
+    },
+    {
+      "from": "function",
+      "to": "document-intelligence",
+      "label": "Sends document for OCR and extraction",
+      "type": "sync"
+    },
+    {
+      "from": "document-intelligence",
+      "to": "function",
+      "label": "Returns extracted text and structured data",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "openai",
+      "label": "Sends extracted text for summarization",
+      "type": "sync"
+    },
+    {
+      "from": "openai",
+      "to": "function",
+      "label": "Returns summary and insights",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "cosmosdb",
+      "label": "Stores metadata, extracted fields, and summary",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "cognitive-search",
+      "label": "Indexes content and metadata for search",
+      "type": "sync"
+    },
+    {
+      "from": "blob",
+      "to": "function",
+      "label": "Retains original and processed files",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "keyvault",
+      "label": "Retrieves secrets and connection strings",
+      "type": "sync"
+    },
+    {
+      "from": "entra-id",
+      "to": "function",
+      "label": "Provides authentication for API access",
+      "type": "sync"
+    },
+    {
+      "from": "function",
+      "to": "monitor",
+      "label": "Sends custom metrics and logs",
+      "type": "async"
+    },
+    {
+      "from": "monitor",
+      "to": "log-analytics",
+      "label": "Forwards logs for analysis",
+      "type": "async"
+    },
+    {
+      "from": "cosmosdb",
+      "to": "cognitive-search",
+      "label": "Data source for indexer (pull changes)",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User uploads document to Blob Storage; Blob trigger invokes Azure Function.",
+      "services": [
+        "blob",
+        "function"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Function retrieves secrets from Key Vault and authenticates via Microsoft Entra ID.",
+      "services": [
+        "function",
+        "keyvault",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Function sends document to Document Intelligence for OCR and extraction; receives structured data.",
+      "services": [
+        "function",
+        "document-intelligence"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Function sends extracted text to Azure OpenAI for summarization; receives summary.",
+      "services": [
+        "function",
+        "openai"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Function stores metadata, extracted fields, and summary in Cosmos DB.",
+      "services": [
+        "function",
+        "cosmosdb"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Function indexes the content and metadata in Cognitive Search (or Cosmos DB change feed triggers indexer).",
+      "services": [
+        "function",
+        "cognitive-search",
+        "cosmosdb"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Function logs metrics and diagnostics to Azure Monitor, which forwards to Log Analytics.",
+      "services": [
+        "function",
+        "monitor",
+        "log-analytics"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "End users query Cognitive Search to retrieve documents and summaries.",
+      "services": [
+        "cognitive-search"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1457,
+    "completionTokens": 1601,
+    "totalTokens": 3058,
+    "elapsedTimeMs": 18022,
+    "model": "deepseek-v3.2-speciale"
+  },
+  "metadata": {
+    "prompt": "An intelligent document processing pipeline with Azure AI Document Intelligence for OCR, Azure OpenAI for summarization, Cognitive Search for indexing, Cosmos DB for metadata, and Blob Storage for document retention",
+    "model": "deepseek-v3.2-speciale",
+    "modelDisplayName": "DeepSeek V3.2 Speciale",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1457,
+      "completionTokens": 1601,
+      "totalTokens": 3058,
+      "elapsedTimeMs": 18022,
+      "model": "deepseek-v3.2-speciale"
+    },
+    "savedAt": "2026-03-06T19:31:31.419Z",
+    "source": "model-comparison"
+  }
+}

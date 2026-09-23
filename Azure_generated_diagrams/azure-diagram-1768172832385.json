@@ -1,0 +1,1238 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": -1120,
+        "y": 1520
+      },
+      "data": {
+        "label": "Ingress"
+      },
+      "style": {
+        "width": 720,
+        "height": 435
+      },
+      "width": 720,
+      "height": 435,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -1120,
+        "y": 1520
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-compute",
+      "type": "groupNode",
+      "position": {
+        "x": -40,
+        "y": 680
+      },
+      "data": {
+        "label": "Compute Layer"
+      },
+      "style": {
+        "width": 720,
+        "height": 745
+      },
+      "width": 720,
+      "height": 745,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -40,
+        "y": 680
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-integration",
+      "type": "groupNode",
+      "position": {
+        "x": 820,
+        "y": 260
+      },
+      "data": {
+        "label": "Integration"
+      },
+      "style": {
+        "width": 340,
+        "height": 635
+      },
+      "width": 340,
+      "height": 635,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 820,
+        "y": 260
+      }
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 1380,
+        "y": 760
+      },
+      "data": {
+        "label": "Data Layer"
+      },
+      "style": {
+        "width": 680,
+        "height": 620
+      },
+      "width": 680,
+      "height": 620,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1380,
+        "y": 760
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-secobs",
+      "type": "groupNode",
+      "position": {
+        "x": -80,
+        "y": 1600
+      },
+      "data": {
+        "label": "Security & Observability"
+      },
+      "style": {
+        "width": 1120,
+        "height": 1460
+      },
+      "width": 1120,
+      "height": 1460,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -80,
+        "y": 1600
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-devops",
+      "type": "groupNode",
+      "position": {
+        "x": -940,
+        "y": 640
+      },
+      "data": {
+        "label": "DevOps & Deployment"
+      },
+      "style": {
+        "width": 720,
+        "height": 510
+      },
+      "width": 720,
+      "height": 510,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -940,
+        "y": 640
+      },
+      "dragging": false
+    },
+    {
+      "id": "afd",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 255
+      },
+      "data": {
+        "label": "Front Door",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/web/03291-icon-service-API-Center.svg",
+        "pricing": {
+          "estimatedCost": 36.4416,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-11T23:00:47.092Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-ingress",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "positionAbsolute": {
+        "x": -1040,
+        "y": 1775
+      }
+    },
+    {
+      "id": "apim",
+      "type": "azureNode",
+      "position": {
+        "x": 460,
+        "y": 80
+      },
+      "data": {
+        "label": "Api Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/api-management.svg",
+        "pricing": {
+          "estimatedCost": 99.99978,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1/Hour",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-ingress",
+      "extent": "parent",
+      "width": 165,
+      "height": 112,
+      "positionAbsolute": {
+        "x": -660,
+        "y": 1600
+      }
+    },
+    {
+      "id": "aks",
+      "type": "azureNode",
+      "position": {
+        "x": 220,
+        "y": 80
+      },
+      "data": {
+        "label": "Azure Kubernetes Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 73,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 154,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 180,
+        "y": 760
+      },
+      "dragging": false
+    },
+    {
+      "id": "acr",
+      "type": "azureNode",
+      "position": {
+        "x": 440,
+        "y": 560
+      },
+      "data": {
+        "label": "Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/container-instances.svg",
+        "pricing": {
+          "estimatedCost": 20.8,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1 Second",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-compute",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 400,
+        "y": 1240
+      },
+      "dragging": false
+    },
+    {
+      "id": "servicebus",
+      "type": "azureNode",
+      "position": {
+        "x": 70,
+        "y": 80
+      },
+      "data": {
+        "label": "Service Bus",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10048-icon-service-API-Connections.svg",
+        "pricing": {
+          "estimatedCost": 10.2024,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-11T23:00:47.058Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-integration",
+      "extent": "parent",
+      "width": 127,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 890,
+        "y": 340
+      },
+      "dragging": false
+    },
+    {
+      "id": "eventgrid",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 455
+      },
+      "data": {
+        "label": "Event Grid",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/integration/10215-icon-service-Event-Grid-Domains.svg",
+        "pricing": {
+          "estimatedCost": 0,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-01-11T23:00:47.092Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-integration",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "positionAbsolute": {
+        "x": 900,
+        "y": 715
+      }
+    },
+    {
+      "id": "cosmos",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 80
+      },
+      "data": {
+        "label": "Azure Cosmos DB",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Azure-SQL-Server-Stretch-Databases.svg",
+        "pricing": {
+          "estimatedCost": 0.03,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 1460,
+        "y": 840
+      }
+    },
+    {
+      "id": "sql",
+      "type": "azureNode",
+      "position": {
+        "x": 380,
+        "y": 320
+      },
+      "data": {
+        "label": "Sql Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/azure-cosmos-db.svg"
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 137,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1760,
+        "y": 1080
+      },
+      "dragging": false
+    },
+    {
+      "id": "storage",
+      "type": "azureNode",
+      "position": {
+        "x": 160,
+        "y": 420
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/00691-icon-service-Azure-Databox-Gateway.svg",
+        "pricing": {
+          "estimatedCost": 15.184,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "10K",
+          "lastUpdated": "2026-01-11T23:00:47.092Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1540,
+        "y": 1180
+      },
+      "dragging": false
+    },
+    {
+      "id": "kv",
+      "type": "azureNode",
+      "position": {
+        "x": 380,
+        "y": 340
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "10K",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-secobs",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 300,
+        "y": 1940
+      },
+      "dragging": false
+    },
+    {
+      "id": "entra",
+      "type": "azureNode",
+      "position": {
+        "x": 80,
+        "y": 700
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/02680-icon-service-Entra-Identity-Custom-Roles.svg"
+      },
+      "parentNode": "grp-secobs",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 0,
+        "y": 2300
+      },
+      "dragging": false
+    },
+    {
+      "id": "monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 360,
+        "y": 560
+      },
+      "data": {
+        "label": "Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 2.392,
+          "tier": "Alerts",
+          "skuName": "Alerts",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1/Month",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-secobs",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 280,
+        "y": 2160
+      },
+      "dragging": false
+    },
+    {
+      "id": "appi",
+      "type": "azureNode",
+      "position": {
+        "x": 920,
+        "y": 100
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 0.1,
+          "tier": "Enterprise",
+          "skuName": "Enterprise",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1 GB/Month",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-secobs",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 840,
+        "y": 1700
+      },
+      "dragging": false
+    },
+    {
+      "id": "log",
+      "type": "azureNode",
+      "position": {
+        "x": 840,
+        "y": 780
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg",
+        "pricing": {
+          "estimatedCost": 2.392,
+          "tier": "Alerts",
+          "skuName": "Alerts",
+          "quantity": 1,
+          "region": "canadacentral",
+          "unit": "1/Month",
+          "lastUpdated": "2026-01-11T23:00:37.631Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-secobs",
+      "extent": "parent",
+      "width": 139,
+      "height": 112,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 760,
+        "y": 2380
+      },
+      "dragging": false
+    },
+    {
+      "id": "devops",
+      "type": "azureNode",
+      "position": {
+        "x": 70,
+        "y": 280
+      },
+      "data": {
+        "label": "DevOps",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/devops/10048-icon-service-API-Connections.svg"
+      },
+      "parentNode": "grp-devops",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -870,
+        "y": 920
+      },
+      "dragging": false
+    },
+    {
+      "id": "repos",
+      "type": "azureNode",
+      "position": {
+        "x": 460,
+        "y": 80
+      },
+      "data": {
+        "label": "Repos",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/devops/10048-icon-service-API-Connections.svg"
+      },
+      "parentNode": "grp-devops",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "positionAbsolute": {
+        "x": -480,
+        "y": 720
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "afd",
+      "target": "apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Route external API traffic to API gateway",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "apim",
+      "target": "entra",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Validate tokens / OAuth2/OIDC for API access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "apim",
+      "target": "aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Forward authenticated API requests to microservices",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "aks",
+      "target": "cosmos",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Read/write operational data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "aks",
+      "target": "sql",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Transactional queries where relational model is needed",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "aks",
+      "target": "storage",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Store/retrieve blobs and exported data",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "aks",
+      "target": "servicebus",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Publish/consume async messages for background processing",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "bidirectional"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "aks",
+      "target": "eventgrid",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Publish domain events for integrations",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "aks",
+      "target": "kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Retrieve secrets/keys/certs via managed identity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "apim",
+      "target": "kv",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Use certificates/secrets for backend auth and TLS",
+      "markerStart": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "reverse"
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "apim",
+      "target": "appi",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Send API telemetry and dependency traces",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "aks",
+      "target": "appi",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Send application telemetry and distributed traces",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "monitor",
+      "target": "log",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Centralize diagnostics logs and queries for alerting",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "devops",
+      "target": "repos",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "CI triggers from version control (code/IaC/manifests/APIM config)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "devops",
+      "target": "acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Build and push versioned container images",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "aks",
+      "target": "acr",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Pull approved container images for deployments",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "devops",
+      "target": "aks",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "GitOps bootstrap/updates for manifests/Helm (promoted per environment with approvals)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-17",
+      "source": "devops",
+      "target": "apim",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "APIOps/APIM DevOps Resource Kit: version APIs and policies, promote dev/test/prod",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-18",
+      "source": "devops",
+      "target": "kv",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Provision/update secrets/certs and references during releases (least privilege)",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    },
+    {
+      "id": "edge-19",
+      "source": "devops",
+      "target": "entra",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "animated": true,
+      "type": "editableEdge",
+      "label": "Use service connections/SPN with RBAC for deployments",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward"
+      }
+    }
+  ],
+  "viewport": {
+    "x": 717.3159315931593,
+    "y": -268.9392491983572,
+    "zoom": 0.5
+  }
+}

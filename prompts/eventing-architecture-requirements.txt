@@ -1,0 +1,35 @@
+I need an eventing architecture that adheres to these requirements:
+
+High throughput: 50,000-75,000 events/sec
+Large payloads: Up to 10 MB
+Strict message ordering
+Cloud-to-on-prem bridging
+Managed services (no self-managed Kafka or DB)
+
+And these Key Performance indicators:
+
+Customer SLA Requirements
+Category          Sub-Item              Value / Notes
+Availability      Availability SLO      99.99% (1 Hour RTO/RPO)
+Latency/Throughput Ingestion            50 concurrent x 100MB
+Latency/Throughput Export               800 MB/s
+Latency/Throughput Routing              800 MB/s
+Latency/Throughput Searches             <300ms, 55k/s
+Scalability       Requirements Item     Value Notes
+Scalability       250M Total studies per deployment
+Migration         15M customers/year Max annual migration volume
+Migration         Duration 1-6 Month
+Daily Volume      2.5M
+
+Data Access Requirements
+Category          Value                 Notes
+Routing           200k/day
+Searches          2M/day
+Export            500k x 4 = 2M/day
+
+Imaging Studies Lifecycle Requirements
+Category          Value                 Notes
+QC (manual/HL7)   500k/day
+Retention         200k/day
+Reports           100k/day
+Notifications     5M/day

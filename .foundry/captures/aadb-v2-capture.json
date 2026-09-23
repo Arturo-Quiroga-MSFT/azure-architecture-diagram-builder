@@ -1,0 +1,71 @@
+{
+  "dataset": {
+    "name": "aadb-eval-seed",
+    "version": "v2",
+    "mode": "topology"
+  },
+  "capturedAt": "2026-08-12T13:41:48.193Z",
+  "matrix": {
+    "scenarios": 8,
+    "models": [
+      {
+        "role": "current-default",
+        "model": "gpt-5.6-luna",
+        "displayName": "GPT-5.6 Luna",
+        "deployment": "gpt-5.6-luna",
+        "apiFormat": "responses",
+        "reasoningEffort": "medium"
+      },
+      {
+        "role": "recommended-generation",
+        "model": "gpt-5.2",
+        "displayName": "GPT-5.2",
+        "deployment": "gpt-5.2",
+        "apiFormat": "responses",
+        "reasoningEffort": "medium"
+      },
+      {
+        "role": "provider-diversity",
+        "model": "kimi-k2-7-code",
+        "displayName": "Kimi K2.7 Code",
+        "deployment": "Kimi-K2.7-Code",
+        "apiFormat": "chat-completions",
+        "reasoningEffort": "none"
+      }
+    ],
+    "attemptsPerModel": 2,
+    "totalAttempts": 48
+  },
+  "statusCounts": {
+    "success": 48
+  },
+  "attemptFile": ".foundry/captures/aadb-v2-attempts.jsonl",
+  "attemptFileSha256": "8e50a004c56ceca0844cfee6efdbc94aad963c20d3238bff8cc7c914c6dc5ef4",
+  "lineage": {
+    "app_commit": "71ef7e82e354aefb738bb92082216ae4e9326875",
+    "app_branch": "feature/scout-integration-improvements",
+    "dirty_worktree": true,
+    "dirty_files": [
+      "M mcp-server/src/pricing.generated.json",
+      " M package.json",
+      " M scripts/pull-nomination-telemetry.sh",
+      " M src/services/azureOpenAI.ts",
+      "?? .foundry/",
+      "?? eval.yaml",
+      "?? evaluations/",
+      "?? infra/main.json",
+      "?? mcp-server/DEPLOYMENT.md",
+      "?? scripts/evaluations/",
+      "?? scripts/gen-post3-banner.py",
+      "?? src/services/architectureGenerationContract.ts",
+      "?? src/services/architecturePostProcessing.ts"
+    ],
+    "topology_contract_version": "v2",
+    "topology_contract_sha256": "6a72f6ec1b86524b826f4cb32978109784678acc8a780e9f5bb9add089f890bf",
+    "source_fingerprint_sha256": "f88ca535d86e9df9f163aac6974af133835e6f62f35c3527f8f772c14f95c759",
+    "config_file": "evaluations/aadb/cases.v2.json",
+    "config_sha256": "a719d0795958f97c6db114d47dc5926460dc48027c9d52288efede5f2324e9e1",
+    "capture_harness": "scripts/evaluations/capture-aadb-v2.ts",
+    "base_url": "http://localhost:3000"
+  }
+}

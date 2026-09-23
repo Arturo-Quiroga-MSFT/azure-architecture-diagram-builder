@@ -1,0 +1,58 @@
+# Deployment targets — TWO Container Apps (read before deploying)
+
+This project runs **two** Azure Container Apps. Deploy to the correct one.
+
+`deploy-webapp.sh` in this directory is the production deploy. `01-network.sh`
+and `02-aca-env.sh` are one-time provisioning and have already been run.
+Anything under `scripts/legacy/` is not a production path.
+
+## NEW app — VNet-integrated (current primary)
+
+- **App:** `azure-diagram-builder-vnet`
+- **Resource group:** `azure-diagrams-rg` · **Region:** `eastus2`
+- **ACA environment:** `aca-env-azure-diagrams-vnet` — VNet-integrated, reaches
+  Cosmos DB (`aqcosmosdb007`) over a **private endpoint / private link**.
+- **Deploy / update with:**
+
+  ```bash
+  npm version patch --no-git-tag-version  # choose patch, minor, or major
+  npm run build
+  ./scripts/production/deploy-webapp.sh
+  ```
+
+  Builds an immutable `v<version>-<git-sha>` image in ACR
+  `acrazurediagrams1767583743` and auto-passes every non-secret `VITE_*` value
+  from the repo-root `.env`. Commit and push the version change before deployment.
+
+  The script grants the app identity resource-scoped `AcrPull`, replaces stored
+  ACR credentials with managed-identity pull, and creates a probe-bearing candidate
+  revision in multiple-revision mode. Production traffic stays on the previous
+  healthy revision until the candidate's direct URL passes readiness and version
+  checks. The prior revision remains active at 0% and the script prints its rollback
+  command. To rotate the existing runtime OpenAI secret during a release, set
+  `ROTATE_OPENAI_SECRET=true`; normal retries do not rewrite an unchanged secret.
+
+## OLD app — legacy, non-VNet (rollback only)
+
+- ACA environment **not** connected to a VNet.
+- **Deploy / update with:**
+
+  ```bash
+  ./scripts/legacy/update_aca.sh
+  ```
+
+- Kept as a rollback target for ~1 month after cutover — **do not delete yet.**
+
+## Notes shared by both
+
+- `package.json` is the product-version source. The UI and `/version.json` expose
+  that value, and the deployment scripts reject an equal or older live version
+  before starting ACR Build. Use `ALLOW_VERSION_REDEPLOY=true` only to recover the
+  exact same release.
+- The Dockerfile bakes MSAL client config (`VITE_AZURE_AD_CLIENT_ID`,
+  `VITE_AZURE_AD_AUTHORITY`, `VITE_ARM_SCOPE`) at build time. `VITE_AZURE_AD_REDIRECT_URI`
+  is intentionally **not** baked — the client defaults to `window.location.origin`,
+  so each host uses its own URL automatically.
+- Every deployed host FQDN must be registered as a **SPA redirect URI** on the
+  Entra app registration (client id `11920e90-fafe-44d8-a42a-71a32d1f2f1c`) for
+  delegated "Import from Azure" sign-in to work.

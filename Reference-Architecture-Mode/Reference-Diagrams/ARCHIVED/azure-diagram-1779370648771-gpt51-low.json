@@ -1,0 +1,1235 @@
+{
+  "nodes": [
+    {
+      "id": "g-onprem",
+      "type": "groupNode",
+      "position": {
+        "x": -20,
+        "y": 2043.90625
+      },
+      "data": {
+        "label": "On-Premises OT Network"
+      },
+      "style": {
+        "width": 4640,
+        "height": 660
+      },
+      "width": 4640,
+      "height": 660,
+      "positionAbsolute": {
+        "x": -20,
+        "y": 2043.90625
+      }
+    },
+    {
+      "id": "g-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": 1215,
+        "y": -196.25
+      },
+      "data": {
+        "label": "IoT Ingress & Connectivity"
+      },
+      "style": {
+        "width": 1185,
+        "height": 840
+      },
+      "width": 1185,
+      "height": 840,
+      "positionAbsolute": {
+        "x": 1215,
+        "y": -196.25
+      }
+    },
+    {
+      "id": "g-processing",
+      "type": "groupNode",
+      "position": {
+        "x": 1770,
+        "y": 664.0625
+      },
+      "data": {
+        "label": "Real-Time & Model Processing"
+      },
+      "style": {
+        "width": 1740,
+        "height": 770
+      },
+      "width": 1740,
+      "height": 770,
+      "positionAbsolute": {
+        "x": 1770,
+        "y": 664.0625
+      }
+    },
+    {
+      "id": "g-data",
+      "type": "groupNode",
+      "position": {
+        "x": 2880,
+        "y": -185.78125
+      },
+      "data": {
+        "label": "Data & Analytics"
+      },
+      "style": {
+        "width": 1185,
+        "height": 840
+      },
+      "width": 1185,
+      "height": 840,
+      "positionAbsolute": {
+        "x": 2880,
+        "y": -185.78125
+      }
+    },
+    {
+      "id": "g-identity",
+      "type": "groupNode",
+      "position": {
+        "x": 535,
+        "y": 270
+      },
+      "data": {
+        "label": "Identity & Access Control"
+      },
+      "style": {
+        "width": 630,
+        "height": 590
+      },
+      "width": 630,
+      "height": 590,
+      "positionAbsolute": {
+        "x": 535,
+        "y": 270
+      }
+    },
+    {
+      "id": "g-observability",
+      "type": "groupNode",
+      "position": {
+        "x": 2880,
+        "y": 1474.0625
+      },
+      "data": {
+        "label": "Monitoring & Logging"
+      },
+      "style": {
+        "width": 1185,
+        "height": 560
+      },
+      "width": 1185,
+      "height": 560,
+      "positionAbsolute": {
+        "x": 2880,
+        "y": 1474.0625
+      }
+    },
+    {
+      "id": "s-industrial-sensors",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 46.09375
+      },
+      "data": {
+        "label": "Industrial Sensors",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/02359-icon-service-Industrial-IoT.svg"
+      },
+      "parentNode": "g-onprem",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 205,
+        "y": 2090
+      }
+    },
+    {
+      "id": "s-iot-edge-gateway",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 46.09375
+      },
+      "data": {
+        "label": "Azure IoT Edge Gateway",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "parentNode": "g-onprem",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 760,
+        "y": 2090
+      }
+    },
+    {
+      "id": "s-plant-operators",
+      "type": "azureNode",
+      "position": {
+        "x": 4235,
+        "y": 46.09375
+      },
+      "data": {
+        "label": "Plant Operators",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/management + governance/00007-icon-service-Activity-Log.svg"
+      },
+      "parentNode": "g-onprem",
+      "extent": "parent",
+      "width": 155,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 4215,
+        "y": 2090
+      }
+    },
+    {
+      "id": "s-iot-hub",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 546.25
+      },
+      "data": {
+        "label": "Azure IoT Hub",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/10182-icon-service-IoT-Hub.svg",
+        "pricing": {
+          "estimatedCost": 10,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1K",
+          "lastUpdated": "2026-05-21T13:34:00.912Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-ingress",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 350
+      }
+    },
+    {
+      "id": "s-dps",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 686.25
+      },
+      "data": {
+        "label": "Azure IoT Hub Device Provisioning Service",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/03485-icon-service-Azure-IoT-Operations.svg"
+      },
+      "parentNode": "g-ingress",
+      "extent": "parent",
+      "width": 171,
+      "height": 173,
+      "positionAbsolute": {
+        "x": 1440,
+        "y": 490
+      }
+    },
+    {
+      "id": "s-private-link",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 406.25
+      },
+      "data": {
+        "label": "Azure Private Link",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/networking/00427-icon-service-Private-Link.svg"
+      },
+      "parentNode": "g-ingress",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1440,
+        "y": 210
+      }
+    },
+    {
+      "id": "s-stream-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 345.9375
+      },
+      "data": {
+        "label": "Azure Stream Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/stream-analytics.svg",
+        "pricing": {
+          "estimatedCost": 80.3,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-21T13:34:00.914Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-processing",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 2550,
+        "y": 1010
+      }
+    },
+    {
+      "id": "s-aml",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 475.9375
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/azure-machine-learning.svg",
+        "pricing": {
+          "estimatedCost": 50,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1 Hour",
+          "lastUpdated": "2026-05-21T13:34:00.936Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-processing",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 1995,
+        "y": 1140
+      }
+    },
+    {
+      "id": "s-digital-twins",
+      "type": "azureNode",
+      "position": {
+        "x": 1335,
+        "y": 435.9375
+      },
+      "data": {
+        "label": "Azure Digital Twins",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/iot/01030-icon-service-Digital-Twins.svg",
+        "pricing": {
+          "estimatedCost": 0.05,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1K",
+          "lastUpdated": "2026-05-21T13:34:00.936Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-processing",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 3105,
+        "y": 1100
+      }
+    },
+    {
+      "id": "s-data-lake",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 675.78125
+      },
+      "data": {
+        "label": "Azure Data Lake Storage",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/10090-icon-service-Data-Lake-Storage-Gen1.svg",
+        "pricing": {
+          "estimatedCost": 18.4,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-21T13:34:00.917Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 3105,
+        "y": 490
+      }
+    },
+    {
+      "id": "s-synapse",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 675.78125
+      },
+      "data": {
+        "label": "Azure Synapse Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/azure-synapse-analytics.svg"
+      },
+      "parentNode": "g-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 490
+      }
+    },
+    {
+      "id": "s-tsi",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 395.78125
+      },
+      "data": {
+        "label": "Time Series Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10148-icon-service-Analysis-Services.svg"
+      },
+      "parentNode": "g-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 210
+      }
+    },
+    {
+      "id": "s-entra",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 260
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-05-21T13:34:00.917Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "g-identity",
+      "extent": "parent",
+      "width": 171,
+      "height": 132,
+      "positionAbsolute": {
+        "x": 760,
+        "y": 530
+      }
+    },
+    {
+      "id": "s-azure-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 225,
+        "y": 105.9375
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-05-21T13:34:00.944Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-observability",
+      "extent": "parent",
+      "width": 143,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 3105,
+        "y": 1580
+      }
+    },
+    {
+      "id": "s-log-analytics",
+      "type": "azureNode",
+      "position": {
+        "x": 780,
+        "y": 105.9375
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-05-21T13:34:00.944Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "g-observability",
+      "extent": "parent",
+      "width": 138,
+      "height": 111,
+      "positionAbsolute": {
+        "x": 3660,
+        "y": 1580
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "s-industrial-sensors",
+      "target": "s-iot-edge-gateway",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Send raw OT telemetry every 5 seconds over industrial protocols",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "s-iot-edge-gateway",
+      "target": "s-private-link",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward aggregated telemetry securely into Azure via private endpoint",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "s-private-link",
+      "target": "s-iot-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Deliver device telemetry and receive commands over private connectivity",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "s-dps",
+      "target": "s-iot-hub",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provision and assign devices to IoT Hub instances using enrollment policies",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "s-iot-hub",
+      "target": "s-stream-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Stream device telemetry to real-time processing jobs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "s-stream-analytics",
+      "target": "s-data-lake",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Persist raw and curated telemetry streams for hot and cold storage tiers",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "s-data-lake",
+      "target": "s-synapse",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Load historical telemetry for batch analytics and trend reporting",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "s-stream-analytics",
+      "target": "s-tsi",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Publish near real-time time-series data and anomaly events for dashboards",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "s-stream-analytics",
+      "target": "s-digital-twins",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Update digital twin state with contextualized telemetry and alerts",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "s-aml",
+      "target": "s-stream-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Expose deployed predictive models for in-stream anomaly scoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "s-tsi",
+      "target": "s-plant-operators",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Render time-series dashboards and anomaly explorations to operators",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "s-synapse",
+      "target": "s-plant-operators",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Serve batch analytics reports and maintenance trend insights",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "s-digital-twins",
+      "target": "s-plant-operators",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Provide facility model views correlating assets, sensors, and events",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-13",
+      "source": "s-stream-analytics",
+      "target": "s-azure-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit processing metrics and health signals for SLA monitoring",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "s-azure-monitor",
+      "target": "s-log-analytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Forward consolidated platform metrics and logs to central workspace",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {
+        "strokeDasharray": "5, 5"
+      },
+      "data": {
+        "connectionType": "async",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-15",
+      "source": "s-entra",
+      "target": "s-plant-operators",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate and authorize operator access to dashboards and reports",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-16",
+      "source": "s-entra",
+      "target": "s-dps",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Secure access to device provisioning APIs and enrollment management",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 25.5,
+    "y": 20.5859375,
+    "zoom": 0.5
+  },
+  "metadata": {
+    "architectureName": "Untitled Architecture",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-05-21",
+    "savedAt": "2026-05-21T13:37:28.770Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Industrial sensors generate OT telemetry every 5 seconds and send it to the on-premises IoT Edge gateway for aggregation.",
+      "services": [
+        "s-industrial-sensors",
+        "s-iot-edge-gateway"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "The IoT Edge gateway forwards aggregated telemetry through Azure Private Link to Azure IoT Hub over a segregated OT/IT network path.",
+      "services": [
+        "s-iot-edge-gateway",
+        "s-private-link",
+        "s-iot-hub"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Devices are securely onboarded and associated with IoT Hub using Azure IoT Hub Device Provisioning Service under Microsoft Entra ID control.",
+      "services": [
+        "s-dps",
+        "s-iot-hub",
+        "s-entra"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Azure IoT Hub continuously streams incoming telemetry into Azure Stream Analytics jobs for sub-second anomaly detection.",
+      "services": [
+        "s-iot-hub",
+        "s-stream-analytics"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Azure Stream Analytics invokes predictive models trained in Azure Machine Learning to score telemetry in real time for predictive maintenance insights.",
+      "services": [
+        "s-stream-analytics",
+        "s-aml"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Anomaly results and enriched telemetry are written from Stream Analytics into Azure Data Lake Storage to satisfy hot and cold retention requirements.",
+      "services": [
+        "s-stream-analytics",
+        "s-data-lake"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Azure Synapse Analytics reads historical data from Data Lake to run batch analytics and trend reporting across multi-year telemetry.",
+      "services": [
+        "s-data-lake",
+        "s-synapse"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Stream Analytics publishes near real-time time-series data and anomalies to Time Series Insights, while updating Azure Digital Twins with contextualized asset state.",
+      "services": [
+        "s-stream-analytics",
+        "s-tsi",
+        "s-digital-twins"
+      ]
+    },
+    {
+      "step": 9,
+      "description": "Plant operators authenticate via Microsoft Entra ID and use Time Series Insights, Synapse reports, and Digital Twins views to monitor equipment and respond to alerts.",
+      "services": [
+        "s-plant-operators",
+        "s-tsi",
+        "s-synapse",
+        "s-digital-twins",
+        "s-entra"
+      ]
+    },
+    {
+      "step": 10,
+      "description": "Azure Stream Analytics emits operational metrics to Azure Monitor, which consolidates health data and forwards it to Log Analytics for centralized observability.",
+      "services": [
+        "s-stream-analytics",
+        "s-azure-monitor",
+        "s-log-analytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "An industrial IoT predictive maintenance platform for a manufacturing facility with 5,000+ sensors generating telemetry every 5 seconds, requiring real-time anomaly detection with sub-second latency, batch analytics for trend analysis, secure device provisioning and management, OT/IT network segregation with Private Link, 99.9% uptime SLA, 6-month hot storage and 7-year cold retention, using IoT Hub for ingestion, Stream Analytics for real-time processing, Azure ML for predictive models, Data Lake for raw storage, Synapse Analytics for reporting, Time Series Insights for dashboards, and Digital Twins for facility modeling"
+}

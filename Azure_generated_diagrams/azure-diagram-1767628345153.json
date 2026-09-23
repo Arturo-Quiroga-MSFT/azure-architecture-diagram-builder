@@ -1,0 +1,587 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingestion",
+      "type": "groupNode",
+      "position": {
+        "x": -470.194259922394,
+        "y": -236.40786799813705
+      },
+      "data": {
+        "label": "Ingestion"
+      },
+      "style": {
+        "width": 420,
+        "height": 300
+      },
+      "width": 420,
+      "height": 300,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -470.194259922394,
+        "y": -236.40786799813705
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-data-ml",
+      "type": "groupNode",
+      "position": {
+        "x": 70.12680261653634,
+        "y": -204.00503324651325
+      },
+      "data": {
+        "label": "Data & ML"
+      },
+      "style": {
+        "width": 1628,
+        "height": 503
+      },
+      "width": 1628,
+      "height": 503,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 70.12680261653634,
+        "y": -204.00503324651325
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-serving",
+      "type": "groupNode",
+      "position": {
+        "x": 1103.902645094521,
+        "y": 320.60720082793875
+      },
+      "data": {
+        "label": "Serving"
+      },
+      "style": {
+        "width": 460,
+        "height": 175
+      },
+      "width": 460,
+      "height": 175,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1103.902645094521,
+        "y": 320.60720082793875
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-security-monitoring",
+      "type": "groupNode",
+      "position": {
+        "x": 407.7734879378395,
+        "y": 512.0907767211951
+      },
+      "data": {
+        "label": "Security & Monitoring"
+      },
+      "style": {
+        "width": 1025,
+        "height": 511
+      },
+      "width": 1025,
+      "height": 511,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 407.7734879378395,
+        "y": 512.0907767211951
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "svc-eventhubs",
+      "type": "azureNode",
+      "position": {
+        "x": -358.0012398865089,
+        "y": -126.74193677737141
+      },
+      "data": {
+        "label": "Azure Event Hubs",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10149-icon-service-Event-Hub-Clusters.svg"
+      },
+      "width": 137,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -358.0012398865089,
+        "y": -126.74193677737141
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-adls",
+      "type": "azureNode",
+      "position": {
+        "x": 393.15005804920486,
+        "y": -107.46300640926734
+      },
+      "data": {
+        "label": "Azure Data Lake Storage Gen2",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 393.15005804920486,
+        "y": -107.46300640926734
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-adf",
+      "type": "azureNode",
+      "position": {
+        "x": 930.234127222278,
+        "y": -78.18566537697426
+      },
+      "data": {
+        "label": "Azure Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/10145-icon-service-Azure-Data-Explorer-Clusters.svg"
+      },
+      "width": 145,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 930.234127222278,
+        "y": -78.18566537697426
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aml",
+      "type": "azureNode",
+      "position": {
+        "x": 112.31287158332952,
+        "y": 120.78422284650964
+      },
+      "data": {
+        "label": "Azure Machine Learning",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10166-icon-service-Machine-Learning.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 112.31287158332952,
+        "y": 120.78422284650964
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-acr",
+      "type": "azureNode",
+      "position": {
+        "x": 895.5523945990653,
+        "y": 159.76413278301848
+      },
+      "data": {
+        "label": "Azure Container Registry",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/containers/10104-icon-service-Container-Instances.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 895.5523945990653,
+        "y": 159.76413278301848
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-apim",
+      "type": "azureNode",
+      "position": {
+        "x": 1272.031832416061,
+        "y": 358.4182707064027
+      },
+      "data": {
+        "label": "Azure API Management",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/app services/00049-icon-service-App-Service-Certificates.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 1272.031832416061,
+        "y": 358.4182707064027
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-aml-endpoint",
+      "type": "azureNode",
+      "position": {
+        "x": 1503.3210980494694,
+        "y": 99.00649291063405
+      },
+      "data": {
+        "label": "Azure ML Online Endpoint",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/ai + machine learning/10166-icon-service-Machine-Learning.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1503.3210980494694,
+        "y": 99.00649291063405
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 1118.0309348144751,
+        "y": 542.9274062646589
+      },
+      "data": {
+        "label": "Azure Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10224-icon-service-Active-Directory-Connect-Health.svg"
+      },
+      "width": 125,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1118.0309348144751,
+        "y": 542.9274062646589
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-managed-identity",
+      "type": "azureNode",
+      "position": {
+        "x": 682.6848638884981,
+        "y": 555.1221160756169
+      },
+      "data": {
+        "label": "Managed Identity",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10227-icon-service-Entra-Managed-Identities.svg"
+      },
+      "width": 135,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 682.6848638884981,
+        "y": 555.1221160756169
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-appinsights",
+      "type": "azureNode",
+      "position": {
+        "x": 1074.1401181454637,
+        "y": 763.6516538429963
+      },
+      "data": {
+        "label": "Application Insights",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00012-icon-service-Application-Insights.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1074.1401181454637,
+        "y": 763.6516538429963
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 554.6353415482221,
+        "y": 719.0230713950651
+      },
+      "data": {
+        "label": "Log Analytics Workspace",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00007-icon-service-Activity-Log.svg"
+      },
+      "width": 146,
+      "height": 121,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 554.6353415482221,
+        "y": 719.0230713950651
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 939.9932408997088,
+        "y": 862.920647164368
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00438-icon-service-Azure-Monitors-for-SAP-Solutions.svg"
+      },
+      "width": 120,
+      "height": 106,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 939.9932408997088,
+        "y": 862.920647164368
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-eventhubs",
+      "target": "svc-adls",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Capture/land incoming data to data lake",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-adf",
+      "target": "svc-adls",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Ingest/transform data into curated datasets",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-adf",
+      "target": "svc-aml",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Trigger training pipeline runs",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-adls",
+      "target": "svc-aml",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Training data read for feature prep and model training",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-aml",
+      "target": "svc-acr",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Build/push training and inference images",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-acr",
+      "target": "svc-aml-endpoint",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Pull model/serving image for deployment",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-apim",
+      "target": "svc-aml-endpoint",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Route client inference requests to model endpoint",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-managed-identity",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Access secrets via managed identity",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-aml",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Retrieve secrets for data access and deployments",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-9",
+      "source": "svc-adf",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Retrieve linked service credentials and secrets",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-10",
+      "source": "svc-apim",
+      "target": "svc-keyvault",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Retrieve API secrets/certificates",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-11",
+      "source": "svc-aml-endpoint",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Inference telemetry and performance metrics",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-12",
+      "source": "svc-apim",
+      "target": "svc-appinsights",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "API request telemetry",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-13",
+      "source": "svc-appinsights",
+      "target": "svc-loganalytics",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Export/retain logs for querying and correlation",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    },
+    {
+      "id": "edge-14",
+      "source": "svc-loganalytics",
+      "target": "svc-monitor",
+      "animated": true,
+      "type": "smoothstep",
+      "label": "Alerts and workbooks from centralized logs",
+      "labelStyle": {
+        "fontSize": 10,
+        "fill": "#666"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.8
+      }
+    }
+  ],
+  "viewport": {
+    "x": 603.4640650676208,
+    "y": 279.7090305631249,
+    "zoom": 0.8200277132477765
+  }
+}

@@ -1,0 +1,813 @@
+{
+  "nodes": [
+    {
+      "id": "grp-ingress",
+      "type": "groupNode",
+      "position": {
+        "x": -160,
+        "y": 640
+      },
+      "data": {
+        "label": "Ingress & Data Integration"
+      },
+      "style": {
+        "width": 251,
+        "height": 263
+      },
+      "width": 251,
+      "height": 263,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -160,
+        "y": 640
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-data",
+      "type": "groupNode",
+      "position": {
+        "x": 800,
+        "y": 520
+      },
+      "data": {
+        "label": "Data Storage & Warehouse"
+      },
+      "style": {
+        "width": 1123,
+        "height": 642
+      },
+      "width": 1123,
+      "height": 642,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 800,
+        "y": 520
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-gov",
+      "type": "groupNode",
+      "position": {
+        "x": 960,
+        "y": 200
+      },
+      "data": {
+        "label": "Governance & Catalog"
+      },
+      "style": {
+        "width": 491,
+        "height": 263
+      },
+      "width": 491,
+      "height": 263,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 960,
+        "y": 200
+      },
+      "dragging": false,
+      "resizing": false
+    },
+    {
+      "id": "grp-sec-id",
+      "type": "groupNode",
+      "position": {
+        "x": 2000,
+        "y": 760
+      },
+      "data": {
+        "label": "Identity & Security"
+      },
+      "style": {
+        "width": 251,
+        "height": 522
+      },
+      "width": 251,
+      "height": 522,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2000,
+        "y": 760
+      },
+      "dragging": false
+    },
+    {
+      "id": "grp-monitor",
+      "type": "groupNode",
+      "position": {
+        "x": 420,
+        "y": 1220
+      },
+      "data": {
+        "label": "Monitoring & Observability"
+      },
+      "style": {
+        "width": 774,
+        "height": 242
+      },
+      "width": 774,
+      "height": 242,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 420,
+        "y": 1220
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-adf",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure Data Factory",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/data-factory.svg",
+        "pricing": {
+          "estimatedCost": 5,
+          "tier": "Cloud",
+          "skuName": "Cloud",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Month",
+          "lastUpdated": "2026-06-30T23:58:49.686Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-ingress",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": -120,
+        "y": 730
+      }
+    },
+    {
+      "id": "svc-sqldb",
+      "type": "azureNode",
+      "position": {
+        "x": 900,
+        "y": 60
+      },
+      "data": {
+        "label": "SQL Database",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/databases/sql-database.svg",
+        "pricing": {
+          "estimatedCost": 29.031,
+          "tier": "S1",
+          "skuName": "S1",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Day",
+          "lastUpdated": "2026-06-30T23:58:49.634Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 145,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1700,
+        "y": 580
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-storage",
+      "type": "azureNode",
+      "position": {
+        "x": 760,
+        "y": 400
+      },
+      "data": {
+        "label": "Storage Account",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+        "pricing": {
+          "estimatedCost": 14.6,
+          "tier": "Hot LRS",
+          "skuName": "Hot LRS",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-06-30T23:58:49.634Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 163,
+      "height": 112,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1560,
+        "y": 920
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-purview",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Microsoft Purview",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/management + governance/10314-icon-service-Azure-Purview-Accounts.svg",
+        "pricing": {
+          "estimatedCost": 0.495,
+          "tier": "Data Catalog Standard",
+          "skuName": "Data Catalog Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1/Day",
+          "lastUpdated": "2026-06-30T23:58:49.662Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-gov",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 1000,
+        "y": 290
+      }
+    },
+    {
+      "id": "svc-powerbi",
+      "type": "azureNode",
+      "position": {
+        "x": 280,
+        "y": 260
+      },
+      "data": {
+        "label": "Power BI Embedded",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/analytics/03332-icon-service-Power-BI-Embedded.svg",
+        "pricing": {
+          "estimatedCost": 1471,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-06-30T23:58:49.634Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-data",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1080,
+        "y": 780
+      },
+      "dragging": false
+    },
+    {
+      "id": "svc-entra",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Microsoft Entra ID",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+        "pricing": {
+          "estimatedCost": 6,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "per instance/month",
+          "lastUpdated": "2026-06-30T23:58:49.634Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-sec-id",
+      "extent": "parent",
+      "width": 171,
+      "height": 133,
+      "positionAbsolute": {
+        "x": 2040,
+        "y": 850
+      }
+    },
+    {
+      "id": "svc-keyvault",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 370
+      },
+      "data": {
+        "label": "Key Vault",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+        "pricing": {
+          "estimatedCost": 21.9,
+          "tier": "Standard",
+          "skuName": "Standard",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "10K",
+          "lastUpdated": "2026-06-30T23:58:49.685Z",
+          "isCustom": false,
+          "isUsageBased": false
+        }
+      },
+      "parentNode": "grp-sec-id",
+      "extent": "parent",
+      "width": 120,
+      "height": 112,
+      "positionAbsolute": {
+        "x": 2040,
+        "y": 1130
+      }
+    },
+    {
+      "id": "svc-monitor",
+      "type": "azureNode",
+      "position": {
+        "x": 40,
+        "y": 90
+      },
+      "data": {
+        "label": "Azure Monitor",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/00001-icon-service-Monitor.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-06-30T23:58:49.686Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-monitor",
+      "extent": "parent",
+      "width": 144,
+      "height": 112,
+      "positionAbsolute": {
+        "x": 460,
+        "y": 1310
+      }
+    },
+    {
+      "id": "svc-loganalytics",
+      "type": "azureNode",
+      "position": {
+        "x": 595,
+        "y": 90
+      },
+      "data": {
+        "label": "Log Analytics",
+        "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+        "pricing": {
+          "estimatedCost": 2.3,
+          "tier": "Voice Calls",
+          "skuName": "Voice Calls",
+          "quantity": 1,
+          "region": "eastus2",
+          "unit": "1",
+          "lastUpdated": "2026-06-30T23:58:49.686Z",
+          "isCustom": false,
+          "isUsageBased": true
+        }
+      },
+      "parentNode": "grp-monitor",
+      "extent": "parent",
+      "width": 139,
+      "height": 112,
+      "positionAbsolute": {
+        "x": 1015,
+        "y": 1310
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0",
+      "source": "svc-adf",
+      "target": "svc-keyvault",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Retrieve source connection secrets and managed identity credentials before pipeline runs",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      },
+      "selected": false
+    },
+    {
+      "id": "edge-1",
+      "source": "svc-adf",
+      "target": "svc-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Land raw extracts and staged files during scheduled imports",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "svc-adf",
+      "target": "svc-sqldb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Load curated tables and run transformation procedures in the data warehouse",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "svc-purview",
+      "target": "svc-storage",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Scan staging/landing data to populate catalog metadata, classifications, and lineage",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "svc-purview",
+      "target": "svc-sqldb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Scan warehouse schemas and capture lineage and glossary terms for governed datasets",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "svc-powerbi",
+      "target": "svc-sqldb",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Query warehouse tables/views to render embedded reports and dashboards",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "svc-powerbi",
+      "target": "svc-entra",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Authenticate users and obtain tokens for report embedding and dataset access",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "svc-adf",
+      "target": "svc-monitor",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Emit pipeline run status, activity failures, and operational metrics for alerting",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    },
+    {
+      "id": "edge-8",
+      "source": "svc-monitor",
+      "target": "svc-loganalytics",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "animated": false,
+      "type": "editableEdge",
+      "label": "Store collected monitoring data for query, dashboards, and retention",
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#0078d4"
+      },
+      "labelStyle": {
+        "fontSize": 14,
+        "fill": "#333",
+        "fontWeight": "bold"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "stroke": "#000",
+        "strokeWidth": 1.5
+      },
+      "style": {},
+      "data": {
+        "connectionType": "sync",
+        "direction": "forward",
+        "baseFlowAnimated": true,
+        "flowAnimated": true,
+        "flowMode": "directional",
+        "pathStyle": "orthogonal",
+        "labelOffsetX": 0,
+        "labelOffsetY": 0
+      }
+    }
+  ],
+  "viewport": {
+    "x": 343.8508320126782,
+    "y": -41.7634706814581,
+    "zoom": 0.5659006867406234
+  },
+  "metadata": {
+    "architectureName": "A Data Warehouse With Azure SQL Database Data",
+    "author": "Azure Architect",
+    "version": "1.0",
+    "date": "2026-06-30",
+    "savedAt": "2026-07-01T00:01:53.518Z"
+  },
+  "workflow": [
+    {
+      "step": 1,
+      "description": "A scheduled pipeline run starts and acquires secrets needed to connect to external sources.",
+      "services": [
+        "svc-adf",
+        "svc-keyvault"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Data Factory extracts data from multiple sources and lands raw/staged files in the landing zone.",
+      "services": [
+        "svc-adf",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Data Factory performs transformations and loads curated datasets into the Azure SQL data warehouse.",
+      "services": [
+        "svc-adf",
+        "svc-sqldb"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Purview scans the landing/staging area to catalog new assets and classify sensitive data.",
+      "services": [
+        "svc-purview",
+        "svc-storage"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Purview scans the Azure SQL warehouse to capture schemas, lineage, and business glossary mappings.",
+      "services": [
+        "svc-purview",
+        "svc-sqldb"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "End users authenticate via Entra ID and Power BI Embedded obtains tokens to render embedded reports.",
+      "services": [
+        "svc-powerbi",
+        "svc-entra"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Power BI Embedded queries the SQL warehouse to populate visuals and enable interactive analytics.",
+      "services": [
+        "svc-powerbi",
+        "svc-sqldb"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Operational health and failures from pipeline runs are sent to Azure Monitor and retained in Log Analytics for investigation.",
+      "services": [
+        "svc-adf",
+        "svc-monitor",
+        "svc-loganalytics"
+      ]
+    }
+  ],
+  "architecturePrompt": "A data warehouse with Azure SQL Database, Data Factory for scheduled imports from multiple sources, Purview for data governance and cataloging, and Power BI embedded reports"
+}

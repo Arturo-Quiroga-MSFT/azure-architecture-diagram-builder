@@ -1,0 +1,248 @@
+{
+  "groups": [
+    {
+      "id": "edge-auth",
+      "label": "Edge & Authentication"
+    },
+    {
+      "id": "group-ai-foundry",
+      "label": "AI Foundry Orchestration"
+    },
+    {
+      "id": "retrieval",
+      "label": "Retrieval & Caching"
+    },
+    {
+      "id": "generation",
+      "label": "AI Generation"
+    },
+    {
+      "id": "observability",
+      "label": "Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "type": "App Service",
+      "category": "app services",
+      "description": "RAG application frontend",
+      "groupId": "edge-auth"
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication",
+      "groupId": "edge-auth"
+    },
+    {
+      "id": "ai-foundry",
+      "name": "Azure AI Foundry",
+      "type": "Azure AI Foundry",
+      "category": "ai + machine learning",
+      "description": "RAG orchestration workflow",
+      "groupId": "group-ai-foundry"
+    },
+    {
+      "id": "ai-search",
+      "name": "Azure Cognitive Search",
+      "type": "Azure Cognitive Search",
+      "category": "ai + machine learning",
+      "description": "Hybrid vector/keyword retrieval",
+      "groupId": "retrieval"
+    },
+    {
+      "id": "redis-cache",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Semantic response caching",
+      "groupId": "retrieval"
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "type": "Azure OpenAI",
+      "category": "ai + machine learning",
+      "description": "GPT-5 response generation",
+      "groupId": "generation"
+    },
+    {
+      "id": "app-insights",
+      "name": "Application Insights",
+      "type": "Application Insights",
+      "category": "monitor",
+      "description": "Application telemetry",
+      "groupId": "observability"
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Centralized logs",
+      "groupId": "observability"
+    }
+  ],
+  "connections": [
+    {
+      "from": "app-service",
+      "to": "entra-id",
+      "label": "Authenticate user sessions",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "ai-foundry",
+      "label": "Submit RAG query request",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "ai-search",
+      "label": "Execute hybrid vector/keyword search",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "redis-cache",
+      "label": "Check semantic cache for existing response",
+      "type": "sync"
+    },
+    {
+      "from": "redis-cache",
+      "to": "ai-foundry",
+      "label": "Return cached response if found",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "openai",
+      "label": "Generate response with retrieved context",
+      "type": "sync"
+    },
+    {
+      "from": "openai",
+      "to": "ai-foundry",
+      "label": "Return generated response",
+      "type": "sync"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "redis-cache",
+      "label": "Cache new semantic response",
+      "type": "async"
+    },
+    {
+      "from": "ai-foundry",
+      "to": "app-service",
+      "label": "Return final RAG response",
+      "type": "sync"
+    },
+    {
+      "from": "app-service",
+      "to": "app-insights",
+      "label": "Send application telemetry",
+      "type": "async"
+    },
+    {
+      "from": "app-insights",
+      "to": "log-analytics",
+      "label": "Forward metrics and traces",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User authenticates via Entra ID and submits query to App Service",
+      "services": [
+        "app-service",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "App Service forwards query to AI Foundry orchestrator",
+      "services": [
+        "app-service",
+        "ai-foundry"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "AI Foundry checks Redis semantic cache for existing response",
+      "services": [
+        "ai-foundry",
+        "redis-cache"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "AI Foundry performs hybrid retrieval via Cognitive Search",
+      "services": [
+        "ai-foundry",
+        "ai-search"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "AI Foundry invokes Azure OpenAI GPT-5 for response generation",
+      "services": [
+        "ai-foundry",
+        "openai"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Generated response cached in Redis and returned to App Service",
+      "services": [
+        "ai-foundry",
+        "redis-cache",
+        "app-service"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "App Service streams final response to authenticated user",
+      "services": [
+        "app-service",
+        "entra-id"
+      ]
+    },
+    {
+      "step": 8,
+      "description": "Application Insights collects telemetry forwarded to Log Analytics",
+      "services": [
+        "app-service",
+        "app-insights",
+        "log-analytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1413,
+    "completionTokens": 1338,
+    "totalTokens": 2751,
+    "elapsedTimeMs": 15983,
+    "model": "grok-4-1-fast-non-reasoning"
+  },
+  "metadata": {
+    "prompt": "An enterprise RAG application with Azure AI Foundry for orchestration, Azure AI Search with hybrid vector and keyword retrieval, Azure OpenAI GPT-5 for generation, Azure Cache for Redis for semantic caching, and App Service with Entra ID authentication",
+    "model": "grok-4.1-fast",
+    "modelDisplayName": "Grok 4.1 Fast",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1413,
+      "completionTokens": 1338,
+      "totalTokens": 2751,
+      "elapsedTimeMs": 15983,
+      "model": "grok-4-1-fast-non-reasoning"
+    },
+    "savedAt": "2026-05-26T20:15:57.493Z",
+    "source": "model-comparison"
+  }
+}

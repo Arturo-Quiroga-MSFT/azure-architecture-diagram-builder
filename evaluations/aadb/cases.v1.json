@@ -1,0 +1,87 @@
+{
+  "name": "aadb-eval-seed",
+  "version": "v1",
+  "stage": "seed",
+  "description": "Synthetic architecture-generation smoke cases normalized from approved AADB model-comparison outputs.",
+  "cases": [
+    {
+      "id": "multi-region-commerce",
+      "sourceFile": "model-comparisons/ai-critique-comparisons-try1-may28-2026/MultiRegionCommerceSystem-Model-Comparison.json",
+      "expectedBehavior": "Create a coherent multi-region commerce architecture with global HTTP routing, a globally distributed product catalog, distributed session caching, asynchronous order event processing, identity, and observability. Every service must belong to a valid group and participate in at least one meaningful connection.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["azure front door"],
+          ["azure cosmos db", "cosmos db"],
+          ["azure cache for redis", "redis cache"],
+          ["azure event grid", "event grid"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["azure front door"],
+            "to": ["app service", "container apps", "azure functions", "functions", "azure kubernetes service", "kubernetes service"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "functions", "azure kubernetes service", "kubernetes service"],
+            "to": ["azure cache for redis", "redis cache"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "functions", "azure kubernetes service", "kubernetes service"],
+            "to": ["azure cosmos db", "cosmos db"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "functions", "azure kubernetes service", "kubernetes service"],
+            "to": ["azure event grid", "event grid"]
+          }
+        ],
+        "forbiddenConnections": [
+          {
+            "from": ["azure monitor"],
+            "to": ["log analytics"]
+          }
+        ],
+        "minimumGroups": 3,
+        "minimumWorkflowSteps": 4
+      }
+    },
+    {
+      "id": "intelligent-document-processing",
+      "sourceFile": "model-comparisons/ai-critique-comparisons-try1-may28-2026/IntelligentDocumentProcessingPipeline-Model-Comparison.json",
+      "expectedBehavior": "Create an intelligent document processing pipeline that accepts documents, performs OCR with Azure AI Document Intelligence, summarizes extracted content with Azure OpenAI, indexes content in Azure AI Search, stores metadata in Cosmos DB, retains documents in Blob Storage, and includes identity and observability. Every service must belong to a valid group and participate in at least one meaningful connection.",
+      "requirements": {
+        "requiredServiceSets": [
+          ["azure ai document intelligence", "document intelligence"],
+          ["azure openai"],
+          ["azure ai search", "azure cognitive search", "cognitive search"],
+          ["azure cosmos db", "cosmos db"],
+          ["storage account", "blob storage"]
+        ],
+        "requiredConnections": [
+          {
+            "from": ["app service", "container apps", "azure functions", "functions"],
+            "to": ["azure ai document intelligence", "document intelligence"]
+          },
+          {
+            "from": ["azure ai document intelligence", "document intelligence"],
+            "to": ["azure openai"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "functions", "azure openai"],
+            "to": ["azure ai search", "azure cognitive search", "cognitive search"]
+          },
+          {
+            "from": ["app service", "container apps", "azure functions", "functions"],
+            "to": ["azure cosmos db", "cosmos db"]
+          }
+        ],
+        "forbiddenConnections": [
+          {
+            "from": ["azure monitor"],
+            "to": ["log analytics"]
+          }
+        ],
+        "minimumGroups": 3,
+        "minimumWorkflowSteps": 4
+      }
+    }
+  ]
+}

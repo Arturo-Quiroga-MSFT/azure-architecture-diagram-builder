@@ -1,0 +1,248 @@
+{
+  "title": "Multi-Region E-Commerce Platform",
+  "canvas": {
+    "width": 2032,
+    "height": 1000
+  },
+  "zones": [
+    {
+      "id": "external-clients",
+      "label": "External Clients",
+      "kind": "external",
+      "x": 16,
+      "y": 386,
+      "width": 238,
+      "height": 188
+    },
+    {
+      "id": "edge-routing",
+      "label": "Global Edge Routing",
+      "kind": "subsystem",
+      "x": 336,
+      "y": 386,
+      "width": 238,
+      "height": 188
+    },
+    {
+      "id": "application-compute",
+      "label": "Application & Services",
+      "kind": "subsystem",
+      "x": 1234,
+      "y": 386,
+      "width": 778,
+      "height": 388
+    },
+    {
+      "id": "data-layer",
+      "label": "Data Layer",
+      "kind": "subsystem",
+      "x": 656,
+      "y": 696,
+      "width": 508,
+      "height": 273
+    }
+  ],
+  "nodes": [
+    {
+      "id": "customers",
+      "name": "Customers",
+      "category": "general",
+      "kind": "persona",
+      "x": 60,
+      "y": 430,
+      "zone": "external-clients"
+    },
+    {
+      "id": "frontdoor",
+      "name": "Azure Front Door",
+      "category": "networking",
+      "kind": "cloud",
+      "x": 380,
+      "y": 430,
+      "zone": "edge-routing"
+    },
+    {
+      "id": "appservice",
+      "name": "App Service",
+      "category": "app services",
+      "kind": "service",
+      "x": 1278,
+      "y": 430,
+      "zone": "application-compute"
+    },
+    {
+      "id": "redis",
+      "name": "Azure Cache for Redis",
+      "category": "databases",
+      "kind": "service",
+      "x": 1278,
+      "y": 630,
+      "zone": "application-compute"
+    },
+    {
+      "id": "eventgrid",
+      "name": "Azure Event Grid",
+      "category": "integration",
+      "kind": "service",
+      "x": 1548,
+      "y": 430,
+      "zone": "application-compute"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "category": "compute",
+      "kind": "service",
+      "x": 1818,
+      "y": 430,
+      "zone": "application-compute"
+    },
+    {
+      "id": "cosmosdb",
+      "name": "Azure Cosmos DB",
+      "category": "databases",
+      "kind": "database",
+      "x": 700,
+      "y": 825,
+      "zone": "data-layer"
+    },
+    {
+      "id": "sql",
+      "name": "SQL Database",
+      "category": "databases",
+      "kind": "database",
+      "x": 970,
+      "y": 740,
+      "zone": "data-layer"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "customers",
+      "to": "frontdoor",
+      "step": 1,
+      "label": "Browse & order",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e2",
+      "from": "frontdoor",
+      "to": "appservice",
+      "step": 2,
+      "label": "Route request",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e3",
+      "from": "appservice",
+      "to": "redis",
+      "step": 3,
+      "label": "Get/set session",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e4",
+      "from": "appservice",
+      "to": "cosmosdb",
+      "step": 4,
+      "label": "Read catalog",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e5",
+      "from": "appservice",
+      "to": "sql",
+      "step": 5,
+      "label": "Create order",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e6",
+      "from": "appservice",
+      "to": "eventgrid",
+      "step": 6,
+      "label": "Publish order",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e7",
+      "from": "eventgrid",
+      "to": "functions",
+      "step": 7,
+      "label": "Trigger handler",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e8",
+      "from": "functions",
+      "to": "sql",
+      "step": 8,
+      "label": "Update order",
+      "routing": "orthogonal",
+      "style": "solid"
+    },
+    {
+      "id": "e9",
+      "from": "functions",
+      "to": "cosmosdb",
+      "step": 9,
+      "label": "Update inventory",
+      "routing": "orthogonal",
+      "style": "solid"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "Customers from multiple regions browse the e-commerce site and initiate browsing or order actions."
+    },
+    {
+      "step": 2,
+      "description": "Azure Front Door routes the HTTP(S) request to the closest healthy regional Azure App Service backend."
+    },
+    {
+      "step": 3,
+      "description": "Azure App Service reads and writes user session data and cached responses in Azure Cache for Redis for low-latency access."
+    },
+    {
+      "step": 4,
+      "description": "Azure App Service reads product catalog and pricing data from globally distributed Azure Cosmos DB."
+    },
+    {
+      "step": 5,
+      "description": "For a checkout request, Azure App Service creates a new order record in the regional Azure SQL Database."
+    },
+    {
+      "step": 6,
+      "description": "Azure App Service publishes an order-created event to Event Grid for downstream asynchronous processing."
+    },
+    {
+      "step": 7,
+      "description": "Event Grid triggers Azure Functions subscribed to order-related events for tasks such as payment confirmation and fulfillment."
+    },
+    {
+      "step": 8,
+      "description": "Azure Functions update the corresponding order status and payment details in Azure SQL Database."
+    },
+    {
+      "step": 9,
+      "description": "Azure Functions adjust inventory and related catalog attributes in Azure Cosmos DB to reflect the completed order."
+    }
+  ],
+  "metrics": {
+    "promptTokens": 3452,
+    "completionTokens": 2919,
+    "totalTokens": 6371,
+    "elapsedTimeMs": 25755,
+    "model": "gpt-5.1"
+  },
+  "exportedAt": "2026-05-27T01:49:23.549Z"
+}

@@ -1,0 +1,237 @@
+{
+  "groups": [
+    {
+      "id": "ingress",
+      "label": "Ingress & Edge"
+    },
+    {
+      "id": "application",
+      "label": "Application Layer"
+    },
+    {
+      "id": "data",
+      "label": "Data & Storage"
+    },
+    {
+      "id": "identity",
+      "label": "Identity & Security"
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring & Observability"
+    }
+  ],
+  "services": [
+    {
+      "id": "frontDoor",
+      "name": "Azure Front Door",
+      "type": "Azure Front Door",
+      "category": "networking",
+      "description": "Global traffic routing and CDN for multi-region requests",
+      "groupId": "ingress"
+    },
+    {
+      "id": "functions",
+      "name": "Azure Functions",
+      "type": "Azure Functions",
+      "category": "compute",
+      "description": "Handles API requests, session logic and order processing",
+      "groupId": "application"
+    },
+    {
+      "id": "eventGrid",
+      "name": "Azure Event Grid",
+      "type": "Azure Event Grid",
+      "category": "integration",
+      "description": "Publishes and routes order events for processing",
+      "groupId": "application"
+    },
+    {
+      "id": "cosmosDb",
+      "name": "Azure Cosmos DB",
+      "type": "Azure Cosmos DB",
+      "category": "databases",
+      "description": "Global multi-region product catalog storage",
+      "groupId": "data"
+    },
+    {
+      "id": "redisCache",
+      "name": "Azure Cache for Redis",
+      "type": "Azure Cache for Redis",
+      "category": "databases",
+      "description": "Session state and frequently accessed data cache",
+      "groupId": "data"
+    },
+    {
+      "id": "entraId",
+      "name": "Microsoft Entra ID",
+      "type": "Microsoft Entra ID",
+      "category": "identity",
+      "description": "User authentication and token validation",
+      "groupId": "identity"
+    },
+    {
+      "id": "keyVault",
+      "name": "Key Vault",
+      "type": "Key Vault",
+      "category": "security",
+      "description": "Secrets, keys and connection string management",
+      "groupId": "identity"
+    },
+    {
+      "id": "azureMonitor",
+      "name": "Azure Monitor",
+      "type": "Azure Monitor",
+      "category": "monitor",
+      "description": "Central metrics and telemetry collection hub",
+      "groupId": "monitoring"
+    },
+    {
+      "id": "logAnalytics",
+      "name": "Log Analytics",
+      "type": "Log Analytics",
+      "category": "monitor",
+      "description": "Log aggregation and query analytics",
+      "groupId": "monitoring"
+    }
+  ],
+  "connections": [
+    {
+      "from": "frontDoor",
+      "to": "functions",
+      "label": "Route multi-region HTTP requests to nearest backend",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "redisCache",
+      "label": "Store and retrieve user session data",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "cosmosDb",
+      "label": "Query and update global product catalog",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "eventGrid",
+      "label": "Publish order created and status events",
+      "type": "async"
+    },
+    {
+      "from": "eventGrid",
+      "to": "functions",
+      "label": "Trigger order fulfillment and notification handlers",
+      "type": "async"
+    },
+    {
+      "from": "functions",
+      "to": "entraId",
+      "label": "Validate JWT tokens for authenticated API access",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "keyVault",
+      "label": "Retrieve database connection strings and secrets",
+      "type": "sync"
+    },
+    {
+      "from": "functions",
+      "to": "azureMonitor",
+      "label": "Emit application metrics and distributed traces",
+      "type": "sync"
+    },
+    {
+      "from": "azureMonitor",
+      "to": "logAnalytics",
+      "label": "Forward collected logs for long-term analysis",
+      "type": "async"
+    }
+  ],
+  "workflow": [
+    {
+      "step": 1,
+      "description": "User request arrives and is routed globally by Front Door to the nearest Functions instance",
+      "services": [
+        "frontDoor",
+        "functions"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Azure Functions validates the user session token against Microsoft Entra ID",
+      "services": [
+        "functions",
+        "entraId"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Session data and shopping cart state are loaded from Redis Cache",
+      "services": [
+        "functions",
+        "redisCache"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Product catalog and inventory are read from the globally replicated Cosmos DB",
+      "services": [
+        "functions",
+        "cosmosDb"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Order is created and an event is published to Event Grid for async processing",
+      "services": [
+        "functions",
+        "eventGrid"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Event Grid triggers order fulfillment, payment, and notification workflows in Functions",
+      "services": [
+        "eventGrid",
+        "functions"
+      ]
+    },
+    {
+      "step": 7,
+      "description": "Functions emits telemetry to Azure Monitor which forwards logs to Log Analytics",
+      "services": [
+        "functions",
+        "azureMonitor",
+        "logAnalytics"
+      ]
+    }
+  ],
+  "metrics": {
+    "promptTokens": 1412,
+    "completionTokens": 1084,
+    "totalTokens": 6041,
+    "elapsedTimeMs": 51895,
+    "model": "grok-4.3",
+    "reasoningEffort": "none"
+  },
+  "metadata": {
+    "prompt": "A multi-region e-commerce system with Cosmos DB for global product catalog, Azure Front Door for traffic routing, Redis Cache for sessions, and Event Grid for order processing",
+    "model": "grok-4.3",
+    "modelDisplayName": "Grok 4.3",
+    "reasoningEffort": "medium",
+    "metrics": {
+      "promptTokens": 1412,
+      "completionTokens": 1084,
+      "totalTokens": 6041,
+      "elapsedTimeMs": 51895,
+      "model": "grok-4.3",
+      "reasoningEffort": "none"
+    },
+    "savedAt": "2026-05-28T18:39:42.787Z",
+    "source": "model-comparison"
+  }
+}

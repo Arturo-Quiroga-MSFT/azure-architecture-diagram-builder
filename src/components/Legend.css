@@ -1,0 +1,210 @@
+.legend {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 2px solid #333;
+  border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  max-width: 95vw;
+}
+
+.legend.collapsed {
+  min-width: auto;
+}
+
+.legend-header {
+  background: #333;
+  color: white;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.legend-header:hover {
+  background: #444;
+}
+
+.legend-title {
+  flex: 1;
+}
+
+.legend-toggle {
+  font-size: 0.65rem;
+  margin-left: 8px;
+}
+
+.legend-content {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.legend-section {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.legend-section:last-child {
+  margin-bottom: 0;
+}
+
+.legend-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.legend-item:hover {
+  background-color: #f8f8f8;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-line {
+  flex-shrink: 0;
+  width: 40px;
+  height: 16px;
+}
+
+.legend-color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.legend-description {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.legend-description strong {
+  font-size: 0.75rem;
+  color: #333;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.legend-description span {
+  font-size: 0.65rem;
+  color: #666;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Pricing badge styles */
+.legend-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  min-width: 50px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.legend-badge.fixed-pricing {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.legend-badge.usage-pricing {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+/* Cost level badge styles */
+.legend-badge.cost-low {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.legend-badge.cost-medium {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.legend-badge.cost-high {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.legend-badge.cost-very-high {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Dark Mode Styles — Midnight Blue */
+body.dark-mode .legend {
+  background: #152238;
+  border: 2px solid #1e3a5f;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .legend-header {
+  background: #0f1b2d;
+  color: #ffffff;
+}
+
+body.dark-mode .legend-header:hover {
+  background: #132640;
+}
+
+body.dark-mode .legend-section-title {
+  color: #8ab4e0;
+  font-weight: 700;
+  border-bottom: 1px solid #1e3a5f;
+}
+
+body.dark-mode .legend-item {
+  border-radius: 3px;
+}
+
+body.dark-mode .legend-item:hover {
+  background-color: #1a2d47;
+}
+
+body.dark-mode .legend-description strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+body.dark-mode .legend-description span {
+  color: #a0bfdf;
+  font-weight: 500;
+}

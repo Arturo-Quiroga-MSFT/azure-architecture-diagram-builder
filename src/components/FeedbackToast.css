@@ -1,0 +1,145 @@
+/* ==========================================================================
+   Feedback Toast — lightweight post-generation one-click prompt
+   ========================================================================== */
+
+.feedback-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 74px; /* sits just above the floating Feedback button */
+  z-index: 950;
+  width: 300px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+  padding: 14px 16px 16px;
+  animation: feedbackToastIn 0.25s ease-out;
+}
+
+@keyframes feedbackToastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feedback-toast-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 6px;
+  line-height: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.feedback-toast-close:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.feedback-toast-prompt {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 2px 18px 12px 0;
+}
+
+.feedback-toast-ratings {
+  display: flex;
+  gap: 6px;
+}
+
+.feedback-toast-rating {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  padding: 8px 0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s, border-color 0.15s;
+}
+
+.feedback-toast-rating:hover {
+  background: #eff6ff;
+  border-color: #bae6fd;
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* Thank-you state */
+.feedback-toast-thanks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  color: #1f2937;
+  margin-right: 18px;
+}
+
+.feedback-toast-thanks-icon {
+  color: #16a34a;
+}
+
+.feedback-toast-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.feedback-toast-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Dark mode
+   -------------------------------------------------------------------------- */
+
+body.dark-mode .feedback-toast {
+  background: #1e1e1e;
+  border-color: #333;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .feedback-toast-prompt {
+  color: #f3f4f6;
+}
+
+body.dark-mode .feedback-toast-rating {
+  background: #2a2a2a;
+  border-color: #404040;
+}
+
+body.dark-mode .feedback-toast-rating:hover {
+  background: #0f1b2d;
+  border-color: #1e3a5f;
+}
+
+body.dark-mode .feedback-toast-thanks {
+  color: #d1d5db;
+}
+
+body.dark-mode .feedback-toast-close {
+  color: #6b7280;
+}
+
+body.dark-mode .feedback-toast-close:hover {
+  color: #f3f4f6;
+  background: #2a2a2a;
+}
+
+body.dark-mode .feedback-toast-link {
+  color: #60a5fa;
+}

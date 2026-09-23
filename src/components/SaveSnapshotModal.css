@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Save Snapshot Modal Styles
+   ========================================================================== */
+
+.save-snapshot-modal {
+  max-width: 500px;
+}
+
+/* --------------------------------------------------------------------------
+   Snapshot Info
+   -------------------------------------------------------------------------- */
+
+.snapshot-info {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.snapshot-info-text {
+  margin: 0 0 4px 0;
+  color: #0c4a6e;
+  font-size: 14px;
+}
+
+.snapshot-info-text strong {
+  color: #0c4a6e;
+  font-weight: 600;
+}
+
+.snapshot-info-details {
+  margin: 0;
+  color: #0369a1;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   Form Group
+   -------------------------------------------------------------------------- */
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.label-hint {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Textarea
+   -------------------------------------------------------------------------- */
+
+.snapshot-notes {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.snapshot-notes:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.snapshot-notes:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.character-count {
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Hint
+   -------------------------------------------------------------------------- */
+
+.snapshot-hint {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Spinner
+   -------------------------------------------------------------------------- */
+
+.spinner-small {
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

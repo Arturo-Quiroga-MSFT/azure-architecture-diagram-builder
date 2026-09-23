@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azure Architecture Diagram</title>
+  <style data-app-shell-style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 360px;
+      background: var(--color-background-primary, #f8f9fa);
+      color: var(--color-text-primary, #1b1b1b);
+      font: 14px/1.4 var(--font-sans, "Segoe UI", sans-serif);
+    }
+    .status { text-align: center; }
+    .status strong { display: block; margin-bottom: 6px; }
+    .status span { color: var(--color-text-secondary, #605e5c); }
+    .status.error strong { color: var(--color-text-danger, #a4262c); }
+    .svg-output { width: 100%; height: 100%; overflow: auto; padding: 12px; }
+    .svg-output svg { display: block; width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <div class="status" id="status">
+    <strong>Preparing architecture diagram</strong>
+    <span>Waiting for the renderer result...</span>
+  </div>
+  <script>/* DIAGRAM_APP_SCRIPT */</script>
+</body>
+</html>

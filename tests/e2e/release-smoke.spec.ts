@@ -1,0 +1,346 @@
+import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string };
+
+const architecture = {
+  architectureName: 'Release Smoke Architecture',
+  groups: [
+    { id: 'application', label: 'Application' },
+    { id: 'data', label: 'Data' },
+  ],
+  services: [
+    {
+      id: 'web-app',
+      name: 'App Service',
+      type: 'App Service',
+      category: 'app services',
+      description: 'Hosts the web application',
+      groupId: 'application',
+    },
+    {
+      id: 'database',
+      name: 'SQL Database',
+      type: 'SQL Database',
+      category: 'databases',
+      description: 'Stores application data',
+      groupId: 'data',
+    },
+  ],
+  connections: [
+    { from: 'web-app', to: 'database', label: 'Read and write application data', type: 'sync' },
+  ],
+  workflow: [
+    { step: 1, description: 'The web application receives a request.', services: ['web-app'] },
+    { step: 2, description: 'The application reads or writes data.', services: ['web-app', 'database'] },
+  ],
+};
+
+const geoReplicationWithUnrequestedRedis = {
+  architectureName: 'Release Smoke Architecture',
+  groups: architecture.groups,
+  services: [
+    ...architecture.services,
+    {
+      id: 'database-secondary',
+      name: 'SQL Database',
+      type: 'SQL Database',
+      category: 'databases',
+      description: 'Geo-replicated secondary database',
+      groupId: 'data',
+    },
+    {
+      id: 'redis',
+      name: 'Azure Cache for Redis',
+      type: 'Azure Cache for Redis',
+      category: 'databases',
+      description: 'Caches application reads',
+      groupId: 'data',
+    },
+  ],
+  connections: [
+    ...architecture.connections,
+    { from: 'database', to: 'database-secondary', label: 'Geo-replicate application data', type: 'async' },
+    { from: 'web-app', to: 'redis', label: 'Cache application reads', type: 'sync' },
+  ],
+  workflow: [
+    ...architecture.workflow,
+    { step: 3, description: 'The primary database replicates data.', services: ['database', 'database-secondary'] },
+    { step: 4, description: 'The application caches reads.', services: ['web-app', 'redis'] },
+  ],
+};
+
+const misleadingSemanticArchitecture = {
+  architectureName: 'Semantic Relationship Check',
+  groups: [
+    { id: 'edge', label: 'Ingress / Edge' },
+    { id: 'app', label: 'Application' },
+    { id: 'data', label: 'Data' },
+  ],
+  services: [
+    { id: 'waf', name: 'Web Application Firewall', type: 'Web Application Firewall', category: 'security', description: 'Inspects requests', groupId: 'edge' },
+    { id: 'front-door', name: 'Azure Front Door', type: 'Azure Front Door', category: 'networking', description: 'Global entry point', groupId: 'edge' },
+    { id: 'web', name: 'App Service', type: 'App Service', category: 'app services', description: 'Hosts the app', groupId: 'app' },
+    { id: 'vnet', name: 'Virtual Network', type: 'Virtual Network', category: 'networking', description: 'Private application network', groupId: 'app' },
+    { id: 'private-link-app', name: 'Azure Private Link', type: 'Azure Private Link', category: 'networking', description: 'Private Front Door origin', groupId: 'app' },
+    { id: 'private-link-sql', name: 'Azure Private Link', type: 'Azure Private Link', category: 'networking', description: 'Private database access', groupId: 'data' },
+    { id: 'sql', name: 'SQL Database', type: 'SQL Database', category: 'databases', description: 'Stores data', groupId: 'data' },
+  ],
+  connections: [
+    { from: 'waf', to: 'front-door', label: 'Inspect customer requests', type: 'sync' },
+    { from: 'front-door', to: 'web', label: 'Route permitted HTTPS requests through Private Link', type: 'sync' },
+    { from: 'web', to: 'sql', label: 'Read and write application data privately', type: 'sync' },
+    { from: 'web', to: 'private-link-app', label: 'Private Front Door origin', type: 'sync' },
+    { from: 'vnet', to: 'private-link-app', label: 'Place in private network', type: 'sync' },
+    { from: 'sql', to: 'private-link-sql', label: 'Private database access', type: 'sync' },
+    { from: 'vnet', to: 'private-link-sql', label: 'Place in private network', type: 'sync' },
+  ],
+  workflow: [{ step: 1, description: 'Route and read data.', services: ['waf', 'front-door', 'web', 'vnet', 'private-link-app', 'private-link-sql', 'sql'] }],
+};
+
+test('release-critical workflow renders a deterministic architecture', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+
+  await page.addInitScript(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  let proxyCalls = 0;
+  await page.route('**/api/openai', async (route) => {
+    const request = route.request().postDataJSON();
+    expect(route.request().headers()['x-correlation-id']).toMatch(/^[0-9a-f-]{36}$/);
+    if (request.operation === 'chat_followups_auto' || request.operation === 'chat_followups_best') {
+      expect(request.apiFormat).toBe('responses');
+      expect(request.deployment).toBe('smoke-gpt-5-6-sol');
+      expect(request.model).toBe('GPT-5.6 Sol');
+      expect(request.body.model).toBe('smoke-gpt-5-6-sol');
+      expect(request.body.reasoning).toEqual({ effort: 'low' });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          model: 'smoke-gpt-5-6-sol',
+          output: [{
+            type: 'message',
+            content: [{ type: 'output_text', text: '{"suggestions":[]}' }],
+          }],
+          usage: { input_tokens: 10, output_tokens: 5, total_tokens: 15 },
+        }),
+      });
+      return;
+    }
+    if (request.apiFormat === 'chat-completions') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ choices: [{ message: { content: '[]' } }] }),
+      });
+      return;
+    }
+
+    proxyCalls += 1;
+    expect(request.apiFormat).toBe('responses');
+    expect(request.deployment).toBe('smoke-gpt-5-6-luna');
+    expect(request.body.model).toBe('smoke-gpt-5-6-luna');
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        model: 'smoke-gpt-5-6-luna',
+        output: [
+          {
+            type: 'message',
+            content: [{
+              type: 'output_text',
+              text: JSON.stringify(proxyCalls === 1 ? architecture : geoReplicationWithUnrequestedRedis),
+            }],
+          },
+        ],
+        usage: { input_tokens: 100, output_tokens: 200, total_tokens: 300 },
+      }),
+    });
+  });
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.locator('.header-brand h1')).toHaveText('Azure Architecture Diagram Builder');
+  await expect(page.locator('.app-version')).toHaveText(`v${version}`);
+  await expect.poll(async () => (await page.request.get('/version.json')).json()).toEqual({ version });
+
+  await page.getByRole('button', { name: 'Help' }).click();
+  await expect(page.getByRole('dialog', { name: 'Help and Learn' })).toBeVisible();
+  await page.getByRole('button', { name: 'Close help' }).click();
+
+  await page.locator('button.btn-generate-ai').first().click();
+  await expect(page.getByRole('heading', { name: 'Generate Diagram' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Select AI model' })).toHaveValue('gpt-5.6-luna');
+  await page.locator('#architecture-description').fill('Create a web app backed by Azure SQL, with Blob Storage for uploads, Key Vault for secrets, Application Insights for monitoring, and Azure Front Door with a WAF policy in front of the application tier so the prompt banner wraps onto several lines.');
+  await page.getByRole('button', { name: 'Generate Architecture' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Diagram created — review it before validation' })).toBeVisible();
+  expect(proxyCalls).toBe(1);
+  await page.getByRole('button', { name: 'Review on Canvas' }).click();
+
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'App Service' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(1);
+  await expect(page.locator('.workflow-panel')).toContainText('2 steps');
+  await expect(page.getByRole('button', { name: 'Validate Architecture' })).toBeEnabled();
+  const layoutHint = page.getByRole('note', { name: 'Diagram layout guidance' });
+  await expect(layoutHint).toContainText('Make this layout yours');
+  await expect(layoutHint).toContainText('Drag services and groups into the positions that best communicate your architecture.');
+
+  // The draggable "Generated from" banner wraps to an arbitrary height, so the
+  // hint must clear its measured bottom rather than a fixed offset.
+  const hintVsBanner = await page.evaluate(() => {
+    const banner = document.querySelector('.prompt-banner');
+    const hint = document.querySelector('.canvas-layout-hint');
+    if (!banner || !hint) return null;
+    const b = banner.getBoundingClientRect();
+    const h = hint.getBoundingClientRect();
+    return { bannerHeight: b.height, bannerBottom: b.bottom, hintTop: h.top };
+  });
+  expect(hintVsBanner).not.toBeNull();
+  // Guards the guard: a single-line banner would make the overlap check vacuous.
+  expect(hintVsBanner!.bannerHeight).toBeGreaterThan(60);
+  expect(hintVsBanner!.hintTop).toBeGreaterThanOrEqual(hintVsBanner!.bannerBottom);
+
+  await page.getByRole('button', { name: 'Dismiss layout guidance' }).click();
+  await expect(layoutHint).toBeHidden();
+  await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');
+
+  // Dragging the banner must keep the grabbed point under the cursor. Its
+  // left/top resolve against the canvas, not the viewport, so mixing the two
+  // spaces used to drop it by exactly the canvas offset.
+  const bannerBox = await page.locator('.prompt-banner').boundingBox();
+  expect(bannerBox).not.toBeNull();
+  const grabX = Math.round(bannerBox!.x + 40);
+  const grabY = Math.round(bannerBox!.y + 20);
+  await page.mouse.move(grabX, grabY);
+  await page.mouse.down();
+  await page.mouse.move(grabX + 120, grabY + 90, { steps: 8 });
+  const draggedBox = await page.locator('.prompt-banner').boundingBox();
+  await page.mouse.up();
+  expect(Math.abs(draggedBox!.x - (grabX + 120 - 40))).toBeLessThanOrEqual(1);
+  expect(Math.abs(draggedBox!.y - (grabY + 90 - 20))).toBeLessThanOrEqual(1);
+
+  const elkChunk = page.waitForResponse((response) =>
+    response.url().includes('/assets/elkLayoutEngine-') && response.ok(),
+  );
+  await page.getByRole('button', { name: 'Layout' }).click();
+  await page.locator('#layoutEngine').selectOption('elk');
+  await page.getByRole('menuitem', { name: 'Apply Layout' }).click();
+  await elkChunk;
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'App Service' })).toHaveCount(1);
+
+  // Export is a signpost to the Reports pane now, not a dropdown. The toolbar is
+  // canvas-only, so return to the canvas before using it again.
+  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  const htmlDownload = page.waitForEvent('download');
+  await page.locator('.reports-card').filter({ hasText: 'Export Interactive HTML' }).click();
+  await expect.poll(async () => (await htmlDownload).suggestedFilename()).toMatch(/\.html$/);
+  await page.locator('.nav-rail-item[title="Canvas"]').click();
+  await expect(page.locator('.canvas-container')).not.toHaveClass(/is-hidden/);
+
+  await page.getByRole('button', { name: 'Guided Chat', exact: true }).click();
+  const chatInput = page.locator('.arch-chat-input');
+  await chatInput.fill('Enable Azure SQL geo-replication');
+  await page.getByRole('button', { name: 'Send' }).click();
+
+  const reviewDialog = page.getByRole('dialog', { name: 'Review extra services' });
+  await expect(reviewDialog).toBeVisible();
+  await expect(reviewDialog).toContainText('Azure Cache for Redis');
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Azure Cache for Redis' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Keep current architecture' }).click();
+  await expect(reviewDialog).toBeHidden();
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'No changes applied.' })).toBeVisible();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(1);
+
+  await chatInput.fill('Enable Azure SQL geo-replication');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(reviewDialog).toBeVisible();
+  await page.getByRole('button', { name: 'Apply requested changes only' }).click();
+  await expect(reviewDialog).toBeHidden();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'SQL Database' })).toHaveCount(2);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Azure Cache for Redis' })).toHaveCount(0);
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'Added SQL Database' })).toBeVisible();
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'Connections:' })).toBeVisible();
+
+  await chatInput.fill('Enable Azure SQL geo-replication');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(reviewDialog).toBeVisible();
+  await page.getByRole('button', { name: 'Apply all changes' }).click();
+  await expect(reviewDialog).toBeHidden();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Azure Cache for Redis' })).toHaveCount(1);
+  await expect(page.locator('.arch-chat-bubble').filter({ hasText: 'AI-proposed; approved by you' })).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('root error boundary contains render failures', async ({ page }) => {
+  await page.goto('/?error-boundary-test', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByRole('alert')).toContainText('Something interrupted the workspace');
+  await expect(page.getByRole('button', { name: 'Reload application' })).toBeVisible();
+  await expect(page.locator('.react-flow')).toHaveCount(0);
+});
+
+test('semantic policies and private endpoints do not render as traffic hops', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.route('**/api/openai', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        model: 'smoke-gpt-5-6-luna',
+        output: [{
+          type: 'message',
+          content: [{ type: 'output_text', text: JSON.stringify(misleadingSemanticArchitecture) }],
+        }],
+        usage: { input_tokens: 50, output_tokens: 100, total_tokens: 150 },
+      }),
+    });
+  });
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.locator('button.btn-generate-ai').first().click();
+  await page.locator('#architecture-description').fill('Create a secure customer web app.');
+  await page.getByRole('button', { name: 'Generate Architecture' }).click();
+  await page.getByRole('heading', { name: 'Diagram created — review it before validation' }).waitFor();
+  await page.getByRole('button', { name: 'Review on Canvas' }).click();
+
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Front Door WAF Policy' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Endpoint -/ })).toHaveCount(0);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private DNS Zone' })).toHaveCount(1);
+  await expect(page.getByText('WAF policy associated with Front Door route')).toBeVisible();
+  // No per-resource Private Endpoint node/edges — the group's note carries the
+  // relationship, reusing the group the Virtual Network already belonged to.
+  // A named "Private Link - <resource>" node per protected resource sits in
+  // the same group, visible detail alongside the note, with zero edges.
+  await expect(page.getByText('Private endpoints: App Service and SQL Database')).toBeVisible();
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - App Service' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - SQL Database' })).toHaveCount(1);
+  await expect(page.getByText('Contains private endpoint for SQL Database')).toHaveCount(0);
+  await expect(page.getByText('VNet Integration for outbound private access')).toHaveCount(0);
+
+  const associationPaths = page.locator('path[id^="semantic-association-"]');
+  await expect(associationPaths).toHaveCount(1);
+  const associationAttributes = await associationPaths.evaluateAll((paths) => paths.map((path) => ({
+    markerEnd: path.getAttribute('marker-end'),
+    markerStart: path.getAttribute('marker-start'),
+    dash: (path as SVGPathElement).style.strokeDasharray,
+    animation: (path as SVGPathElement).style.animation,
+  })));
+  expect(associationAttributes.every((path) => !path.markerEnd && !path.markerStart)).toBe(true);
+  expect(associationAttributes.every((path) => path.dash.includes('3'))).toBe(true);
+  expect(associationAttributes.every((path) => !path.animation)).toBe(true);
+
+  await expect(page.locator('path[id^="semantic-containment-"]')).toHaveCount(0);
+
+  await expect(page.locator('.react-flow__edge-path:not([id^="semantic-"])')).toHaveCount(2);
+  await expect(page.locator('.react-flow__edge-path:not([id^="semantic-"])').first()).toHaveAttribute('marker-end', /arrowclosed/);
+});
