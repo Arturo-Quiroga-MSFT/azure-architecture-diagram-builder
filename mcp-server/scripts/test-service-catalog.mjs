@@ -19,7 +19,11 @@ const pricing = JSON.parse(
 
 const catalogKeys = Object.keys(SERVICE_CATALOG);
 const iconKeys = Object.keys(iconMap);
-assert.equal(catalogKeys.length, 94, 'Expected all 94 canonical AADB services');
+// Tripwire: update this count (and the tool-contract test) whenever a service
+// is added to src/data/serviceIconMapping.ts. 95 = 94 + Private Endpoint (v1.8.0).
+const EXPECTED_SERVICE_COUNT = 95;
+assert.equal(catalogKeys.length, EXPECTED_SERVICE_COUNT, `Expected all ${EXPECTED_SERVICE_COUNT} canonical AADB services`);
+assert(catalogKeys.includes('Private Endpoint'), 'Private Endpoint must be in the canonical catalog');
 assert.deepEqual(catalogKeys.sort(), iconKeys.sort(), 'Catalog and icon-map keys must match');
 
 for (const [key, info] of Object.entries(SERVICE_CATALOG)) {
