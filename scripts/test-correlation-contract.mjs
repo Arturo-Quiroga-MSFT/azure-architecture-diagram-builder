@@ -57,6 +57,29 @@ server.stderr.on('data', (chunk) => logs.push(...chunk.split('\n').filter(Boolea
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const parseEvents = () => logs.map((line) => { try { return JSON.parse(line); } catch { return null; } }).filter(Boolean);
 
+let serverExit = null;
+server.on('exit', (code, signal) => { serverExit = { code, signal }; });
+
+async function waitForReady(timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (serverExit) {
+      throw new Error(
+        `token-server exited before becoming ready (code ${serverExit.code}, signal ${serverExit.signal}). `
+        + `Did you run "npm ci --prefix server"?\n${logs.slice(-15).join('\n')}`,
+      );
+    }
+    try {
+      const ready = await fetch(`http://127.0.0.1:${port}/api/ready`);
+      if (ready.ok) return;
+    } catch {
+      // not listening yet
+    }
+    await wait(100);
+  }
+  throw new Error(`token-server did not become ready within ${timeoutMs} ms.\n${logs.slice(-15).join('\n')}`);
+}
+
 async function callProxy(model, correlationId = crypto.randomUUID()) {
   return fetch(`http://127.0.0.1:${port}/api/openai`, {
     method: 'POST',
@@ -76,14 +99,7 @@ async function callProxy(model, correlationId = crypto.randomUUID()) {
 }
 
 try {
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    try {
-      const ready = await fetch(`http://127.0.0.1:${port}/api/ready`);
-      if (ready.ok) break;
-    } catch {
-      await wait(50);
-    }
-  }
+  await waitForReady();
 
   const response = await callProxy('success-model', expectedId);
   if (!response.ok) throw new Error(`Expected successful proxy response, got ${response.status}.`);
