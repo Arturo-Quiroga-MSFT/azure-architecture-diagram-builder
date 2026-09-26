@@ -20,6 +20,10 @@ Anything under `scripts/legacy/` is not a production path.
   ./scripts/production/deploy-webapp.sh
   ```
 
+  Run `npm run check:lockfiles` first: the ACR build installs through the
+  Microsoft package proxy, which can only replay `registry.npmjs.org` paths.
+  If it fails, `node scripts/public-npm-lockfiles.mjs --fix` rewrites them.
+
   Builds an immutable `v<version>-<git-sha>` image in ACR
   `acrazurediagrams1767583743` and auto-passes every non-secret `VITE_*` value
   from the repo-root `.env`. Commit and push the version change before deployment.

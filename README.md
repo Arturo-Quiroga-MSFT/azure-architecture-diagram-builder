@@ -936,6 +936,12 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### September 26, 2026 — AADB v2.0.6 Faster Builds, No Known Vulnerabilities
+
+- **Deployed with the v2.0.5 fixes** — icons now stay inside their groups after you apply recommendations.
+- **Vite 8** — production builds are about 2.5× faster and the initial download is slightly smaller.
+- **No open Dependabot alerts**, and dependency lockfiles are checked in CI so the container build always installs cleanly.
+
 ### September 26, 2026 — AADB v2.0.5 Icons Stay Inside Their Groups
 
 - **Applying recommendations keeps icons in their groups** — when a regeneration moved a service into a different or new group, the service kept its old canvas position and appeared outside its new group. Re-homed services now take their place inside the new group, groups grow to contain their icons, and new groups move out of the way of existing ones.
