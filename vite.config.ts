@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Rollup } from 'vite'
 import react from '@vitejs/plugin-react'
-import type { OutputBundle, OutputChunk } from 'rollup'
 
 const { version: appVersion } = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
@@ -34,9 +33,9 @@ export default defineConfig(({ mode }) => {
       },
       ...(emitBundleReport ? [{
         name: 'aadb-bundle-report',
-        generateBundle(_options, bundle: OutputBundle) {
+        generateBundle(_options, bundle: Rollup.OutputBundle) {
           const chunks = Object.values(bundle)
-            .filter((item): item is OutputChunk => item.type === 'chunk')
+            .filter((item): item is Rollup.OutputChunk => item.type === 'chunk')
             .map((chunk) => ({
               file: chunk.fileName,
               bytes: Buffer.byteLength(chunk.code),

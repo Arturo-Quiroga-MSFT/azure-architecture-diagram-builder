@@ -1,4 +1,3 @@
-
 {
   "name": "aadb-product-analytics",
   "version": "0.1.0",
@@ -12,10 +11,10 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "@azure/identity": "^4.11.1",
-    "@azure/monitor-query-logs": "^1.0.0",
-    "@azure/monitor-opentelemetry": "^1.14.0",
     "@azure/cosmos": "^4.5.1",
+    "@azure/identity": "^4.11.1",
+    "@azure/monitor-opentelemetry": "^1.14.0",
+    "@azure/monitor-query-logs": "^1.0.0",
     "@microsoft/applicationinsights-web": "^3.3.11",
     "compression": "^1.8.1",
     "express": "^5.1.0",
@@ -45,6 +44,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^7.0.5",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.11"
   }
 }
