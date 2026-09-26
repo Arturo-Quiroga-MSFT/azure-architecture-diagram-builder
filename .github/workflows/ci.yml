@@ -59,3 +59,17 @@ jobs:
       - name: Build
         working-directory: mcp-server
         run: npm run build
+
+      - name: Test service catalog
+        working-directory: mcp-server
+        run: npm run test:catalog
+
+      - name: Test tool contracts
+        working-directory: mcp-server
+        run: npm run test:contracts
+
+      - name: Test diagram rendering
+        working-directory: mcp-server
+        run: |
+          npm run test:render-profiles
+          npm run test:render-zero-trust

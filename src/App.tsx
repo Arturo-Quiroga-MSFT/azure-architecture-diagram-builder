@@ -3440,6 +3440,11 @@ function App() {
             <div className="header-brand-text">
               <h1>Azure Architecture Diagram Builder</h1>
               <span className="app-version">v{APP_VERSION}</span>
+              <span className="app-author">
+                <strong>Arturo Quiroga</strong>
+                <span aria-hidden="true"> · </span>
+                Sr Partner Solutions Architect – Azure AI services
+              </span>
             </div>
           </div>
           {/* The toolbar and journey strip act on the diagram, so they are canvas-only. */}
