@@ -18,6 +18,7 @@
     "test:arm": "node scripts/test-arm-extractor.mjs",
     "test:dagre-migration": "tsx scripts/test-dagre-migration.ts",
     "test:layout-preservation": "tsx scripts/test-layout-preservation.ts",
+    "test:refinement-containment": "tsx scripts/test-refinement-group-containment.ts",
     "test:grouped-layout": "tsx scripts/test-grouped-layout.ts",
     "test:edge-label-layout": "tsx scripts/test-edge-label-layout.ts",
     "test:validation-freshness": "tsx scripts/test-validation-freshness.ts",

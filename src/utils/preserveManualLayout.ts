@@ -10,6 +10,10 @@ const DEFAULT_NODE_WIDTH = 180;
 const DEFAULT_NODE_HEIGHT = 120;
 const NEW_NODE_GAP = 80;
 const GROUP_PADDING = 48;
+// Top inset keeps children clear of the group's label row (and note row).
+const GROUP_HEADER_INSET = 72;
+const GROUP_GAP = 40;
+const MAX_OVERLAP_PASSES = 20;
 
 export interface LayoutNode {
   id: string;
@@ -113,6 +117,8 @@ export function preserveManualLayout<T extends LayoutNode>(
   const consumed = new Set<string>();
   const matchedGeneratedIds = new Set<string>();
   const preservedGroups = new Map<string, T>();
+  // generated group ID → the previous group it continues
+  const previousGroupFor = new Map<string, string>();
 
   for (const generated of generatedGroups) {
     const previous = findMatch(generated, previousGroups, consumed) as T | undefined;
@@ -122,7 +128,8 @@ export function preserveManualLayout<T extends LayoutNode>(
     }
 
     consumed.add(previous.id);
-  matchedGeneratedIds.add(generated.id);
+    matchedGeneratedIds.add(generated.id);
+    previousGroupFor.set(generated.id, previous.id);
     preservedGroups.set(generated.id, {
       ...generated,
       position: { ...previous.position },
@@ -141,7 +148,25 @@ export function preserveManualLayout<T extends LayoutNode>(
     if (!previous) return generated;
 
     consumed.add(previous.id);
-  matchedGeneratedIds.add(generated.id);
+
+    // A manual position is only meaningful inside the group it was made in.
+    // When the refinement re-homes the service (e.g. Key Vault moving into a
+    // new "Security" group), keep its editor data but take the generated
+    // position inside the new group; reusing the old canvas spot strands the
+    // icon outside its new parent.
+    const staysInSameGroup = generated.parentNode
+      ? previousGroupFor.get(generated.parentNode) === previous.parentNode
+      : !previous.parentNode;
+    if (!staysInSameGroup) {
+      return {
+        ...generated,
+        data: { ...objectValue(previous.data), ...objectValue(generated.data) },
+        style: { ...objectValue(generated.style), ...objectValue(previous.style) },
+        selected: previous.selected,
+      } as T;
+    }
+
+    matchedGeneratedIds.add(generated.id);
     const previousAbsolute = absolutePosition(previous, previousById);
     const generatedParent = generated.parentNode ? generatedGroupMap.get(generated.parentNode) : undefined;
     const generatedParentAbsolute = generatedParent
@@ -187,23 +212,124 @@ export function preserveManualLayout<T extends LayoutNode>(
     return adjusted;
   });
 
-  return collisionAdjusted.map((node) => {
-    if (node.type !== 'groupNode') return node;
-    const children = collisionAdjusted.filter((candidate) => candidate.parentNode === node.id);
-    if (children.length === 0) return node;
+  const contained = containChildren(collisionAdjusted);
+  const anchoredGroupIds = new Set(previousGroupFor.keys());
+  return separateGroups(contained, anchoredGroupIds);
+}
 
-    const requiredWidth = Math.max(...children.map((child) => child.position.x + nodeSize(child).width)) + GROUP_PADDING;
-    const requiredHeight = Math.max(...children.map((child) => child.position.y + nodeSize(child).height)) + GROUP_PADDING;
-    const currentSize = nodeSize(node);
-    const width = Math.max(currentSize.width, requiredWidth);
-    const height = Math.max(currentSize.height, requiredHeight);
-    if (width === currentSize.width && height === currentSize.height) return node;
+function withSize<T extends LayoutNode>(node: T, width: number, height: number): T {
+  return {
+    ...node,
+    style: { ...objectValue(node.style), width, height },
+    width: node.width == null ? node.width : width,
+    height: node.height == null ? node.height : height,
+  } as T;
+}
 
-    return {
-      ...node,
-      style: { ...objectValue(node.style), width, height },
-      width: node.width == null ? node.width : width,
-      height: node.height == null ? node.height : height,
-    } as T;
+/**
+ * Grow each group on every side so all of its children sit inside it. When a
+ * child pokes out left or above, the group moves out and the children shift by
+ * the same amount, so nothing moves on screen.
+ */
+function containChildren<T extends LayoutNode>(nodes: T[]): T[] {
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+
+  for (const group of nodes) {
+    if (group.type !== 'groupNode') continue;
+    const children = nodes.filter((candidate) => candidate.parentNode === group.id);
+    if (children.length === 0) continue;
+
+    const minX = Math.min(...children.map((child) => child.position.x));
+    const minY = Math.min(...children.map((child) => child.position.y));
+    // Only react to children that are actually outside; children the user
+    // placed close to the edge are left exactly where they are.
+    const shiftX = minX < 0 ? GROUP_PADDING - minX : 0;
+    const shiftY = minY < 0 ? GROUP_HEADER_INSET - minY : 0;
+
+    let current = byId.get(group.id)!;
+    if (shiftX || shiftY) {
+      current = {
+        ...current,
+        position: { x: current.position.x - shiftX, y: current.position.y - shiftY },
+      } as T;
+      for (const child of children) {
+        byId.set(child.id, {
+          ...byId.get(child.id)!,
+          position: { x: child.position.x + shiftX, y: child.position.y + shiftY },
+        } as T);
+      }
+    }
+
+    const shifted = children.map((child) => byId.get(child.id)!);
+    const requiredWidth = Math.max(...shifted.map((child) => child.position.x + nodeSize(child).width)) + GROUP_PADDING;
+    const requiredHeight = Math.max(...shifted.map((child) => child.position.y + nodeSize(child).height)) + GROUP_PADDING;
+    const size = nodeSize(current);
+    const width = Math.max(size.width + shiftX, requiredWidth);
+    const height = Math.max(size.height + shiftY, requiredHeight);
+    byId.set(group.id, (width === size.width && height === size.height) ? current : withSize(current, width, height));
+  }
+
+  return nodes.map((node) => byId.get(node.id)!);
+}
+
+/**
+ * Push overlapping top-level groups apart. Groups that continue a previous
+ * group are anchored to the user's layout; newly added groups move out of
+ * their way. Children are relative to their group, so they move with it.
+ */
+function separateGroups<T extends LayoutNode>(nodes: T[], anchored: Set<string>): T[] {
+  const groups = nodes
+    .filter((node) => node.type === 'groupNode' && !node.parentNode)
+    .map((node) => ({ id: node.id, x: node.position.x, y: node.position.y, ...nodeSize(node), anchored: anchored.has(node.id) }));
+  if (groups.length < 2) return nodes;
+
+  for (let pass = 0; pass < MAX_OVERLAP_PASSES; pass++) {
+    let moved = false;
+    for (let i = 0; i < groups.length; i++) {
+      for (let j = i + 1; j < groups.length; j++) {
+        const a = groups[i];
+        const b = groups[j];
+        const overlapX = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+        const overlapY = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+        if (overlapX <= 0 || overlapY <= 0) continue;
+        moved = true;
+
+        // Move only the unanchored group when exactly one is anchored;
+        // otherwise split the push between both.
+        const shareA = a.anchored === b.anchored ? 0.5 : (a.anchored ? 0 : 1);
+        const shareB = 1 - shareA;
+        if (overlapX < overlapY) {
+          const push = overlapX + GROUP_GAP;
+          const direction = a.x + a.width / 2 <= b.x + b.width / 2 ? 1 : -1;
+          a.x -= direction * push * shareA;
+          b.x += direction * push * shareB;
+        } else {
+          const push = overlapY + GROUP_GAP;
+          const direction = a.y + a.height / 2 <= b.y + b.height / 2 ? 1 : -1;
+          a.y -= direction * push * shareA;
+          b.y += direction * push * shareB;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+
+  // A new group wedged between two anchored ones can bounce between them
+  // without settling. Move any unanchored group that still collides just past
+  // the right edge of everything else, keeping its row.
+  const collides = (g: typeof groups[number]) => groups.some((other) => other !== g
+    && g.x < other.x + other.width && g.x + g.width > other.x
+    && g.y < other.y + other.height && g.y + g.height > other.y);
+  for (const group of groups) {
+    if (group.anchored || !collides(group)) continue;
+    const rightEdge = Math.max(...groups.filter((other) => other !== group).map((other) => other.x + other.width));
+    group.x = rightEdge + GROUP_GAP;
+  }
+
+  const positions = new Map(groups.map((group) => [group.id, { x: group.x, y: group.y }]));
+  return nodes.map((node) => {
+    const position = positions.get(node.id);
+    if (!position || (position.x === node.position.x && position.y === node.position.y)) return node;
+    return { ...node, position } as T;
   });
 }
