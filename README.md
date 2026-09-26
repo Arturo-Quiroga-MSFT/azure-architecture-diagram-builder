@@ -936,6 +936,12 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### September 26, 2026 — AADB v2.0.5 Icons Stay Inside Their Groups
+
+- **Applying recommendations keeps icons in their groups** — when a regeneration moved a service into a different or new group, the service kept its old canvas position and appeared outside its new group. Re-homed services now take their place inside the new group, groups grow to contain their icons, and new groups move out of the way of existing ones.
+- **Green release gate** — CI installs the token server's dependencies, and the MCP catalog, contract and rendering tests now run in CI.
+- **Dependency security** — the production token server and MCP server report no known vulnerabilities.
+
 ### September 1, 2026 — AADB v2.0.4 Your Work Survives a Reload
 
 - **Right-clicking the canvas no longer loses your diagram** — the canvas hint teaches "Right-click + drag to pan", but the browser's own menu was only suppressed on empty canvas and on edges, not on service nodes or group boxes. Right-clicking those opened the native menu, whose top entries are Back, Forward and Reload; a press-drag-release gesture could land on one and navigate away. Nodes, groups and multi-selections now suppress it too.

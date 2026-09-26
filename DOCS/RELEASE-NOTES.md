@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.0.5` | 2026-09-26 | Icons stay inside their groups after applying recommendations; release gate and dependency security | Released; not yet deployed |
 | `v2.0.4` | 2026-09-01 | Right-click no longer discards the diagram; diagram autosave and restore | Deployed |
 | `v2.0.3` | 2026-09-01 | Private Connectivity group replaces per-resource Private Endpoint nodes | Deployed |
 | `v2.0.2` | 2026-09-01 | Fixed blank exports triggered from the Reports pane | Deployed |
@@ -21,6 +22,36 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.0.5: Icons Stay Inside Their Groups After Applying Recommendations
+
+Reported symptom: after validating an architecture and applying the selected recommendations, some service icons appeared outside their groups, and some group boxes overlapped.
+
+### The cause
+
+Applying recommendations runs as a refinement, which merges the regenerated topology with the current canvas so that manual edits survive (`src/utils/preserveManualLayout.ts`).
+
+- A matched service kept its previous on-screen position even when the regeneration moved it to a different or newly created group, for example Key Vault into a new "Security & Compliance" group. The icon was left where it used to be, outside its new parent.
+- Existing groups kept their positions while new groups received fresh layout positions, so group boxes could overlap.
+
+### The fix
+
+- A service keeps its manual position only when it stays in the same group. A service moved to another group takes its generated position inside that group, keeping its editor data.
+- Groups grow on every side to contain their children, shifting the group rather than the icons so nothing moves on screen.
+- Overlapping top-level groups are pushed apart. Groups that continue an existing group stay anchored to the user's layout, and newly added groups move instead.
+
+### Evidence
+
+- `test:refinement-containment` reproduces the defect with the real layout engine (an icon 1,456 px outside its group before the fix) and is part of the deterministic suite.
+- A randomized check of refinements went from 294 of 300 cases failing to 0 of 2,300.
+- Manual check: the Enterprise RAG example, validated with 19 findings, all applied: 18 services in 5 groups, with no icons outside their groups and no overlapping groups.
+
+### Also in this release
+
+- **Release gate:** CI now installs the token server's own dependencies, so `test:correlation` can start the server. The gate had been failing on a misleading `ECONNREFUSED`, which also blocked the `azd` deploy workflow.
+- **MCP tests in CI:** the service-catalog, tool-contract and rendering suites now run on every push and pull request. The catalog tests were updated from 94 to 95 services (Private Endpoint, added in v1.8.0).
+- **Dependencies:** in-range updates resolve the reported vulnerabilities in the production token server and MCP server images (0 remaining in each), and update Pillow for the local image scripts.
+- **Header:** the author credit now appears under the application title.
 
 ## v2.0.4: Right-Click Data Loss and Diagram Autosave
 
