@@ -5,6 +5,7 @@ const tests = [
   'test:arm',
   'test:dagre-migration',
   'test:layout-preservation',
+  'test:refinement-containment',
   'test:grouped-layout',
   'test:edge-label-layout',
   'test:validation-freshness',
