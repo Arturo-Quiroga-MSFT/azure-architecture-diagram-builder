@@ -6,7 +6,8 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v2.0.5` | 2026-09-26 | Icons stay inside their groups after applying recommendations; release gate and dependency security | Released; not yet deployed |
+| `v2.0.6` | 2026-09-26 | Vite 8 toolchain; no open Dependabot alerts; lockfiles install through the Microsoft package proxy | Deployed |
+| `v2.0.5` | 2026-09-26 | Icons stay inside their groups after applying recommendations; release gate and dependency security | Superseded by v2.0.6 before deployment |
 | `v2.0.4` | 2026-09-01 | Right-click no longer discards the diagram; diagram autosave and restore | Deployed |
 | `v2.0.3` | 2026-09-01 | Private Connectivity group replaces per-resource Private Endpoint nodes | Deployed |
 | `v2.0.2` | 2026-09-01 | Fixed blank exports triggered from the Reports pane | Deployed |
@@ -22,6 +23,24 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.0.6: Vite 8 and a Deployable Dependency Set
+
+v2.0.6 is the first deployment of the v2.0.5 fixes. v2.0.5 was released but could not be built in ACR, for the reason below.
+
+### Why v2.0.5 could not be deployed
+
+The container build installs dependencies through the Microsoft package proxy and replays the lockfile's tarball URLs through it (`NPM_CONFIG_REPLACE_REGISTRY_HOST=always`). Installing on a workstation that uses the proxy records internal `ms-feed-*` URLs in `package-lock.json`, and the proxy cannot serve those paths back (HTTP 404). The v2.0.5 dependency updates introduced 107 such URLs across the web app, token server and MCP server lockfiles, so the ACR build failed before any revision was created. Production was not affected.
+
+### The fix
+
+- All lockfiles now record `registry.npmjs.org` paths, which the proxy does serve. Only the host changes; every `integrity` hash is identical, so npm installs byte-for-byte the same packages.
+- `npm run check:lockfiles` (`scripts/public-npm-lockfiles.mjs`) fails when any lockfile resolves outside `registry.npmjs.org`, and `--fix` rewrites them. It runs in CI and at the start of `verify:release`.
+
+### Also in this release
+
+- **Vite 5 → 8**, `@vitejs/plugin-react` 4 → 6, TypeScript 5.3 → 5.9, `typescript-eslint` 6 → 8, and vitest 3 → 4 in the analytics app. Production builds take 6 s instead of 15 s, and the initial JavaScript is 359 KB gzip instead of 374 KB.
+- **No open Dependabot alerts** (from 67 at the start of v2.0.5 work).
 
 ## v2.0.5: Icons Stay Inside Their Groups After Applying Recommendations
 

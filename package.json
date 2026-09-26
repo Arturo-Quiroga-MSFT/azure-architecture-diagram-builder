@@ -1,6 +1,6 @@
 {
   "name": "azure-architecture-diagram-builder",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Azure architecture diagram builder with official icon library",
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "check:lockfiles": "node scripts/public-npm-lockfiles.mjs",
     "dev:avatar": "concurrently --names \"token,vite\" --prefix-colors \"cyan,blue\" \"bash scripts/start-token-server.sh\" \"vite --port 3002 --strictPort\"",
     "demo:record": "node scripts/demo-recording.mjs",
     "pricing:refresh": "node scripts/refresh-pricing-data.mjs",
@@ -36,7 +37,7 @@
     "test:version": "node scripts/test-version-contract.mjs",
     "test:smoke": "node scripts/run-release-smoke.mjs",
     "measure:performance": "node scripts/measure-web-performance.mjs",
-    "verify:release": "npm run typecheck && npm run lint && npm run build && npm run test:bundle-budget && npm run test:deterministic && npm run test:version && npm run test:smoke",
+    "verify:release": "npm run check:lockfiles && npm run typecheck && npm run lint && npm run build && npm run test:bundle-budget && npm run test:deterministic && npm run test:version && npm run test:smoke",
     "eval:aadb:build": "node scripts/evaluations/build-aadb-seed.mjs",
     "eval:aadb:deterministic": "node scripts/evaluations/run-aadb-deterministic.mjs",
     "eval:aadb:verify": "node scripts/evaluations/test-aadb-baseline.mjs",

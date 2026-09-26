@@ -32,6 +32,12 @@ jobs:
           node-version: 20
           cache: npm
 
+      # Lockfiles must keep registry.npmjs.org paths: the container build
+      # replays them through the Microsoft package proxy, which cannot serve
+      # internal feed (ms-feed-*) paths recorded by a local install.
+      - name: Check lockfiles use public registry paths
+        run: npm run check:lockfiles
+
       - name: Install dependencies
         run: npm ci
 
