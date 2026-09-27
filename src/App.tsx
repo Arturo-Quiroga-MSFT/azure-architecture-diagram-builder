@@ -2597,9 +2597,7 @@ function App() {
         targetHandle: positions.targetHandle,
         animated: false,
         type: 'editableEdge',
-        // The app-owned Virtual Network line reads through the group's note, so
-        // it is drawn unlabelled; several identical labels would only clutter.
-        label: conn.label === PRIVATE_NETWORK_EDGE_LABEL ? '' : (conn.label || ''),
+        label: conn.label || '',
         markerEnd: edgeDirection.markerEnd,
         markerStart: edgeDirection.markerStart,
         labelStyle: {
@@ -2617,7 +2615,7 @@ function App() {
         style: edgeStyle,
         data: {
           connectionType,
-          privateNetworkLink: conn.label === PRIVATE_NETWORK_EDGE_LABEL,
+          privateNetworkLink: conn.privateNetworkLink === true || conn.label === PRIVATE_NETWORK_EDGE_LABEL,
           direction: edgeDirection.direction,
           baseFlowAnimated,
           flowAnimated,

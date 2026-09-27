@@ -234,7 +234,14 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   // Dragging the banner must keep the grabbed point under the cursor. Its
   // left/top resolve against the canvas, not the viewport, so mixing the two
   // spaces used to drop it by exactly the canvas offset.
-  const bannerBox = await page.locator('.prompt-banner').boundingBox();
+  // Dismissing the hint reflows the dock; grab the banner once it has settled.
+  let bannerBox = await page.locator('.prompt-banner').boundingBox();
+  await expect.poll(async () => {
+    const previous = bannerBox;
+    await page.waitForTimeout(150);
+    bannerBox = await page.locator('.prompt-banner').boundingBox();
+    return Boolean(previous && bannerBox && previous.x === bannerBox.x && previous.y === bannerBox.y);
+  }).toBe(true);
   expect(bannerBox).not.toBeNull();
   const grabX = Math.round(bannerBox!.x + 40);
   const grabY = Math.round(bannerBox!.y + 20);
@@ -344,8 +351,9 @@ test('semantic policies and private endpoints do not render as traffic hops', as
   await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Link -/ })).toHaveCount(0);
   await expect(page.getByText('Contains private endpoint for SQL Database')).toHaveCount(0);
   await expect(page.getByText('VNet Integration for outbound private access')).toHaveCount(0);
-  // The lines are drawn unlabelled: the note already says what they mean.
-  await expect(page.getByText('Private network access')).toHaveCount(0);
+  // Each line is labelled with the resource it reaches; no placeholders.
+  await expect(page.getByText(/^Private access to /)).toHaveCount(2);
+  await expect(page.getByText('(click to add label)')).toHaveCount(0);
   // Lines, not badges, at this size.
   await expect(page.locator('.private-badge')).toHaveCount(0);
 

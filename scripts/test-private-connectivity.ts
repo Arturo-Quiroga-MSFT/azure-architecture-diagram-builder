@@ -10,7 +10,7 @@ import { buildModificationPrompt } from '../src/services/modificationPrompt';
 const quiet = { log: () => {}, warn: () => {} };
 const process = (architecture: any) => postProcessArchitecture(structuredClone(architecture), quiet);
 const vnetLinesOf = (result: any, vnetId: string) => result.connections
-  .filter((connection: any) => connection.from === vnetId && connection.label === PRIVATE_NETWORK_EDGE_LABEL)
+  .filter((connection: any) => connection.from === vnetId && connection.privateNetworkLink === true)
   .map((connection: any) => connection.to)
   .sort();
 
@@ -142,9 +142,37 @@ const prompt = buildModificationPrompt({
   ],
 }, 'Add Azure Monitor');
 assert.match(prompt, /Private connectivity protects: SQL Database, Azure Container Apps/);
-assert.doesNotMatch(prompt, new RegExp(PRIVATE_NETWORK_EDGE_LABEL));
-assert.doesNotMatch(prompt, /Virtual Network associated with Azure Container Apps/, 'the unlabelled canvas line is left out too');
+// The lines and their labels are shown, so a refinement can relabel them.
+assert.match(prompt, /Virtual Network associated with SQL Database \(Private network access\)/);
+assert.match(prompt, /Virtual Network associated with Azure Container Apps \[association\]/);
 assert.match(prompt, /Execute queries/);
 assert.match(prompt, /"privateConnectivity": \{ "protects"/);
 
-console.log('Private connectivity tests passed: inference, declaration, line limit, legacy nodes, refinement prompt.');
+// ── Labels: every line says which resource it reaches; a model label is kept;
+// the generic label from earlier builds is replaced.
+{
+  const labelled = process({
+    services: [
+      { id: 'app', name: 'App Service', type: 'App Service', groupId: 'web' },
+      { id: 'kv', name: 'Key Vault', type: 'Key Vault', groupId: 'sec' },
+      { id: 'aoai', name: 'Azure OpenAI', type: 'Azure OpenAI', groupId: 'ai' },
+      { id: 'vnet', name: 'Virtual Network', type: 'Virtual Network', groupId: 'net' },
+    ],
+    groups: [{ id: 'web', label: 'Web' }, { id: 'sec', label: 'Security' }, { id: 'ai', label: 'AI' }, { id: 'net', label: 'Networking' }],
+    connections: [
+      { from: 'app', to: 'kv', label: 'Read secrets', type: 'sync' },
+      { from: 'app', to: 'aoai', label: 'Chat completions', type: 'sync' },
+      { from: 'vnet', to: 'aoai', label: 'Private endpoint for model inference', type: 'association' },
+      { from: 'vnet', to: 'kv', label: PRIVATE_NETWORK_EDGE_LABEL, type: 'association' },
+    ],
+    privateConnectivity: { protects: ['kv', 'aoai'] },
+  });
+  const lines = labelled.connections.filter((connection: any) => connection.privateNetworkLink === true);
+  assert.equal(lines.length, 2, 'one line per protected resource, no duplicates');
+  const labelOf = (id: string) => lines.find((connection: any) => connection.to === id)?.label;
+  assert.equal(labelOf('aoai'), 'Private endpoint for model inference', 'the model label is kept');
+  assert.equal(labelOf('kv'), 'Private access to Key Vault', 'the generic label is replaced');
+  assert.equal(lines.every((connection: any) => connection.label.trim().length > 0), true, 'no line is blank');
+}
+
+console.log('Private connectivity tests passed: inference, declaration, line limit, legacy nodes, labels, refinement prompt.');

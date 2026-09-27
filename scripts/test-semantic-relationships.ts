@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PRIVATE_NETWORK_EDGE_LABEL, postProcessArchitecture } from '../src/services/architecturePostProcessing';
+import { postProcessArchitecture } from '../src/services/architecturePostProcessing';
 import { buildArchitectureGenerationSystemPrompt } from '../src/services/architectureGenerationContract';
 import { buildModificationPrompt } from '../src/services/modificationPrompt';
 import { animateEdgeFlow } from '../src/utils/animateEdges';
@@ -59,7 +59,9 @@ assert.equal(processed.connections.some((connection: any) => (
 
 const privateEndpoints = processed.services.filter((service: any) => service.type === 'Private Endpoint');
 assert.equal(privateEndpoints.length, 0, 'no per-resource Private Endpoint nodes should be created');
-assert.equal(processed.connections.some((connection: any) => /private endpoint/i.test(connection.label || '')), false);
+assert.equal(processed.connections.some((connection: any) => (
+  !connection.privateNetworkLink && /private endpoint/i.test(connection.label || '')
+)), false, 'only the app-drawn Virtual Network lines mention private endpoints');
 
 const boundaryGroup = processed.groups.find((group: any) => group.id === 'private-connectivity');
 assert.ok(boundaryGroup, 'a Private Connectivity group should be created when there was none to reuse');
@@ -79,7 +81,7 @@ assert.equal(processed.services.some((service: any) => /^Private Link -/.test(se
 const vnetLines = processed.connections.filter((connection: any) => connection.from === vnet.id);
 assert.deepEqual(vnetLines.map((connection: any) => connection.to).sort(), ['redis', 'sql']);
 assert.equal(vnetLines.every((connection: any) => (
-  connection.type === 'association' && connection.label === PRIVATE_NETWORK_EDGE_LABEL
+  connection.type === 'association' && connection.privateNetworkLink === true && /^Private access to /.test(connection.label)
 )), true);
 assert.equal(processed.services.find((service: any) => service.id === 'redis').privateConnectivity, 'line');
 assert.equal(processed.connections.some((connection: any) => (
@@ -108,7 +110,7 @@ const systemPrompt = buildArchitectureGenerationSystemPrompt();
 assert.match(systemPrompt, /sync\|async\|optional\|association\|containment/);
 assert.match(systemPrompt, /Never emit Client → WAF → Front Door/);
 assert.match(systemPrompt, /Do not model a "Private Endpoint - <resource>" node/);
-assert.match(systemPrompt, /Do not connect either of them to the protected resources/);
+assert.match(systemPrompt, /draws one labelled Virtual Network line per protected service/);
 assert.doesNotMatch(systemPrompt, /VNet Integration for outbound private access/);
 
 const modificationPrompt = buildModificationPrompt({

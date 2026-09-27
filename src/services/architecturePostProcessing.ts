@@ -42,6 +42,7 @@ export const PRIVATE_CONNECTIVITY_LINE_LIMIT = 4;
 // Label of the app-owned Virtual Network -> protected resource line. The
 // refinement prompt leaves these out: the app redraws them from the
 // declaration, so the model never has to reproduce them.
+/** Label used by earlier builds for the app-drawn lines; recognised on load only. */
 export const PRIVATE_NETWORK_EDGE_LABEL = 'Private network access';
 
 const isDnsService = (service: any): boolean => isPrivateDnsZone(service) || /\bdns\b/.test(serviceText(service));
@@ -260,6 +261,18 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
     // Replace any Virtual Network <-> protected resource connection with the
     // single app-owned line (or badge), so refinements never accumulate copies.
     const vnetId = String(virtualNetwork.id);
+    // A label the model (or a refinement) gave the line is kept; the generic
+    // legacy label is not, so each line says what it is for.
+    const existingLabels = new Map<string, string>();
+    for (const connection of architecture.connections) {
+      const from = String(connection.from);
+      const to = String(connection.to);
+      const targetId = from === vnetId ? to : to === vnetId ? from : null;
+      const label = typeof connection.label === 'string' ? connection.label.trim() : '';
+      if (targetId && protectedTargets.has(targetId) && label && label !== PRIVATE_NETWORK_EDGE_LABEL && !existingLabels.has(targetId)) {
+        existingLabels.set(targetId, label);
+      }
+    }
     const before = architecture.connections.length;
     architecture.connections = architecture.connections.filter((connection: any) => !(
       (String(connection.from) === vnetId && protectedTargets.has(String(connection.to)))
@@ -274,8 +287,9 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
         architecture.connections.push({
           from: virtualNetwork.id,
           to: targetId,
-          label: PRIVATE_NETWORK_EDGE_LABEL,
+          label: existingLabels.get(targetId) || `Private access to ${target.name}`,
           type: 'association',
+          privateNetworkLink: true,
         });
       }
     }
