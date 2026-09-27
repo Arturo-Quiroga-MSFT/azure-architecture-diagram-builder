@@ -3433,6 +3433,7 @@ function App() {
                 <span aria-hidden="true"> · </span>
                 Sr Partner Solutions Architect – Azure AI services
               </span>
+              <span className="app-author app-author-org">Microsoft – Canada</span>
             </div>
           </div>
           {/* The toolbar and journey strip act on the diagram, so they are canvas-only. */}

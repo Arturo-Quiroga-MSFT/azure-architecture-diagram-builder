@@ -60,6 +60,10 @@
   color: #fff;
 }
 
+.app-author-org {
+  margin-top: -1px;
+}
+
 .microsoft-logo {
   height: 80px;
   width: auto;
@@ -123,7 +127,7 @@
   font-size: 1.15rem;
 }
 
-/* The slim bar keeps the title and version; the credit line returns on expand. */
+/* The slim bar keeps the title and version; the credit lines return on expand. */
 .app-header.header-collapsed .app-author {
   display: none;
 }
