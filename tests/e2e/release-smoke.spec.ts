@@ -337,18 +337,21 @@ test('semantic policies and private endpoints do not render as traffic hops', as
   await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Endpoint -/ })).toHaveCount(0);
   await expect(page.locator('.react-flow__node').filter({ hasText: 'Private DNS Zone' })).toHaveCount(1);
   await expect(page.getByText('WAF policy associated with Front Door route')).toBeVisible();
-  // No per-resource Private Endpoint node/edges — the group's note carries the
-  // relationship, reusing the group the Virtual Network already belonged to.
-  // A named "Private Link - <resource>" node per protected resource sits in
-  // the same group, visible detail alongside the note, with zero edges.
+  // No per-resource Private Endpoint or Private Link nodes. The group's note names
+  // the protected resources, and with few of them each gets one arrowless dotted
+  // line from the Virtual Network, so the boundary is never an island.
   await expect(page.getByText('Private endpoints: App Service and SQL Database')).toBeVisible();
-  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - App Service' })).toHaveCount(1);
-  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - SQL Database' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Link -/ })).toHaveCount(0);
   await expect(page.getByText('Contains private endpoint for SQL Database')).toHaveCount(0);
   await expect(page.getByText('VNet Integration for outbound private access')).toHaveCount(0);
+  // The lines are drawn unlabelled: the note already says what they mean.
+  await expect(page.getByText('Private network access')).toHaveCount(0);
+  // Lines, not badges, at this size.
+  await expect(page.locator('.private-badge')).toHaveCount(0);
 
+  // The WAF policy association plus one line per protected resource.
   const associationPaths = page.locator('path[id^="semantic-association-"]');
-  await expect(associationPaths).toHaveCount(1);
+  await expect(associationPaths).toHaveCount(3);
   const associationAttributes = await associationPaths.evaluateAll((paths) => paths.map((path) => ({
     markerEnd: path.getAttribute('marker-end'),
     markerStart: path.getAttribute('marker-start'),

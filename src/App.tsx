@@ -93,6 +93,7 @@ import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
 import NotificationHost from './components/NotificationHost';
+import { PRIVATE_NETWORK_EDGE_LABEL } from './services/architecturePostProcessing';
 import { CANVAS_MAX_ZOOM, CANVAS_MIN_ZOOM, fitViewClearOfChrome } from './utils/fitViewClearOfChrome';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
 import { APP_VERSION } from './appVersion';
@@ -2440,6 +2441,9 @@ function App() {
         data: {
           label: service.name,
           iconPath: icon?.path || '',
+          // 'line' | 'badge' when behind the Private Connectivity boundary. Set
+          // explicitly so a refinement that un-protects a service clears it.
+          privateConnectivity: service.privateConnectivity ?? null,
         },
         parentNode: service.groupId || undefined,  // Link to group if exists
         extent: service.groupId ? 'parent' : undefined,  // Keep within parent bounds
@@ -2593,7 +2597,9 @@ function App() {
         targetHandle: positions.targetHandle,
         animated: false,
         type: 'editableEdge',
-        label: conn.label || '',
+        // The app-owned Virtual Network line reads through the group's note, so
+        // it is drawn unlabelled; several identical labels would only clutter.
+        label: conn.label === PRIVATE_NETWORK_EDGE_LABEL ? '' : (conn.label || ''),
         markerEnd: edgeDirection.markerEnd,
         markerStart: edgeDirection.markerStart,
         labelStyle: {
@@ -2611,6 +2617,7 @@ function App() {
         style: edgeStyle,
         data: {
           connectionType,
+          privateNetworkLink: conn.label === PRIVATE_NETWORK_EDGE_LABEL,
           direction: edgeDirection.direction,
           baseFlowAnimated,
           flowAnimated,
@@ -4299,25 +4306,21 @@ function App() {
                     <div
                       className={`prompt-banner draggable is-docked${isPromptExpanded ? ' is-expanded' : ''}`}
                       title={isPromptExpanded ? undefined : architecturePrompt}
-                      style={promptBannerPosition ? {
-                        position: 'absolute',
-                        left: `${promptBannerPosition.x}px`,
-                        top: `${promptBannerPosition.y}px`,
+                      // Dragged by a visual offset from its docked spot, so it keeps its
+                      // place in the dock and moving it never reflows its neighbours.
+                      style={{
                         cursor: isDraggingBanner ? 'grabbing' : 'grab',
-                        zIndex: 1001,
-                      } : { cursor: 'grab' }}
+                        ...(promptBannerPosition ? {
+                          transform: `translate(${promptBannerPosition.x}px, ${promptBannerPosition.y}px)`,
+                          zIndex: 1001,
+                        } : {}),
+                      }}
                       onMouseDown={(e) => {
                         if ((e.target as HTMLElement).closest('button')) return;
                         e.preventDefault();
-                        const el = e.currentTarget;
-                        const rect = el.getBoundingClientRect();
-                        const parent = el.offsetParent?.getBoundingClientRect();
-                        const currentX = rect.left - (parent?.left ?? 0);
-                        const currentY = rect.top - (parent?.top ?? 0);
-                        // left/top resolve against the containing block, so the drag
-                        // offset has to map viewport coords into that same space.
-                        setDragOffset({ x: e.clientX - currentX, y: e.clientY - currentY });
-                        setPromptBannerPosition({ x: currentX, y: currentY });
+                        const offset = promptBannerPosition ?? { x: 0, y: 0 };
+                        setDragOffset({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+                        setPromptBannerPosition(offset);
                         setIsDraggingBanner(true);
                       }}
                     >

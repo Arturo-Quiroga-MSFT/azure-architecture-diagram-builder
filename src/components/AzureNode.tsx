@@ -3,7 +3,7 @@
 
 import React, { memo, useEffect, useState } from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
-import { Zap, Unlink, Layers } from 'lucide-react';
+import { Zap, Unlink, Layers, Lock } from 'lucide-react';
 import { loadIcon } from '../utils/iconLoader';
 import { NodePricingConfig } from '../types/pricing';
 import { formatMonthlyCost, getCostColor } from '../utils/pricingHelpers';
@@ -219,6 +219,15 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
             title={`No metered price is published for this service, so it has no calculated figure.\nTypical range: ${catalogRange}\n\nNot included in the architecture total.`}
           >
             {catalogRange}
+          </div>
+        )}
+        {data.privateConnectivity === 'badge' && (
+          <div
+            className="private-badge"
+            title="Reached over private connectivity (see the Private Connectivity group)"
+          >
+            <Lock size={10} aria-hidden="true" />
+            Private
           </div>
         )}
         {iconUrl ? (

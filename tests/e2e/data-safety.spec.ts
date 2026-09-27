@@ -38,6 +38,16 @@ async function rightClickAndReportSuppression(
     document.addEventListener('contextmenu', (window as unknown as { __ctxHandler: EventListener }).__ctxHandler);
   });
 
+  // The canvas re-frames once while the bottom dock finishes mounting after a
+  // generation; aim only after the viewport has held still for a moment.
+  let previous = '';
+  await expect.poll(async () => {
+    const current = await page.locator('.canvas-container .react-flow__viewport').getAttribute('style');
+    const stable = current === previous;
+    previous = current ?? '';
+    return stable;
+  }, { intervals: [150, 150, 150, 250, 250, 500] }).toBe(true);
+
   const box = await page.locator(selector).first().boundingBox();
   expect(box, `${selector} must be visible to right-click`).not.toBeNull();
   await page.mouse.move(box!.x + Math.min(20, box!.width / 2), box!.y + Math.min(10, box!.height / 2));

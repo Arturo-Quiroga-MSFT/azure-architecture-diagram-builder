@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { postProcessArchitecture } from '../src/services/architecturePostProcessing';
+import { PRIVATE_NETWORK_EDGE_LABEL, postProcessArchitecture } from '../src/services/architecturePostProcessing';
 import { buildArchitectureGenerationSystemPrompt } from '../src/services/architectureGenerationContract';
 import { buildModificationPrompt } from '../src/services/modificationPrompt';
 import { animateEdgeFlow } from '../src/utils/animateEdges';
@@ -70,24 +70,21 @@ const dnsZone = processed.services.find((service: any) => service.name === 'Priv
 assert.ok(vnet && vnet.groupId === 'private-connectivity');
 assert.ok(dnsZone && dnsZone.groupId === 'private-connectivity');
 
-// One named Private Link node per protected resource, contained in the same
-// group, with zero edges — membership in the group carries the relationship.
-const privateLinkNodes = processed.services.filter((service: any) => /^Private Link -/.test(service.name));
-assert.deepEqual(
-  privateLinkNodes.map((service: any) => service.name).sort(),
-  ['Private Link - Azure Cache for Redis', 'Private Link - SQL Database'],
-);
-assert.equal(privateLinkNodes.every((service: any) => service.groupId === 'private-connectivity'), true);
-const privateLinkIds = new Set(privateLinkNodes.map((service: any) => service.id));
-assert.equal(processed.connections.some((connection: any) => (
-  privateLinkIds.has(connection.from) || privateLinkIds.has(connection.to)
-)), false);
+// No per-resource Private Link nodes: the boundary is linked to each protected
+// resource directly instead of being echoed inside the group.
+assert.equal(processed.services.some((service: any) => /^Private Link -/.test(service.name)), false);
 
-// Deliberately no edges into the boundary — the note and the named nodes
-// carry the relationship, not a drawn line.
+// Two protected resources (at or under the line limit): one arrowless dotted
+// line from the Virtual Network to each, and no badges.
+const vnetLines = processed.connections.filter((connection: any) => connection.from === vnet.id);
+assert.deepEqual(vnetLines.map((connection: any) => connection.to).sort(), ['redis', 'sql']);
+assert.equal(vnetLines.every((connection: any) => (
+  connection.type === 'association' && connection.label === PRIVATE_NETWORK_EDGE_LABEL
+)), true);
+assert.equal(processed.services.find((service: any) => service.id === 'redis').privateConnectivity, 'line');
 assert.equal(processed.connections.some((connection: any) => (
-  connection.from === vnet.id || connection.to === vnet.id || connection.from === dnsZone.id || connection.to === dnsZone.id
-)), false);
+  connection.from === dnsZone.id || connection.to === dnsZone.id
+)), false, 'the DNS zone is not linked to each resource');
 assert.equal(processed.integrity.orphanCount, 0, 'the boundary\'s own nodes are not orphans');
 
 // The connector's real neighbours still connect directly, unlabelled by any
@@ -176,20 +173,15 @@ const reusedVnet = privateNetwork.services.find((service: any) => service.name =
 const reusedDns = privateNetwork.services.find((service: any) => service.name === 'Private DNS Zone');
 assert.equal(reusedVnet.groupId, 'network');
 assert.equal(reusedDns.groupId, 'network');
-assert.equal(privateNetwork.connections.some((connection: any) => (
+// The model's own "Place in private network" hops are replaced by the app-owned
+// dotted lines: exactly one per protected resource, and nothing else on the VNet.
+const reusedVnetEdges = privateNetwork.connections.filter((connection: any) => (
   connection.from === reusedVnet.id || connection.to === reusedVnet.id
-)), false);
+));
+assert.deepEqual(reusedVnetEdges.map((connection: any) => connection.to).sort(), ['app-2', 'sql-2']);
+assert.equal(reusedVnetEdges.every((connection: any) => connection.type === 'association'), true);
 
-const reusedPrivateLinkNodes = privateNetwork.services.filter((service: any) => /^Private Link -/.test(service.name));
-assert.deepEqual(
-  reusedPrivateLinkNodes.map((service: any) => service.name).sort(),
-  ['Private Link - App Service', 'Private Link - SQL Database'],
-);
-assert.equal(reusedPrivateLinkNodes.every((service: any) => service.groupId === 'network'), true);
-const reusedPrivateLinkIds = new Set(reusedPrivateLinkNodes.map((service: any) => service.id));
-assert.equal(privateNetwork.connections.some((connection: any) => (
-  reusedPrivateLinkIds.has(connection.from) || reusedPrivateLinkIds.has(connection.to)
-)), false);
+assert.equal(privateNetwork.services.some((service: any) => /^Private Link -/.test(service.name)), false);
 
 assert.equal(privateNetwork.integrity.orphanCount, 0);
 

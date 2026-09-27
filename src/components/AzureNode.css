@@ -449,3 +449,33 @@ body.dark-mode .azure-node.style-presentation {
 body.dark-mode .azure-node.style-presentation .node-label {
   color: #1a1a2e;
 }
+
+/* Marks a service behind the Private Connectivity boundary when the diagram has
+   too many protected services to draw a line to each. Bottom-left, clear of the
+   cost badge at the top. */
+.private-badge {
+  position: absolute;
+  left: -6px;
+  bottom: -9px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  border: 1px solid #0f766e;
+  background: #ccfbf1;
+  color: #115e59;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+body.dark-mode .private-badge {
+  background: #134e4a;
+  border-color: #2dd4bf;
+  color: #ccfbf1;
+}

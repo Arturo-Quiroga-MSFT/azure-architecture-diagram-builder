@@ -16,16 +16,13 @@ const ModelBadge: React.FC<ModelBadgeProps> = ({ modelName, elapsedTimeMs }) => 
   const badgeRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    const el = badgeRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const parentRect = el.offsetParent?.getBoundingClientRect() ?? { left: 0, top: 0 };
-    const currentX = rect.left - parentRect.left;
-    const currentY = rect.top - parentRect.top;
-    dragOffsetRef.current = { x: e.clientX - currentX, y: e.clientY - currentY };
-    setDragPosition({ x: currentX, y: currentY });
+    // Offset from the docked spot: the item keeps its place in the dock, so
+    // dragging it never reflows its neighbours.
+    const offset = dragPosition ?? { x: 0, y: 0 };
+    dragOffsetRef.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
+    setDragPosition(offset);
     setIsDragging(true);
-  }, []);
+  }, [dragPosition]);
 
   React.useEffect(() => {
     if (!isDragging) return;
@@ -45,7 +42,7 @@ const ModelBadge: React.FC<ModelBadgeProps> = ({ modelName, elapsedTimeMs }) => 
   }, [isDragging]);
 
   const style: React.CSSProperties = dragPosition
-    ? { position: 'absolute', left: dragPosition.x, top: dragPosition.y, bottom: 'auto' }
+    ? { transform: `translate(${dragPosition.x}px, ${dragPosition.y}px)`, zIndex: 1001 }
     : {};
 
   return (
