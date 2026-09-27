@@ -56,6 +56,7 @@ function promptToSlug(prompt: string): string {
   );
 }
 import './CompareModelsModal.css';
+import { notify } from '../services/notificationService';
 
 interface ComparisonResult {
   model: ModelType;
@@ -403,7 +404,7 @@ const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit,
    */
   const saveAllPngs = async () => {
     if (!onCaptureBatch) {
-      alert('PNG capture is not available in this build.');
+      notify('PNG capture is not available in this build.', 'error');
       return;
     }
     const successful = results.filter(r => r.status === 'success' && r.architecture);
@@ -426,7 +427,7 @@ const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit,
       await onCaptureBatch(items);
     } catch (err) {
       console.error('Save All PNGs failed:', err);
-      alert('Failed to save one or more PNGs. Check the console for details.');
+      notify('Failed to save one or more PNGs. Check the console for details.', 'error');
     } finally {
       setIsSavingPngs(false);
     }

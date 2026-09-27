@@ -90,6 +90,9 @@ const UI_CHROME_CLASSES = [
   'react-flow__minimap',
   'react-flow__controls',
   'react-flow__attribution',
+  // Transient guidance and controls in the bottom dock are never part of a diagram.
+  'canvas-layout-hint',
+  'prompt-banner-toggle',
 ];
 
 /** Extended set used for SVG/PPTX export (hides floating panels too). */

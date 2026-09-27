@@ -45,7 +45,7 @@ const ModelBadge: React.FC<ModelBadgeProps> = ({ modelName, elapsedTimeMs }) => 
   }, [isDragging]);
 
   const style: React.CSSProperties = dragPosition
-    ? { left: dragPosition.x, top: dragPosition.y, bottom: 'auto' }
+    ? { position: 'absolute', left: dragPosition.x, top: dragPosition.y, bottom: 'auto' }
     : {};
 
   return (

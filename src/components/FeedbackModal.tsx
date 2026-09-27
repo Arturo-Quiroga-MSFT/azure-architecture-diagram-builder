@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { X, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 import { submitFeedback, FeedbackContext } from '../services/feedbackService';
 import './FeedbackModal.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -96,6 +97,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, context,
     setSubmitted(true);
     setIsSubmitting(false);
   };
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

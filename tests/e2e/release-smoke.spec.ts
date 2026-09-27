@@ -192,20 +192,40 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await expect(layoutHint).toContainText('Make this layout yours');
   await expect(layoutHint).toContainText('Drag services and groups into the positions that best communicate your architecture.');
 
-  // The draggable "Generated from" banner wraps to an arbitrary height, so the
-  // hint must clear its measured bottom rather than a fixed offset.
+  // The hint and the "Generated from" banner share the bottom dock; the banner
+  // wraps to an arbitrary height, so they must be laid out, not overlaid.
   const hintVsBanner = await page.evaluate(() => {
     const banner = document.querySelector('.prompt-banner');
     const hint = document.querySelector('.canvas-layout-hint');
     if (!banner || !hint) return null;
     const b = banner.getBoundingClientRect();
     const h = hint.getBoundingClientRect();
-    return { bannerHeight: b.height, bannerBottom: b.bottom, hintTop: h.top };
+    return { bannerHeight: b.height, bannerTop: b.top, hintBottom: h.bottom };
   });
   expect(hintVsBanner).not.toBeNull();
   // Guards the guard: a single-line banner would make the overlap check vacuous.
   expect(hintVsBanner!.bannerHeight).toBeGreaterThan(60);
-  expect(hintVsBanner!.hintTop).toBeGreaterThanOrEqual(hintVsBanner!.bannerBottom);
+  expect(hintVsBanner!.hintBottom).toBeLessThanOrEqual(hintVsBanner!.bannerTop);
+
+  // Nothing in the dock may sit over the framed diagram.
+  const dockOverDiagram = await page.evaluate(() => {
+    const label = (el: Element) => `${el.className.toString().split(' ')[0]}${el.textContent ? ` "${el.textContent.trim().slice(0, 24)}"` : ''}`;
+    const box = (el: Element) => { const r = el.getBoundingClientRect(); return `[${Math.round(r.left)},${Math.round(r.top)} → ${Math.round(r.right)},${Math.round(r.bottom)}]`; };
+    const items = [...document.querySelectorAll('.canvas-bottom-dock .title-block, .canvas-bottom-dock .prompt-banner, .canvas-bottom-dock .canvas-layout-hint, .canvas-bottom-dock .legend, .canvas-bottom-dock .model-generation-badge')];
+    const nodes = [...document.querySelectorAll('.react-flow__node')];
+    const hits: string[] = [];
+    for (const item of items) {
+      const a = item.getBoundingClientRect();
+      for (const node of nodes) {
+        const n = node.getBoundingClientRect();
+        if (a.left < n.right && a.right > n.left && a.top < n.bottom && a.bottom > n.top) {
+          hits.push(`${label(item)} ${box(item)} over ${label(node)} ${box(node)}`);
+        }
+      }
+    }
+    return hits;
+  });
+  expect(dockOverDiagram, dockOverDiagram.join('\n')).toEqual([]);
 
   await page.getByRole('button', { name: 'Dismiss layout guidance' }).click();
   await expect(layoutHint).toBeHidden();

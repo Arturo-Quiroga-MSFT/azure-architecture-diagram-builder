@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Terminal, Download, X } from 'lucide-react';
 import { AVAILABLE_REGIONS } from '../data/pricingRegions';
 import './AzPrototypeExportModal.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 export interface AzPrototypeExportModalProps {
   isOpen: boolean;
@@ -51,6 +52,8 @@ export default function AzPrototypeExportModal({
   const [iacTool, setIacTool] = useState<'bicep' | 'terraform'>('bicep');
   const [includeCosts, setIncludeCosts] = useState(hasCostData);
   const [includeWorkflow, setIncludeWorkflow] = useState(true);
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

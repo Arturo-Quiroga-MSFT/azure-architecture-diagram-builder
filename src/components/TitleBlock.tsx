@@ -77,7 +77,7 @@ const TitleBlock: React.FC<TitleBlockProps> = ({
   }, [isDragging]);
 
   const style: React.CSSProperties = dragPosition
-    ? { left: dragPosition.x, top: dragPosition.y, bottom: 'auto' }
+    ? { position: 'absolute', left: dragPosition.x, top: dragPosition.y, bottom: 'auto' }
     : {};
   if (isDragging) style.cursor = 'grabbing';
   else if (!isEditing) style.cursor = 'grab';
@@ -131,7 +131,7 @@ const TitleBlock: React.FC<TitleBlockProps> = ({
           <div className="title-block-content">
             <div className="title-block-row">
               <span className="title-block-field">Name:</span>
-              <span className="title-block-value">{architectureName}</span>
+              <span className="title-block-value" title={architectureName}>{architectureName}</span>
             </div>
             <div className="title-block-row">
               <span className="title-block-field">Author:</span>

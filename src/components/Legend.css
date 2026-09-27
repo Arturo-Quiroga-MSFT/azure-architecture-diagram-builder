@@ -1,8 +1,7 @@
+/* Sits in the canvas bottom dock (App.css). */
 .legend {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  flex-shrink: 0;
   background: white;
   border: 2px solid #333;
   border-radius: 4px;
@@ -207,4 +206,32 @@ body.dark-mode .legend-description strong {
 body.dark-mode .legend-description span {
   color: #a0bfdf;
   font-weight: 500;
+}
+
+/* In the canvas bottom dock the legend opens upward as a pop-over, so
+   expanding it never reflows the dock. The legend box is static there, so the
+   pop-over is positioned against the dock and never leaves the canvas. */
+.canvas-bottom-dock .legend {
+  position: static;
+}
+
+.canvas-bottom-dock .legend-content {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 1003;
+  width: max-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+body.dark-mode .canvas-bottom-dock .legend-content {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  color: #e0e0e0;
 }
