@@ -2,7 +2,7 @@
 #
 # 01-network.sh — VNet + Cosmos private endpoint for the AADB web app migration.
 # ============================================================================
-# Public network access on Cosmos (aqcosmosdb007) is policy-locked to Disabled
+# Public network access on Cosmos is policy-locked to Disabled
 # (MCAPS), so the ONLY compliant way for the Container App to reach Cosmos is a
 # PRIVATE ENDPOINT. This script builds the network foundation:
 #   1. A VNet with an ACA infrastructure subnet + a private-endpoint subnet.
@@ -13,28 +13,17 @@
 # NON-DISRUPTIVE: creates only new resources; does not touch the running apps.
 # Idempotent: safe to re-run (each create is guarded by an existence check).
 #
-# Usage:  ./scripts/production/01-network.sh
+# Usage:  [AADB_TARGET=fdpo] ./scripts/production/01-network.sh
 # ============================================================================
 set -euo pipefail
 
-RG="azure-diagrams-rg"
-LOC="eastus2"
-VNET="vnet-azure-diagrams"
-ACA_SUBNET="snet-aca-infra"          # delegated to Microsoft.App/environments
-PE_SUBNET="snet-private-endpoints"
-COSMOS="aqcosmosdb007"
-PE_NAME="pe-cosmos-aqcosmosdb007"
+source "$(dirname "$0")/target.sh"
+PE_NAME="pe-cosmos-$COSMOS_ACCOUNT"
 PE_CONN="pe-conn-cosmos"
 DNS_ZONE="privatelink.documents.azure.com"
-
-# Address plan (VNet 10.60.0.0/22):
-#   ACA infra subnet 10.60.0.0/23  (satisfies Consumption /23 and WP /27)
-#   PE subnet        10.60.2.0/27
-VNET_CIDR="10.60.0.0/22"
-ACA_CIDR="10.60.0.0/23"
-PE_CIDR="10.60.2.0/27"
-
-echo "Subscription: $(az account show --query name -o tsv)"
+COSMOS="$COSMOS_ACCOUNT"
+# Address plan comes from the target file (VNet /22):
+#   ACA infra subnet /23 (satisfies Consumption /23 and WP /27), PE subnet /27
 exists() { az resource show --ids "$1" -o none 2>/dev/null; }
 
 # ── 1. VNet + ACA infrastructure subnet (delegated) ─────────────────────
@@ -64,7 +53,7 @@ az network vnet subnet update -g "$RG" --vnet-name "$VNET" -n "$PE_SUBNET" \
   --private-endpoint-network-policies Disabled -o none
 
 # ── 3. Cosmos private endpoint (group-id: Sql) ──────────────────────────
-COSMOS_ID="$(az cosmosdb show -n "$COSMOS" -g "$RG" --query id -o tsv)"
+COSMOS_ID="$(az cosmosdb show -n "$COSMOS" -g "$COSMOS_RG" --query id -o tsv)"
 if az network private-endpoint show -g "$RG" -n "$PE_NAME" -o none 2>/dev/null; then
   echo "✓ Private endpoint $PE_NAME already exists"
 else
@@ -92,11 +81,19 @@ else
     --zone-name "$DNS_ZONE" --virtual-network "$VNET" --registration-enabled false -o none
 fi
 
-echo "🧭 Binding PE to the DNS zone (auto A-record)..."
-az network private-endpoint dns-zone-group create -g "$RG" \
-  --endpoint-name "$PE_NAME" -n "zg-cosmos" \
-  --private-dns-zone "$DNS_ZONE" --zone-name documents -o none 2>/dev/null || \
-  echo "  (zone group already present)"
+if az network private-endpoint dns-zone-group show -g "$RG" \
+     --endpoint-name "$PE_NAME" -n "zg-cosmos" -o none 2>/dev/null; then
+  echo "✓ DNS zone group already present"
+else
+  # A freshly created PE can sit in 'Updating' for minutes; the zone group
+  # create fails until it settles.
+  az network private-endpoint wait -g "$RG" -n "$PE_NAME" \
+    --custom "provisioningState=='Succeeded'" --interval 20 --timeout 900
+  echo "🧭 Binding PE to the DNS zone (auto A-record)..."
+  az network private-endpoint dns-zone-group create -g "$RG" \
+    --endpoint-name "$PE_NAME" -n "zg-cosmos" \
+    --private-dns-zone "$DNS_ZONE" --zone-name documents -o none
+fi
 
 echo ""
 echo "✅ Network foundation ready."

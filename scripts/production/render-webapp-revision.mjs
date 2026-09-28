@@ -2,11 +2,15 @@
 
 import { readFileSync } from 'node:fs';
 
-const [image, revisionSuffix, appVersion, publicUrl] = process.argv.slice(2);
+const [image, revisionSuffix, appVersion, publicUrl, openAiAuth = 'key'] = process.argv.slice(2);
 
 if (!image || !revisionSuffix || !appVersion || !publicUrl) {
-  console.error('Usage: render-webapp-revision.mjs <image> <revision-suffix> <app-version> <public-url>');
+  console.error('Usage: render-webapp-revision.mjs <image> <revision-suffix> <app-version> <public-url> [key|managed-identity]');
   process.exit(1);
+}
+
+if (openAiAuth !== 'key' && openAiAuth !== 'managed-identity') {
+  throw new Error(`Invalid OpenAI auth mode: ${openAiAuth}`);
 }
 
 if (!/^v[0-9]+-[0-9]+-[0-9]+-[a-f0-9]{7,12}$/.test(revisionSuffix)) {
@@ -70,7 +74,12 @@ container.probes = [
   },
 ];
 
-setSecretRef('AZURE_OPENAI_API_KEY', 'azure-openai-api-key');
+if (openAiAuth === 'key') {
+  setSecretRef('AZURE_OPENAI_API_KEY', 'azure-openai-api-key');
+} else {
+  // Keyless targets authenticate with the app's managed identity.
+  container.env = container.env.filter(({ name }) => name !== 'AZURE_OPENAI_API_KEY');
+}
 setSecretRef('APPLICATIONINSIGHTS_CONNECTION_STRING', 'server-appinsights-connection-string');
 setSecretRef('TELEMETRY_HASH_SECRET', 'telemetry-hash-secret');
 setValue('APP_VERSION', appVersion);
