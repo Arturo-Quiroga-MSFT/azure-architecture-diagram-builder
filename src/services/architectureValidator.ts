@@ -12,7 +12,7 @@ import { detectWafPatterns, calculatePreliminaryScore } from './wafPatternDetect
 import { getKnowledgeBaseStats } from '../data/wafRules';
 import { scoreToBand } from './wafMaturity';
 import { trackAIModelUsage } from './telemetryService';
-import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
+import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy, describeApiFormat } from './apiHelper';
 
 export interface ValidationModelOverride {
   model: ModelType;
@@ -64,7 +64,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
   // Determine API format
   const apiFormat = modelConfig.apiFormat || 'responses';
 
-  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${describeApiFormat(apiFormat)}`);
   
   // Start timing
   const startTime = performance.now();
@@ -81,7 +81,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 8000, modelO
     supportsStructuredOutputs: modelConfig.supportsStructuredOutputs,
   });
   
-  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${describeApiFormat(apiFormat)}`);
 
   const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
     apiFormat,

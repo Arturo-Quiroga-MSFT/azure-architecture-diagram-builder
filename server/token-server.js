@@ -104,6 +104,10 @@ app.get('/api/ready', (_req, res) => {
 const OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT;
 const OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY; // optional fallback
 const OPENAI_API_VERSION = process.env.AZURE_OPENAI_API_VERSION || '2024-05-01-preview';
+// Claude deployments on Azure AI Foundry are served from the same resource
+// endpoint under /anthropic, using the Anthropic Messages API.
+const ANTHROPIC_API_VERSION = '2023-06-01';
+const API_FORMATS = new Set(['responses', 'chat-completions', 'chat-completions-v1', 'anthropic-messages']);
 
 // Deployment names are user-selected on the client; constrain them so they
 // cannot be used to inject a different upstream path (SSRF / path traversal).
@@ -117,6 +121,9 @@ function buildOpenAIUrl(deployment, apiFormat) {
   if (apiFormat === 'chat-completions') {
     return `${base}openai/deployments/${encodeURIComponent(deployment)}/chat/completions?api-version=${OPENAI_API_VERSION}`;
   }
+  if (apiFormat === 'anthropic-messages') {
+    return `${base}anthropic/v1/messages`;
+  }
   return `${base}openai/v1/responses`;
 }
 
@@ -124,6 +131,13 @@ function extractUsage(text, apiFormat) {
   try {
     const payload = JSON.parse(text);
     const usage = payload?.usage || {};
+    if (apiFormat === 'anthropic-messages') {
+      const cachedTokens = Number(usage.cache_read_input_tokens) || 0;
+      const promptTokens = (Number(usage.input_tokens) || 0) + cachedTokens
+        + (Number(usage.cache_creation_input_tokens) || 0);
+      const completionTokens = Number(usage.output_tokens) || 0;
+      return { promptTokens, completionTokens, cachedTokens, totalTokens: promptTokens + completionTokens };
+    }
     const promptTokens = apiFormat === 'responses' ? usage.input_tokens : usage.prompt_tokens;
     const completionTokens = apiFormat === 'responses' ? usage.output_tokens : usage.completion_tokens;
     const cachedTokens = apiFormat === 'responses'
@@ -201,8 +215,8 @@ app.post('/api/openai', async (req, res) => {
   }
 
   const { apiFormat, deployment, model, operation, body } = req.body || {};
-  if (apiFormat !== 'responses' && apiFormat !== 'chat-completions' && apiFormat !== 'chat-completions-v1') {
-    return res.status(400).json({ error: "apiFormat must be 'responses', 'chat-completions', or 'chat-completions-v1'" });
+  if (!API_FORMATS.has(apiFormat)) {
+    return res.status(400).json({ error: "apiFormat must be 'responses', 'chat-completions', 'chat-completions-v1', or 'anthropic-messages'" });
   }
   if (typeof deployment !== 'string' || !DEPLOYMENT_NAME_RE.test(deployment)) {
     return res.status(400).json({ error: 'invalid deployment name' });
@@ -238,8 +252,14 @@ app.post('/api/openai', async (req, res) => {
 
     try {
     const headers = { 'Content-Type': 'application/json' };
+    let upstreamBody = body;
+    if (apiFormat === 'anthropic-messages') {
+      headers['anthropic-version'] = ANTHROPIC_API_VERSION;
+      // Pin the upstream model to the validated deployment name.
+      upstreamBody = { ...body, model: deployment };
+    }
     if (OPENAI_API_KEY) {
-      headers['api-key'] = OPENAI_API_KEY;
+      headers[apiFormat === 'anthropic-messages' ? 'x-api-key' : 'api-key'] = OPENAI_API_KEY;
     } else {
       // Keyless: data-plane scope for Azure OpenAI / Cognitive Services.
       const { token } = await credential.getToken('https://cognitiveservices.azure.com/.default');
@@ -249,7 +269,7 @@ app.post('/api/openai', async (req, res) => {
     const upstream = await fetch(buildOpenAIUrl(deployment, apiFormat), {
       method: 'POST',
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(upstreamBody),
     });
 
     const text = await upstream.text();

@@ -11,7 +11,7 @@ import JSZip from 'jszip';
 import { generateModelFilename } from '../utils/modelNaming';
 import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import { trackAIModelUsage } from './telemetryService';
-import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
+import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy, describeApiFormat } from './apiHelper';
 import { searchMicrosoftDocs, renderGroundingBlock, DocSource } from './docsGroundingService';
 
 // Non-secret flag indicating the AI backend is wired up. Credentials live
@@ -51,7 +51,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
   // Determine API format
   const apiFormat = modelConfig.apiFormat || 'responses';
 
-  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🌐 Calling Azure OpenAI with ${modelConfig.displayName} | API: ${describeApiFormat(apiFormat)}`);
   
   // Start timing
   const startTime = performance.now();
@@ -68,7 +68,7 @@ async function callAzureOpenAI(messages: any[], maxTokens: number = 10000): Prom
     supportsStructuredOutputs: modelConfig.supportsStructuredOutputs,
   });
   
-  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🤖 Using ${modelConfig.displayName}${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${effectiveMaxTokens} | API: ${describeApiFormat(apiFormat)}`);
 
   const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
     apiFormat,

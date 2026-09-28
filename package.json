@@ -31,6 +31,7 @@
     "test:correlation": "node scripts/test-correlation-contract.mjs",
     "test:refinement-guard": "tsx scripts/test-refinement-guard.ts",
     "test:follow-up-model": "tsx scripts/test-follow-up-model-policy.ts",
+    "test:anthropic-format": "tsx scripts/test-anthropic-format.ts",
     "test:semantic-relationships": "tsx scripts/test-semantic-relationships.ts",
     "test:private-connectivity": "tsx scripts/test-private-connectivity.ts",
     "test:deterministic": "node scripts/run-deterministic-tests.mjs",

@@ -3,7 +3,7 @@
 
 import { getModelSettingsForFeature, getModelSettings, getDeploymentName, getAvailableModels, MODEL_CONFIG, ModelType, ReasoningEffort } from '../stores/modelSettingsStore';
 import { trackAIModelUsage } from './telemetryService';
-import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy } from './apiHelper';
+import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy, describeApiFormat } from './apiHelper';
 import { buildArchitectureGenerationSystemPrompt } from './architectureGenerationContract';
 import { postProcessArchitecture } from './architecturePostProcessing';
 import { FOLLOW_UP_MODEL_POLICY, getFollowUpOperation, type FollowUpSource } from './followUpModelPolicy';
@@ -54,7 +54,7 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
     throw new Error('Azure OpenAI is not configured. Please check your .env file.');
   }
 
-  // Determine API format (Responses for OpenAI models, Chat Completions for third-party)
+  // Determine API format (Responses for OpenAI, Anthropic Messages for Claude, Chat Completions for other partners)
   const apiFormat = modelConfig.apiFormat || 'responses';
 
   // Add timeout for large requests (5 minutes for regenerations)
@@ -76,7 +76,7 @@ export async function callAzureOpenAI(messages: any[], modelOverride?: ModelOver
     supportsStructuredOutputs: modelConfig.supportsStructuredOutputs,
   });
   
-  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${apiFormat.startsWith('chat-completions') ? 'Chat Completions' : 'Responses'}`);
+  console.log(`🤖 Using ${modelConfig.displayName} [deployment: ${deployment}]${modelConfig.isReasoning ? ` (reasoning: ${settings.reasoningEffort})` : ''} | max_tokens: ${modelConfig.maxCompletionTokens} | API: ${describeApiFormat(apiFormat)}`);
 
   try {
     const { ok, status, data, errorText, correlationId } = await callAzureOpenAIProxy({
@@ -366,7 +366,7 @@ export async function analyzeArchitectureDiagramImage(imageBase64: string, mimeT
   
   // Vision is only supported by OpenAI models (Responses API)
   if (modelConfig.supportsVision === false) {
-    throw new Error(`${modelConfig.displayName} does not support image analysis. Please select an OpenAI model (GPT-5.x) for diagram-to-architecture conversion.`);
+    throw new Error(`${modelConfig.displayName} does not support image analysis. Please select an OpenAI model (GPT-5.x / GPT-6) for diagram-to-architecture conversion.`);
   }
 
   let deployment: string;

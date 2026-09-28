@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-5.1' | 'gpt-5.2' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'mai-thinking-1' | 'deepseek-v3.2-speciale' | 'deepseek-v4-pro' | 'grok-4.1-fast' | 'grok-4.3' | 'mistral-large-3' | 'kimi-k2-5' | 'kimi-k2-7-code';
+export type ModelType = 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.3' | 'grok-4.6' | 'mistral-large-3' | 'kimi-k2-6' | 'kimi-k2-7-code';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -54,19 +54,19 @@ export const FEATURE_CONFIG: Record<FeatureType, {
   architectureGeneration: {
     displayName: 'Architecture Generation',
     description: 'Creating Azure architecture diagrams',
-    recommendedModel: 'gpt-5.2',
+    recommendedModel: 'gpt-5.6-sol',
     recommendedReasoning: 'medium'
   },
   validation: {
     displayName: 'Architecture Validation',
     description: 'WAF validation and security analysis',
-    recommendedModel: 'gpt-5.2',
+    recommendedModel: 'gpt-5.6-sol',
     recommendedReasoning: 'low'
   },
   deploymentGuide: {
     displayName: 'Deployment Guide & Bicep',
     description: 'Generating deployment guides and IaC templates',
-    recommendedModel: 'gpt-5.2',
+    recommendedModel: 'gpt-5.6-sol',
     recommendedReasoning: 'medium'
   },
   blueprint: {
@@ -87,24 +87,30 @@ export const MODEL_CONFIG: Record<ModelType, {
   maxCompletionTokens: number;
   description: string;
   defaultReasoningEffort?: ReasoningEffort;
-  apiFormat?: 'responses' | 'chat-completions' | 'chat-completions-v1'; // defaults to 'responses'
+  apiFormat?: 'responses' | 'chat-completions' | 'chat-completions-v1' | 'anthropic-messages'; // defaults to 'responses'
   supportsVision?: boolean; // defaults to true
   supportsStructuredOutputs?: boolean; // defaults to true
 }> = {
-  'gpt-5.1': {
-    displayName: 'GPT-5.1',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT51',
+  'gpt-6-sol': {
+    displayName: 'GPT-6 Sol',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL',
     isReasoning: true,
     maxCompletionTokens: 32000,
-    description: 'Versatile model - fast by default, optional reasoning when needed',
-    defaultReasoningEffort: 'none'
+    description: 'Newest OpenAI frontier reasoning model - top quality for complex architectures'
   },
-  'gpt-5.2': {
-    displayName: 'GPT-5.2',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT52',
+  'gpt-6-luna': {
+    displayName: 'GPT-6 Luna',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA',
     isReasoning: true,
     maxCompletionTokens: 32000,
-    description: 'Most capable reasoning model - best for complex architectures'
+    description: 'GPT-6 fast reasoning model - quick, creative architecture design'
+  },
+  'gpt-6-astra': {
+    displayName: 'GPT-6 Astra',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'GPT-6 reasoning model - thorough, grounded analysis'
   },
   'gpt-5.4': {
     displayName: 'GPT-5.4',
@@ -141,6 +147,26 @@ export const MODEL_CONFIG: Record<ModelType, {
     maxCompletionTokens: 32000,
     description: 'Frontier reasoning model - fast, creative reasoning for architecture design'
   },
+  'claude-opus-5-5': {
+    displayName: 'Claude Opus 5.5',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_OPUS_55',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Anthropic flagship - deep reasoning for complex architectures and reviews',
+    apiFormat: 'anthropic-messages',
+    supportsVision: false,
+    supportsStructuredOutputs: false,
+  },
+  'claude-sonnet-5-5': {
+    displayName: 'Claude Sonnet 5.5',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_SONNET_55',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Anthropic balanced model - fast, strong reasoning at lower cost',
+    apiFormat: 'anthropic-messages',
+    supportsVision: false,
+    supportsStructuredOutputs: false,
+  },
   'mai-thinking-1': {
     displayName: 'MAI-Thinking-1 (Preview)',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1',
@@ -151,30 +177,12 @@ export const MODEL_CONFIG: Record<ModelType, {
     supportsVision: false,
     supportsStructuredOutputs: false,
   },
-  'deepseek-v3.2-speciale': {
-    displayName: 'DeepSeek V3.2 Speciale',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK',
-    isReasoning: false,
-    maxCompletionTokens: 16000,
-    description: 'Strong structured JSON output at lower cost - third-party model',
-    apiFormat: 'chat-completions',
-    supportsVision: false,
-  },
   'deepseek-v4-pro': {
     displayName: 'DeepSeek V4 Pro',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO',
     isReasoning: false,
     maxCompletionTokens: 16000,
     description: 'Flagship DeepSeek V4 - top-tier quality at third-party pricing',
-    apiFormat: 'chat-completions',
-    supportsVision: false,
-  },
-  'grok-4.1-fast': {
-    displayName: 'Grok 4.1 Fast',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST',
-    isReasoning: false,
-    maxCompletionTokens: 16000,
-    description: 'Fast non-reasoning model from xAI - diversified provider',
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
@@ -187,6 +195,15 @@ export const MODEL_CONFIG: Record<ModelType, {
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
+  'grok-4.6': {
+    displayName: 'Grok 4.6',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK46',
+    isReasoning: false,
+    maxCompletionTokens: 16000,
+    description: 'Latest xAI frontier model - broad knowledge, fast responses',
+    apiFormat: 'chat-completions',
+    supportsVision: false,
+  },
   'mistral-large-3': {
     displayName: 'Mistral Large 3',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3',
@@ -196,11 +213,13 @@ export const MODEL_CONFIG: Record<ModelType, {
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
-  'kimi-k2-5': {
-    displayName: 'Kimi K2.5',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25',
+  'kimi-k2-6': {
+    displayName: 'Kimi K2.6',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26',
     isReasoning: false,
-    maxCompletionTokens: 16000,
+    // Like K2.7 Code, K2.6 emits reasoning_content that consumes the completion
+    // budget before the JSON answer, so it needs the larger budget.
+    maxCompletionTokens: 32000,
     description: 'MoonshotAI trillion-param MoE - strong JSON / long context',
     apiFormat: 'chat-completions',
     supportsVision: false,
@@ -231,20 +250,22 @@ export const MODEL_CONFIG: Record<ModelType, {
  * not secrets, so embedding them is fine.
  */
 export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
-  'gpt-5.1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT51,
-  'gpt-5.2': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT52,
+  'gpt-6-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL,
+  'gpt-6-luna': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA,
+  'gpt-6-astra': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA,
   'gpt-5.4': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54,
   'gpt-5.4-mini': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI,
   'gpt-5.6-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL,
   'gpt-5.6-terra': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA,
   'gpt-5.6-luna': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA,
+  'claude-opus-5-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_OPUS_55,
+  'claude-sonnet-5-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_SONNET_55,
   'mai-thinking-1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1,
-  'deepseek-v3.2-speciale': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK,
   'deepseek-v4-pro': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO,
-  'grok-4.1-fast': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST,
   'grok-4.3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43,
+  'grok-4.6': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK46,
   'mistral-large-3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3,
-  'kimi-k2-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25,
+  'kimi-k2-6': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26,
   'kimi-k2-7-code': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE,
 };
 
@@ -263,6 +284,21 @@ export function getDeploymentName(model: ModelType): string {
   
   // No fallback - each model needs its own deployment configured
   throw new Error(`No deployment configured for ${config.displayName}. Set ${config.deploymentEnvVar} in your .env file.`);
+}
+
+/**
+ * Drop persisted per-feature overrides that point at models which were retired
+ * from MODEL_CONFIG or are not deployed in this build.
+ */
+function sanitizeFeatureOverrides(raw: unknown): Partial<Record<FeatureType, FeatureModelOverride>> {
+  const clean: Partial<Record<FeatureType, FeatureModelOverride>> = {};
+  if (!raw || typeof raw !== 'object') return clean;
+  for (const [feature, override] of Object.entries(raw as Record<string, FeatureModelOverride>)) {
+    if (!(feature in FEATURE_CONFIG) || !override || typeof override !== 'object') continue;
+    if (!MODEL_CONFIG[override.model] || !isModelAvailable(override.model)) continue;
+    clean[feature as FeatureType] = override;
+  }
+  return clean;
 }
 
 /**
@@ -287,7 +323,7 @@ function loadSettings(): ModelSettings {
           reasoningEffort: ['none', 'low', 'medium', 'high'].includes(parsed.reasoningEffort) 
             ? parsed.reasoningEffort 
             : DEFAULT_SETTINGS.reasoningEffort,
-          featureOverrides: parsed.featureOverrides || {}
+          featureOverrides: sanitizeFeatureOverrides(parsed.featureOverrides)
         };
       }
     }
