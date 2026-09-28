@@ -227,6 +227,21 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   });
   expect(dockOverDiagram, dockOverDiagram.join('\n')).toEqual([]);
 
+  // The hint pulses until the user drags something, proving they found out the
+  // canvas is editable; it then calms down but stays open until dismissed.
+  await expect(layoutHint).toHaveClass(/is-pulsing/);
+  const appServiceBox = await page.locator('.react-flow__node').filter({ hasText: 'App Service' }).boundingBox();
+  expect(appServiceBox).not.toBeNull();
+  const nodeX = Math.round(appServiceBox!.x + appServiceBox!.width / 2);
+  const nodeY = Math.round(appServiceBox!.y + appServiceBox!.height / 2);
+  await page.mouse.move(nodeX, nodeY);
+  await page.mouse.down();
+  await page.mouse.move(nodeX + 40, nodeY + 40, { steps: 6 });
+  await page.mouse.up();
+  await expect(layoutHint).not.toHaveClass(/is-pulsing/);
+  await expect(layoutHint).toBeVisible();
+  await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');
+
   await page.getByRole('button', { name: 'Dismiss layout guidance' }).click();
   await expect(layoutHint).toBeHidden();
   await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');

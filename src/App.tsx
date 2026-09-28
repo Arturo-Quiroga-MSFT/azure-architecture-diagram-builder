@@ -282,6 +282,8 @@ function App() {
   // Dismissed permanently once the user closes it (persisted in localStorage).
   const [showCanvasHint, setShowCanvasHint] = useState<boolean>(() => localStorage.getItem(CANVAS_HINT_STORAGE_KEY) !== '1');
   const [showLayoutHint, setShowLayoutHint] = useState(false);
+  // The layout hint keeps pulsing until the user proves they can move things.
+  const [layoutHintPulsing, setLayoutHintPulsing] = useState(false);
   const layoutHintTimeoutRef = useRef<number | null>(null);
   // Long prompts are clamped in the bottom dock until the user expands them.
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
@@ -306,6 +308,7 @@ function App() {
   const presentLayoutHint = useCallback(() => {
     if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
     setShowLayoutHint(true);
+    setLayoutHintPulsing(true);
 
     let hasSeenLayoutHint = false;
     try { hasSeenLayoutHint = localStorage.getItem(LAYOUT_HINT_SEEN_STORAGE_KEY) === '1'; } catch { /* ignore */ }
@@ -319,6 +322,11 @@ function App() {
 
   useEffect(() => () => {
     if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+  }, []);
+
+  const onNodeDragStart = useCallback(() => {
+    setLayoutHintPulsing(false);
+    try { localStorage.setItem(LAYOUT_HINT_SEEN_STORAGE_KEY, '1'); } catch { /* ignore */ }
   }, []);
 
   // Focus mode: hides canvas chrome (side panels via the signal above, plus the
@@ -4074,6 +4082,7 @@ function App() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onNodesDelete={onNodesDelete}
+            onNodeDragStart={onNodeDragStart}
             onConnect={onConnect}
             onReconnect={onReconnect}
             onEdgeContextMenu={onEdgeContextMenu}
@@ -4276,7 +4285,7 @@ function App() {
                 <div className="canvas-dock-stack canvas-dock-stack--wide">
                 {showLayoutHint && nodes.length > 0 && !focusMode && (
                   <div
-                    className="canvas-layout-hint"
+                    className={`canvas-layout-hint${layoutHintPulsing ? ' is-pulsing' : ''}`}
                     role="note"
                     aria-label="Diagram layout guidance"
                   >
