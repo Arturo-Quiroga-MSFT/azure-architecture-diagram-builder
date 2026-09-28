@@ -28,6 +28,12 @@ const EditableEdge: React.FC<EdgeProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(label?.toString() || '');
   const [isDragging, setIsDragging] = useState(false);
+
+  // Edge ids are positional, so a refinement reuses this component for a
+  // relabelled edge; follow the incoming label unless the user is editing it.
+  React.useEffect(() => {
+    if (!isEditing) setEditLabel(label?.toString() || '');
+  }, [label, isEditing]);
   const dragStartRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
 
   const pathStyle = (data as any)?.pathStyle as 'straight' | 'smooth' | 'orthogonal' | undefined;
@@ -256,7 +262,7 @@ const EditableEdge: React.FC<EdgeProps> = ({
               }}
               title={`${editLabel || 'Double-click to edit label'}\n(Drag to reposition)`}
             >
-              {editLabel || '(click to add label)'}
+              {editLabel || ((data as any)?.privateNetworkLink ? 'Private access' : '(click to add label)')}
             </div>
           )}
         </div>

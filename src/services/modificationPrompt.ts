@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+
 /**
  * Shared helper that turns the live canvas state + a natural-language request
  * into a "MODIFY EXISTING ARCHITECTURE" prompt for the architecture generator.
@@ -56,7 +57,8 @@ export function buildModificationPrompt(
       };
     });
 
-  const connections = current.edges.map((e) => {
+  const connections = current.edges
+    .map((e) => {
     const fromNode = current.nodes.find((n) => n.id === e.source);
     const toNode = current.nodes.find((n) => n.id === e.target);
     const relationship = e.data?.connectionType === 'association'
@@ -67,6 +69,10 @@ export function buildModificationPrompt(
     const type = e.data?.connectionType ? ` [${e.data.connectionType}]` : '';
     return `${fromNode?.data.label || e.source} ${relationship} ${toNode?.data.label || e.target}${e.label ? ` (${e.label})` : ''}${type}`;
   });
+
+  const protectedNames = current.nodes
+    .filter((n) => n.type === 'azureNode' && n.data?.privateConnectivity)
+    .map((n) => n.data.label);
 
   const servicesList = services
     .map((s) => `${s.name}${s.group ? ` [${s.group}]` : ''}`)
@@ -79,7 +85,7 @@ export function buildModificationPrompt(
   return `MODIFY EXISTING ARCHITECTURE: "${current.architectureName}"
 Services: ${servicesList}
 ${groups.length > 0 ? `Groups: ${groups.map((g) => g.name).join(', ')}` : ''}
-${connections.length > 0 ? `Connections: ${connections.join('; ')}` : ''}${recentBlock}
+${connections.length > 0 ? `Connections: ${connections.join('; ')}` : ''}${protectedNames.length > 0 ? `\nPrivate connectivity protects: ${protectedNames.join(', ')}` : ''}${recentBlock}
 
 CHANGE REQUESTED: ${request}
 
@@ -90,7 +96,7 @@ REFINEMENT MODE — MINIMAL-DIFF CONTRACT:
 4. Optional improvements belong in follow-up suggestions, not in the returned architecture.
 5. Return the COMPLETE architecture JSON (all services, groups, connections, workflow), with only the requested minimal change applied.
 6. Preserve semantic associations as connection type "association". A WAF policy associated with Front Door is NOT a directional request-flow hop.
-7. Do not model a per-resource "Private Endpoint - <resource>" node or a Virtual Network → Private Endpoint containment edge. Private connectivity is a single "Virtual Network" node (plus a "Private DNS Zone" node when DNS resolution matters), grouped by the application into one "Private Connectivity" boundary and annotated with the protected resource names; do not connect either node to the protected resources.
+7. Do not model a per-resource "Private Endpoint - <resource>" node or a Virtual Network → Private Endpoint containment edge. Private connectivity is a single "Virtual Network" node (plus a "Private DNS Zone" node when DNS resolution matters), grouped by the application into one "Private Connectivity" boundary. The application draws one Virtual Network → protected-service line per protected service; to set or change a line's label, return a single Virtual Network → service connection with that label (e.g. "Private endpoint for secret retrieval"), and keep the existing labels shown below otherwise. Return "privateConnectivity": { "protects": [service ids] } listing every service behind private connectivity: keep the currently protected services listed below unless the change removes them, and add any the change places behind a private endpoint or into the virtual network.
 8. Do not add an App Service → Virtual Network "VNet Integration" edge per resource; App Service's own private access is expressed the same way, through the Private Connectivity group's note, not a drawn edge.
 9. Never add Azure Private Link as middleware between application and data services. Reserve a standalone Private Link node for an explicitly requested provider-side Private Link Service.
 10. Interpret "add WAF in front of Front Door" as "associate a Front Door WAF Policy with Azure Front Door" while preserving Azure Front Door → origin traffic. If no ingress platform exists, do not guess between Front Door and Application Gateway; return the existing topology unchanged so the UI can ask which scope is intended.`;

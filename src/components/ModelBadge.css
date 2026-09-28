@@ -1,7 +1,6 @@
+/* Sits in the canvas bottom dock (App.css); absolute only once dragged. */
 .model-generation-badge {
-  position: absolute;
-  bottom: 70px;
-  left: 380px;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;

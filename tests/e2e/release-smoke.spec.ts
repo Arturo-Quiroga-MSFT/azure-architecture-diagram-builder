@@ -192,20 +192,40 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await expect(layoutHint).toContainText('Make this layout yours');
   await expect(layoutHint).toContainText('Drag services and groups into the positions that best communicate your architecture.');
 
-  // The draggable "Generated from" banner wraps to an arbitrary height, so the
-  // hint must clear its measured bottom rather than a fixed offset.
+  // The hint and the "Generated from" banner share the bottom dock; the banner
+  // wraps to an arbitrary height, so they must be laid out, not overlaid.
   const hintVsBanner = await page.evaluate(() => {
     const banner = document.querySelector('.prompt-banner');
     const hint = document.querySelector('.canvas-layout-hint');
     if (!banner || !hint) return null;
     const b = banner.getBoundingClientRect();
     const h = hint.getBoundingClientRect();
-    return { bannerHeight: b.height, bannerBottom: b.bottom, hintTop: h.top };
+    return { bannerHeight: b.height, bannerTop: b.top, hintBottom: h.bottom };
   });
   expect(hintVsBanner).not.toBeNull();
   // Guards the guard: a single-line banner would make the overlap check vacuous.
   expect(hintVsBanner!.bannerHeight).toBeGreaterThan(60);
-  expect(hintVsBanner!.hintTop).toBeGreaterThanOrEqual(hintVsBanner!.bannerBottom);
+  expect(hintVsBanner!.hintBottom).toBeLessThanOrEqual(hintVsBanner!.bannerTop);
+
+  // Nothing in the dock may sit over the framed diagram.
+  const dockOverDiagram = await page.evaluate(() => {
+    const label = (el: Element) => `${el.className.toString().split(' ')[0]}${el.textContent ? ` "${el.textContent.trim().slice(0, 24)}"` : ''}`;
+    const box = (el: Element) => { const r = el.getBoundingClientRect(); return `[${Math.round(r.left)},${Math.round(r.top)} → ${Math.round(r.right)},${Math.round(r.bottom)}]`; };
+    const items = [...document.querySelectorAll('.canvas-bottom-dock .title-block, .canvas-bottom-dock .prompt-banner, .canvas-bottom-dock .canvas-layout-hint, .canvas-bottom-dock .legend, .canvas-bottom-dock .model-generation-badge')];
+    const nodes = [...document.querySelectorAll('.react-flow__node')];
+    const hits: string[] = [];
+    for (const item of items) {
+      const a = item.getBoundingClientRect();
+      for (const node of nodes) {
+        const n = node.getBoundingClientRect();
+        if (a.left < n.right && a.right > n.left && a.top < n.bottom && a.bottom > n.top) {
+          hits.push(`${label(item)} ${box(item)} over ${label(node)} ${box(node)}`);
+        }
+      }
+    }
+    return hits;
+  });
+  expect(dockOverDiagram, dockOverDiagram.join('\n')).toEqual([]);
 
   await page.getByRole('button', { name: 'Dismiss layout guidance' }).click();
   await expect(layoutHint).toBeHidden();
@@ -214,7 +234,14 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   // Dragging the banner must keep the grabbed point under the cursor. Its
   // left/top resolve against the canvas, not the viewport, so mixing the two
   // spaces used to drop it by exactly the canvas offset.
-  const bannerBox = await page.locator('.prompt-banner').boundingBox();
+  // Dismissing the hint reflows the dock; grab the banner once it has settled.
+  let bannerBox = await page.locator('.prompt-banner').boundingBox();
+  await expect.poll(async () => {
+    const previous = bannerBox;
+    await page.waitForTimeout(150);
+    bannerBox = await page.locator('.prompt-banner').boundingBox();
+    return Boolean(previous && bannerBox && previous.x === bannerBox.x && previous.y === bannerBox.y);
+  }).toBe(true);
   expect(bannerBox).not.toBeNull();
   const grabX = Math.round(bannerBox!.x + 40);
   const grabY = Math.round(bannerBox!.y + 20);
@@ -317,18 +344,22 @@ test('semantic policies and private endpoints do not render as traffic hops', as
   await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Endpoint -/ })).toHaveCount(0);
   await expect(page.locator('.react-flow__node').filter({ hasText: 'Private DNS Zone' })).toHaveCount(1);
   await expect(page.getByText('WAF policy associated with Front Door route')).toBeVisible();
-  // No per-resource Private Endpoint node/edges — the group's note carries the
-  // relationship, reusing the group the Virtual Network already belonged to.
-  // A named "Private Link - <resource>" node per protected resource sits in
-  // the same group, visible detail alongside the note, with zero edges.
+  // No per-resource Private Endpoint or Private Link nodes. The group's note names
+  // the protected resources, and with few of them each gets one arrowless dotted
+  // line from the Virtual Network, so the boundary is never an island.
   await expect(page.getByText('Private endpoints: App Service and SQL Database')).toBeVisible();
-  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - App Service' })).toHaveCount(1);
-  await expect(page.locator('.react-flow__node').filter({ hasText: 'Private Link - SQL Database' })).toHaveCount(1);
+  await expect(page.locator('.react-flow__node').filter({ hasText: /^Private Link -/ })).toHaveCount(0);
   await expect(page.getByText('Contains private endpoint for SQL Database')).toHaveCount(0);
   await expect(page.getByText('VNet Integration for outbound private access')).toHaveCount(0);
+  // Each line is labelled with the resource it reaches; no placeholders.
+  await expect(page.getByText(/^Private access to /)).toHaveCount(2);
+  await expect(page.getByText('(click to add label)')).toHaveCount(0);
+  // Lines, not badges, at this size.
+  await expect(page.locator('.private-badge')).toHaveCount(0);
 
+  // The WAF policy association plus one line per protected resource.
   const associationPaths = page.locator('path[id^="semantic-association-"]');
-  await expect(associationPaths).toHaveCount(1);
+  await expect(associationPaths).toHaveCount(3);
   const associationAttributes = await associationPaths.evaluateAll((paths) => paths.map((path) => ({
     markerEnd: path.getAttribute('marker-end'),
     markerStart: path.getAttribute('marker-start'),

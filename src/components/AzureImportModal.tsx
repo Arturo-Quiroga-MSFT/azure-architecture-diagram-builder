@@ -14,6 +14,7 @@ import {
 } from '../services/azureImportProvider';
 import { getSignedInName } from '../services/msalAuth';
 import './AzureImportModal.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface AzureImportModalProps {
   isOpen: boolean;
@@ -75,6 +76,8 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
       .catch((e) => setError(e.message || 'Failed to list resource groups'))
       .finally(() => setLoadingGroups(false));
   }, [subId]);
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

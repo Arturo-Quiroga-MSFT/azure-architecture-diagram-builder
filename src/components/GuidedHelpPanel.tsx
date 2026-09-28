@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { trackHelpOpened } from '../services/telemetryService';
 import './GuidedHelpPanel.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface GuidedHelpPanelProps {
   isOpen: boolean;
@@ -131,12 +132,7 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
     if (isOpen) trackHelpOpened('quick-start');
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose]);
+  useEscapeToClose(isOpen, onClose);
 
   const goToSection = (id: SectionId) => {
     setSection(id);

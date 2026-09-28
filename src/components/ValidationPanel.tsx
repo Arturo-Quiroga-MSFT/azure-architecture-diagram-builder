@@ -19,6 +19,7 @@ import { useValidationDisplayPrefs } from '../stores/validationDisplayStore';
 // Also carries the shared .modal-overlay / .modal-content base used by nine other modals.
 import './ValidationModal.css';
 import './ValidationPanel.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface ValidationPanelProps {
   validation: ArchitectureValidation | null;
@@ -55,6 +56,8 @@ const ValidationPanel: React.FC<ValidationPanelProps> = ({
     document.body.classList.toggle('has-validation-dock', isOpen);
     return () => document.body.classList.remove('has-validation-dock');
   }, [isOpen]);
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

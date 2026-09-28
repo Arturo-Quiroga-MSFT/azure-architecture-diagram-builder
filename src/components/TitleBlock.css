@@ -1,7 +1,6 @@
+/* Sits in the canvas bottom dock (App.css); absolute only once dragged. */
 .title-block {
-  position: absolute;
-  bottom: 20px;
-  left: 380px;
+  position: relative;
   background: white;
   border: 2px solid #333;
   border-radius: 4px;
@@ -57,8 +56,17 @@
 
 .title-block-value {
   flex: 1;
+  min-width: 0;
   color: #333;
   font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvas-bottom-dock .title-block {
+  min-width: 260px;
+  max-width: 380px;
 }
 
 .title-block-hint {

@@ -18,6 +18,7 @@ const tests = [
   'test:refinement-guard',
   'test:follow-up-model',
   'test:semantic-relationships',
+  'test:private-connectivity',
 ];
 
 for (const testName of tests) {

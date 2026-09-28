@@ -35,6 +35,20 @@ const isNetworkContainer = (service: any): boolean => (
 // protects, instead of a node and up to three edges per protected resource.
 const PRIVATE_CONNECTIVITY_GROUP_ID = 'private-connectivity';
 
+// Up to this many protected resources, each gets one arrowless dotted line from
+// the Virtual Network. Beyond it the lines would crowd the diagram, so each
+// protected resource carries a "Private" badge instead.
+export const PRIVATE_CONNECTIVITY_LINE_LIMIT = 4;
+// Label of the app-owned Virtual Network -> protected resource line. The
+// refinement prompt leaves these out: the app redraws them from the
+// declaration, so the model never has to reproduce them.
+/** Label used by earlier builds for the app-drawn lines; recognised on load only. */
+export const PRIVATE_NETWORK_EDGE_LABEL = 'Private network access';
+
+const isDnsService = (service: any): boolean => isPrivateDnsZone(service) || /\bdns\b/.test(serviceText(service));
+// Only traffic labels count as evidence; policy and DNS links do not.
+const PRIVATE_TRAFFIC_LABEL = /\bprivate(ly)?\b|\binternal\b/i;
+
 function repairSemanticRelationships(architecture: any, logger: ArchitectureProcessingLogger): number {
   const servicesById = new Map<string, any>(
     architecture.services.map((service: any) => [String(service.id), service]),
@@ -151,8 +165,18 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
     }
 
     if (targetIds.length === 0) {
-      logger.warn('Removed Private Link connector with no protected resource target');
-      continue;
+      // v2.0.3 drew one "Private Link - <resource>" node per protected resource
+      // with no edges; a refinement of such a diagram hands them back here.
+      const legacy = /^private (?:link|endpoint)\s*-\s*(.+)$/i.exec(String(privateConnectivity.legacyName || privateConnectivity.name || '').trim());
+      const legacyTarget = legacy
+        ? architecture.services.find((service: any) => String(service.name).toLowerCase() === legacy[1].trim().toLowerCase())
+        : undefined;
+      if (legacyTarget && eligibleTarget(String(legacyTarget.id))) {
+        targetIds.push(String(legacyTarget.id));
+      } else {
+        logger.warn('Removed Private Link connector with no protected resource target');
+        continue;
+      }
     }
 
     targetIds.forEach((targetId) => {
@@ -161,6 +185,42 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
     });
     logger.warn(`Folded Azure Private Link connector into the Private Connectivity group (${targetIds.length} protected resource(s))`);
   }
+
+  const isEligibleProtected = (service: any): boolean => Boolean(
+    service
+    && !isNetworkContainer(service)
+    && !isDnsService(service)
+    && !isFrontDoor(service)
+    && !isPrivateConnectivity(service),
+  );
+  const resolveService = (ref: unknown): any => {
+    const key = String(ref ?? '').trim();
+    if (!key) return undefined;
+    return servicesById.get(key)
+      || architecture.services.find((service: any) => String(service.name).toLowerCase() === key.toLowerCase());
+  };
+
+  // The generation contract asks the model to declare which services it placed
+  // behind private connectivity (ids, or names as a fallback).
+  const declared = architecture.privateConnectivity?.protects;
+  if (Array.isArray(declared)) {
+    for (const ref of declared) {
+      const service = resolveService(ref);
+      if (isEligibleProtected(service)) protectedTargets.set(String(service.id), service);
+    }
+  }
+  // Older diagrams and models that skip the declaration: when a Virtual Network
+  // exists, a request path described as private or internal marks its target.
+  if (protectedTargets.size === 0 && architecture.services.some(isVirtualNetwork)) {
+    for (const connection of architecture.connections) {
+      if (connection.type === 'association' || connection.type === 'containment') continue;
+      if (!PRIVATE_TRAFFIC_LABEL.test(String(connection.label ?? ''))) continue;
+      const target = servicesById.get(String(connection.to));
+      if (isEligibleProtected(target)) protectedTargets.set(String(target.id), target);
+    }
+  }
+  delete architecture.privateConnectivity;
+  for (const service of architecture.services) delete service.privateConnectivity;
 
   if (protectedTargets.size > 0) {
     const names = [...protectedTargets.values()].map((target: any) => target.name).sort((a, b) => a.localeCompare(b));
@@ -187,7 +247,10 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
     group.note = note;
     virtualNetwork.groupId = groupId;
 
-    let privateDnsZone = architecture.services.find(isPrivateDnsZone);
+    // An existing DNS service already inside the boundary (e.g. "Azure DNS")
+    // is the private DNS zone; adding another would duplicate it.
+    let privateDnsZone = architecture.services.find(isPrivateDnsZone)
+      || architecture.services.find((service: any) => isDnsService(service) && service.groupId === groupId);
     if (!privateDnsZone) {
       privateDnsZone = { id: 'private-connectivity-dns', name: 'Private DNS Zone', type: 'Private DNS Zone', category: 'networking' };
       architecture.services.push(privateDnsZone);
@@ -195,21 +258,57 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
     }
     privateDnsZone.groupId = groupId;
 
-    // One named Private Link node per protected resource, contained in the
-    // same group as the VNet/DNS Zone. No edges to the VNet or to the actual
-    // resource elsewhere on canvas — membership in the group is what says
-    // "this belongs to the boundary", same as the group's own note does at a
-    // glance. This is what makes each protected resource individually visible
-    // (and its name individually readable) without redrawing a line to it.
-    for (const [targetId, target] of protectedTargets) {
-      const linkId = `private-link-${targetId}`;
-      let link = servicesById.get(linkId);
-      if (!link) {
-        link = { id: linkId, name: `Private Link - ${target.name}`, type: 'Azure Private Link', category: 'networking' };
-        architecture.services.push(link);
-        servicesById.set(linkId, link);
+    // Replace any Virtual Network <-> protected resource connection with the
+    // single app-owned line (or badge), so refinements never accumulate copies.
+    const vnetId = String(virtualNetwork.id);
+    // A label the model (or a refinement) gave the line is kept; the generic
+    // legacy label is not, so each line says what it is for.
+    const existingLabels = new Map<string, string>();
+    for (const connection of architecture.connections) {
+      const from = String(connection.from);
+      const to = String(connection.to);
+      const targetId = from === vnetId ? to : to === vnetId ? from : null;
+      const label = typeof connection.label === 'string' ? connection.label.trim() : '';
+      if (targetId && protectedTargets.has(targetId) && label && label !== PRIVATE_NETWORK_EDGE_LABEL && !existingLabels.has(targetId)) {
+        existingLabels.set(targetId, label);
       }
-      link.groupId = groupId;
+    }
+    const before = architecture.connections.length;
+    architecture.connections = architecture.connections.filter((connection: any) => !(
+      (String(connection.from) === vnetId && protectedTargets.has(String(connection.to)))
+      || (String(connection.to) === vnetId && protectedTargets.has(String(connection.from)))
+    ));
+    repairs += before - architecture.connections.length;
+
+    const mode = protectedTargets.size <= PRIVATE_CONNECTIVITY_LINE_LIMIT ? 'line' : 'badge';
+    for (const [targetId, target] of protectedTargets) {
+      target.privateConnectivity = mode;
+      if (mode === 'line') {
+        architecture.connections.push({
+          from: virtualNetwork.id,
+          to: targetId,
+          label: existingLabels.get(targetId) || `Private access to ${target.name}`,
+          type: 'association',
+          privateNetworkLink: true,
+        });
+      }
+    }
+
+    // A step that describes private or DNS access through a protected resource
+    // also involves the network boundary, so highlighting it shows the boundary.
+    if (Array.isArray(architecture.workflow)) {
+      for (const step of architecture.workflow) {
+        if (!Array.isArray(step.services)) continue;
+        const ids = step.services.map((id: unknown) => String(id));
+        if (!ids.some((id: string) => protectedTargets.has(id))) continue;
+        const text = String(step.description ?? '');
+        if (/\bprivate(ly)?\b|\binternal\b|\bdns\b/i.test(text) && !ids.includes(vnetId)) {
+          step.services.push(virtualNetwork.id);
+        }
+        if (/\bdns\b/i.test(text) && !ids.includes(String(privateDnsZone.id))) {
+          step.services.push(privateDnsZone.id);
+        }
+      }
     }
 
     repairs++;
@@ -243,6 +342,9 @@ export function postProcessArchitecture(
         logger.log(`Normalized "${service.name}" -> "${mapping.displayName}" (${mapping.category})`);
         return {
           ...service,
+          // Normalizing drops the "- <resource>" suffix of a legacy per-resource
+          // Private Link node; keep it so the protected resource is not lost.
+          ...(/^private (?:link|endpoint)\s*-/i.test(String(service.name || '')) ? { legacyName: service.name } : {}),
           name: mapping.displayName,
           type: mapping.displayName,
           category: mapping.category,

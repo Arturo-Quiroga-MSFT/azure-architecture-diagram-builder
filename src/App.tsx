@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import React, { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import ReactFlow, {
   MiniMap,
@@ -92,11 +92,15 @@ import { classifyValidationTopics } from './services/validationConsensus';
 import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
 import FeedbackToast from './components/FeedbackToast';
+import NotificationHost from './components/NotificationHost';
+import { PRIVATE_NETWORK_EDGE_LABEL } from './services/architecturePostProcessing';
+import { CANVAS_MAX_ZOOM, CANVAS_MIN_ZOOM, fitViewClearOfChrome } from './utils/fitViewClearOfChrome';
 import { FEEDBACK_DONE_KEY } from './services/feedbackService';
 import { APP_VERSION } from './appVersion';
 import { useGenerationSession } from './hooks/useGenerationSession';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
+import { notify } from './services/notificationService';
 
 const ImpactModal = __ENABLE_ADOPTION_IMPACT__
   ? React.lazy(() => import('./components/ImpactModal'))
@@ -144,6 +148,8 @@ const HEADER_COLLAPSED_STORAGE_KEY = 'azure-diagram-builder.headerCollapsed.v1';
 // than over it — the bar is z-index 5 and the banners are 1000, so an overlap
 // makes the tools unclickable. The layout hint then stacks below the banner.
 const CANVAS_BANNER_TOP = '68px';
+// Prompts longer than roughly three lines of the docked banner start clamped.
+const PROMPT_CLAMP_CHARS = 200;
 
 // Derive a short, human-friendly architecture title from a free-form prompt
 // (used as a fallback when no manifest title is available). Strips common
@@ -277,10 +283,8 @@ function App() {
   const [showCanvasHint, setShowCanvasHint] = useState<boolean>(() => localStorage.getItem(CANVAS_HINT_STORAGE_KEY) !== '1');
   const [showLayoutHint, setShowLayoutHint] = useState(false);
   const layoutHintTimeoutRef = useRef<number | null>(null);
-  // State-backed ref: the banner mounts conditionally, so the measurement effect
-  // must re-run when the element actually attaches.
-  const [promptBannerEl, setPromptBannerEl] = useState<HTMLDivElement | null>(null);
-  const [layoutHintTop, setLayoutHintTop] = useState(16);
+  // Long prompts are clamped in the bottom dock until the user expands them.
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   // Collapses the top toolbar to maximize canvas height. Independent of
   // the "Focus" button (which collapses the side panels). Persisted so the
   // user's preference sticks across sessions.
@@ -321,30 +325,6 @@ function App() {
   // "Generated from" prompt banner and the "Generated with" model badge) so only
   // the diagram itself remains. Toggled by the Focus button.
   const [focusMode, setFocusMode] = useState(false);
-
-  // The prompt banner wraps to an arbitrary height and is draggable, so the
-  // layout hint tracks its measured bottom edge instead of a fixed offset.
-  useLayoutEffect(() => {
-    if (!showLayoutHint || !promptBannerEl) {
-      setLayoutHintTop(16);
-      return;
-    }
-    const update = () => {
-      const host = promptBannerEl.offsetParent as HTMLElement | null;
-      const hostTop = host ? host.getBoundingClientRect().top : 0;
-      const bottom = Math.round(promptBannerEl.getBoundingClientRect().bottom - hostTop) + 12;
-      // Once the banner is dragged well down the canvas, stop following it.
-      setLayoutHintTop(bottom > 360 ? 16 : Math.max(16, bottom));
-    };
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(promptBannerEl);
-    window.addEventListener('resize', update);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', update);
-    };
-  }, [showLayoutHint, promptBannerEl, promptBannerPosition]);
 
   const [exportBackground, setExportBackground] = useState<ExportBackground>(() => {
     const saved = localStorage.getItem(EXPORT_BACKGROUND_STORAGE_KEY);
@@ -794,7 +774,7 @@ function App() {
 
       // Zoom out to show the full picture
       setTimeout(() => {
-        reactFlowInstance?.fitView?.({ padding: 0.3, duration: 300 });
+        fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.3, duration: 300 });
       }, 50);
     } else {
       // Restore saved sizes
@@ -812,7 +792,7 @@ function App() {
       preCollapseGroupSizes.current = new Map();
 
       setTimeout(() => {
-        reactFlowInstance?.fitView?.({ padding: 0.2, duration: 300 });
+        fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 300 });
       }, 50);
     }
   }, [allGroupsCollapsed, nodes, setNodes, reactFlowInstance]);
@@ -901,7 +881,7 @@ function App() {
     setEdges(deconflictEdgeLabels(result.nodes as any, result.edges as any) as any);
 
     requestAnimationFrame(() => {
-      reactFlowInstance?.fitView?.({ padding: 0.2, duration: 250 });
+      fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 250 });
     });
   }, [
     nodes,
@@ -1154,7 +1134,7 @@ function App() {
 
     await withCanvasViewForCapture(async () => {
       // Fit all nodes into view with no animation for immediate rendering
-      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+      fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
 
       // Wait for fitView to settle, then capture
       await new Promise(res => setTimeout(res, 800));
@@ -1177,7 +1157,7 @@ function App() {
         trackExport('png', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
       } catch (err) {
         console.error('Error exporting diagram:', err);
-        alert('Failed to export diagram. Please try again.');
+        notify('Failed to export diagram. Please try again.', 'error');
       }
     });
   }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
@@ -1189,7 +1169,7 @@ function App() {
 
     await withCanvasViewForCapture(async () => {
       // Fit all nodes into view with no animation for immediate rendering
-      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+      fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
 
       // Wait for fitView to settle, then capture
       await new Promise(res => setTimeout(res, 800));
@@ -1214,7 +1194,7 @@ function App() {
         trackExport('svg', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
       } catch (err) {
         console.error('Error exporting SVG:', err);
-        alert('Failed to export SVG. Please try again.');
+        notify('Failed to export SVG. Please try again.', 'error');
       }
     });
   }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
@@ -1223,7 +1203,7 @@ function App() {
   // connections, optional validation/cost) as a Markdown document.
   const exportWorkflowMarkdown = useCallback(() => {
     if (nodes.filter(n => n.type === 'azureNode').length === 0) {
-      alert('Add or generate an architecture first, then export its workflow narrative.');
+      notify('Add or generate an architecture first, then export its workflow narrative.', 'warning');
       return;
     }
     try {
@@ -1251,7 +1231,7 @@ function App() {
       trackExport('workflow-md', nodes.filter(n => n.type === 'azureNode').length);
     } catch (err) {
       console.error('Error exporting workflow markdown:', err);
-      alert('Failed to export workflow narrative. Please try again.');
+      notify('Failed to export workflow narrative. Please try again.', 'error');
     }
   }, [nodes, edges, workflow, titleBlockData, architecturePrompt, generatedWithModel, validationResult, totalMonthlyCost, pricingMode, recordExport]);
 
@@ -1265,7 +1245,7 @@ function App() {
     }
 
     await withCanvasViewForCapture(async () => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+      fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
 
       await new Promise(res => setTimeout(res, 800));
       try {
@@ -1288,7 +1268,7 @@ function App() {
         trackExport('animated-svg', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
       } catch (err) {
         console.error('Error exporting animated SVG:', err);
-        alert('Failed to export animated SVG. Please try again.');
+        notify('Failed to export animated SVG. Please try again.', 'error');
       }
     });
   }, [reactFlowInstance, recordExport, nodes, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
@@ -1302,12 +1282,12 @@ function App() {
       return;
     }
     if (!workflow || workflow.length === 0) {
-      alert('This diagram has no workflow steps to animate. Generate a diagram with a workflow first.');
+      notify('This diagram has no workflow steps to animate. Generate a diagram with a workflow first.', 'warning');
       return;
     }
 
     await withCanvasViewForCapture(async () => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+      fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
 
       await new Promise(res => setTimeout(res, 800));
       try {
@@ -1330,7 +1310,7 @@ function App() {
         trackExport('workflow-animation', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
       } catch (err) {
         console.error('Error exporting workflow animation:', err);
-        alert('Failed to export workflow animation. Please try again.');
+        notify('Failed to export workflow animation. Please try again.', 'error');
       }
     });
   }, [reactFlowInstance, recordExport, nodes, edges, workflow, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
@@ -1344,13 +1324,13 @@ function App() {
       trackExport('drawio', nodes.filter(n => n.type === 'azureNode').length);
     } catch (err) {
       console.error('Error exporting Draw.io:', err);
-      alert('Failed to export Draw.io file. Please try again.');
+      notify('Failed to export Draw.io file. Please try again.', 'error');
     }
   }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
   const exportAsVsdx = useCallback(async () => {
     if (nodes.filter(n => n.type === 'azureNode').length === 0) {
-      alert('Add or generate an architecture first, then export to Visio.');
+      notify('Add or generate an architecture first, then export to Visio.', 'warning');
       return;
     }
     try {
@@ -1368,7 +1348,7 @@ function App() {
       trackExport('vsdx', nodes.filter(n => n.type === 'azureNode').length);
     } catch (err) {
       console.error('Error exporting Visio VSDX:', err);
-      alert('Failed to export Visio file. Please try again.');
+      notify('Failed to export Visio file. Please try again.', 'error');
     }
   }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
@@ -1382,7 +1362,7 @@ function App() {
       trackExport('html', nodes.filter(n => n.type === 'azureNode').length);
     } catch (err) {
       console.error('Error exporting HTML diagram:', err);
-      alert('Failed to export HTML diagram. Please try again.');
+      notify('Failed to export HTML diagram. Please try again.', 'error');
     }
   }, [nodes, edges, titleBlockData.architectureName, recordExport]);
 
@@ -1390,7 +1370,7 @@ function App() {
     if (!reactFlowWrapper.current || !reactFlowInstance) return;
 
     await withCanvasViewForCapture(async () => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+      fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
 
       await new Promise(res => setTimeout(res, 800));
       try {
@@ -1412,7 +1392,7 @@ function App() {
         trackExport('pptx', nodes.filter(n => n.type === 'azureNode').length, exportBackground);
       } catch (err) {
         console.error('Error exporting PPTX:', err);
-        alert('Failed to export PowerPoint slide. Please try again.');
+        notify('Failed to export PowerPoint slide. Please try again.', 'error');
       }
     });
   }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
@@ -1422,11 +1402,11 @@ function App() {
 
     const azureNodes = nodes.filter(n => n.type === 'azureNode');
     if (azureNodes.length === 0) {
-      alert('Add or generate an architecture first, then export a customer deck.');
+      notify('Add or generate an architecture first, then export a customer deck.', 'warning');
       return;
     }
 
-    reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+    fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
 
     await withCanvasViewForCapture(async () => {
       await new Promise(res => setTimeout(res, 800));
@@ -1563,7 +1543,7 @@ function App() {
         trackExport('pptx-deck', azureNodes.length, exportBackground);
       } catch (err) {
         console.error('Error exporting customer deck:', err);
-        alert('Failed to export the customer deck. Please try again.');
+        notify('Failed to export the customer deck. Please try again.', 'error');
       }
     });
   }, [reactFlowInstance, recordExport, nodes, isDarkMode, titleBlockData, validationResult, pricingMode, architecturePrompt, originalPrompt, generatedWithModel, exportBackground, exportCanvasBackground, withCanvasViewForCapture]);
@@ -1600,7 +1580,7 @@ function App() {
     
     // Check if there's any cost data
     if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
-      alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
+      notify('No costing information available. Please ensure your diagram contains Azure services with pricing data.', 'warning');
       return;
     }
 
@@ -1624,7 +1604,7 @@ function App() {
   const exportCostBreakdownZip = useCallback(async () => {
     const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
     if (breakdown.byService.length === 0 || breakdown.totalMonthlyCost === 0) {
-      alert('No costing information available. Please ensure your diagram contains Azure services with pricing data.');
+      notify('No costing information available. Please ensure your diagram contains Azure services with pricing data.', 'warning');
       return;
     }
 
@@ -2018,7 +1998,7 @@ function App() {
         applyFlowObject(flow);
       } catch (error) {
         console.error('Error loading diagram:', error);
-        alert('Error loading diagram file');
+        notify('Error loading diagram file', 'error');
       }
     };
     reader.readAsText(file);
@@ -2042,6 +2022,7 @@ function App() {
     clearSourceModel();
     setReferenceImageUrl(null);
     setPromptBannerPosition(null);
+    setIsPromptExpanded(false);
     setHighlightedServices([]);
     setEdgeContextMenu(null);
     setShowLayoutHint(false);
@@ -2082,7 +2063,7 @@ function App() {
       trackVersionOperation('restore');
     } catch (error) {
       console.error('Failed to restore version:', error);
-      alert('Failed to restore version');
+      notify('Failed to restore version', 'error');
     }
   }, []);
 
@@ -2180,7 +2161,7 @@ function App() {
       let { groups } = architecture;
       
       if (!services || services.length === 0) {
-        alert('No services were identified in your description. Please try a more detailed description.');
+        notify('No services were identified in your description. Please try a more detailed description.', 'warning');
         return;
       }
 
@@ -2460,6 +2441,9 @@ function App() {
         data: {
           label: service.name,
           iconPath: icon?.path || '',
+          // 'line' | 'badge' when behind the Private Connectivity boundary. Set
+          // explicitly so a refinement that un-protects a service clears it.
+          privateConnectivity: service.privateConnectivity ?? null,
         },
         parentNode: service.groupId || undefined,  // Link to group if exists
         extent: service.groupId ? 'parent' : undefined,  // Keep within parent bounds
@@ -2631,6 +2615,7 @@ function App() {
         style: edgeStyle,
         data: {
           connectionType,
+          privateNetworkLink: conn.privateNetworkLink === true || conn.label === PRIVATE_NETWORK_EDGE_LABEL,
           direction: edgeDirection.direction,
           baseFlowAnimated,
           flowAnimated,
@@ -2750,12 +2735,12 @@ function App() {
     // diagram, where no prior editorial viewport exists.
     if (!isRefinement) {
       setTimeout(() => {
-        reactFlowInstance?.fitView({ padding: 0.2 });
+        fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2 });
       }, 100);
     }
     } catch (error) {
       console.error('Error in handleAIGenerate:', error);
-      alert('Failed to generate diagram. Check console for details.');
+      notify('Failed to generate diagram. Check console for details.', 'error');
     }
   }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle, presentLayoutHint]);
 
@@ -2770,7 +2755,7 @@ function App() {
       if (/\b(resource|module)\b/.test(text)) {
         return { format: 'bicep', label: 'Bicep' };
       }
-      alert(`Invalid Bicep file: "${filename}" does not contain resource or module declarations.`);
+      notify(`Invalid Bicep file: "${filename}" does not contain resource or module declarations.`, 'error');
       return null;
     }
 
@@ -2778,7 +2763,7 @@ function App() {
       if (/\b(resource|provider|module|data)\b/.test(text)) {
         return { format: 'terraform-hcl', label: 'Terraform' };
       }
-      alert(`Invalid Terraform file: "${filename}" does not contain resource or provider blocks.`);
+      notify(`Invalid Terraform file: "${filename}" does not contain resource or provider blocks.`, 'error');
       return null;
     }
 
@@ -2793,15 +2778,15 @@ function App() {
         if (json.$schema && json.resources) {
           return { format: 'arm', label: 'ARM' };
         }
-        alert(`Unrecognized JSON file: "${filename}". Expected an ARM template ($schema + resources) or Terraform state file.`);
+        notify(`Unrecognized JSON file: "${filename}". Expected an ARM template ($schema + resources) or Terraform state file.`, 'error');
         return null;
       } catch {
-        alert(`Invalid JSON in "${filename}".`);
+        notify(`Invalid JSON in "${filename}".`, 'error');
         return null;
       }
     }
 
-    alert(`Unsupported file type: .${ext}. Supported formats: .bicep, .tf, .json`);
+    notify(`Unsupported file type: .${ext}. Supported formats: .bicep, .tf, .json`, 'error');
     return null;
   }, []);
 
@@ -2876,7 +2861,7 @@ function App() {
       handleAIGenerate(result, promptLabel);
     } catch (error: any) {
       console.error('Template import error:', error);
-      alert(`Failed to import template: ${error.message}`);
+      notify(`Failed to import template: ${error.message}`, 'error');
     } finally {
       setIsImportingTemplate(false);
       setImportFormatLabel('Template');
@@ -2995,7 +2980,7 @@ function App() {
   // Premium Feature Handlers
   const handleValidateArchitecture = useCallback(async () => {
     if (nodes.length === 0) {
-      alert('Please create an architecture diagram first.');
+      notify('Please create an architecture diagram first.', 'warning');
       return;
     }
 
@@ -3003,7 +2988,7 @@ function App() {
     let diagramImageDataUrl: string | undefined;
     if (reactFlowWrapper.current && reactFlowInstance) {
       try {
-        reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+        fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
         // Brief delay for fitView to settle before capture
         await new Promise(resolve => setTimeout(resolve, 400));
         const isDark = document.body.classList.contains('dark-mode');
@@ -3078,7 +3063,7 @@ function App() {
       setPanelsCollapsedSignal(prev => prev + 1);
     } catch (error: any) {
       console.error('Validation error:', error);
-      alert(`Failed to validate architecture: ${error.message}`);
+      notify(`Failed to validate architecture: ${error.message}`, 'error');
       setIsValidationPanelOpen(false);
     } finally {
       setIsValidating(false);
@@ -3087,7 +3072,7 @@ function App() {
 
   const handleGenerateDeploymentGuide = useCallback(async () => {
     if (nodes.length === 0) {
-      alert('Please create an architecture diagram first.');
+      notify('Please create an architecture diagram first.', 'warning');
       return;
     }
 
@@ -3139,7 +3124,7 @@ function App() {
       });
     } catch (error: any) {
       console.error('Guide generation error:', error);
-      alert(`Failed to generate deployment guide: ${error.message}`);
+      notify(`Failed to generate deployment guide: ${error.message}`, 'error');
       setIsDeploymentGuideModalOpen(false);
     } finally {
       setIsGeneratingGuide(false);
@@ -3186,7 +3171,7 @@ function App() {
       return;
     }
     if (!hasDiagram) {
-      alert('Create or import a diagram before sharing or building artifacts.');
+      notify('Create or import a diagram before sharing or building artifacts.', 'info');
       return;
     }
     setIsDeliverChooserOpen(true);
@@ -3210,7 +3195,7 @@ function App() {
           await handleAIGenerate(item.architecture, item.prompt, false);
           await new Promise(res => setTimeout(res, 1500));
           if (reactFlowInstance) {
-            reactFlowInstance.fitView({ padding: 0.2, duration: 0 });
+            fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 0 });
             await new Promise(res => setTimeout(res, 400));
           }
           if (!reactFlowWrapper.current) continue;
@@ -3277,7 +3262,7 @@ function App() {
             .then(({ exportReferenceArchitectureAsPng }) => exportReferenceArchitectureAsPng(lastReferenceArchitecture))
             .catch((err) => {
               console.error('Editorial PNG export failed:', err);
-              alert('Editorial PNG export failed. See console for details.');
+              notify('Editorial PNG export failed. See console for details.', 'error');
             });
         },
       },
@@ -3301,7 +3286,7 @@ function App() {
             .then(({ exportBlueprintArchitectureAsPng }) => exportBlueprintArchitectureAsPng(lastBlueprintArchitecture, { legendPosition }))
             .catch((err) => {
               console.error('Blueprint PNG export failed:', err);
-              alert('Blueprint PNG export failed. See console for details.');
+              notify('Blueprint PNG export failed. See console for details.', 'error');
             });
         },
       },
@@ -3431,8 +3416,11 @@ function App() {
     isGeneratingGuide, deploymentGuide, handleGenerateDeploymentGuide,
   ]);
 
+  const hasAzureServices = nodes.some(node => node.type === 'azureNode');
+
   return (
     <div className="app">
+      <NotificationHost />
       <header className={`app-header${isHeaderCollapsed ? ' header-collapsed' : ''}`}>
         <div className="header-content">
           <div className="header-brand">
@@ -3445,6 +3433,7 @@ function App() {
                 <span aria-hidden="true"> · </span>
                 Sr Partner Solutions Architect – Azure AI services
               </span>
+              <span className="app-author app-author-org">Microsoft – Canada</span>
             </div>
           </div>
           {/* The toolbar and journey strip act on the diagram, so they are canvas-only. */}
@@ -3539,7 +3528,7 @@ function App() {
                   }}
                   onReview={() => {
                     trackGuidedJourney({ action: 'post-generation-action', step: 'refine', path: 'canvas', source: 'generator-success', hasDiagram: true });
-                    window.setTimeout(() => reactFlowInstance?.fitView({ padding: 0.2, duration: 300 }), 100);
+                    window.setTimeout(() => fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 300 }), 100);
                   }}
                   onValidate={() => {
                     trackGuidedJourney({ action: 'post-generation-action', step: 'validate', source: 'generator-success', hasDiagram: true });
@@ -4097,6 +4086,8 @@ function App() {
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
+            minZoom={CANVAS_MIN_ZOOM}
+            maxZoom={CANVAS_MAX_ZOOM}
             snapToGrid={true}
             snapGrid={[20, 20]}
             selectionOnDrag={true}
@@ -4105,7 +4096,7 @@ function App() {
             reconnectRadius={20}
             attributionPosition="bottom-left"
           >
-            <Controls />
+            <Controls onFitView={() => fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current)} />
             <MiniMap
               pannable
               zoomable
@@ -4153,7 +4144,7 @@ function App() {
                   <button
                     type="button"
                     className="canvas-nav-hint-fit"
-                    onClick={() => reactFlowInstance?.fitView?.({ padding: 0.2, duration: 400 })}
+                    onClick={() => fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2, duration: 400 })}
                     title="Zoom to fit the whole diagram in view"
                   >
                     <Frame size={15} /> Fit to view
@@ -4170,34 +4161,6 @@ function App() {
                   aria-label="Dismiss navigation tips"
                 >
                   <X size={14} />
-                </button>
-              </div>
-            )}
-            {showLayoutHint && nodes.length > 0 && !focusMode && (
-              <div
-                className="canvas-layout-hint"
-                role="note"
-                aria-label="Diagram layout guidance"
-                style={{ top: layoutHintTop }}
-              >
-                <Move size={18} aria-hidden="true" />
-                <div className="canvas-layout-hint-copy">
-                  <strong>Make this layout yours</strong>
-                  <span>AI arranged the first draft, but visual grouping and spacing are subjective. Drag services and groups into the positions that best communicate your architecture.</span>
-                </div>
-                <button
-                  type="button"
-                  className="canvas-layout-hint-close"
-                  onClick={() => {
-                    if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
-                    layoutHintTimeoutRef.current = null;
-                    setShowLayoutHint(false);
-                    try { localStorage.setItem(LAYOUT_HINT_SEEN_STORAGE_KEY, '1'); } catch { /* ignore */ }
-                  }}
-                  title="Dismiss layout guidance"
-                  aria-label="Dismiss layout guidance"
-                >
-                  <X size={15} />
                 </button>
               </div>
             )}
@@ -4288,56 +4251,98 @@ function App() {
               </div>
             )}
 
-            {/* Architecture generation prompt banner */}
-            {architecturePrompt && !focusMode && (
-              <div
-                className="prompt-banner draggable"
-                ref={setPromptBannerEl}
-                style={{
-                  position: 'absolute',
-                  left: promptBannerPosition ? `${promptBannerPosition.x}px` : '50%',
-                  top: promptBannerPosition ? `${promptBannerPosition.y}px` : CANVAS_BANNER_TOP,
-                  transform: promptBannerPosition ? 'none' : 'translateX(-50%)',
-                  cursor: isDraggingBanner ? 'grabbing' : 'grab',
-                  zIndex: 1000,
-                }}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  const el = e.currentTarget;
-                  const rect = el.getBoundingClientRect();
-                  const parent = el.offsetParent?.getBoundingClientRect();
-                  const currentX = rect.left - (parent?.left ?? 0);
-                  const currentY = rect.top - (parent?.top ?? 0);
-                  // left/top resolve against the containing block, so the drag
-                  // offset has to map viewport coords into that same space.
-                  setDragOffset({ x: e.clientX - currentX, y: e.clientY - currentY });
-                  setPromptBannerPosition({ x: currentX, y: currentY });
-                  setIsDraggingBanner(true);
-                }}
-              >
-                <div className="prompt-text">
-                  <strong>Generated from:</strong> {architecturePrompt}
+            {/* Bottom dock: diagram metadata and guidance sit along the bottom
+                edge so nothing covers the diagram. Items can still be dragged
+                out; they then position themselves absolutely within the dock. */}
+            {(hasAzureServices || (architecturePrompt && !focusMode)) && (
+              <div className="canvas-bottom-dock">
+                <div className="canvas-dock-stack">
+                  {generatedWithModel && !focusMode && (
+                    <ModelBadge
+                      modelName={generatedWithModel.name}
+                      elapsedTimeMs={generatedWithModel.timeMs}
+                    />
+                  )}
+                  {hasAzureServices && (
+                    <TitleBlock
+                      architectureName={titleBlockData.architectureName}
+                      author={titleBlockData.author}
+                      version={titleBlockData.version}
+                      date={titleBlockData.date}
+                      onUpdate={(data) => setTitleBlockData({ ...titleBlockData, ...data })}
+                    />
+                  )}
                 </div>
+                <div className="canvas-dock-stack canvas-dock-stack--wide">
+                {showLayoutHint && nodes.length > 0 && !focusMode && (
+                  <div
+                    className="canvas-layout-hint"
+                    role="note"
+                    aria-label="Diagram layout guidance"
+                  >
+                    <Move size={18} aria-hidden="true" />
+                    <div className="canvas-layout-hint-copy">
+                      <strong>Make this layout yours</strong>
+                      <span>AI arranged the first draft, but visual grouping and spacing are subjective. Drag services and groups into the positions that best communicate your architecture.</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="canvas-layout-hint-close"
+                      onClick={() => {
+                        if (layoutHintTimeoutRef.current !== null) window.clearTimeout(layoutHintTimeoutRef.current);
+                        layoutHintTimeoutRef.current = null;
+                        setShowLayoutHint(false);
+                        try { localStorage.setItem(LAYOUT_HINT_SEEN_STORAGE_KEY, '1'); } catch { /* ignore */ }
+                      }}
+                      title="Dismiss layout guidance"
+                      aria-label="Dismiss layout guidance"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                )}
+                  {architecturePrompt && !focusMode && (
+                    <div
+                      className={`prompt-banner draggable is-docked${isPromptExpanded ? ' is-expanded' : ''}`}
+                      title={isPromptExpanded ? undefined : architecturePrompt}
+                      // Dragged by a visual offset from its docked spot, so it keeps its
+                      // place in the dock and moving it never reflows its neighbours.
+                      style={{
+                        cursor: isDraggingBanner ? 'grabbing' : 'grab',
+                        ...(promptBannerPosition ? {
+                          transform: `translate(${promptBannerPosition.x}px, ${promptBannerPosition.y}px)`,
+                          zIndex: 1001,
+                        } : {}),
+                      }}
+                      onMouseDown={(e) => {
+                        if ((e.target as HTMLElement).closest('button')) return;
+                        e.preventDefault();
+                        const offset = promptBannerPosition ?? { x: 0, y: 0 };
+                        setDragOffset({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+                        setPromptBannerPosition(offset);
+                        setIsDraggingBanner(true);
+                      }}
+                    >
+                      <div className="prompt-text">
+                        <strong>Generated from:</strong> {architecturePrompt}
+                      </div>
+                      {architecturePrompt.length > PROMPT_CLAMP_CHARS && (
+                      <button
+                        type="button"
+                        className="prompt-banner-toggle"
+                        onClick={() => setIsPromptExpanded((value) => !value)}
+                        aria-expanded={isPromptExpanded}
+                      >
+                        {isPromptExpanded ? 'Show less' : 'Show more'}
+                      </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {hasAzureServices && (
+                  <Legend forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
+                )}
               </div>
-            )}
-
-            {nodes.some(node => node.type === 'azureNode') && (
-              <TitleBlock
-                architectureName={titleBlockData.architectureName}
-                author={titleBlockData.author}
-                version={titleBlockData.version}
-                date={titleBlockData.date}
-                onUpdate={(data) => setTitleBlockData({ ...titleBlockData, ...data })}
-              />
-            )}
-            {generatedWithModel && !focusMode && (
-              <ModelBadge
-                modelName={generatedWithModel.name}
-                elapsedTimeMs={generatedWithModel.timeMs}
-              />
-            )}
-            {nodes.some(node => node.type === 'azureNode') && (
-              <Legend forceCollapsed={panelsCollapsedSignal > 0 ? panelsCollapsedSignal : undefined} />
             )}
             {referenceImageUrl && (
               <ReferenceImageViewer
@@ -4525,12 +4530,12 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
               trackRecommendationsApplied(selectedFindings.length);
               
               setIsApplyingRecommendations(false);
-              alert(`✅ Architecture regenerated successfully!\n\nApplied ${selectedFindings.length} recommendations.\n${newServices.length > 0 ? `\nAdded ${newServices.length} new services: ${newServices.join(', ')}` : ''}`);
+              notify(`Architecture regenerated with ${selectedFindings.length} recommendation${selectedFindings.length === 1 ? '' : 's'} applied.${newServices.length > 0 ? `\nAdded ${newServices.length} service${newServices.length === 1 ? '' : 's'}: ${newServices.join(', ')}` : ''}`, 'success');
             }
           } catch (error) {
             console.error('❌ Failed to regenerate architecture:', error);
             setIsApplyingRecommendations(false);
-            alert('Failed to regenerate architecture. Please try again.');
+            notify('Failed to regenerate architecture. Please try again.', 'error');
           }
         }}
       />

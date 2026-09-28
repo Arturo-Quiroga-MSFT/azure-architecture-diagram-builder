@@ -4,6 +4,8 @@
 import React, { useState } from 'react';
 import { X, Camera } from 'lucide-react';
 import './SaveSnapshotModal.css';
+import { notify } from '../services/notificationService';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface SaveSnapshotModalProps {
   isOpen: boolean;
@@ -31,11 +33,13 @@ const SaveSnapshotModal: React.FC<SaveSnapshotModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Failed to save snapshot:', error);
-      alert('Failed to save snapshot');
+      notify('Failed to save snapshot', 'error');
     } finally {
       setIsSaving(false);
     }
   };
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

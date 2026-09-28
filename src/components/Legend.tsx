@@ -10,7 +10,8 @@ interface LegendProps {
 }
 
 const Legend: React.FC<LegendProps> = ({ forceCollapsed }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Starts collapsed: it is reference material, opened on demand.
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   useEffect(() => {
     if (forceCollapsed) setIsCollapsed(true);

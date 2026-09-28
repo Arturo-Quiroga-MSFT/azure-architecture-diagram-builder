@@ -12,6 +12,7 @@
 
 import dagre from '@dagrejs/dagre';
 import type { Node, Edge } from 'reactflow';
+import { notify } from './notificationService';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -633,7 +634,7 @@ export function exportDiagramAsHtml(
   const { services, connections, groups } = extractDiagramData(nodes, edges);
 
   if (services.length === 0) {
-    alert('No services to export. Add Azure services to the diagram first.');
+    notify('No services to export. Add Azure services to the diagram first.', 'warning');
     return;
   }
 

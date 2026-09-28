@@ -60,6 +60,10 @@
   color: #fff;
 }
 
+.app-author-org {
+  margin-top: -1px;
+}
+
 .microsoft-logo {
   height: 80px;
   width: auto;
@@ -123,7 +127,7 @@
   font-size: 1.15rem;
 }
 
-/* The slim bar keeps the title and version; the credit line returns on expand. */
+/* The slim bar keeps the title and version; the credit lines return on expand. */
 .app-header.header-collapsed .app-author {
   display: none;
 }
@@ -661,6 +665,7 @@ body.dark-mode .pane-btn:hover:not(:disabled) {
   flex: 1;
   height: 100%;
   background-color: #ffffff;
+  container: canvas / size;
 }
 
 /* Object tools float over the canvas they act on. Top-left is the only free
@@ -671,7 +676,9 @@ body.dark-mode .pane-btn:hover:not(:disabled) {
   position: absolute;
   top: 12px;
   left: 12px;
-  z-index: 5;
+  /* Above the bottom dock (1000-1003) so toolbar menus that open downward
+     always receive clicks. */
+  z-index: 1010;
 }
 
 .canvas-tools {
@@ -829,20 +836,19 @@ body.dark-mode .canvas-restore-banner-dismiss {
 body.dark-mode .canvas-restore-banner-dismiss:hover { background: #334155; }
 
 .canvas-layout-hint {
-  position: absolute;
-  left: 50%;
+  position: relative;
   z-index: 1002;
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  width: min(560px, calc(100% - 32px));
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px 12px 12px 14px;
   color: #172554;
   background: rgba(239, 246, 255, 0.98);
   border: 1px solid #60a5fa;
   border-radius: 6px;
   box-shadow: 0 4px 16px rgba(30, 64, 175, 0.18);
-  transform: translateX(-50%);
   backdrop-filter: blur(4px);
   animation:
     canvas-layout-hint-in 0.35s ease-out,
@@ -906,8 +912,8 @@ body.dark-mode .canvas-restore-banner-dismiss:hover { background: #334155; }
 }
 
 @keyframes canvas-layout-hint-in {
-  from { opacity: 0; transform: translate(-50%, -8px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 body.dark-mode .canvas-layout-hint {
@@ -949,20 +955,6 @@ body.dark-mode .canvas-layout-hint-close {
   color: #cbd5e1;
 }
 
-@media (max-width: 700px) {
-  .canvas-layout-hint {
-    right: 96px;
-    left: 16px;
-    width: auto;
-    transform: none;
-    animation-name: canvas-layout-hint-in-narrow, canvas-layout-hint-pulse;
-  }
-}
-
-@keyframes canvas-layout-hint-in-narrow {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 /* Empty-canvas call-to-action: centered "start with a conversation" prompt.
    The wrapper ignores pointer events so drag-and-drop still reaches the
@@ -1189,6 +1181,93 @@ body.dark-mode .canvas-layout-hint-close {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+
+/* Canvas bottom dock: title block, model badge, prompt and legend line up along
+   the bottom edge, clear of the zoom controls (left) and minimap (right), so
+   none of them covers the diagram. On narrow canvases the rows wrap upward. */
+.canvas-bottom-dock {
+  position: absolute;
+  left: 56px;
+  right: 236px;
+  bottom: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  /* With wrap-reverse the cross axis runs bottom-to-top, so flex-start is the
+     bottom edge: every item rests on the canvas bottom. */
+  align-items: flex-start;
+  gap: 12px 16px;
+  pointer-events: none;
+}
+
+.canvas-dock-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.canvas-dock-stack--wide {
+  flex: 1 1 260px;
+  max-width: 520px;
+  align-items: stretch;
+}
+
+.canvas-bottom-dock > *,
+.canvas-dock-stack > * {
+  pointer-events: auto;
+}
+
+.prompt-banner.is-docked {
+  position: relative;
+  max-width: 520px;
+  padding: 0.6rem 1rem;
+}
+
+.prompt-banner.is-docked:not(.is-expanded) .prompt-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.prompt-banner.is-docked.is-expanded .prompt-text {
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+@container canvas (max-height: 640px) {
+  .canvas-bottom-dock { bottom: 10px; gap: 8px 12px; }
+  .canvas-dock-stack { gap: 6px; }
+  .canvas-bottom-dock .title-block-row:not(:first-child),
+  .canvas-bottom-dock .title-block-hint { display: none; }
+  .prompt-banner.is-docked { padding: 0.45rem 0.8rem; }
+  .prompt-banner.is-docked:not(.is-expanded) .prompt-text { -webkit-line-clamp: 2; }
+  .canvas-bottom-dock .canvas-layout-hint { padding: 8px 10px; }
+  .canvas-bottom-dock .canvas-layout-hint-copy span { display: none; }
+}
+
+.prompt-banner-toggle {
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #0078d4;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.prompt-banner-toggle:hover,
+.prompt-banner-toggle:focus-visible {
+  text-decoration: underline;
+}
+
+body.dark-mode .prompt-banner-toggle {
+  color: #93c5fd;
+}
 
 .prompt-banner {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package, Clock, Zap } from 'lucide-react';
 import type { DeploymentGuide, BicepModule } from '../services/deploymentGuideGenerator';
 import './DeploymentGuideModal.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface DeploymentGuideModalProps {
   guide: DeploymentGuide | null;
@@ -17,6 +18,8 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
   const [expandedBicep, setExpandedBicep] = useState<Set<number>>(new Set([0]));
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

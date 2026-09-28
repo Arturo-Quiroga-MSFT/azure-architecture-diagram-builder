@@ -5,6 +5,7 @@ import { useState, useCallback } from 'react';
 import { Terminal, Upload, X, AlertCircle, Check } from 'lucide-react';
 import { importFromAzPrototype, type ImportResult } from '../services/azPrototypeService';
 import './AzPrototypeImportModal.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 export interface AzPrototypeImportModalProps {
   isOpen: boolean;
@@ -65,6 +66,8 @@ export default function AzPrototypeImportModal({
       handleClose();
     }
   }, [importResult, onImport, handleClose]);
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

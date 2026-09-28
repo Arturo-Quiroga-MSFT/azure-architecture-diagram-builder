@@ -17,6 +17,7 @@ import { Clock, ExternalLink, Trash2, Copy, Camera, RefreshCw } from 'lucide-rea
 import { DiagramVersion, getAllVersions, deleteVersion, getVersion } from '../services/versionStorageService';
 import './VersionHistoryModal.css';
 import './LibraryPane.css';
+import { notify } from '../services/notificationService';
 
 interface LibraryPaneProps {
   onRestoreVersion: (version: DiagramVersion) => void;
@@ -70,7 +71,7 @@ const LibraryPane: React.FC<LibraryPaneProps> = ({ onRestoreVersion, onSaveSnaps
       await loadVersions();
     } catch (error) {
       console.error('Failed to delete version:', error);
-      alert('Failed to delete version');
+      notify('Failed to delete version', 'error');
     }
   };
 
@@ -78,7 +79,7 @@ const LibraryPane: React.FC<LibraryPaneProps> = ({ onRestoreVersion, onSaveSnaps
     event.stopPropagation();
     try {
       const version = await getVersion(versionId);
-      if (!version) { alert('Version not found'); return; }
+      if (!version) { notify('Version not found', 'error'); return; }
       const diagramData = {
         nodes: version.nodes,
         edges: version.edges,
@@ -89,24 +90,24 @@ const LibraryPane: React.FC<LibraryPaneProps> = ({ onRestoreVersion, onSaveSnaps
       };
       const encodedData = btoa(JSON.stringify(diagramData));
       const newTab = window.open(window.location.origin + window.location.pathname + '#version-' + encodedData, '_blank');
-      if (!newTab) alert('Please allow pop-ups to open versions in new tabs');
+      if (!newTab) notify('Please allow pop-ups to open versions in new tabs', 'warning');
     } catch (error) {
       console.error('Failed to open version:', error);
-      alert('Failed to open version in new tab');
+      notify('Failed to open version in new tab', 'error');
     }
   };
 
   const handleRestore = async (versionId: string) => {
     try {
       const version = await getVersion(versionId);
-      if (!version) { alert('Version not found'); return; }
+      if (!version) { notify('Version not found', 'error'); return; }
       if (confirm(`Restore this version? Your current diagram will be replaced.\n\nVersion: ${version.diagramName}\nCreated: ${formatDate(version.timestamp)}`)) {
         onRestoreVersion(version);
         onGoToCanvas();
       }
     } catch (error) {
       console.error('Failed to restore version:', error);
-      alert('Failed to restore version');
+      notify('Failed to restore version', 'error');
     }
   };
 

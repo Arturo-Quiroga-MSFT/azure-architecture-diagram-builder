@@ -16,6 +16,7 @@ import {
   type RefinementReview,
 } from '../services/refinementGuard';
 import './ArchitectureChatPanel.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface ChatMessage {
   id: string;
@@ -385,6 +386,8 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       send(input);
     }
   };
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

@@ -936,6 +936,13 @@ azure-diagrams/
 
 ## 🌟 What's New
 
+### September 28, 2026 — AADB v2.0.7 Cleaner Canvas, Connected Private Networking
+
+- **Canvas details dock along the bottom** — the model badge, title block, layout tip, prompt banner and legend sit in one bottom strip instead of covering the diagram, and fit-to-view keeps the diagram clear of them.
+- **Pop-ups are easy to dismiss** — Escape closes dialogs and panels, and browser alert boxes are replaced by in-app notifications.
+- **Private Connectivity is connected again** — the Virtual Network draws a dotted line to each resource it protects (up to four; beyond that each gets a 🔒 Private badge), the group note lists them, and workflow steps that use private access include the network.
+- **Labels on those lines, and relabelling that sticks** — each line says what it is for, and asking Guided Chat to rename any connection now updates the canvas (previously the old label stayed).
+
 ### September 26, 2026 — AADB v2.0.6 Faster Builds, No Known Vulnerabilities
 
 - **Deployed with the v2.0.5 fixes** — icons now stay inside their groups after you apply recommendations.

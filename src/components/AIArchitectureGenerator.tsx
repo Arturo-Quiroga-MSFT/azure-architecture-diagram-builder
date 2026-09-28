@@ -11,6 +11,7 @@ import { useModelSettings, MODEL_CONFIG, getAvailableModels, ModelType, Reasonin
 import { trackImageImport } from '../services/telemetryService';
 import { buildModificationPrompt } from '../services/modificationPrompt';
 import './AIArchitectureGenerator.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 type GenerationMode = 'topology' | 'reference' | 'blueprint' | 'both';
 
@@ -90,6 +91,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
   currentArchitecture,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  useEscapeToClose(isOpen, () => setIsOpen(false));
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');

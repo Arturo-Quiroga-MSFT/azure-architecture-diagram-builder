@@ -38,6 +38,7 @@ import {
 } from '../services/impactService';
 import { trackAdoptionProfileSaved, trackDeploymentRegistered, trackImpactStorySubmitted } from '../services/impactTelemetryService';
 import './ImpactModal.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface ImpactModalProps { isOpen: boolean; onClose: () => void; }
 type Tab = 'profile' | 'story' | 'deployment';
@@ -85,6 +86,8 @@ export default function ImpactModal({ isOpen, onClose }: ImpactModalProps) {
   useEffect(() => {
     if (isOpen) setProfile(getAdoptionProfile() || defaultProfile);
   }, [isOpen]);
+
+  useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
 

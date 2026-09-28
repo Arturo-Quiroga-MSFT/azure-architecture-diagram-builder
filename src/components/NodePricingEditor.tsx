@@ -20,6 +20,7 @@ import type { NodePricingConfig, PricingTier } from '../types/pricing';
 import { getAvailableTiers, updateNodePricing, setCustomPricing } from '../services/costEstimationService';
 import { formatMonthlyCost } from '../utils/pricingHelpers';
 import './NodePricingEditor.css';
+import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
 interface NodePricingEditorProps {
   /** Service name, used as the pricing lookup key (node.data.label). */
@@ -35,6 +36,8 @@ export default function NodePricingEditor({
   onApply,
   onClose,
 }: NodePricingEditorProps) {
+  // Rendered only while open.
+  useEscapeToClose(true, onClose);
   const [tiers, setTiers] = useState<PricingTier[]>([]);
   const [loadingTiers, setLoadingTiers] = useState(true);
   const [tier, setTier] = useState<string>(pricing.tier);
