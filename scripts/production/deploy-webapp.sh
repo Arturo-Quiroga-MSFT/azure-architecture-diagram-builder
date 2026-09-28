@@ -104,7 +104,7 @@ while IFS='=' read -r key value; do
 done < <(grep -v '^#' "$ENV_FILE" | grep -v '^[[:space:]]*$')
 
 EXISTING_TAG="$(az acr repository show-tags --name "$ACR" --repository "$IMAGE" \
-  --query "[?@=='$TAG'] | [0]" -o tsv)"
+  --query "[?@=='$TAG'] | [0]" -o tsv 2>/dev/null || true)"  # repo absent on a fresh ACR
 if [[ -n "$EXISTING_TAG" ]]; then
   echo "✓ Reusing existing immutable image $ACR_IMAGE"
 else
