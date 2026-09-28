@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.0.7` | 2026-09-28 | Bottom dock for canvas details; dismissible pop-ups; Private Connectivity lines and labels | Deployed |
 | `v2.0.6` | 2026-09-26 | Vite 8 toolchain; no open Dependabot alerts; lockfiles install through the Microsoft package proxy | Deployed |
 | `v2.0.5` | 2026-09-26 | Icons stay inside their groups after applying recommendations; release gate and dependency security | Superseded by v2.0.6 before deployment |
 | `v2.0.4` | 2026-09-01 | Right-click no longer discards the diagram; diagram autosave and restore | Deployed |
@@ -23,6 +24,32 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.0.7: Cleaner Canvas and Connected Private Networking
+
+### Canvas and pop-ups
+
+- The model badge, title block, layout tip, prompt banner and legend share one bottom dock (compact on small canvases) instead of floating over the diagram. They can still be dragged; dragging now starts from the docked spot without a jump.
+- Fit-to-view keeps the diagram clear of the toolbar and dock, and the minimum zoom is 0.25.
+- Escape closes dialogs and panels; 45 browser `alert()` boxes are replaced by in-app notifications.
+- The header credit adds "Microsoft – Canada".
+
+### Private Connectivity
+
+- **Root cause of the isolated group:** the prompts told the model not to connect the Virtual Network or DNS zone and promised the app would annotate the group, but the app only derived the protected list from Private Link nodes, which the prompts also forbid. The group showed no note and no relationship.
+- The model now declares `privateConnectivity.protects`; the app falls back to private/internal connection labels when a Virtual Network exists, and recovers legacy `Private Link - <resource>` nodes.
+- Hybrid rendering: up to 4 protected resources get a dotted, arrowless line from the Virtual Network; more get a 🔒 Private badge. The group note always lists them.
+- Each line keeps the model's label, or reads "Private access to <service>". Refinements see these lines and can relabel them.
+- Workflow steps involving a protected resource over private or DNS traffic include the Virtual Network (and DNS zone when mentioned).
+
+### Fixed
+
+- Relabelling a connection through Guided Chat was silently discarded: edge ids are positional, so the canvas reused the edge component, which kept its first label. It now follows the incoming label unless you are editing it.
+
+### Verification
+
+- `npm run verify:release`: typecheck, lint, lockfile check, 17 deterministic checks, version contract, build and 8/8 release smoke tests; smoke repeated green across many consecutive runs.
+- Live Guided Chat checks on GPT-5.6 Luna: generation labels the Virtual Network lines; a follow-up rename updates them on the canvas.
 
 ## v2.0.6: Vite 8 and a Deployable Dependency Set
 
