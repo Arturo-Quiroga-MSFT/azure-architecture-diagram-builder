@@ -151,17 +151,17 @@ Plan:
 
 ### Example 2: Architecture for Demo Deck
 
-User: "Generate an architecture diagram for the PIM Approver Agent for the customer demo."
+User: "Generate an architecture diagram for the retail order platform demo."
 
 Plan:
-- Model PIM architecture (PIM → Agent → pim-mcp → Entra ID → Jira → Teams)
+- Model retail order architecture (Front Door → App Service → Service Bus → Functions → Cosmos DB → Monitor)
 - Export React Flow scene with 8-step workflow narrative
 - Render SVG version for slide embedding
 - Save both artifacts for download
 
 ### Example 3: Cost Comparison
 
-User: "Compare the cost of our Grocery demo vs the PIM testbed."
+User: "Compare the cost of our Grocery demo vs the retail order platform."
 
 Plan:
 - Model both architectures
