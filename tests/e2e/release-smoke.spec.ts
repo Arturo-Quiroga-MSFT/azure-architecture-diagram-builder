@@ -230,14 +230,27 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   // The hint pulses until the user drags something, proving they found out the
   // canvas is editable; it then calms down but stays open until dismissed.
   await expect(layoutHint).toHaveClass(/is-pulsing/);
-  const appServiceBox = await page.locator('.react-flow__node').filter({ hasText: 'App Service' }).boundingBox();
-  expect(appServiceBox).not.toBeNull();
-  const nodeX = Math.round(appServiceBox!.x + appServiceBox!.width / 2);
-  const nodeY = Math.round(appServiceBox!.y + appServiceBox!.height / 2);
-  await page.mouse.move(nodeX, nodeY);
-  await page.mouse.down();
-  await page.mouse.move(nodeX + 40, nodeY + 40, { steps: 6 });
-  await page.mouse.up();
+  // The canvas can still be settling (fit-to-view animation) right after the
+  // diagram lands, so wait for the node to stop moving before grabbing it, and
+  // retry the drag if the first gesture started before the node was ready.
+  const appServiceNode = page.locator('.react-flow__node').filter({ hasText: 'App Service' });
+  let nodeBox = await appServiceNode.boundingBox();
+  await expect.poll(async () => {
+    const previous = nodeBox;
+    await page.waitForTimeout(150);
+    nodeBox = await appServiceNode.boundingBox();
+    return Boolean(previous && nodeBox && previous.x === nodeBox.x && previous.y === nodeBox.y);
+  }).toBe(true);
+  await expect(async () => {
+    const box = (await appServiceNode.boundingBox())!;
+    const nodeX = Math.round(box.x + box.width / 2);
+    const nodeY = Math.round(box.y + box.height / 2);
+    await page.mouse.move(nodeX, nodeY);
+    await page.mouse.down();
+    await page.mouse.move(nodeX + 40, nodeY + 40, { steps: 6 });
+    await page.mouse.up();
+    await expect(layoutHint).not.toHaveClass(/is-pulsing/, { timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
   await expect(layoutHint).not.toHaveClass(/is-pulsing/);
   await expect(layoutHint).toBeVisible();
   await expect.poll(async () => page.evaluate(() => localStorage.getItem('azure-diagram-builder.layoutHintSeen.v1'))).toBe('1');

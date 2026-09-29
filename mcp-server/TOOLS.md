@@ -1,8 +1,10 @@
 # Azure Architecture Diagram Builder — MCP Server Tools
 
 This is the running reference for every tool the MCP server exposes
-([`src/index.ts`](src/index.ts)). Endpoint: `POST /mcp` (streamable-HTTP) with
-`Authorization: Bearer <token from .env.mcp>`. Health: `GET /healthz`.
+([`src/index.ts`](src/index.ts)). Endpoint: `POST /mcp` (streamable-HTTP), authorized with a Microsoft Entra
+access token for the MCP API (scope `mcp.tools`, discovered from
+`/.well-known/oauth-protected-resource/mcp`) or the static `MCP_AUTH_TOKEN`
+bearer token. Health: `GET /healthz`.
 
 All tool design logic is deterministic (no LLM), read-only, and closed-world.
 Artifact metadata such as creation timestamps can differ between otherwise

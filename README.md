@@ -454,31 +454,32 @@ The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server
 
 ### Transport & auth
 - **Dual transport** — stdio (local clients) and **Streamable-HTTP** (remote clients). Launch HTTP with `npm run start:http` (or `MCP_TRANSPORT=http`).
-- **Bearer-token auth** — set `MCP_AUTH_TOKEN`; the server enforces `Authorization: Bearer <token>` with a constant-time comparison. A `/healthz` probe and a pre-auth liveness response on `/mcp` keep connector wizards happy.
+- **Microsoft Entra sign-in (OAuth 2.1)** — set `MCP_ENTRA_CLIENT_ID` to the MCP API app registration. The server publishes [Protected Resource Metadata](https://datatracker.ietf.org/doc/html/rfc9728) at `/.well-known/oauth-protected-resource/mcp`, answers unauthenticated calls with a `401` challenge that points to it, and validates Entra access tokens locally (signature, audience, per-tenant issuer, expiry and the `mcp.tools` scope). Optionally restrict tenants with `MCP_ENTRA_ALLOWED_TENANTS`.
+- **Static bearer token** — `MCP_AUTH_TOKEN` is still accepted alongside Entra tokens for clients that cannot do OAuth (connector wizards, scripts). A `/healthz` probe and a pre-auth liveness response on `/mcp` keep those wizards happy.
 - **Ops-ready** — stateless Streamable HTTP tolerates missing/stale session IDs across revisions and replicas, with CORS preflight and graceful shutdown.
 
-### Use it from Scout
-Register the deployed MCP endpoint (`https://<your-mcp-host>/mcp`) as a **custom remote MCP server** in Scout's Extensions panel with your Bearer token (stored encrypted). See [`SCOUT/README.md`](SCOUT/README.md) for the walkthrough, and deploy an isolated MCP instance with [`scripts/deploy-mcp-instance.sh`](scripts/deploy-mcp-instance.sh).
-
 ### Use it from VS Code (GitHub Copilot)
-The MCP server also works in **GitHub Copilot agent mode** in VS Code — no code changes, just a config entry. Create a `.vscode/mcp.json` pointing at the deployed server, with the bearer token supplied via an input prompt so no secret is committed:
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_AADB_MCP-0098FF?logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=azure-diagram-builder&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A//azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp%22%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_AADB_MCP-24bfa5?logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=azure-diagram-builder&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A//azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp%22%7D&quality=insiders)
+
+One click adds the hosted server; VS Code then signs you in with your **Microsoft Entra** work account (no token to copy) and the tools appear in Copilot agent mode. `render_diagram` returns an **MCP App**, so the diagram renders interactively inside the chat. Manage access later from **Accounts › Manage Trusted MCP Servers**.
+
+Prefer a config file? Add this to `.vscode/mcp.json`:
 
 ```jsonc
 {
   "servers": {
-    "azure-diagram-builder": {
-      "type": "http",
-      "url": "https://<your-mcp-host>/mcp",
-      "headers": { "Authorization": "Bearer ${input:aadb-token}" }
-    }
-  },
-  "inputs": [
-    { "id": "aadb-token", "type": "promptString", "description": "AADB MCP bearer token", "password": true }
-  ]
+    "azure-diagram-builder": { "type": "http", "url": "https://azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp" }
+  }
 }
 ```
 
-Reload the MCP servers (**MCP: List Servers**), paste your token when prompted (the value in `.env.mcp`), and the 13 tools appear in Copilot Chat. Attach resources via **Add Context > MCP Resources**, and invoke prompts with `/azure-diagram-builder.design-secure-web-app`. Prefer local development? The bundled config also defines a `stdio` server that runs `mcp-server/dist/index.js` (run `npm run build` in `mcp-server/` first).
+Attach resources via **Add Context › MCP Resources**, and invoke prompts with `/azure-diagram-builder.design-secure-web-app`. For local development the bundled config also defines a `stdio` server that runs `mcp-server/dist/index.js` (run `npm run build` in `mcp-server/` first).
+
+> **First sign-in:** the MCP API is a multi-tenant Entra app. Microsoft corporate accounts can sign in directly; some organizations require an administrator to approve the app first.
+
+### Use it from GitHub Copilot CLI, Scout and other clients
+Clients that support MCP OAuth discover Entra from the server automatically. Clients that only accept a static header (for example Microsoft Scout's custom remote servers or the Azure SRE Agent) can use `Authorization: Bearer <MCP_AUTH_TOKEN>` instead; see [`SCOUT/README.md`](SCOUT/README.md). Deploy your own instance with `AADB_TARGET=<target> ./scripts/production/deploy-mcp.sh`.
 
 ---
 
@@ -501,7 +502,7 @@ flowchart TB
       subgraph Apps["Applications"]
         direction TB
         Web[Web Container App<br/>public test endpoint<br/>add Entra auth for shared use]
-        MCP[MCP Container App<br/>internal by default<br/>Bearer-protected when external]
+        MCP[MCP Container App<br/>internal by default<br/>Entra OAuth or bearer token when external]
       end
 
       subgraph Dependencies["AI and operations"]

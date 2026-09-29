@@ -74,6 +74,10 @@ jobs:
         working-directory: mcp-server
         run: npm run test:contracts
 
+      - name: Test remote authorization
+        working-directory: mcp-server
+        run: npm run test:auth
+
       - name: Test diagram rendering
         working-directory: mcp-server
         run: |
