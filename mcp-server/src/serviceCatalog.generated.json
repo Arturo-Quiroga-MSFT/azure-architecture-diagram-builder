@@ -238,8 +238,7 @@
     ],
     "iconFile": "10031-icon-service-Batch-Accounts",
     "category": "compute",
-    "hasPricingData": true,
-    "pricingServiceName": "Batch",
+    "hasPricingData": false,
     "isUsageBased": true,
     "costRange": "$0-2000/mo (scale-to-zero capable)"
   },
@@ -616,8 +615,7 @@
     ],
     "iconFile": "02905-icon-service-Azure-Managed-Grafana",
     "category": "other",
-    "hasPricingData": true,
-    "pricingServiceName": "Azure Managed Grafana",
+    "hasPricingData": false,
     "isUsageBased": false,
     "costRange": "$10-300/mo"
   },
