@@ -17,6 +17,8 @@ const tests = [
   'test:correlation',
   'test:refinement-guard',
   'test:follow-up-model',
+  'test:anthropic-format',
+  'test:azure-signin-errors',
   'test:semantic-relationships',
   'test:private-connectivity',
 ];

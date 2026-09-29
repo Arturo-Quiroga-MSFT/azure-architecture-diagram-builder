@@ -25,13 +25,16 @@ import './ModelSettingsPopover.css';
 
 export function getModelIcon(model: ModelType) {
   switch (model) {
-    case 'gpt-5.1': return <Cpu size={14} />;
-    case 'gpt-5.2': return <Brain size={14} />;
+    case 'gpt-6-sol': return <Brain size={14} />;
+    case 'gpt-6-luna': return <Brain size={14} />;
+    case 'gpt-6-astra': return <Brain size={14} />;
+    case 'claude-opus-5-5': return <Brain size={14} />;
+    case 'claude-sonnet-5-5': return <Cpu size={14} />;
     case 'gpt-5.6-sol': return <Brain size={14} />;
     case 'gpt-5.6-terra': return <Brain size={14} />;
     case 'gpt-5.6-luna': return <Brain size={14} />;
-    case 'deepseek-v3.2-speciale': return <Layers size={14} />;
-    case 'grok-4.1-fast': return <Zap size={14} />;
+    case 'deepseek-v4-pro': return <Layers size={14} />;
+    case 'grok-4.6': return <Zap size={14} />;
     case 'gpt-5.4-mini': return <Sparkles size={14} />;
   }
 }

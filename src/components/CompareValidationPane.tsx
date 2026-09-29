@@ -33,12 +33,15 @@ import './CompareModelsModal.css';
 /** Abbreviate model name for filenames */
 function abbreviateModelForFile(model: ModelType): string {
   const map: Record<string, string> = {
-    'gpt-5.1': 'gpt51', 'gpt-5.2': 'gpt52',
+    'gpt-6-sol': 'gpt6sol', 'gpt-6-luna': 'gpt6luna', 'gpt-6-astra': 'gpt6astra',
     'gpt-5.4': 'gpt54', 'gpt-5.4-mini': 'gpt54mini', 'gpt-5.6-sol': 'gpt56sol',
     'gpt-5.6-terra': 'gpt56terra', 'gpt-5.6-luna': 'gpt56luna',
+    'claude-opus-5-5': 'claudeopus55', 'claude-sonnet-5-5': 'claudesonnet55',
     'mai-thinking-1': 'maithinking1',
-    'deepseek-v3.2-speciale': 'deepseek', 'grok-4.1-fast': 'grok41fast',
-    'kimi-k2-5': 'kimik25', 'kimi-k2-7-code': 'kimik27code',
+    'deepseek-v4-pro': 'deepseekv4pro',
+    'grok-4.6': 'grok46',
+    'mistral-large-3': 'mistrallarge3',
+    'kimi-k2-6': 'kimik26',
   };
   return map[model] || String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
 }

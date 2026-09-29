@@ -73,19 +73,22 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
 
   const getModelIcon = (model: ModelType) => {
     switch (model) {
-      case 'gpt-5.1':
-        return <Cpu size={16} />;
-      case 'gpt-5.2':
+      case 'gpt-6-sol':
+      case 'gpt-6-luna':
+      case 'gpt-6-astra':
+      case 'claude-opus-5-5':
         return <Brain size={16} />;
+      case 'claude-sonnet-5-5':
+        return <Cpu size={16} />;
       case 'gpt-5.6-sol':
         return <Brain size={16} />;
       case 'gpt-5.6-terra':
         return <Brain size={16} />;
       case 'gpt-5.6-luna':
         return <Brain size={16} />;
-      case 'deepseek-v3.2-speciale':
+      case 'deepseek-v4-pro':
         return <Layers size={16} />;
-      case 'grok-4.1-fast':
+      case 'grok-4.6':
         return <Zap size={16} />;
       case 'gpt-5.4-mini':
         return <Sparkles size={16} />;

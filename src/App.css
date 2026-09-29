@@ -586,7 +586,6 @@ body.dark-mode .pane-btn:hover:not(:disabled) {
     box-shadow:
       0 0 0 0 rgba(0, 120, 212, 0),
       0 0 8px rgba(0, 180, 216, 0.3);
-    transform: scale(1);
   }
   50% {
     box-shadow:
@@ -850,24 +849,45 @@ body.dark-mode .canvas-restore-banner-dismiss:hover { background: #334155; }
   border-radius: 6px;
   box-shadow: 0 4px 16px rgba(30, 64, 175, 0.18);
   backdrop-filter: blur(4px);
-  animation:
-    canvas-layout-hint-in 0.35s ease-out,
-    canvas-layout-hint-pulse 1.6s ease-in-out 0.35s 4;
+  animation: canvas-layout-hint-in 0.35s ease-out;
 }
 
-/* Attention pulse: runs a few cycles then settles, so a hint that stays open
-   for a first-time user does not keep flashing indefinitely. */
+/* Attention pulse: keeps going until the user drags a node or dismisses the
+   hint (the is-pulsing class is removed), because static hints get skimmed. */
+.canvas-layout-hint.is-pulsing {
+  border-width: 2px;
+  animation:
+    canvas-layout-hint-in 0.35s ease-out,
+    canvas-layout-hint-pulse 1.8s ease-in-out 0.35s infinite;
+}
+
+.canvas-layout-hint.is-pulsing > svg {
+  animation: canvas-layout-hint-nudge 1.8s ease-in-out 0.35s infinite;
+}
+
 @keyframes canvas-layout-hint-pulse {
   0%, 100% {
     border-color: #60a5fa;
-    box-shadow: 0 4px 16px rgba(30, 64, 175, 0.18);
+    background: rgba(239, 246, 255, 0.98);
+    box-shadow:
+      0 4px 16px rgba(30, 64, 175, 0.18),
+      0 0 0 0 rgba(37, 99, 235, 0.5);
   }
   50% {
     border-color: #2563eb;
+    background: #dbeafe;
     box-shadow:
-      0 4px 18px rgba(30, 64, 175, 0.3),
-      0 0 0 6px rgba(59, 130, 246, 0.22);
+      0 6px 22px rgba(30, 64, 175, 0.32),
+      0 0 0 8px rgba(37, 99, 235, 0.28);
   }
+}
+
+/* The move icon "drags" left-right to hint at the gesture itself. */
+@keyframes canvas-layout-hint-nudge {
+  0%, 60%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(4px, -2px); }
+  30% { transform: translate(-3px, 2px); }
+  45% { transform: translate(2px, 0); }
 }
 
 .canvas-layout-hint > svg {
@@ -921,28 +941,42 @@ body.dark-mode .canvas-layout-hint {
   background: rgba(15, 23, 42, 0.96);
   border-color: #3b82f6;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+}
+
+body.dark-mode .canvas-layout-hint.is-pulsing {
   animation-name: canvas-layout-hint-in, canvas-layout-hint-pulse-dark;
 }
 
 @keyframes canvas-layout-hint-pulse-dark {
   0%, 100% {
     border-color: #3b82f6;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.32);
+    background: rgba(15, 23, 42, 0.96);
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.32),
+      0 0 0 0 rgba(147, 197, 253, 0.5);
   }
   50% {
     border-color: #93c5fd;
+    background: rgba(30, 58, 138, 0.96);
     box-shadow:
-      0 4px 18px rgba(0, 0, 0, 0.4),
-      0 0 0 6px rgba(96, 165, 250, 0.28);
+      0 6px 22px rgba(0, 0, 0, 0.4),
+      0 0 0 8px rgba(147, 197, 253, 0.3);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .canvas-layout-hint {
-    animation: canvas-layout-hint-in 0.35s ease-out;
+  .canvas-layout-hint,
+  .canvas-layout-hint.is-pulsing,
+  body.dark-mode .canvas-layout-hint.is-pulsing {
+    animation: none;
   }
-  body.dark-mode .canvas-layout-hint {
-    animation: canvas-layout-hint-in 0.35s ease-out;
+  .canvas-layout-hint.is-pulsing > svg {
+    animation: none;
+  }
+  /* Static emphasis instead of motion. */
+  .canvas-layout-hint.is-pulsing {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
   }
 }
 

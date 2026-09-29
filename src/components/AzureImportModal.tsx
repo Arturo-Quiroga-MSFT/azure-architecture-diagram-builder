@@ -12,7 +12,8 @@ import {
   type AzureSubscription,
   type AzureResourceGroup,
 } from '../services/azureImportProvider';
-import { getSignedInName } from '../services/msalAuth';
+import { getSignedInName, consumeRedirectError } from '../services/msalAuth';
+import { describeAzureSignInError } from '../utils/azureSignInErrors';
 import './AzureImportModal.css';
 import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
@@ -60,7 +61,8 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
     setError(null);
     setDisabled(false);
     if (!delegated) { setNeedsSignIn(false); loadSubs(); return; }
-    getSignedInName().then((name) => {
+    Promise.all([getSignedInName(), consumeRedirectError()]).then(([name, redirectErr]) => {
+      if (redirectErr) setError(describeAzureSignInError(redirectErr).message);
       if (name) { setAccount(name); setNeedsSignIn(false); loadSubs(); }
       else { setNeedsSignIn(true); }
     });
@@ -89,8 +91,8 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
       setAccount(name);
       setNeedsSignIn(false);
       loadSubs();
-    } catch (e: any) {
-      setError(e?.message || 'Sign-in failed');
+    } catch (e: unknown) {
+      setError(describeAzureSignInError(e).message);
     } finally {
       setSigningIn(false);
     }
@@ -128,12 +130,14 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
             <div className="azimp-disabled">
               <AlertTriangle size={20} />
               <div>
-                <p><strong>Azure import is disabled on the server.</strong></p>
+                <p><strong>Sign-in to Azure isn't set up on this deployment.</strong></p>
                 <p className="azimp-muted">
-                  Reverse-engineering a live resource group uses the server identity to enumerate and
-                  export resources, so it is off by default. To enable it for local / self-host use, set
-                  <code>AZURE_IMPORT_ENABLED=true</code> on the token server (with <code>az login</code>
-                  or a reader-scoped managed identity), then reopen this dialog.
+                  You can still import a live resource group: export it as an ARM template (below) and
+                  open it with <strong>Import → Template file</strong>.
+                </p>
+                <p className="azimp-muted azimp-selfhost">
+                  Self-hosting? Set <code>VITE_AZURE_AD_CLIENT_ID</code> for per-user sign-in, or
+                  <code>AZURE_IMPORT_ENABLED=true</code> on the token server to use its own identity.
                 </p>
               </div>
             </div>
@@ -141,8 +145,9 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
             <div className="azimp-signin">
               <p className="azimp-intro">
                 Sign in with your Azure account to reverse-engineer a resource group you have access to.
-                We request read-only <strong>Azure Service Management</strong> access and query only what
-                <strong> your</strong> permissions allow — nothing is stored.
+                The app only reads resources through <strong>Azure Service Management</strong>, limited to
+                what <strong>your</strong> permissions allow. Nothing is changed or stored, and your
+                sign-in never leaves this browser.
               </p>
               <button className="btn-primary azimp-signin-btn" onClick={handleSignIn} disabled={signingIn}>
                 <LogIn size={16} />
@@ -201,6 +206,13 @@ const AzureImportModal: React.FC<AzureImportModalProps> = ({ isOpen, onClose, on
           )}
 
           {error && <div className="azimp-error"><AlertTriangle size={16} /> {error}</div>}
+          {(disabled || needsSignIn) && (
+            <div className="azimp-fallback">
+              <p><strong>No sign-in?</strong> Export the resource group with the Azure CLI, then open the file
+                with <strong>Import → Template file</strong>:</p>
+              <code>az group export -g &lt;resource-group&gt; &gt; rg.json</code>
+            </div>
+          )}
         </div>
 
         <div className="modal-actions">

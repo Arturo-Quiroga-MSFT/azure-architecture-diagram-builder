@@ -20,7 +20,7 @@ type GenerationMode = 'topology' | 'reference' | 'blueprint' | 'both';
 // modification or regenerating cancels the pending close (see scheduleAutoClose).
 const AUTO_CLOSE_MS = 45000;
 
-// Blueprint diagrams require general-purpose OpenAI models.
+// Blueprint diagrams require general-purpose OpenAI or Anthropic models.
 // - Non-OpenAI partner deployments (DeepSeek, Grok, Mistral, Kimi, etc. —
 //   identified by a Chat Completions apiFormat) run under stricter Azure AI
 //   Content Safety configurations that block the blueprint system prompt as
@@ -917,7 +917,7 @@ const AIArchitectureGenerator: React.FC<AIArchitectureGeneratorProps> = ({
                 )}
                 <span className="model-change-hint">
                   {modeRequiresOpenAI(mode)
-                    ? 'Blueprint mode supports general-purpose OpenAI models only (partner and Codex models are filtered out).'
+                    ? 'Blueprint mode supports general-purpose OpenAI and Claude models only (other partner and Codex models are filtered out).'
                     : 'Also configurable in toolbar → AI Model'}
                 </span>
               </div>

@@ -12,33 +12,23 @@
 # Bump the version in package.json first — the image tag, the revision suffix
 # and the post-deploy check all read it, and the script refuses a dirty worktree.
 #
-# Prereqs: 01-network.sh + 02-aca-env.sh done (one-time); .env present at repo root.
-# Usage:   ./scripts/production/deploy-webapp.sh
+# Prereqs: 00-foundation.sh (new targets), 01-network.sh + 02-aca-env.sh done
+#          (one-time); the target's env file (TARGET_ENV_FILE, default .env) present.
+# Usage:   [AADB_TARGET=fdpo] ./scripts/production/deploy-webapp.sh
 # ============================================================================
 set -euo pipefail
 
-RG="azure-diagrams-rg"
-LOC="eastus2"
-SUB="${AZURE_SUBSCRIPTION_ID:?Set AZURE_SUBSCRIPTION_ID to the target subscription ID}"
-NEW_ENV="aca-env-azure-diagrams-vnet"
-NEW_APP="azure-diagram-builder-vnet"
-ACR="acrazurediagrams1767583743"
-IMAGE="azure-diagram-builder"
+source "$(dirname "$0")/target.sh"
 BUILD_ONLY="${BUILD_ONLY:-false}"
 ROTATE_OPENAI_SECRET="${ROTATE_OPENAI_SECRET:-false}"
 ROTATE_SERVER_TELEMETRY_SECRET="${ROTATE_SERVER_TELEMETRY_SECRET:-false}"
 NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
-SERVER_APP_INSIGHTS="aadb-usage-analytics-insights"
-LOG_WORKSPACE="workspace-azurediagramsrgbuvF"
-
-COSMOS_ACCOUNT="aqcosmosdb007"
 COSMOS_DATA_CONTRIBUTOR="00000000-0000-0000-0000-000000000002"  # Cosmos DB Built-in Data Contributor
-SPEECH_RG="AQ-FOUNDRY-RG"
-SPEECH_ACCOUNT="aq-speech-008"
 
 SOURCE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-ENV_FILE="$SOURCE_DIR/.env"
-[[ -f "$ENV_FILE" ]] || { echo "❌ .env not found at $ENV_FILE"; exit 1; }
+# Each target has its own env file (deployment names differ per Foundry resource).
+ENV_FILE="$SOURCE_DIR/${TARGET_ENV_FILE:-.env}"
+[[ -f "$ENV_FILE" ]] || { echo "❌ Env file not found at $ENV_FILE"; exit 1; }
 APP_VERSION="$(node -p "require('$SOURCE_DIR/package.json').version")"
 GIT_SHA="$(git -C "$SOURCE_DIR" rev-parse --short=12 HEAD)"
 TAG="v${APP_VERSION}-${GIT_SHA}"
@@ -59,8 +49,6 @@ get_val() {
   get_file_val "$1" "$ENV_FILE"
 }
 
-echo "Subscription: $(az account show --query name -o tsv)"
-
 if [[ "$BUILD_ONLY" != "true" ]] && az containerapp show -n "$NEW_APP" -g "$RG" -o none 2>/dev/null; then
   DEPLOYED_FQDN="$(az containerapp show -n "$NEW_APP" -g "$RG" --query 'properties.configuration.ingress.fqdn' -o tsv)"
   "$SOURCE_DIR/scripts/require-version-bump.sh" "https://$DEPLOYED_FQDN"
@@ -68,11 +56,15 @@ fi
 
 # ── Runtime secret/env values sourced from .env ─────────────────────────────
 # azd-prepackage.sh maps VITE_AZURE_OPENAI_API_KEY <- AZURE_OPENAI_API_KEY (same value).
-OPENAI_KEY="$(get_val AZURE_OPENAI_API_KEY)"
 VITE_ENDPOINT="$(get_val VITE_AZURE_OPENAI_ENDPOINT)"
-VITE_DEPLOY52="$(get_val VITE_AZURE_OPENAI_DEPLOYMENT_GPT52)"
-[[ -n "$OPENAI_KEY" && -n "$VITE_ENDPOINT" && -n "$VITE_DEPLOY52" ]] \
-  || { echo "❌ Missing one of AZURE_OPENAI_API_KEY / VITE_AZURE_OPENAI_ENDPOINT / VITE_AZURE_OPENAI_DEPLOYMENT_GPT52 in .env"; exit 1; }
+VITE_DEFAULT_DEPLOYMENT="$(get_val VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA)"
+[[ -n "$VITE_ENDPOINT" && -n "$VITE_DEFAULT_DEPLOYMENT" ]] \
+  || { echo "❌ Missing VITE_AZURE_OPENAI_ENDPOINT / VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA in $ENV_FILE"; exit 1; }
+OPENAI_KEY=""
+if [[ "$OPENAI_AUTH" == "key" ]]; then
+  OPENAI_KEY="$(get_val AZURE_OPENAI_API_KEY)"
+  [[ -n "$OPENAI_KEY" ]] || { echo "❌ Target '$AADB_TARGET' uses key auth but AZURE_OPENAI_API_KEY is missing in $ENV_FILE"; exit 1; }
+fi
 SERVER_APPINSIGHTS_CONNECTION_STRING="$(az monitor app-insights component show \
   --app "$SERVER_APP_INSIGHTS" -g "$RG" --query connectionString -o tsv)"
 [[ -n "$SERVER_APPINSIGHTS_CONNECTION_STRING" ]] \
@@ -81,11 +73,11 @@ SERVER_APPINSIGHTS_CONNECTION_STRING="$(az monitor app-insights component show \
 # Admin token for GET /api/feedback/list — generate + persist to .env if absent.
 FEEDBACK_TOKEN="$(get_val FEEDBACK_ADMIN_TOKEN)"
 if [[ -z "$FEEDBACK_TOKEN" ]]; then
-  git -C "$SOURCE_DIR" check-ignore -q .env \
-    || { echo "❌ Refusing to write FEEDBACK_ADMIN_TOKEN: .env is not gitignored"; exit 1; }
+  git -C "$SOURCE_DIR" check-ignore -q "$ENV_FILE" \
+    || { echo "❌ Refusing to write FEEDBACK_ADMIN_TOKEN: $ENV_FILE is not gitignored"; exit 1; }
   FEEDBACK_TOKEN="$(openssl rand -hex 32)"
   printf '\nFEEDBACK_ADMIN_TOKEN=%s\n' "$FEEDBACK_TOKEN" >> "$ENV_FILE"
-  echo "🔑 Generated FEEDBACK_ADMIN_TOKEN and appended to .env"
+  echo "🔑 Generated FEEDBACK_ADMIN_TOKEN and appended to $(basename "$ENV_FILE")"
 fi
 
 # ── Build immutable image — bakes VITE_* and includes the token server ───────
@@ -93,11 +85,16 @@ echo "🔨 Preparing immutable image $ACR_IMAGE in ACR ..."
 APPINSIGHTS_FILE="$SOURCE_DIR/.env.appinsights"
 : > "$APPINSIGHTS_FILE"
 BUILD_ARGS=()
+if [[ -n "${WEB_APP_INSIGHTS:-}" ]]; then
+  echo "VITE_APPINSIGHTS_CONNECTION_STRING=$(az monitor app-insights component show \
+    --app "$WEB_APP_INSIGHTS" -g "$RG" --query connectionString -o tsv)" > "$APPINSIGHTS_FILE"
+fi
 while IFS='=' read -r key value; do
   if [[ "$key" == VITE_* && -n "$value" ]]; then
     value="${value%\"}"; value="${value#\"}"; value="${value%\'}"; value="${value#\'}"
     if [[ "$key" == "VITE_APPINSIGHTS_CONNECTION_STRING" ]]; then
-      echo "$key=$value" > "$APPINSIGHTS_FILE"; continue
+      [[ -n "${WEB_APP_INSIGHTS:-}" ]] || echo "$key=$value" > "$APPINSIGHTS_FILE"
+      continue
     fi
     if [[ "$key" == "VITE_AZURE_OPENAI_API_KEY" || "$key" == "VITE_ENABLE_ADOPTION_IMPACT" ]]; then
       continue
@@ -107,7 +104,7 @@ while IFS='=' read -r key value; do
 done < <(grep -v '^#' "$ENV_FILE" | grep -v '^[[:space:]]*$')
 
 EXISTING_TAG="$(az acr repository show-tags --name "$ACR" --repository "$IMAGE" \
-  --query "[?@=='$TAG'] | [0]" -o tsv)"
+  --query "[?@=='$TAG'] | [0]" -o tsv 2>/dev/null || true)"  # repo absent on a fresh ACR
 if [[ -n "$EXISTING_TAG" ]]; then
   echo "✓ Reusing existing immutable image $ACR_IMAGE"
 else
@@ -130,40 +127,47 @@ fi
 if az containerapp show -n "$NEW_APP" -g "$RG" -o none 2>/dev/null; then
   echo "✓ App $NEW_APP already exists"
 else
-  ACR_USER="$(az acr credential show -n "$ACR" --query username -o tsv)"
-  ACR_PW="$(az acr credential show -n "$ACR" --query 'passwords[0].value' -o tsv)"
-  echo "🚀 Creating $NEW_APP in $NEW_ENV ..."
+  COSMOS_ENDPOINT="$(az cosmosdb show -n "$COSMOS_ACCOUNT" -g "$COSMOS_RG" --query documentEndpoint -o tsv)"
+  SPEECH_RESOURCE_ID="$(az cognitiveservices account show -n "$SPEECH_ACCOUNT" -g "$SPEECH_RG" --query id -o tsv)"
+  TELEMETRY_HASH_SECRET="$(openssl rand -hex 32)"
+  SECRETS=(
+    feedback-admin-token="$FEEDBACK_TOKEN"
+    server-appinsights-connection-string="$SERVER_APPINSIGHTS_CONNECTION_STRING"
+    telemetry-hash-secret="$TELEMETRY_HASH_SECRET"
+  )
+  ENV_VARS=(
+    AZURE_COSMOS_ENDPOINT="$COSMOS_ENDPOINT"
+    COSMOS_DATABASE_ID="$COSMOS_DATABASE_ID"
+    COSMOS_CONTAINER_ID="$COSMOS_CONTAINER_ID"
+    COSMOS_FEEDBACK_CONTAINER_ID="$COSMOS_FEEDBACK_CONTAINER_ID"
+    AZURE_SPEECH_REGION="$SPEECH_REGION"
+    AZURE_SPEECH_RESOURCE_ID="$SPEECH_RESOURCE_ID"
+    AZURE_OPENAI_ENDPOINT="$OPENAI_ENDPOINT"
+    APPLICATIONINSIGHTS_CONNECTION_STRING=secretref:server-appinsights-connection-string
+    TELEMETRY_HASH_SECRET=secretref:telemetry-hash-secret
+    OTEL_SERVICE_NAME="aadb-token-server"
+    NODE_ENV="production"
+    APP_VERSION="$APP_VERSION"
+    FEEDBACK_ADMIN_TOKEN=secretref:feedback-admin-token
+    PUBLIC_URL="https://pending.invalid"
+  )
+  if [[ "$OPENAI_AUTH" == "key" ]]; then
+    SECRETS+=(azure-openai-api-key="$OPENAI_KEY")
+    ENV_VARS+=(AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key)
+  fi
+  # Bootstrap on a public placeholder image: the app's managed identity must
+  # exist and hold AcrPull before it can pull from the registry. The candidate
+  # revision below swaps in the real image once the role is in place.
+  echo "🚀 Creating $NEW_APP in $NEW_ENV (placeholder image) ..."
   az containerapp create -n "$NEW_APP" -g "$RG" \
     --environment "$NEW_ENV" \
-    --image "$ACR_IMAGE" \
-    --registry-server "$ACR.azurecr.io" \
-    --registry-username "$ACR_USER" \
-    --registry-password "$ACR_PW" \
+    --image mcr.microsoft.com/k8se/quickstart:latest \
     --system-assigned \
     --ingress external --target-port 80 --transport auto \
     --min-replicas 1 --max-replicas 1 \
     --cpu 0.5 --memory 1Gi \
-    --secrets \
-        azure-openai-api-key="$OPENAI_KEY" \
-        feedback-admin-token="$FEEDBACK_TOKEN" \
-      server-appinsights-connection-string="$SERVER_APPINSIGHTS_CONNECTION_STRING" \
-      telemetry-hash-secret="$TELEMETRY_HASH_SECRET" \
-    --env-vars \
-        AZURE_COSMOS_ENDPOINT="https://aqcosmosdb007.documents.azure.com:443/" \
-        COSMOS_DATABASE_ID="diagrams-db" \
-        COSMOS_CONTAINER_ID="diagrams" \
-        COSMOS_FEEDBACK_CONTAINER_ID="feedback" \
-        AZURE_SPEECH_REGION="westus2" \
-        AZURE_SPEECH_RESOURCE_ID="/subscriptions/$SUB/resourceGroups/$SPEECH_RG/providers/Microsoft.CognitiveServices/accounts/$SPEECH_ACCOUNT" \
-        AZURE_OPENAI_ENDPOINT="https://r2d2-foundry-001.openai.azure.com/" \
-        AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key \
-        APPLICATIONINSIGHTS_CONNECTION_STRING=secretref:server-appinsights-connection-string \
-        TELEMETRY_HASH_SECRET=secretref:telemetry-hash-secret \
-        OTEL_SERVICE_NAME="aadb-token-server" \
-        NODE_ENV="production" \
-        APP_VERSION="$APP_VERSION" \
-        FEEDBACK_ADMIN_TOKEN=secretref:feedback-admin-token \
-        PUBLIC_URL="https://pending.invalid" \
+    --secrets "${SECRETS[@]}" \
+    --env-vars "${ENV_VARS[@]}" \
     -o none
 fi
 
@@ -178,18 +182,33 @@ EXISTING_ACR_ROLE="$(az role assignment list --assignee-object-id "$PRINCIPAL" -
 if [[ -z "$EXISTING_ACR_ROLE" ]]; then
   az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal-type ServicePrincipal \
     --role AcrPull --scope "$ACR_ID" -o none
-  echo "  ✓ AcrPull on $ACR"
+  echo "  ✓ AcrPull on $ACR (waiting 60s for role propagation before the first pull)"
+  sleep 60
 else
   echo "  • AcrPull already present on $ACR"
 fi
 
-EXISTING_OPENAI_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
-  --query "[?name=='azure-openai-api-key'] | [0].name" -o tsv)"
-if [[ -z "$EXISTING_OPENAI_SECRET" || "$ROTATE_OPENAI_SECRET" == "true" ]]; then
-  az containerapp secret set -n "$NEW_APP" -g "$RG" \
-    --secrets azure-openai-api-key="$OPENAI_KEY" -o none
+if [[ "$OPENAI_AUTH" == "key" ]]; then
+  EXISTING_OPENAI_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
+    --query "[?name=='azure-openai-api-key'] | [0].name" -o tsv)"
+  if [[ -z "$EXISTING_OPENAI_SECRET" || "$ROTATE_OPENAI_SECRET" == "true" ]]; then
+    az containerapp secret set -n "$NEW_APP" -g "$RG" \
+      --secrets azure-openai-api-key="$OPENAI_KEY" -o none
+  else
+    echo "  • OpenAI runtime secret already present"
+  fi
 else
-  echo "  • OpenAI runtime secret already present"
+  FOUNDRY_ID="$(az cognitiveservices account show -n "$FOUNDRY_ACCOUNT" -g "$FOUNDRY_RG" --query id -o tsv)"
+  # Cognitive Services User covers inference for OpenAI, Anthropic and partner models.
+  EXISTING_FOUNDRY_ROLE="$(az role assignment list --assignee-object-id "$PRINCIPAL" --scope "$FOUNDRY_ID" \
+    --query "[?roleDefinitionName=='Cognitive Services User'] | [0].id" -o tsv)"
+  if [[ -z "$EXISTING_FOUNDRY_ROLE" ]]; then
+    az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal-type ServicePrincipal \
+      --role "Cognitive Services User" --scope "$FOUNDRY_ID" -o none
+    echo "  ✓ Cognitive Services User on $FOUNDRY_ACCOUNT (keyless model access)"
+  else
+    echo "  • Cognitive Services User already present on $FOUNDRY_ACCOUNT"
+  fi
 fi
 
 EXISTING_SERVER_TELEMETRY_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
@@ -246,15 +265,15 @@ az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal
   --role "Cognitive Services Speech User" --scope "$SPEECH_ID" -o none 2>/dev/null \
   && echo "  ✓ Speech User on $SPEECH_ACCOUNT" || echo "  • Speech role already present"
 
-COSMOS_ID="$(az cosmosdb show -n "$COSMOS_ACCOUNT" -g "$RG" --query id -o tsv)"
+COSMOS_ID="$(az cosmosdb show -n "$COSMOS_ACCOUNT" -g "$COSMOS_RG" --query id -o tsv)"
 COSMOS_ROLE_DEFINITION_ID="$COSMOS_ID/sqlRoleDefinitions/$COSMOS_DATA_CONTRIBUTOR"
-EXISTING_COSMOS_ROLE="$(az cosmosdb sql role assignment list -a "$COSMOS_ACCOUNT" -g "$RG" \
+EXISTING_COSMOS_ROLE="$(az cosmosdb sql role assignment list -a "$COSMOS_ACCOUNT" -g "$COSMOS_RG" \
   --query "[?principalId=='$PRINCIPAL' && roleDefinitionId=='$COSMOS_ROLE_DEFINITION_ID' && scope=='$COSMOS_ID'] | [0].id" \
   -o tsv)"
 if [[ -n "$EXISTING_COSMOS_ROLE" ]]; then
   echo "  • Cosmos Data Contributor already present on $COSMOS_ACCOUNT"
 else
-  az cosmosdb sql role assignment create -a "$COSMOS_ACCOUNT" -g "$RG" \
+  az cosmosdb sql role assignment create -a "$COSMOS_ACCOUNT" -g "$COSMOS_RG" \
     --role-definition-id "$COSMOS_DATA_CONTRIBUTOR" \
     --principal-id "$PRINCIPAL" --scope "$COSMOS_ID" -o none
   echo "  ✓ Cosmos Data Contributor on $COSMOS_ACCOUNT"
@@ -273,7 +292,7 @@ trap 'rm -f "$CANDIDATE_FILE"' EXIT
 az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$PREVIOUS_REVISION" \
   --query properties.template -o json \
   | node "$SOURCE_DIR/scripts/production/render-webapp-revision.mjs" \
-      "$ACR_IMAGE" "$REV_SUFFIX" "$APP_VERSION" "https://$FQDN" \
+      "$ACR_IMAGE" "$REV_SUFFIX" "$APP_VERSION" "https://$FQDN" "$OPENAI_AUTH" \
   > "$CANDIDATE_FILE"
 
 echo "🚀 Creating candidate revision $REV_SUFFIX with production traffic pinned to $PREVIOUS_REVISION ..."

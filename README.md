@@ -29,7 +29,7 @@
 
 ## 📖 Overview
 
-Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **14 AI models** across multiple providers — **GPT-5.1, GPT-5.2, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5, and Kimi K2.7 Code** (via Azure OpenAI and Azure AI model deployments) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
+Azure Architecture Diagram Builder is an enterprise-grade web application that empowers cloud architects to design, visualize, validate, and deploy Azure solutions. Leveraging **15 AI models** across multiple providers — **GPT-6 Sol, GPT-6 Luna, GPT-6 Astra, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, Claude Opus 5.5, Claude Sonnet 5.5, MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.6, Mistral Large 3, and Kimi K2.6** (via Azure OpenAI, Anthropic, and Azure AI model deployments on Microsoft Foundry) — it transforms natural language descriptions into professional architecture diagrams while providing real-time cost estimates, Well-Architected Framework validation, multi-model comparison, and Infrastructure as Code generation.
 
 Beyond editable **topology** diagrams, the app can also produce polished, whiteboard-style **Blueprint** diagrams (BETA) as shareable PNGs — ideal for presentations and design reviews.
 
@@ -56,7 +56,7 @@ architect.
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Architecture Generation
-Describe your architecture in plain English and let any of **14 AI models** (GPT-5.1, GPT-5.2, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5, or Kimi K2.7 Code) automatically create a complete, professionally organized diagram with logical service groupings.
+Describe your architecture in plain English and let any of **15 AI models** (GPT-6 Sol, GPT-6 Luna, GPT-6 Astra, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, Claude Opus 5.5, Claude Sonnet 5.5, MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.6, Mistral Large 3, or Kimi K2.6) automatically create a complete, professionally organized diagram with logical service groupings.
 
 **22 curated example prompts** across 7 categories — each shown as a card with a short outcome summary, the app capabilities it demonstrates, and a size hint (Compact / Standard / Large) so you can pick by effort. Use **View full prompt** to read the brief before loading it:
 - **Start here** — three-tier web app, serverless event processing
@@ -602,26 +602,28 @@ VITE_AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 VITE_AZURE_OPENAI_API_KEY=your-api-key-here   # optional fallback; bridged to the server only, never bundled
 
 # Multi-model deployments (configure only the models you use)
-# OpenAI GPT-5.x family
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT51=your-gpt51-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GPT52=your-gpt52-deployment
+# OpenAI GPT-6 / GPT-5.x family (Responses API)
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL=your-gpt6-sol-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA=your-gpt6-luna-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA=your-gpt6-astra-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT54=your-gpt54-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI=your-gpt54-mini-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL=your-gpt56-sol-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA=your-gpt56-terra-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA=your-gpt56-luna-deployment
+# Anthropic Claude (Anthropic Messages API, same Foundry endpoint under /anthropic;
+# requires a subscription eligible for Anthropic models)
+VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_OPUS_55=your-claude-opus-5-5-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_SONNET_55=your-claude-sonnet-5-5-deployment
 # Microsoft model (Chat Completions API)
 VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1=your-mai-thinking-1-deployment
 # Partner models (Chat Completions API)
-VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK=your-deepseek-v32-speciale-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO=your-deepseek-v4-pro-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST=your-grok-41-fast-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_GROK43=your-grok-43-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_GROK46=your-grok-46-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3=your-mistral-large-3-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25=your-kimi-k2-5-deployment
-VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE=your-kimi-k2-7-code-deployment
+VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26=your-kimi-k2-6-deployment
 
-# Reasoning model configuration (GPT-5.x models)
+# Reasoning model configuration (GPT and Claude reasoning models)
 VITE_REASONING_EFFORT=medium  # none | low | medium | high
 
 # Optional: Cloud storage for sharing
@@ -692,20 +694,21 @@ Navigate to `http://localhost:3000`
 # identity (Cognitive Services OpenAI User role) and leave the key unset.
 docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_ENDPOINT="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT51="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT52="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT54="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_OPUS_55="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_SONNET_55="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK43="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GROK46="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25="..." \
-  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26="..." \
   --build-arg VITE_SPEECH_REGION="westus2" .
 
 # Optional: include App Insights telemetry
@@ -841,7 +844,7 @@ az ad sp update --id <SP_OBJECT_ID> --set appRoleAssignmentRequired=true
 | Category | Technologies |
 |----------|-------------|
 | **Frontend** | React 18, TypeScript, React Flow, Vite |
-| **AI** | Azure OpenAI (GPT-5.1, GPT-5.2, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna) + partner models (DeepSeek V3.2 Speciale, DeepSeek V4 Pro, Grok 4.1 Fast, Grok 4.3, Mistral Large 3, Kimi K2.5, Kimi K2.7 Code), Dual API (Responses + Chat Completions) |
+| **AI** | Azure OpenAI (GPT-6 Sol/Luna/Astra, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol/Terra/Luna) + Anthropic (Claude Opus 5.5, Claude Sonnet 5.5) + partner models (MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.6, Mistral Large 3, Kimi K2.6), three API formats (Responses, Chat Completions, Anthropic Messages) |
 | **Styling** | CSS3, html-to-image |
 | **Serving** | nginx:alpine (Docker), Vite dev server (local) |
 | **APIs** | Azure Retail Prices API |

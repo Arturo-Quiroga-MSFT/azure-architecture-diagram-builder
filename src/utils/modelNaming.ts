@@ -30,10 +30,12 @@ export function clearSourceModel(): void {
 
 function abbreviateModel(model: ModelType): string {
   switch (model) {
-    case 'gpt-5.1':
-      return 'gpt51';
-    case 'gpt-5.2':
-      return 'gpt52';
+    case 'gpt-6-sol':
+      return 'gpt6sol';
+    case 'gpt-6-luna':
+      return 'gpt6luna';
+    case 'gpt-6-astra':
+      return 'gpt6astra';
     case 'gpt-5.4':
       return 'gpt54';
     case 'gpt-5.4-mini':
@@ -44,22 +46,20 @@ function abbreviateModel(model: ModelType): string {
       return 'gpt56terra';
     case 'gpt-5.6-luna':
       return 'gpt56luna';
+    case 'claude-opus-5-5':
+      return 'claudeopus55';
+    case 'claude-sonnet-5-5':
+      return 'claudesonnet55';
     case 'mai-thinking-1':
       return 'maithinking1';
-    case 'deepseek-v3.2-speciale':
-      return 'deepseek';
     case 'deepseek-v4-pro':
       return 'deepseekv4pro';
-    case 'grok-4.1-fast':
-      return 'grok41fast';
-    case 'grok-4.3':
-      return 'grok43';
+    case 'grok-4.6':
+      return 'grok46';
     case 'mistral-large-3':
       return 'mistrallarge3';
-    case 'kimi-k2-5':
-      return 'kimik25';
-    case 'kimi-k2-7-code':
-      return 'kimik27code';
+    case 'kimi-k2-6':
+      return 'kimik26';
 
     default:
       return String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
