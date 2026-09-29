@@ -71,25 +71,70 @@ function mountSvg(markup: string): void {
   requestBoundedHeight();
 }
 
-app.ontoolresult = result => {
+type ToolResultLike = {
+  isError?: boolean;
+  structuredContent?: unknown;
+  content?: Array<{ type?: string; text?: unknown }>;
+};
+
+let toolArguments: Record<string, unknown> | undefined;
+let refetched = false;
+
+app.ontoolinput = params => {
+  toolArguments = params.arguments;
+};
+
+function inferFormat(markup: string): 'svg' | 'html' | undefined {
+  const head = markup.trimStart().slice(0, 200).toLowerCase();
+  if (head.startsWith('<?xml') || head.startsWith('<svg')) return 'svg';
+  if (head.startsWith('<!doctype html') || head.startsWith('<html')) return 'html';
+  return undefined;
+}
+
+// Hosts may drop or truncate large structuredContent (VS Code caches big tool
+// results), so fall back to the text block, which carries the same markup.
+function extractDiagram(result: ToolResultLike): { format: 'svg' | 'html'; content: string } | undefined {
+  const structured = (result.structuredContent ?? {}) as DiagramResult;
+  if (typeof structured.content === 'string' && (structured.format === 'svg' || structured.format === 'html')) {
+    return { format: structured.format, content: structured.content };
+  }
+  for (const block of result.content ?? []) {
+    if (block?.type !== 'text' || typeof block.text !== 'string') continue;
+    const format = inferFormat(block.text);
+    if (format) return { format, content: block.text };
+  }
+  return undefined;
+}
+
+function render(result: ToolResultLike): boolean {
   if (result.isError) {
     showError('The render_diagram tool reported an error.');
-    return;
+    return true;
   }
+  const diagram = extractDiagram(result);
+  if (!diagram) return false;
+  if (diagram.format === 'html') mountHtml(diagram.content);
+  else mountSvg(diagram.content);
+  return true;
+}
 
-  const output = (result.structuredContent ?? {}) as DiagramResult;
-  if (typeof output.content !== 'string') {
-    showError('The renderer result did not include diagram content.');
-    return;
+// Last resort: re-run the (idempotent, read-only) tool from the app itself so
+// the markup comes straight from the server instead of the host's cached copy.
+async function refetch(): Promise<boolean> {
+  if (refetched || !toolArguments) return false;
+  refetched = true;
+  try {
+    const result = await app.callServerTool({ name: 'render_diagram', arguments: toolArguments });
+    return render(result as ToolResultLike);
+  } catch {
+    return false;
   }
+}
 
-  if (output.format === 'html') {
-    mountHtml(output.content);
-  } else if (output.format === 'svg') {
-    mountSvg(output.content);
-  } else {
-    showError('The renderer returned an unsupported diagram format.');
-  }
+app.ontoolresult = async result => {
+  if (render(result as ToolResultLike)) return;
+  if (await refetch()) return;
+  showError('The renderer result did not include diagram content.');
 };
 
 app.connect().catch(error => {
