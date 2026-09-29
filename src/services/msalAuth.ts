@@ -39,6 +39,9 @@ export function isDelegatedAuthConfigured(): boolean {
 
 let pca: PublicClientApplication | null = null;
 let initPromise: Promise<void> | null = null;
+// Error returned by the sign-in redirect (e.g. admin consent required); shown
+// once in the import dialog when it re-opens.
+let redirectError: unknown = null;
 
 function getPca(): PublicClientApplication {
   if (!pca) {
@@ -63,6 +66,7 @@ async function ensureInitialized(): Promise<void> {
         if (result?.account) p.setActiveAccount(result.account);
       } catch (err) {
         console.warn('MSAL handleRedirectPromise failed:', err);
+        redirectError = err;
       }
     })();
   }
@@ -91,6 +95,14 @@ export async function signIn(): Promise<void> {
   await ensureInitialized();
   try { sessionStorage.setItem(REOPEN_KEY, '1'); } catch { /* ignore */ }
   await getPca().loginRedirect({ scopes: [ARM_SCOPE], redirectUri: REDIRECT_URI });
+}
+
+/** The error from the last sign-in redirect, if any; cleared once read. */
+export async function consumeRedirectError(): Promise<unknown> {
+  await ensureInitialized();
+  const err = redirectError;
+  redirectError = null;
+  return err;
 }
 
 /** Whether the app returned from a sign-in redirect that should re-open import. */

@@ -1,6 +1,6 @@
 {
   "name": "azure-architecture-diagram-builder",
-  "version": "2.0.9",
+  "version": "2.1.0",
   "description": "Azure architecture diagram builder with official icon library",
   "type": "module",
   "scripts": {
@@ -32,6 +32,7 @@
     "test:refinement-guard": "tsx scripts/test-refinement-guard.ts",
     "test:follow-up-model": "tsx scripts/test-follow-up-model-policy.ts",
     "test:anthropic-format": "tsx scripts/test-anthropic-format.ts",
+    "test:azure-signin-errors": "tsx scripts/test-azure-signin-errors.ts",
     "test:semantic-relationships": "tsx scripts/test-semantic-relationships.ts",
     "test:private-connectivity": "tsx scripts/test-private-connectivity.ts",
     "test:deterministic": "node scripts/run-deterministic-tests.mjs",
