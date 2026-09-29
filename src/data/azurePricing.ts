@@ -1289,7 +1289,7 @@ export function getFabricCapacityMonthly(
  * The `npm run pricing:refresh` script bumps this automatically after a
  * successful fetch so cost exports can show an accurate "Prices as of" stamp.
  */
-export const PRICING_DATA_AS_OF = '2026-08-25';
+export const PRICING_DATA_AS_OF = '2026-09-29';
 
 /**
  * Check if service has pricing data available
