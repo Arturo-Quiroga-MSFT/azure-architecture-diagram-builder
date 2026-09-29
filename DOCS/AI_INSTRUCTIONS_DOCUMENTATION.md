@@ -1,7 +1,7 @@
 # AI Instructions Documentation
 
 **Last Updated**: July 2026  
-**Models Supported**: 17 via Microsoft Foundry (GPT-6 Sol, GPT-6 Luna, GPT-6 Astra, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, Claude Opus 5.5, Claude Sonnet 5.5, MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.3, Grok 4.6, Mistral Large 3, Kimi K2.6, Kimi K2.7 Code); see `src/stores/modelSettingsStore.ts` for the authoritative list
+**Models Supported**: 15 via Microsoft Foundry (GPT-6 Sol, GPT-6 Luna, GPT-6 Astra, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, Claude Opus 5.5, Claude Sonnet 5.5, MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.6, Mistral Large 3, Kimi K2.6); see `src/stores/modelSettingsStore.ts` for the authoritative list
 
 This document details the AI instructions (system prompts) for all three agents in the Azure Architecture Diagram Builder application. Each agent supports multi-model selection.
 

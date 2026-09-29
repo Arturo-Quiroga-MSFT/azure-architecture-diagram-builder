@@ -39,9 +39,9 @@ function abbreviateModelForFile(model: ModelType): string {
     'claude-opus-5-5': 'claudeopus55', 'claude-sonnet-5-5': 'claudesonnet55',
     'mai-thinking-1': 'maithinking1',
     'deepseek-v4-pro': 'deepseekv4pro',
-    'grok-4.3': 'grok43', 'grok-4.6': 'grok46',
+    'grok-4.6': 'grok46',
     'mistral-large-3': 'mistrallarge3',
-    'kimi-k2-6': 'kimik26', 'kimi-k2-7-code': 'kimik27code',
+    'kimi-k2-6': 'kimik26',
   };
   return map[model] || String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
 }

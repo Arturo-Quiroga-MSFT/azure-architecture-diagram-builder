@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.3' | 'grok-4.6' | 'mistral-large-3' | 'kimi-k2-6' | 'kimi-k2-7-code';
+export type ModelType = 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.6' | 'mistral-large-3' | 'kimi-k2-6';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -186,15 +186,6 @@ export const MODEL_CONFIG: Record<ModelType, {
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
-  'grok-4.3': {
-    displayName: 'Grok 4.3',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK43',
-    isReasoning: false,
-    maxCompletionTokens: 16000,
-    description: 'Frontier xAI model - top-tier quality, broad knowledge',
-    apiFormat: 'chat-completions',
-    supportsVision: false,
-  },
   'grok-4.6': {
     displayName: 'Grok 4.6',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK46',
@@ -217,24 +208,10 @@ export const MODEL_CONFIG: Record<ModelType, {
     displayName: 'Kimi K2.6',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26',
     isReasoning: false,
-    // Like K2.7 Code, K2.6 emits reasoning_content that consumes the completion
-    // budget before the JSON answer, so it needs the larger budget.
+    // K2.6 emits reasoning_content that consumes the completion budget before
+    // the JSON answer; at 16k, large architectures truncate with empty content.
     maxCompletionTokens: 32000,
     description: 'MoonshotAI trillion-param MoE - strong JSON / long context',
-    apiFormat: 'chat-completions',
-    supportsVision: false,
-  },
-  'kimi-k2-7-code': {
-    displayName: 'Kimi K2.7 Code',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE',
-    isReasoning: false,
-    // Kimi K2.7 Code emits an internal reasoning trace (reasoning_content) that
-    // consumes the completion budget before any answer content is produced. A
-    // 16k budget is frequently exhausted by reasoning + large JSON on complex
-    // architectures, truncating (finish_reason=length) with empty content. Give
-    // it a larger budget so reasoning and the JSON answer both fit.
-    maxCompletionTokens: 32000,
-    description: 'MoonshotAI Kimi K2.7 - optimized for code and structured output',
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
@@ -262,11 +239,9 @@ export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
   'claude-sonnet-5-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_SONNET_55,
   'mai-thinking-1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1,
   'deepseek-v4-pro': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO,
-  'grok-4.3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK43,
   'grok-4.6': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK46,
   'mistral-large-3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3,
   'kimi-k2-6': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26,
-  'kimi-k2-7-code': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE,
 };
 
 /**

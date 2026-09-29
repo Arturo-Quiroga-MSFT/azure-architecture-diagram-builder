@@ -54,16 +54,12 @@ function abbreviateModel(model: ModelType): string {
       return 'maithinking1';
     case 'deepseek-v4-pro':
       return 'deepseekv4pro';
-    case 'grok-4.3':
-      return 'grok43';
     case 'grok-4.6':
       return 'grok46';
     case 'mistral-large-3':
       return 'mistrallarge3';
     case 'kimi-k2-6':
       return 'kimik26';
-    case 'kimi-k2-7-code':
-      return 'kimik27code';
 
     default:
       return String(model).replace(/[^a-z0-9]+/gi, '').toLowerCase() || 'model';
