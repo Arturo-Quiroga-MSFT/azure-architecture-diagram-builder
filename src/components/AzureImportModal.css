@@ -111,3 +111,18 @@
   font-size: 0.82rem;
   user-select: all;
 }
+
+/* The global .btn-primary targets the blue toolbar (white on blue); inside this
+   dialog the primary actions need a filled button to read as buttons. */
+.azure-import-modal .btn-primary {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0078d4;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.azure-import-modal .btn-primary:hover:not(:disabled) { background: #106ebe; }
+.azure-import-modal .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
