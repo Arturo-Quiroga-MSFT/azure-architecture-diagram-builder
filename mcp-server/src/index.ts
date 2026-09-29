@@ -25,7 +25,7 @@
  */
 
 import { createServer as createHttpServer, IncomingMessage, ServerResponse } from 'node:http';
-import { timingSafeEqual } from 'node:crypto';
+import { authChallenge, authorizeRequest, isAuthEnabled, loadAuthConfig, protectedResourceMetadata } from './auth.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve as resolvePath } from 'node:path';
@@ -1897,9 +1897,14 @@ server.registerPrompt(
 //   MCP_HTTP_PORT=3030  (default)
 //   MCP_HTTP_HOST=0.0.0.0 (default)
 //   MCP_HTTP_PATH=/mcp  (default)
-//   MCP_AUTH_TOKEN      — when set, requires `Authorization: Bearer <token>`
-//                         on the MCP path (health probe stays open). When unset,
-//                         the endpoint is open (local/dev/stdio behavior).
+//   MCP_ENTRA_CLIENT_ID — Entra app (client) ID of the MCP API. Enables OAuth:
+//                         Protected Resource Metadata + Entra token validation.
+//   MCP_ENTRA_SCOPE     — required delegated scope (default mcp.tools)
+//   MCP_ENTRA_ALLOWED_TENANTS — optional comma-separated tenant ID allow-list
+//   MCP_PUBLIC_URL      — public base URL (default: derived from forwarded headers)
+//   MCP_AUTH_TOKEN      — static bearer token accepted alongside Entra tokens.
+//   With neither Entra nor a static token configured the endpoint is open
+//   (local/dev behavior). The health probe is always open.
 //
 // CLI flags --http / --stdio override the env var.
 
@@ -1948,25 +1953,28 @@ function writeJson(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
-// Constant-time comparison so a configured Bearer token can't be discovered
-// by timing how quickly the server rejects a guess.
-function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
+function publicBaseUrl(req: IncomingMessage): string {
+  const configured = process.env.MCP_PUBLIC_URL?.trim().replace(/\/+$/, '');
+  if (configured) return configured;
+  const proto = String(req.headers['x-forwarded-proto'] ?? 'http').split(',')[0].trim();
+  const host = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? 'localhost').split(',')[0].trim();
+  return `${proto}://${host}`;
 }
 
 async function startHttp(): Promise<void> {
   const port = Number.parseInt(process.env.MCP_HTTP_PORT ?? '3030', 10);
   const host = process.env.MCP_HTTP_HOST ?? '0.0.0.0';
   const mcpPath = process.env.MCP_HTTP_PATH ?? '/mcp';
-  const authToken = process.env.MCP_AUTH_TOKEN?.trim();
-  if (authToken) {
-    console.error('[mcp-http] Bearer-token auth ENABLED on', mcpPath);
-  } else {
-    console.error('[mcp-http] WARNING: no MCP_AUTH_TOKEN set — endpoint is OPEN (no auth)');
+  const authConfig = loadAuthConfig();
+  if (authConfig.entra) {
+    console.error(`[mcp-http] Entra OAuth ENABLED on ${mcpPath} (client ${authConfig.entra.clientId}, scope ${authConfig.entra.scope}` +
+      `${authConfig.entra.allowedTenants.length ? `, tenants ${authConfig.entra.allowedTenants.join(',')}` : ', any organization'})`);
   }
+  if (authConfig.staticToken) console.error('[mcp-http] Static bearer token accepted on', mcpPath);
+  if (!isAuthEnabled(authConfig)) {
+    console.error('[mcp-http] WARNING: no MCP_ENTRA_CLIENT_ID or MCP_AUTH_TOKEN set — endpoint is OPEN (no auth)');
+  }
+  const prmPaths = new Set(['/.well-known/oauth-protected-resource', `/.well-known/oauth-protected-resource${mcpPath}`]);
 
   const httpServer = createHttpServer(async (req, res) => {
     try {
@@ -1976,6 +1984,18 @@ async function startHttp(): Promise<void> {
       // so liveness/readiness checks don't need to carry the Bearer token.
       if (req.method === 'GET' && url.pathname === '/healthz') {
         writeJson(res, 200, { status: 'ok', transport: 'streamable-http', sessionMode: 'stateless' });
+        return;
+      }
+
+      // RFC 9728 Protected Resource Metadata: tells OAuth-capable clients to
+      // sign in with Entra and which scope to request. Public by design.
+      if (req.method === 'GET' && prmPaths.has(url.pathname)) {
+        if (!authConfig.entra) {
+          writeJson(res, 404, { error: 'not_found', path: url.pathname });
+          return;
+        }
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        writeJson(res, 200, protectedResourceMetadata(authConfig.entra, `${publicBaseUrl(req)}${mcpPath}`));
         return;
       }
 
@@ -2008,20 +2028,19 @@ async function startHttp(): Promise<void> {
         return;
       }
 
-      // Bearer-token gate (only enforced when MCP_AUTH_TOKEN is configured).
-      if (authToken) {
-        const authHeader = req.headers['authorization'];
-        const provided = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-        const expected = `Bearer ${authToken}`;
-        if (!provided || !safeEqual(provided, expected)) {
-          res.setHeader('WWW-Authenticate', 'Bearer');
-          writeJson(res, 401, {
-            jsonrpc: '2.0',
-            error: { code: -32001, message: 'Unauthorized. A valid Bearer token is required.' },
-            id: null,
-          });
-          return;
-        }
+      // Authorization gate: an Entra access token for this API or the static token.
+      const auth = await authorizeRequest(req.headers['authorization'], authConfig);
+      if (!auth.ok) {
+        const metadataUrl = `${publicBaseUrl(req)}/.well-known/oauth-protected-resource${mcpPath}`;
+        const status = auth.error === 'insufficient_scope' ? 403 : 401;
+        res.setHeader('WWW-Authenticate', authChallenge(authConfig, metadataUrl,
+          auth.error === 'missing_token' ? undefined : auth.error, auth.error === 'missing_token' ? undefined : auth.description));
+        writeJson(res, status, {
+          jsonrpc: '2.0',
+          error: { code: -32001, message: `Unauthorized: ${auth.description}` },
+          id: null,
+        });
+        return;
       }
 
       if (req.method !== 'POST') {
