@@ -263,10 +263,25 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   await page.mouse.move(grabX, grabY);
   await page.mouse.down();
   await page.mouse.move(grabX + 120, grabY + 90, { steps: 8 });
-  const draggedBox = await page.locator('.prompt-banner').boundingBox();
+  // Poll rather than read once: the banner follows the cursor through React
+  // state, so a single read can land between the last synthetic mousemove and
+  // the commit that applies it. That race, not a positioning defect, is what
+  // made this assertion fail intermittently at roughly three steps' worth of
+  // travel. The subject of the check is unchanged: the grabbed point must end
+  // up under the cursor, still measured before the button is released.
+  await expect
+    .poll(async () => {
+      const box = await page.locator('.prompt-banner').boundingBox();
+      return Math.abs(box!.x - (grabX + 120 - 40));
+    }, { message: 'dragged banner x should settle under the cursor' })
+    .toBeLessThanOrEqual(1);
+  await expect
+    .poll(async () => {
+      const box = await page.locator('.prompt-banner').boundingBox();
+      return Math.abs(box!.y - (grabY + 90 - 20));
+    }, { message: 'dragged banner y should settle under the cursor' })
+    .toBeLessThanOrEqual(1);
   await page.mouse.up();
-  expect(Math.abs(draggedBox!.x - (grabX + 120 - 40))).toBeLessThanOrEqual(1);
-  expect(Math.abs(draggedBox!.y - (grabY + 90 - 20))).toBeLessThanOrEqual(1);
 
   const elkChunk = page.waitForResponse((response) =>
     response.url().includes('/assets/elkLayoutEngine-') && response.ok(),
