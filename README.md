@@ -604,6 +604,7 @@ VITE_AZURE_OPENAI_API_KEY=your-api-key-here   # optional fallback; bridged to th
 
 # Multi-model deployments (configure only the models you use)
 # OpenAI GPT-6 / GPT-5.x family (Responses API)
+VITE_AZURE_OPENAI_DEPLOYMENT_GPT61SOL=your-gpt61-sol-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL=your-gpt6-sol-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA=your-gpt6-luna-deployment
 VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA=your-gpt6-astra-deployment
@@ -695,6 +696,7 @@ Navigate to `http://localhost:3000`
 # identity (Cognitive Services OpenAI User role) and leave the key unset.
 docker build -t azure-diagram-builder \
   --build-arg VITE_AZURE_OPENAI_ENDPOINT="..." \
+  --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT61SOL="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA="..." \
   --build-arg VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA="..." \

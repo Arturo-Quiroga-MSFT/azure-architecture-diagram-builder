@@ -73,6 +73,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ compact = false }) => {
 
   const getModelIcon = (model: ModelType) => {
     switch (model) {
+      case 'gpt-6.1-sol':
       case 'gpt-6-sol':
       case 'gpt-6-luna':
       case 'gpt-6-astra':
