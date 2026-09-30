@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.6' | 'mistral-large-3' | 'kimi-k2-6';
+export type ModelType = 'gpt-6.1-sol' | 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.6' | 'mistral-large-3' | 'kimi-k2-6';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -91,12 +91,19 @@ export const MODEL_CONFIG: Record<ModelType, {
   supportsVision?: boolean; // defaults to true
   supportsStructuredOutputs?: boolean; // defaults to true
 }> = {
+  'gpt-6.1-sol': {
+    displayName: 'GPT-6.1 Sol',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT61SOL',
+    isReasoning: true,
+    maxCompletionTokens: 32000,
+    description: 'Newest OpenAI frontier reasoning model (GPT-6.1) - top quality for complex architectures'
+  },
   'gpt-6-sol': {
     displayName: 'GPT-6 Sol',
     deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL',
     isReasoning: true,
     maxCompletionTokens: 32000,
-    description: 'Newest OpenAI frontier reasoning model - top quality for complex architectures'
+    description: 'OpenAI GPT-6 frontier reasoning model - top quality for complex architectures'
   },
   'gpt-6-luna': {
     displayName: 'GPT-6 Luna',
@@ -227,6 +234,7 @@ export const MODEL_CONFIG: Record<ModelType, {
  * not secrets, so embedding them is fine.
  */
 export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
+  'gpt-6.1-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT61SOL,
   'gpt-6-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL,
   'gpt-6-luna': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA,
   'gpt-6-astra': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA,

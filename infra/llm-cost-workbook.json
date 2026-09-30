@@ -14,7 +14,9 @@
     "workbookDisplayName": {
       "type": "string",
       "defaultValue": "LLM Cost Monitor",
-      "metadata": { "description": "Display name shown in the App Insights workbooks gallery." }
+      "metadata": {
+        "description": "Display name shown in the App Insights workbooks gallery."
+      }
     },
     "location": {
       "type": "string",
@@ -23,7 +25,9 @@
     "workbookId": {
       "type": "string",
       "defaultValue": "[guid(resourceGroup().id, 'azure-diagram-llm-cost-monitor')]",
-      "metadata": { "description": "Stable GUID so re-deploys update the same workbook instead of creating duplicates." }
+      "metadata": {
+        "description": "Stable GUID so re-deploys update the same workbook instead of creating duplicates."
+      }
     }
   },
   "variables": {
@@ -33,7 +37,7 @@
         {
           "type": 1,
           "content": {
-            "json": "## 💵 LLM Cost Monitor\nEstimated Azure OpenAI / Foundry spend driven by the in-app telemetry event `AI_Model_Usage` (fires on every model call with token counts).\n\n> ⚠️ **Estimated cost.** Token counts are real (from telemetry); dollar amounts are computed from an **editable per-model $/1M-token table** embedded in each query (seeded from the 30-day actuals on 2026-06-22). For **billed** cost use Azure Cost Management or run `scripts/llm-cost-report.py`, which joins Cost Management with this telemetry."
+            "json": "## 💵 LLM Cost Monitor\nEstimated Azure OpenAI / Foundry spend driven by the in-app telemetry event `AI_Model_Usage` (fires on every model call with token counts).\n\n> ⚠️ **Estimated cost.** Token counts are real (from telemetry); dollar amounts are computed from an **editable per-model $/1M-token table** embedded in each query (seeded from the 30-day actuals on 2026-06-22). For **billed** cost use Azure Cost Management or run `scripts/llm-cost-report.py`, which joins Cost Management with this telemetry.\n\n> 💲 Estimates use **input/output token prices** from Azure Retail Prices (eastus2, Global Standard, short context) as of **2026-09-29**. **Claude** models are billed through Azure Marketplace, so their calls count as **unpriced** (tokens shown, cost $0). **GPT-6.1 Sol** (added 2026-09-29) has no Retail Prices meter yet, so its calls also count as unpriced until one is published. Update the `P` table when prices or models change."
           },
           "name": "title"
         },
@@ -49,14 +53,26 @@
                 "label": "Time range",
                 "type": 4,
                 "isRequired": true,
-                "value": { "durationMs": 2592000000 },
+                "value": {
+                  "durationMs": 2592000000
+                },
                 "typeSettings": {
                   "selectableValues": [
-                    { "durationMs": 86400000 },
-                    { "durationMs": 604800000 },
-                    { "durationMs": 2592000000 },
-                    { "durationMs": 7776000000 },
-                    { "durationMs": 31536000000 }
+                    {
+                      "durationMs": 86400000
+                    },
+                    {
+                      "durationMs": 604800000
+                    },
+                    {
+                      "durationMs": 2592000000
+                    },
+                    {
+                      "durationMs": 7776000000
+                    },
+                    {
+                      "durationMs": 31536000000
+                    }
                   ],
                   "allowCustom": true
                 }
@@ -71,8 +87,15 @@
                 "quote": "'",
                 "delimiter": ",",
                 "query": "customEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| distinct model = tostring(customDimensions.model)\n| order by model asc",
-                "typeSettings": { "additionalResourceOptions": ["value::all"], "showDefault": false },
-                "value": ["value::all"],
+                "typeSettings": {
+                  "additionalResourceOptions": [
+                    "value::all"
+                  ],
+                  "showDefault": false
+                },
+                "value": [
+                  "value::all"
+                ],
                 "queryType": 0,
                 "resourceType": "microsoft.insights/components"
               },
@@ -86,8 +109,15 @@
                 "quote": "'",
                 "delimiter": ",",
                 "query": "customEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| distinct operation = tostring(customDimensions.operation)\n| order by operation asc",
-                "typeSettings": { "additionalResourceOptions": ["value::all"], "showDefault": false },
-                "value": ["value::all"],
+                "typeSettings": {
+                  "additionalResourceOptions": [
+                    "value::all"
+                  ],
+                  "showDefault": false
+                },
+                "value": [
+                  "value::all"
+                ],
                 "queryType": 0,
                 "resourceType": "microsoft.insights/components"
               }
@@ -101,7 +131,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let P = datatable(model:string, usd1M:real)['GPT-5.1',30.01,'GPT-5.2',21.19,'GPT-5.2 Codex',9.28,'GPT-5.3 Codex',12.89,'GPT-5.4',12.76,'GPT-5.4 Mini',6.01,'DeepSeek V3.2 Speciale',1.33,'DeepSeek V4 Pro',2.87,'Grok 4.1 Fast',0.33,'Grok 4.3',0.90,'Mistral Large 3',0.97,'Kimi K2.5',2.31,'GPT-OSS 120B',0.45];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend usd1M = coalesce(usd1M, real(10.0))\n| extend estCost = totalTokens / 1000000.0 * usd1M\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2), ['Model calls'] = count(), ['Total tokens'] = tolong(sum(totalTokens)), ['Active users'] = dcount(user_Id), ['Avg $/call'] = round(sum(estCost) / count(), 4)",
+            "query": "let P = datatable(model:string, inUsd1M:real, outUsd1M:real)['GPT-6 Sol',2.0,10.0,'GPT-6 Luna',0.1,0.5,'GPT-6 Astra',10.0,50.0,'GPT-5.4',2.5,15.0,'GPT-5.4 Mini',0.75,4.5,'GPT-5.6 Sol',4.0,20.0,'GPT-5.6 Terra',2.0,12.0,'GPT-5.6 Luna',0.2,1.2,'MAI-Thinking-1 (Preview)',2.0,8.0,'DeepSeek V4 Pro',1.74,3.48,'Grok 4.6',2.0,6.0,'Mistral Large 3',0.5,1.5,'Kimi K2.6',0.95,4.0];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens), promptTokens = toreal(customMeasurements.promptTokens), completionTokens = toreal(customMeasurements.completionTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend priced = isnotnull(inUsd1M)\n| extend estCost = iff(priced, promptTokens / 1000000.0 * inUsd1M + completionTokens / 1000000.0 * outUsd1M, real(0))\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2), ['Model calls'] = count(), ['Unpriced calls'] = countif(not(priced)), ['Total tokens'] = tolong(sum(totalTokens)), ['Active users'] = dcount(user_Id), ['Avg $/call'] = round(sum(estCost) / count(), 4)",
             "size": 4,
             "title": "At a glance (estimated)",
             "queryType": 0,
@@ -114,7 +144,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let P = datatable(model:string, usd1M:real)['GPT-5.1',30.01,'GPT-5.2',21.19,'GPT-5.2 Codex',9.28,'GPT-5.3 Codex',12.89,'GPT-5.4',12.76,'GPT-5.4 Mini',6.01,'DeepSeek V3.2 Speciale',1.33,'DeepSeek V4 Pro',2.87,'Grok 4.1 Fast',0.33,'Grok 4.3',0.90,'Mistral Large 3',0.97,'Kimi K2.5',2.31,'GPT-OSS 120B',0.45];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend usd1M = coalesce(usd1M, real(10.0))\n| extend estCost = totalTokens / 1000000.0 * usd1M\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2) by bin(timestamp, 1d)\n| order by timestamp asc",
+            "query": "let P = datatable(model:string, inUsd1M:real, outUsd1M:real)['GPT-6 Sol',2.0,10.0,'GPT-6 Luna',0.1,0.5,'GPT-6 Astra',10.0,50.0,'GPT-5.4',2.5,15.0,'GPT-5.4 Mini',0.75,4.5,'GPT-5.6 Sol',4.0,20.0,'GPT-5.6 Terra',2.0,12.0,'GPT-5.6 Luna',0.2,1.2,'MAI-Thinking-1 (Preview)',2.0,8.0,'DeepSeek V4 Pro',1.74,3.48,'Grok 4.6',2.0,6.0,'Mistral Large 3',0.5,1.5,'Kimi K2.6',0.95,4.0];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens), promptTokens = toreal(customMeasurements.promptTokens), completionTokens = toreal(customMeasurements.completionTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend priced = isnotnull(inUsd1M)\n| extend estCost = iff(priced, promptTokens / 1000000.0 * inUsd1M + completionTokens / 1000000.0 * outUsd1M, real(0))\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2) by bin(timestamp, 1d)\n| order by timestamp asc",
             "size": 0,
             "title": "Estimated cost over time (daily)",
             "queryType": 0,
@@ -127,7 +157,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let P = datatable(model:string, usd1M:real)['GPT-5.1',30.01,'GPT-5.2',21.19,'GPT-5.2 Codex',9.28,'GPT-5.3 Codex',12.89,'GPT-5.4',12.76,'GPT-5.4 Mini',6.01,'DeepSeek V3.2 Speciale',1.33,'DeepSeek V4 Pro',2.87,'Grok 4.1 Fast',0.33,'Grok 4.3',0.90,'Mistral Large 3',0.97,'Kimi K2.5',2.31,'GPT-OSS 120B',0.45];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend usd1M = coalesce(usd1M, real(10.0))\n| extend estCost = totalTokens / 1000000.0 * usd1M\n| summarize Calls = count(), Users = dcount(user_Id), Tokens = tolong(sum(totalTokens)), ['Est. cost (USD)'] = round(sum(estCost), 2) by Model = model\n| extend ['$/call'] = round(todouble(['Est. cost (USD)']) / Calls, 4)\n| order by ['Est. cost (USD)'] desc",
+            "query": "let P = datatable(model:string, inUsd1M:real, outUsd1M:real)['GPT-6 Sol',2.0,10.0,'GPT-6 Luna',0.1,0.5,'GPT-6 Astra',10.0,50.0,'GPT-5.4',2.5,15.0,'GPT-5.4 Mini',0.75,4.5,'GPT-5.6 Sol',4.0,20.0,'GPT-5.6 Terra',2.0,12.0,'GPT-5.6 Luna',0.2,1.2,'MAI-Thinking-1 (Preview)',2.0,8.0,'DeepSeek V4 Pro',1.74,3.48,'Grok 4.6',2.0,6.0,'Mistral Large 3',0.5,1.5,'Kimi K2.6',0.95,4.0];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens), promptTokens = toreal(customMeasurements.promptTokens), completionTokens = toreal(customMeasurements.completionTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend priced = isnotnull(inUsd1M)\n| extend estCost = iff(priced, promptTokens / 1000000.0 * inUsd1M + completionTokens / 1000000.0 * outUsd1M, real(0))\n| summarize Calls = count(), Users = dcount(user_Id), Tokens = tolong(sum(totalTokens)), ['Est. cost (USD)'] = round(sum(estCost), 2), Pricing = iff(max(toint(priced)) == 1, 'Retail Prices 2026-09-29', 'Unpriced (Marketplace)') by Model = model\n| extend ['$/call'] = round(todouble(['Est. cost (USD)']) / Calls, 4)\n| order by ['Est. cost (USD)'] desc",
             "size": 0,
             "title": "Cost & usage by model",
             "queryType": 0,
@@ -135,7 +165,13 @@
             "visualization": "table",
             "gridSettings": {
               "formatters": [
-                { "columnMatch": "Est. cost (USD)", "formatter": 8, "formatOptions": { "palette": "red" } }
+                {
+                  "columnMatch": "Est. cost (USD)",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "red"
+                  }
+                }
               ]
             }
           },
@@ -146,7 +182,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let P = datatable(model:string, usd1M:real)['GPT-5.1',30.01,'GPT-5.2',21.19,'GPT-5.2 Codex',9.28,'GPT-5.3 Codex',12.89,'GPT-5.4',12.76,'GPT-5.4 Mini',6.01,'DeepSeek V3.2 Speciale',1.33,'DeepSeek V4 Pro',2.87,'Grok 4.1 Fast',0.33,'Grok 4.3',0.90,'Mistral Large 3',0.97,'Kimi K2.5',2.31,'GPT-OSS 120B',0.45];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend usd1M = coalesce(usd1M, real(10.0))\n| extend estCost = totalTokens / 1000000.0 * usd1M\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2) by Model = model\n| order by ['Est. cost (USD)'] desc",
+            "query": "let P = datatable(model:string, inUsd1M:real, outUsd1M:real)['GPT-6 Sol',2.0,10.0,'GPT-6 Luna',0.1,0.5,'GPT-6 Astra',10.0,50.0,'GPT-5.4',2.5,15.0,'GPT-5.4 Mini',0.75,4.5,'GPT-5.6 Sol',4.0,20.0,'GPT-5.6 Terra',2.0,12.0,'GPT-5.6 Luna',0.2,1.2,'MAI-Thinking-1 (Preview)',2.0,8.0,'DeepSeek V4 Pro',1.74,3.48,'Grok 4.6',2.0,6.0,'Mistral Large 3',0.5,1.5,'Kimi K2.6',0.95,4.0];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens), promptTokens = toreal(customMeasurements.promptTokens), completionTokens = toreal(customMeasurements.completionTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend priced = isnotnull(inUsd1M)\n| extend estCost = iff(priced, promptTokens / 1000000.0 * inUsd1M + completionTokens / 1000000.0 * outUsd1M, real(0))\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2) by Model = model\n| order by ['Est. cost (USD)'] desc",
             "size": 0,
             "title": "Share of estimated cost by model",
             "queryType": 0,
@@ -160,7 +196,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let P = datatable(model:string, usd1M:real)['GPT-5.1',30.01,'GPT-5.2',21.19,'GPT-5.2 Codex',9.28,'GPT-5.3 Codex',12.89,'GPT-5.4',12.76,'GPT-5.4 Mini',6.01,'DeepSeek V3.2 Speciale',1.33,'DeepSeek V4 Pro',2.87,'Grok 4.1 Fast',0.33,'Grok 4.3',0.90,'Mistral Large 3',0.97,'Kimi K2.5',2.31,'GPT-OSS 120B',0.45];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend usd1M = coalesce(usd1M, real(10.0))\n| extend estCost = totalTokens / 1000000.0 * usd1M\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2), Calls = count() by Feature = operation\n| order by ['Est. cost (USD)'] desc",
+            "query": "let P = datatable(model:string, inUsd1M:real, outUsd1M:real)['GPT-6 Sol',2.0,10.0,'GPT-6 Luna',0.1,0.5,'GPT-6 Astra',10.0,50.0,'GPT-5.4',2.5,15.0,'GPT-5.4 Mini',0.75,4.5,'GPT-5.6 Sol',4.0,20.0,'GPT-5.6 Terra',2.0,12.0,'GPT-5.6 Luna',0.2,1.2,'MAI-Thinking-1 (Preview)',2.0,8.0,'DeepSeek V4 Pro',1.74,3.48,'Grok 4.6',2.0,6.0,'Mistral Large 3',0.5,1.5,'Kimi K2.6',0.95,4.0];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens), promptTokens = toreal(customMeasurements.promptTokens), completionTokens = toreal(customMeasurements.completionTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend priced = isnotnull(inUsd1M)\n| extend estCost = iff(priced, promptTokens / 1000000.0 * inUsd1M + completionTokens / 1000000.0 * outUsd1M, real(0))\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2), Calls = count() by Feature = operation\n| order by ['Est. cost (USD)'] desc",
             "size": 0,
             "title": "Estimated cost by feature",
             "queryType": 0,
@@ -174,7 +210,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let P = datatable(model:string, usd1M:real)['GPT-5.1',30.01,'GPT-5.2',21.19,'GPT-5.2 Codex',9.28,'GPT-5.3 Codex',12.89,'GPT-5.4',12.76,'GPT-5.4 Mini',6.01,'DeepSeek V3.2 Speciale',1.33,'DeepSeek V4 Pro',2.87,'Grok 4.1 Fast',0.33,'Grok 4.3',0.90,'Mistral Large 3',0.97,'Kimi K2.5',2.31,'GPT-OSS 120B',0.45];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend usd1M = coalesce(usd1M, real(10.0))\n| extend estCost = totalTokens / 1000000.0 * usd1M\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2), Calls = count(), Tokens = tolong(sum(totalTokens)), (LastSeen, IP, Country, City) = arg_max(timestamp, client_IP, client_CountryOrRegion, client_City) by User = user_Id\n| extend Origin = iff(ipv4_is_in_any_range(IP, '20.0.0.0/6', '172.200.0.0/13') or City == 'Boydton' or IP == '0.0.0.0', 'Microsoft network', 'External')\n| project User, ['Est. cost (USD)'], Calls, Tokens, Origin, IP, Country, City, ['Last seen'] = LastSeen\n| order by ['Est. cost (USD)'] desc\n| take 25",
+            "query": "let P = datatable(model:string, inUsd1M:real, outUsd1M:real)['GPT-6 Sol',2.0,10.0,'GPT-6 Luna',0.1,0.5,'GPT-6 Astra',10.0,50.0,'GPT-5.4',2.5,15.0,'GPT-5.4 Mini',0.75,4.5,'GPT-5.6 Sol',4.0,20.0,'GPT-5.6 Terra',2.0,12.0,'GPT-5.6 Luna',0.2,1.2,'MAI-Thinking-1 (Preview)',2.0,8.0,'DeepSeek V4 Pro',1.74,3.48,'Grok 4.6',2.0,6.0,'Mistral Large 3',0.5,1.5,'Kimi K2.6',0.95,4.0];\ncustomEvents\n| where name == 'AI_Model_Usage'\n| where timestamp {TimeRange}\n| extend model = tostring(customDimensions.model), operation = tostring(customDimensions.operation), totalTokens = toreal(customMeasurements.totalTokens), promptTokens = toreal(customMeasurements.promptTokens), completionTokens = toreal(customMeasurements.completionTokens)\n| where model in ({Model})\n| where operation in ({Operation})\n| lookup kind=leftouter P on model\n| extend priced = isnotnull(inUsd1M)\n| extend estCost = iff(priced, promptTokens / 1000000.0 * inUsd1M + completionTokens / 1000000.0 * outUsd1M, real(0))\n| summarize ['Est. cost (USD)'] = round(sum(estCost), 2), Calls = count(), Tokens = tolong(sum(totalTokens)), (LastSeen, IP, Country, City) = arg_max(timestamp, client_IP, client_CountryOrRegion, client_City) by User = user_Id\n| extend Origin = iff(ipv4_is_in_any_range(IP, '20.0.0.0/6', '172.200.0.0/13') or City == 'Boydton' or IP == '0.0.0.0', 'Microsoft network', 'External')\n| project User, ['Est. cost (USD)'], Calls, Tokens, Origin, IP, Country, City, ['Last seen'] = LastSeen\n| order by ['Est. cost (USD)'] desc\n| take 25",
             "size": 0,
             "title": "Top users by estimated cost",
             "queryType": 0,
@@ -182,7 +218,13 @@
             "visualization": "table",
             "gridSettings": {
               "formatters": [
-                { "columnMatch": "Est. cost (USD)", "formatter": 8, "formatOptions": { "palette": "red" } }
+                {
+                  "columnMatch": "Est. cost (USD)",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "red"
+                  }
+                }
               ]
             }
           },
@@ -199,7 +241,9 @@
             "queryType": 0,
             "resourceType": "microsoft.insights/components",
             "visualization": "barchart",
-            "chartSettings": { "seriesLabelSettings": [] }
+            "chartSettings": {
+              "seriesLabelSettings": []
+            }
           },
           "name": "tokens-in-out"
         },
@@ -211,7 +255,9 @@
           "name": "pricing-note"
         }
       ],
-      "fallbackResourceIds": ["[parameters('appInsightsResourceId')]"]
+      "fallbackResourceIds": [
+        "/subscriptions/07457d67-4b3c-4349-99f7-40b70eafc98b/resourceGroups/rg-aadb-prod/providers/microsoft.insights/components/appi-aadb-web"
+      ]
     }
   },
   "resources": [

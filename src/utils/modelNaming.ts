@@ -30,6 +30,8 @@ export function clearSourceModel(): void {
 
 function abbreviateModel(model: ModelType): string {
   switch (model) {
+    case 'gpt-6.1-sol':
+      return 'gpt61sol';
     case 'gpt-6-sol':
       return 'gpt6sol';
     case 'gpt-6-luna':

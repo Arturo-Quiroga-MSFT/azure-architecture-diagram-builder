@@ -25,6 +25,7 @@ import './ModelSettingsPopover.css';
 
 export function getModelIcon(model: ModelType) {
   switch (model) {
+    case 'gpt-6.1-sol': return <Brain size={14} />;
     case 'gpt-6-sol': return <Brain size={14} />;
     case 'gpt-6-luna': return <Brain size={14} />;
     case 'gpt-6-astra': return <Brain size={14} />;

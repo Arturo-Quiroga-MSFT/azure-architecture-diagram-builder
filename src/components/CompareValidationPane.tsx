@@ -33,7 +33,7 @@ import './CompareModelsModal.css';
 /** Abbreviate model name for filenames */
 function abbreviateModelForFile(model: ModelType): string {
   const map: Record<string, string> = {
-    'gpt-6-sol': 'gpt6sol', 'gpt-6-luna': 'gpt6luna', 'gpt-6-astra': 'gpt6astra',
+    'gpt-6.1-sol': 'gpt61sol', 'gpt-6-sol': 'gpt6sol', 'gpt-6-luna': 'gpt6luna', 'gpt-6-astra': 'gpt6astra',
     'gpt-5.4': 'gpt54', 'gpt-5.4-mini': 'gpt54mini', 'gpt-5.6-sol': 'gpt56sol',
     'gpt-5.6-terra': 'gpt56terra', 'gpt-5.6-luna': 'gpt56luna',
     'claude-opus-5-5': 'claudeopus55', 'claude-sonnet-5-5': 'claudesonnet55',
