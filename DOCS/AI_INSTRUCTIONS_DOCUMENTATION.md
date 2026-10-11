@@ -1,7 +1,7 @@
 # AI Instructions Documentation
 
 **Last Updated**: July 2026  
-**Models Supported**: 15 via Microsoft Foundry (GPT-6 Sol, GPT-6 Luna, GPT-6 Astra, GPT-5.4, GPT-5.4 Mini, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, Claude Opus 5.5, Claude Sonnet 5.5, MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.6, Mistral Large 3, Kimi K2.6); see `src/stores/modelSettingsStore.ts` for the authoritative list
+**Models Supported**: 14 via Microsoft Foundry (GPT-6.1 Sol, GPT-6 Sol, GPT-6 Luna, GPT-6 Astra, GPT-5.6 Sol, GPT-5.6 Terra, GPT-5.6 Luna, Claude Opus 5.5, Claude Sonnet 5.5, MAI-Thinking-1, DeepSeek V4 Pro, Grok 4.7, Mistral Large 3, Kimi K2.6); see `src/stores/modelSettingsStore.ts` for the authoritative list
 
 This document details the AI instructions (system prompts) for all three agents in the Azure Architecture Diagram Builder application. Each agent supports multi-model selection.
 
@@ -15,9 +15,9 @@ The three agents support **multiple AI models** selected at runtime via `ModelSe
 - `VITE_AZURE_OPENAI_ENDPOINT` - Azure OpenAI endpoint URL (non-secret build-time flag)
 - `AZURE_OPENAI_ENDPOINT` / `AZURE_OPENAI_API_KEY` - server-side runtime config for the `/api/openai` proxy (the key is never bundled; managed identity preferred)
 - `VITE_AZURE_OPENAI_DEPLOYMENT` - Default deployment name
-- `VITE_AZURE_OPENAI_DEPLOYMENT_GPT61SOL` / `_GPT6SOL` / `_GPT6LUNA` / `_GPT6ASTRA` / `_GPT54` / `_GPT54MINI` / `_GPT56SOL` / `_GPT56TERRA` / `_GPT56LUNA` - OpenAI deployments (Responses API)
+- `VITE_AZURE_OPENAI_DEPLOYMENT_GPT61SOL` / `_GPT6SOL` / `_GPT6LUNA` / `_GPT6ASTRA` / `_GPT56SOL` / `_GPT56TERRA` / `_GPT56LUNA` - OpenAI deployments (Responses API)
 - `VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_OPUS_55` / `_CLAUDE_SONNET_55` - Anthropic Claude deployments (Anthropic Messages API)
-- `VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1` / `_DEEPSEEK_V4_PRO` / `_GROK43` / `_GROK46` / `_MISTRALLARGE3` / `_KIMIK26` / `_KIMIK27CODE` - Microsoft and partner deployments (Chat Completions API)
+- `VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1` / `_DEEPSEEK_V4_PRO` / `_GROK43` / `_GROK47` / `_MISTRALLARGE3` / `_KIMIK26` / `_KIMIK27CODE` - Microsoft and partner deployments (Chat Completions API)
 - `VITE_REASONING_EFFORT` - Reasoning effort for GPT-5.x reasoning models (none/low/medium/high)
 
 ### Model Configuration (from `modelSettingsStore.ts`)
@@ -27,8 +27,6 @@ The three agents support **multiple AI models** selected at runtime via `ModelSe
 | GPT-5.2 | 32,000 | Yes (configurable effort) | Responses |
 | GPT-5.2 Codex | 32,000 | Yes | Responses |
 | GPT-5.3 Codex | 32,000 | Yes | Responses |
-| GPT-5.4 | 32,000 | Yes | Responses |
-| GPT-5.4 Mini | 32,000 | Yes | Responses |
 | DeepSeek V3.2 Speciale | 16,000 | No | Chat Completions |
 | DeepSeek V4 Pro | 16,000 | No | Chat Completions |
 | Grok 4.1 Fast | 16,000 | No | Chat Completions |

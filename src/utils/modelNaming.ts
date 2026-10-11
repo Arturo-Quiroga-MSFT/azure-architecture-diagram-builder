@@ -38,10 +38,6 @@ function abbreviateModel(model: ModelType): string {
       return 'gpt6luna';
     case 'gpt-6-astra':
       return 'gpt6astra';
-    case 'gpt-5.4':
-      return 'gpt54';
-    case 'gpt-5.4-mini':
-      return 'gpt54mini';
     case 'gpt-5.6-sol':
       return 'gpt56sol';
     case 'gpt-5.6-terra':
@@ -56,8 +52,8 @@ function abbreviateModel(model: ModelType): string {
       return 'maithinking1';
     case 'deepseek-v4-pro':
       return 'deepseekv4pro';
-    case 'grok-4.6':
-      return 'grok46';
+    case 'grok-4.7':
+      return 'grok47';
     case 'mistral-large-3':
       return 'mistrallarge3';
     case 'kimi-k2-6':
