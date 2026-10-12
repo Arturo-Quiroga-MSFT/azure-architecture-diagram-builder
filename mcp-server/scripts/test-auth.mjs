@@ -79,10 +79,13 @@ const port = await new Promise((resolve, reject) => {
 });
 const child = spawn(process.execPath, ['dist/index.js', '--http'], {
   env: { ...process.env, MCP_HTTP_PORT: String(port), MCP_HTTP_HOST: '127.0.0.1', MCP_ENTRA_CLIENT_ID: CLIENT_ID, MCP_AUTH_TOKEN: 'static-secret-value' },
-  stdio: ['ignore', 'ignore', 'pipe'],
+  stdio: ['ignore', 'pipe', 'pipe'],
 });
 let stderr = '';
+let stdout = '';
 child.stderr.on('data', d => { stderr += d; });
+child.stdout.on('data', d => { stdout += d; });
+const usageRecords = () => stdout.split('\n').filter(Boolean).map(l => JSON.parse(l)).filter(r => r.event === 'mcp_request');
 const base = `http://127.0.0.1:${port}`;
 try {
   for (let i = 0; i < 50; i++) {
@@ -113,6 +116,24 @@ try {
   res = await post('Bearer static-secret-value');
   assert.equal(res.status, 200, 'static token still accepted');
   assert.match(await res.text(), /"serverInfo"/);
+  res = await fetch(`${base}/mcp`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', authorization: 'Bearer static-secret-value' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'list_services', arguments: { category: 'databases' } } }),
+  });
+  assert.equal(res.status, 200);
+  await res.text();
+  await new Promise(r => setTimeout(r, 200));
+  const records = usageRecords();
+  const rejected = records.filter(r => r.auth === 'rejected');
+  assert.ok(rejected.some(r => r.status === 401 && r.authError === 'missing_token'), 'usage log: missing token');
+  assert.ok(rejected.some(r => r.status === 401 && r.authError === 'invalid_token'), 'usage log: invalid token');
+  const initRec = records.find(r => r.auth === 'static' && r.rpcMethods?.includes('initialize'));
+  assert.equal(initRec?.clientName, 'auth-test', 'usage log: client name from initialize');
+  assert.equal(initRec?.status, 200);
+  const toolRec = records.find(r => r.tools?.includes('list_services'));
+  assert.deepEqual(toolRec?.toolResults?.map(t => [t.tool, t.ok]), [['list_services', true]], 'usage log: tool outcome');
+  assert.ok(!stdout.includes('static-secret-value') && !stdout.includes('databases'), 'usage log never contains tokens or tool arguments');
   assert.equal((await fetch(`${base}/healthz`)).status, 200, 'health stays open');
 } catch (err) {
   console.error(stderr);
@@ -121,4 +142,4 @@ try {
   child.kill();
 }
 
-console.log('MCP auth test passed: Entra audience/issuer/tenant/scope/signature/expiry, static fallback, metadata, 401/403 challenges.');
+console.log('MCP auth test passed: Entra audience/issuer/tenant/scope/signature/expiry, static fallback, metadata, 401/403 challenges, usage log.');
