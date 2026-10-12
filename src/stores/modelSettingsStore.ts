@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type ModelType = 'gpt-6.1-sol' | 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.4' | 'gpt-5.4-mini' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.6' | 'mistral-large-3' | 'kimi-k2-6';
+export type ModelType = 'gpt-6.1-sol' | 'gpt-6-sol' | 'gpt-6-luna' | 'gpt-6-astra' | 'gpt-5.6-sol' | 'gpt-5.6-terra' | 'gpt-5.6-luna' | 'claude-opus-5-5' | 'claude-sonnet-5-5' | 'mai-thinking-1' | 'deepseek-v4-pro' | 'grok-4.7' | 'mistral-large-3' | 'kimi-k2-6';
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 
 /**
@@ -72,7 +72,7 @@ export const FEATURE_CONFIG: Record<FeatureType, {
   blueprint: {
     displayName: 'Blueprint Diagrams',
     description: 'Whiteboard-style blueprint sketches (fast, cost-efficient)',
-    recommendedModel: 'gpt-5.4-mini',
+    recommendedModel: 'gpt-5.6-luna',
     recommendedReasoning: 'low'
   }
 };
@@ -118,20 +118,6 @@ export const MODEL_CONFIG: Record<ModelType, {
     isReasoning: true,
     maxCompletionTokens: 32000,
     description: 'GPT-6 reasoning model - thorough, grounded analysis'
-  },
-  'gpt-5.4': {
-    displayName: 'GPT-5.4',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT54',
-    isReasoning: true,
-    maxCompletionTokens: 32000,
-    description: 'Most capable frontier model - best knowledge work, coding, and tool use'
-  },
-  'gpt-5.4-mini': {
-    displayName: 'GPT-5.4 Mini',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI',
-    isReasoning: true,
-    maxCompletionTokens: 32000,
-    description: 'Compact frontier model - fast and cost-efficient with strong reasoning'
   },
   'gpt-5.6-sol': {
     displayName: 'GPT-5.6 Sol',
@@ -193,9 +179,9 @@ export const MODEL_CONFIG: Record<ModelType, {
     apiFormat: 'chat-completions',
     supportsVision: false,
   },
-  'grok-4.6': {
-    displayName: 'Grok 4.6',
-    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK46',
+  'grok-4.7': {
+    displayName: 'Grok 4.7',
+    deploymentEnvVar: 'VITE_AZURE_OPENAI_DEPLOYMENT_GROK47',
     isReasoning: false,
     maxCompletionTokens: 16000,
     description: 'Latest xAI frontier model - broad knowledge, fast responses',
@@ -238,8 +224,6 @@ export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
   'gpt-6-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6SOL,
   'gpt-6-luna': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6LUNA,
   'gpt-6-astra': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT6ASTRA,
-  'gpt-5.4': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54,
-  'gpt-5.4-mini': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI,
   'gpt-5.6-sol': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL,
   'gpt-5.6-terra': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA,
   'gpt-5.6-luna': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA,
@@ -247,7 +231,7 @@ export const DEPLOYMENT_NAMES: Record<ModelType, string | undefined> = {
   'claude-sonnet-5-5': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_CLAUDE_SONNET_55,
   'mai-thinking-1': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1,
   'deepseek-v4-pro': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO,
-  'grok-4.6': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK46,
+  'grok-4.7': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_GROK47,
   'mistral-large-3': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3,
   'kimi-k2-6': import.meta.env.VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK26,
 };

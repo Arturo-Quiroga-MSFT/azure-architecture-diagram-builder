@@ -9,7 +9,7 @@
  * so both surfaces stay in sync automatically.
  */
 
-import { Brain, RotateCcw, Cpu, Layers, Sparkles, Zap } from 'lucide-react';
+import { Brain, RotateCcw, Cpu, Layers, Zap } from 'lucide-react';
 import {
   useModelSettings,
   MODEL_CONFIG,
@@ -23,6 +23,9 @@ import {
 } from '../stores/modelSettingsStore';
 import './ModelSettingsPopover.css';
 
+const recommendedLabel = (cfg: { recommendedModel: ModelType; recommendedReasoning?: ReasoningEffort }) =>
+  `${MODEL_CONFIG[cfg.recommendedModel].displayName}${cfg.recommendedReasoning ? ` (${cfg.recommendedReasoning})` : ''}`;
+
 export function getModelIcon(model: ModelType) {
   switch (model) {
     case 'gpt-6.1-sol': return <Brain size={14} />;
@@ -35,8 +38,7 @@ export function getModelIcon(model: ModelType) {
     case 'gpt-5.6-terra': return <Brain size={14} />;
     case 'gpt-5.6-luna': return <Brain size={14} />;
     case 'deepseek-v4-pro': return <Layers size={14} />;
-    case 'grok-4.6': return <Zap size={14} />;
-    case 'gpt-5.4-mini': return <Sparkles size={14} />;
+    case 'grok-4.7': return <Zap size={14} />;
   }
 }
 
@@ -188,7 +190,7 @@ export function ModelSettingsControls() {
       <div className="toolbar-dropdown-separator" role="separator" />
 
       <div className="toolbar-dropdown-hint">
-        Recommended: GPT-5.2 (medium) for generation, GPT-5.1 (none) for fast tasks
+        Recommended: {recommendedLabel(FEATURE_CONFIG.architectureGeneration)} for generation, {recommendedLabel(FEATURE_CONFIG.blueprint)} for fast tasks
       </div>
     </>
   );

@@ -18,12 +18,12 @@ import {
 function abbreviateModelForFile(model: ModelType): string {
   const map: Record<string, string> = {
     'gpt-6.1-sol': 'gpt61sol', 'gpt-6-sol': 'gpt6sol', 'gpt-6-luna': 'gpt6luna', 'gpt-6-astra': 'gpt6astra',
-    'gpt-5.4': 'gpt54', 'gpt-5.4-mini': 'gpt54mini', 'gpt-5.6-sol': 'gpt56sol',
+    'gpt-5.6-sol': 'gpt56sol',
     'gpt-5.6-terra': 'gpt56terra', 'gpt-5.6-luna': 'gpt56luna',
     'claude-opus-5-5': 'claudeopus55', 'claude-sonnet-5-5': 'claudesonnet55',
     'mai-thinking-1': 'maithinking1',
     'deepseek-v4-pro': 'deepseekv4pro',
-    'grok-4.6': 'grok46',
+    'grok-4.7': 'grok47',
     'mistral-large-3': 'mistrallarge3',
     'kimi-k2-6': 'kimik26',
   };
@@ -135,7 +135,7 @@ const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit,
   const [results, setResults] = useState<ComparisonResult[]>([]);
   const [criticModel, setCriticModel] = useState<ModelType>(() => {
     const avail = getAvailableModels();
-    return (avail.includes('gpt-5.4' as ModelType) ? 'gpt-5.4' : avail[avail.length - 1]) as ModelType;
+    return (avail.includes('gpt-5.6-sol' as ModelType) ? 'gpt-5.6-sol' : avail[avail.length - 1]) as ModelType;
   });
   const [critiqueText, setCritiqueText] = useState<string | null>(null);
   const [critiqueByModel, setCritiqueByModel] = useState<ModelType | null>(null);
