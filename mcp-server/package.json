@@ -26,7 +26,7 @@
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@modelcontextprotocol/ext-apps": "^1.7.5",
-    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "jose": "^6.2.12",
     "zod": "^3.24.0"
   },
