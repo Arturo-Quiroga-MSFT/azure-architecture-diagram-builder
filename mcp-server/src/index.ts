@@ -26,6 +26,7 @@
 
 import { createServer as createHttpServer, IncomingMessage, ServerResponse } from 'node:http';
 import { authChallenge, authorizeRequest, isAuthEnabled, loadAuthConfig, protectedResourceMetadata } from './auth.js';
+import { logUsage, summarizeRpc, usageLoggingEnabled, type RpcSummary, type ToolOutcome } from './usageLog.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve as resolvePath } from 'node:path';
@@ -144,11 +145,37 @@ function regionalPlacementNote(
 // (stdio for local clients; streamable-HTTP for remote clients like
 // M365 Copilot or hosted agents) can spin up its own server instance.
 
-export function createServer(): McpServer {
+export interface ServerHooks {
+  /** Called after every tool call with its outcome (used for usage logging). */
+  onToolResult?: (outcome: ToolOutcome) => void;
+}
+
+export function createServer(hooks: ServerHooks = {}): McpServer {
 const server = new McpServer({
   name: 'azure-diagram-builder',
   version: '1.0.0',
 });
+
+if (hooks.onToolResult) {
+  const report = hooks.onToolResult;
+  const register = server.registerTool.bind(server);
+  // Wrap every tool handler so its outcome is reported without touching the tool code.
+  server.registerTool = ((name: string, config: unknown, cb: (...args: unknown[]) => unknown) =>
+    register(name as never, config as never, (async (...args: unknown[]) => {
+      const started = Date.now();
+      try {
+        const result = await cb(...args) as { isError?: boolean; content?: Array<{ text?: string }> };
+        report({
+          tool: name, ok: !result?.isError, durationMs: Date.now() - started,
+          error: result?.isError ? result.content?.[0]?.text : undefined,
+        });
+        return result;
+      } catch (err) {
+        report({ tool: name, ok: false, durationMs: Date.now() - started, error: (err as Error).message });
+        throw err;
+      }
+    }) as never)) as typeof server.registerTool;
+}
 
 // ── Tool 1: list_services ──────────────────────────────────────────────
 
@@ -1977,6 +2004,7 @@ async function startHttp(): Promise<void> {
   const prmPaths = new Set(['/.well-known/oauth-protected-resource', `/.well-known/oauth-protected-resource${mcpPath}`]);
 
   const httpServer = createHttpServer(async (req, res) => {
+    const started = Date.now();
     try {
       const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
 
@@ -2030,7 +2058,12 @@ async function startHttp(): Promise<void> {
 
       // Authorization gate: an Entra access token for this API or the static token.
       const auth = await authorizeRequest(req.headers['authorization'], authConfig);
+      const userAgent = req.headers['user-agent'];
       if (!auth.ok) {
+        res.once('finish', () => logUsage({
+          status: res.statusCode, durationMs: Date.now() - started, httpMethod: req.method ?? '',
+          auth: 'rejected', authError: auth.error, userAgent,
+        }));
         const metadataUrl = `${publicBaseUrl(req)}/.well-known/oauth-protected-resource${mcpPath}`;
         const status = auth.error === 'insufficient_scope' ? 403 : 401;
         res.setHeader('WWW-Authenticate', authChallenge(authConfig, metadataUrl,
@@ -2053,7 +2086,19 @@ async function startHttp(): Promise<void> {
       }
 
       const body = await readJsonBody(req);
-      const server = createServer();
+      const toolResults: ToolOutcome[] = [];
+      if (usageLoggingEnabled()) {
+        let rpc: RpcSummary | undefined;
+        try { rpc = summarizeRpc(body); } catch { rpc = undefined; }
+        res.once('finish', () => logUsage({
+          status: res.statusCode, durationMs: Date.now() - started, httpMethod: req.method ?? '',
+          auth: auth.method,
+          tenantId: auth.method === 'entra' ? auth.tenantId : undefined,
+          objectId: auth.method === 'entra' ? auth.objectId : undefined,
+          userAgent, rpc, toolResults,
+        }));
+      }
+      const server = createServer({ onToolResult: outcome => toolResults.push(outcome) });
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
       });
