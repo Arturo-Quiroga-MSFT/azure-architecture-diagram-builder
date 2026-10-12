@@ -6,6 +6,7 @@ import { Sparkles, Loader2, Clock, Zap, CheckCircle, AlertCircle, GitCompare, Do
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { generateArchitectureWithAI, generateCritique, isAzureOpenAIConfigured, AIMetrics, ModelOverride } from '../services/azureOpenAI';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
+import { narratorAvatarOptions } from '../stores/narratorStore';
 import {
   MODEL_CONFIG,
   ModelType,
@@ -203,9 +204,7 @@ const CompareModelsPane: React.FC<CompareModelsPaneProps> = ({ isActive, onExit,
     try {
       if (!presenterRef.current?.isConnected) {
         const presenter = new AvatarPresenter({
-          character: import.meta.env.VITE_AVATAR_CHARACTER || 'lisa',
-          style: import.meta.env.VITE_AVATAR_STYLE || 'casual-sitting',
-          voice: import.meta.env.VITE_AVATAR_VOICE || 'en-US-AvaMultilingualNeural',
+          ...narratorAvatarOptions(),
           onStatus: setAvatarStatus,
           onError: (msg) => setAvatarError(msg),
           onWord: (idx) => setCaptionWordIdx(idx),

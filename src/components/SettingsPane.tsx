@@ -11,6 +11,7 @@
 
 import { Moon, Sun } from 'lucide-react';
 import ModelSettingsControls from './ModelSettingsControls';
+import NarratorSettings from './NarratorSettings';
 import { useValidationDisplayPrefs } from '../stores/validationDisplayStore';
 import './SettingsPane.css';
 
@@ -68,6 +69,11 @@ export function SettingsPane({ isDarkMode, onToggleDarkMode }: SettingsPaneProps
               <span>{validationPrefs.showNumericScore ? 'On' : 'Off'}</span>
             </label>
           </div>
+        </section>
+
+        <section className="settings-section">
+          <h3>Narrator</h3>
+          <NarratorSettings />
         </section>
 
         <section className="settings-section settings-models">

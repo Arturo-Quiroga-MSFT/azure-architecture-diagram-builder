@@ -4,6 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ListOrdered, MonitorPlay, StopCircle, Loader2 } from 'lucide-react';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
+import { narratorAvatarOptions } from '../stores/narratorStore';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import './WorkflowPanel.css';
 
@@ -76,9 +77,7 @@ const WorkflowPanel: React.FC<WorkflowPanelProps> = ({
     try {
       if (!presenterRef.current?.isConnected) {
         const presenter = new AvatarPresenter({
-          character: import.meta.env.VITE_AVATAR_CHARACTER || 'lisa',
-          style: import.meta.env.VITE_AVATAR_STYLE || 'casual-sitting',
-          voice: import.meta.env.VITE_AVATAR_VOICE || 'en-US-AvaMultilingualNeural',
+          ...narratorAvatarOptions(),
           onStatus: setAvatarStatus,
           onError: (msg) => setAvatarError(msg),
           onWord: (idx) => setCaptionWordIdx(idx),
