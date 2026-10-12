@@ -70,7 +70,7 @@
     {
       "type": 1,
       "content": {
-        "json": "# Azure Diagram Builder \u2014 Usage Analytics\n---\nReal-time telemetry from the [Azure Architecture Diagram Builder](https://aka.ms/diagram-builder). Tracks feature usage, AI model performance, user geography, and architecture generation patterns.\n\n> \u2139\ufe0f **Coverage:** telemetry launched **2026-04-17** \u2014 windows starting earlier will show no data before that date. **\"Users\" = unique anonymous browsers** (cookie-based `user_Id`), a reach proxy, not verified individuals; `dcount` is an approximation and browser events are not bot-filtered."
+        "json": "# Azure Diagram Builder — Usage Analytics\n---\nReal-time telemetry from the [Azure Architecture Diagram Builder](https://aka.ms/diagram-builder). Tracks feature usage, AI model performance, user geography, and architecture generation patterns.\n\n> ℹ️ **Coverage:** telemetry launched **2026-04-17** — windows starting earlier will show no data before that date. **\"Users\" = unique anonymous browsers** (cookie-based `user_Id`), a reach proxy, not verified individuals; `dcount` is an approximation and browser events are not bot-filtered."
       },
       "name": "title"
     },
@@ -193,7 +193,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| where not(isMsEgress)\n| summarize Value = dcount(client_CountryOrRegion)\n| extend Label = \"External countries\"",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton')\n| where not(isMsEgress)\n| summarize Value = dcount(client_CountryOrRegion)\n| extend Label = \"External countries\"",
         "size": 4,
         "title": "External Countries",
         "timeContextFromParameter": "TimeRange",
@@ -290,9 +290,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| summarize Users = dcount(user_Id) by Origin = iff(isMsEgress, 'Microsoft network (geo unreliable)', 'External')\n| order by Users desc",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton')\n| summarize Users = dcount(user_Id) by Origin = iff(isMsEgress, 'Microsoft network (geo unreliable)', 'External')\n| order by Users desc",
         "size": 0,
-        "title": "Audience split \u2014 real users by egress",
+        "title": "Audience split — real users by egress",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
@@ -305,7 +305,7 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| where not(isMsEgress)\n| summarize Count = count(), Users = dcount(user_Id) by client_CountryOrRegion\n| order by Count desc",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton')\n| where not(isMsEgress)\n| summarize Count = count(), Users = dcount(user_Id) by client_CountryOrRegion\n| order by Count desc",
         "size": 0,
         "title": "External Users by Country",
         "timeContextFromParameter": "TimeRange",
@@ -338,9 +338,9 @@
       "type": 3,
       "content": {
         "version": "KqlItem/1.0",
-        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton' or client_IP == '0.0.0.0')\n| where not(isMsEgress)\n| summarize\n    Events = count(),\n    Users = dcount(user_Id),\n    UniqueIPs = dcount(client_IP),\n    IPs = make_set(client_IP, 5)\n  by client_CountryOrRegion, client_City\n| order by Events desc\n| take 50",
+        "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where isnotempty(client_CountryOrRegion)\n| extend isMsEgress = (ipv4_is_in_any_range(client_IP, '20.0.0.0/6', '172.200.0.0/13') or client_City == 'Boydton')\n| where not(isMsEgress)\n| summarize\n    Events = count(),\n    Users = dcount(user_Id)\n  by client_CountryOrRegion, client_City\n| order by Events desc\n| take 50",
         "size": 0,
-        "title": "External User Locations \u2014 Country / City / IP",
+        "title": "External User Locations — Country / City",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
@@ -602,7 +602,7 @@
         "version": "KqlItem/1.0",
         "query": "let DB_EVENTS = customEvents | where name in (\"Architecture_Generated\", \"Architecture_Validated\", \"DeploymentGuide_Generated\", \"Diagram_Exported\", \"Template_Imported\", \"ARM_Template_Imported\", \"Image_Imported\", \"Models_Compared\", \"Recommendations_Applied\", \"Version_Operation\", \"Region_Changed\", \"Start_Fresh\", \"AI_Model_Usage\");\nDB_EVENTS\n| where name == \"Architecture_Generated\"\n| extend model = tostring(customDimensions.model)\n| extend services = todouble(customMeasurements.serviceCount)\n| extend connections = todouble(customMeasurements.connectionCount)\n| extend groups = todouble(customMeasurements.groupCount)\n| extend workflows = todouble(customMeasurements.workflowStepCount)\n| extend tokens = todouble(customMeasurements.totalTokens)\n| extend timeSec = round(todouble(customMeasurements.elapsedTimeMs) / 1000, 1)\n| extend isModification = tostring(customDimensions.isModification)\n| summarize\n    Generations = count(),\n    AvgServices = round(avg(services), 1),\n    AvgConnections = round(avg(connections), 1),\n    AvgGroups = round(avg(groups), 1),\n    AvgWorkflowSteps = round(avg(workflows), 1),\n    AvgTokens = round(avg(tokens), 0),\n    AvgTimeSec = round(avg(timeSec), 1),\n    NewArchitectures = countif(isModification == \"false\"),\n    Modifications = countif(isModification == \"true\")\n  by model\n| order by Generations desc",
         "size": 0,
-        "title": "Architecture Generation \u2014 Complexity by Model",
+        "title": "Architecture Generation — Complexity by Model",
         "timeContextFromParameter": "TimeRange",
         "queryType": 0,
         "resourceType": "microsoft.insights/components",
