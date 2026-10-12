@@ -27,6 +27,12 @@ export interface EntraAuthConfig {
   allowedTenants: string[];
   /** Entra authority host. */
   authority: string;
+  /**
+   * Extra accepted token audiences, e.g. the public MCP endpoint URL. Clients
+   * that send RFC 8707 `resource=<MCP URL>` (VS Code) need that URL registered
+   * as an Application ID URI; Entra may then stamp it as the token audience.
+   */
+  extraAudiences?: string[];
 }
 
 export interface McpAuthConfig {
@@ -50,9 +56,17 @@ export function loadAuthConfig(env: NodeJS.ProcessEnv = process.env): McpAuthCon
           allowedTenants: (env.MCP_ENTRA_ALLOWED_TENANTS ?? '')
             .split(',').map(t => t.trim().toLowerCase()).filter(Boolean),
           authority: (env.MCP_ENTRA_AUTHORITY?.trim() || 'https://login.microsoftonline.com').replace(/\/+$/, ''),
+          extraAudiences: publicResourceAudiences(env),
         }
       : undefined,
   };
+}
+
+function publicResourceAudiences(env: NodeJS.ProcessEnv): string[] {
+  const base = env.MCP_PUBLIC_URL?.trim().replace(/\/+$/, '');
+  if (!base) return [];
+  const path = env.MCP_HTTP_PATH?.trim() || '/mcp';
+  return [`${base}${path.startsWith('/') ? path : `/${path}`}`];
 }
 
 export function isAuthEnabled(config: McpAuthConfig): boolean {
@@ -115,7 +129,7 @@ export async function verifyEntraToken(
   let payload: JWTPayload;
   try {
     ({ payload } = await jwtVerify(token, keys, {
-      audience: [entra.clientId, resourceUri(entra)],
+      audience: [entra.clientId, resourceUri(entra), ...(entra.extraAudiences ?? [])],
       algorithms: ['RS256'],
       requiredClaims: ['exp', 'iss', 'aud'],
       clockTolerance: 60,
