@@ -19,6 +19,7 @@ import { bandLabel, scoreToBand } from '../services/wafMaturity';
 import { useValidationDisplayPrefs } from '../stores/validationDisplayStore';
 import { useDraggableResizable } from '../hooks/useDraggableResizable';
 import { AvatarPresenter, AvatarStatus } from '../services/avatarPresenter';
+import { narratorAvatarOptions } from '../stores/narratorStore';
 import {
   MODEL_CONFIG,
   ModelType,
@@ -173,9 +174,7 @@ const CompareValidationPane: React.FC<CompareValidationPaneProps> = ({
     try {
       if (!presenterRef.current?.isConnected) {
         const presenter = new AvatarPresenter({
-          character: import.meta.env.VITE_AVATAR_CHARACTER || 'lisa',
-          style: import.meta.env.VITE_AVATAR_STYLE || 'casual-sitting',
-          voice: import.meta.env.VITE_AVATAR_VOICE || 'en-US-AvaMultilingualNeural',
+          ...narratorAvatarOptions(),
           onStatus: setAvatarStatus,
           onError: (msg) => setAvatarError(msg),
           onWord: (idx) => setCaptionWordIdx(idx),

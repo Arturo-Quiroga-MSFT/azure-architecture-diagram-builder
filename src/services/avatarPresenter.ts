@@ -25,6 +25,12 @@ export interface AvatarPresenterOptions {
   character?: string;
   style?: string;
   voice?: string;
+  /** Photo-avatar base model ('vasa-1' / 'vasa-2'); set for photo avatars only. */
+  photoAvatarBaseModel?: string;
+  /** True for a custom (trained) avatar. */
+  customized?: boolean;
+  /** Use the custom avatar's own trained voice instead of `voice`. */
+  useBuiltInVoice?: boolean;
   onStatus?: (status: AvatarStatus) => void;
   onError?: (message: string) => void;
   /** Called with the word index (0-based) as each word begins to be spoken. */
@@ -75,7 +81,8 @@ export class AvatarPresenter {
   private videoStream: MediaStream | null = null;
   private audioStream: MediaStream | null = null;
   private audioElement: HTMLAudioElement | null = null;
-  private options: Required<AvatarPresenterOptions>;
+  private options: Required<Omit<AvatarPresenterOptions, 'photoAvatarBaseModel' | 'customized' | 'useBuiltInVoice'>>
+    & Pick<AvatarPresenterOptions, 'photoAvatarBaseModel' | 'customized' | 'useBuiltInVoice'>;
   private pendingTurnEnd: (() => void) | null = null;
   private speechStartOffsetTicks: number | null = null;
   private speechDurationTicks: number | null = null;
@@ -92,6 +99,9 @@ export class AvatarPresenter {
       character: options.character ?? 'lisa',
       style: options.style ?? 'casual-sitting',
       voice: options.voice ?? 'en-US-AvaMultilingualNeural',
+      photoAvatarBaseModel: options.photoAvatarBaseModel,
+      customized: options.customized,
+      useBuiltInVoice: options.useBuiltInVoice,
       onStatus: options.onStatus ?? (() => {}),
       onError: options.onError ?? (() => {}),
       onWord: options.onWord ?? (() => {}),
@@ -131,6 +141,9 @@ export class AvatarPresenter {
       this.options.style,
       new SpeechSDK.AvatarVideoFormat(),
     );
+    if (this.options.photoAvatarBaseModel) avatarConfig.photoAvatarBaseModel = this.options.photoAvatarBaseModel;
+    if (this.options.customized) avatarConfig.customized = true;
+    if (this.options.useBuiltInVoice) avatarConfig.useBuiltInVoice = true;
 
     // Pass ICE relay servers to the avatar config (required by the SDK)
     if (iceServers.length > 0) {
@@ -208,12 +221,23 @@ export class AvatarPresenter {
 
     // Wrap startAvatarAsync with a 30s timeout — it can hang silently on network issues
     const timeoutMs = 30_000;
-    const result = await Promise.race([
-      this.synthesizer.startAvatarAsync(this.peerConnection),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`Avatar connection timed out after ${timeoutMs / 1000}s`)), timeoutMs),
-      ),
-    ]);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let result: any;
+    try {
+      result = await Promise.race([
+        this.synthesizer.startAvatarAsync(this.peerConnection),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`Avatar connection timed out after ${timeoutMs / 1000}s`)), timeoutMs);
+        }),
+      ]);
+    } catch (err) {
+      // Close the half-open session: it still counts against the Speech
+      // resource's concurrent avatar limit (websocket error 4429) otherwise.
+      this.disconnect();
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (result.reason !== SpeechSDK.ResultReason.SynthesizingAudioCompleted) {
       const detail = result.errorDetails ?? 'Unknown error';

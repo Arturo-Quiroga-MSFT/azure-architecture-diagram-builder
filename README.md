@@ -114,6 +114,7 @@ Compare AI output side-by-side across all 15 supported models when their deploym
 ### 🎙️ Avatar Presenter
 After completing a model comparison, use **Present Critique** to have a photorealistic talking avatar narrate the AI ranking results aloud — or click **Narrate** in the Workflow Panel to have the avatar walk through every architecture step:
 - A 3D avatar appears in a **draggable, resizable** floating panel — grab the header to reposition anywhere on screen, drag the bottom-right corner to resize
+- **Choose your narrator** in **Settings → Narrator**: 13 full-body avatars (Lisa, Harry, Lori, Max, Meg in several styles), 15 photo avatars (including the preview Marcel, George and Leonie in supported Speech regions) and 12 neural voices, with a live **Preview**. Deployments can add their own custom avatar via `VITE_AVATAR_CUSTOM_*` (see `.env.example`)
 
 ### 🖼️ Draggable Reference Image Viewer
 When a sketch or image is uploaded for AI generation, the reference image stays visible as a floating panel:
