@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.5` | 2026-10-12 | Narrator selector (avatar and voice), avatar session-leak fix, dependency vulnerabilities fixed | Pending deployment |
 | `v2.0.7` | 2026-09-28 | Bottom dock for canvas details; dismissible pop-ups; Private Connectivity lines and labels | Deployed |
 | `v2.0.6` | 2026-09-26 | Vite 8 toolchain; no open Dependabot alerts; lockfiles install through the Microsoft package proxy | Deployed |
 | `v2.0.5` | 2026-09-26 | Icons stay inside their groups after applying recommendations; release gate and dependency security | Superseded by v2.0.6 before deployment |
@@ -24,6 +25,19 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.5: Choose Your Narrator
+
+### Narrator selector
+- **Settings → Narrator** lets each user pick the talking avatar for workflow narration and Compare critiques: 13 full-body avatars (Lisa casual-sitting, Harry, Lori, Max, Meg), 12 photo avatars, and 3 preview photo avatars (George, Marcel, Leonie) in supported Speech regions.
+- Choose any of 12 neural voices or keep the avatar's default, and **Preview** the narrator live before using it. The choice is saved in the browser; the deployment default (`VITE_AVATAR_*`) is unchanged for everyone else.
+- Deployments can add their own custom avatar (photo or video, optionally with its trained voice) through `VITE_AVATAR_CUSTOM_*`, without a code change. The Docker build now passes all `VITE_AVATAR_*` settings, which were previously ignored in production images.
+
+### Reliability
+- An avatar session that failed or timed out while starting is now closed. Leaked sessions counted against the Speech resource's concurrent-avatar limit and caused "throttled (4429)" errors.
+
+### Security
+- `npm audit` findings reduced from 15 to 0 across the app, MCP server, token server and NEW-WEB-APP (7 critical, 5 high, 3 moderate), including `shell-quote`, `proxy-addr`, `@modelcontextprotocol/sdk`, `@grpc/grpc-js` and `compression`. Python dependencies have no known vulnerabilities.
 
 ## v2.0.7: Cleaner Canvas and Connected Private Networking
 
