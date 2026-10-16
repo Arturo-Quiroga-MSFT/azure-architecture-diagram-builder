@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.6` | 2026-10-16 | Imported diagrams: meaningful edge labels, real resource names, compact group layout, fresh titles; MCP client keys | Pending deployment |
 | `v2.1.5` | 2026-10-12 | Narrator selector (avatar and voice), avatar session-leak fix, dependency vulnerabilities fixed | Deployed |
 | `v2.0.7` | 2026-09-28 | Bottom dock for canvas details; dismissible pop-ups; Private Connectivity lines and labels | Deployed |
 | `v2.0.6` | 2026-09-26 | Vite 8 toolchain; no open Dependabot alerts; lockfiles install through the Microsoft package proxy | Deployed |
@@ -25,6 +26,22 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.6: Imports That Read Like Architecture
+
+### Meaningful connections on import
+- Imported ARM templates and Azure resource groups no longer label every link "depends on" or "references". Each edge says what the relationship is, based first on the property that holds the reference and then on the target service: "runs in", "runs on plan", "deployed in subnet", "private link to", "pulls images from", "reads secrets from", "reads/writes data", "calls AI models", "uses Speech", "sends logs to", "stores telemetry in", "uses identity" and more. Unrecognized pairs keep the generic label.
+- Structural links (hosting, identity, network placement) are drawn as associations, so the layout follows the data flows.
+- **From Azure** finds links that Resource Graph only exposes indirectly: endpoint URLs and resource IDs in app settings and container environment variables, container registry servers, Log Analytics workspace IDs, managed identities, and child resources such as Private DNS zone VNet links.
+- The MCP `import_architecture` tool returns the same labels for ARM templates.
+
+### Easier to make the diagram yours
+- Groups whose members have no data flow between them are laid out as a compact grid instead of one long column.
+- Imported nodes show the real Azure resource name under the service name, so two Container Apps or two Foundry Tools resources can be told apart.
+- Importing onto an existing diagram starts a new diagram with its own title (the template file name or resource group) instead of keeping the previous title. The previous diagram is still saved as a snapshot first.
+
+### Remote MCP server
+- Named client keys let service-to-service connectors in other tenants call the MCP server without guest accounts or cross-tenant consent. Keys are stored as hashes, revocable one at a time, and attributed by name in the MCP Usage Monitor.
 
 ## v2.1.5: Choose Your Narrator
 

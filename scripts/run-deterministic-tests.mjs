@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const tests = [
   'test:arm',
+  'test:resource-graph',
   'test:dagre-migration',
   'test:layout-preservation',
   'test:refinement-containment',

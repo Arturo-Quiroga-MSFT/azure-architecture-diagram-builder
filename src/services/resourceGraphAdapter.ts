@@ -12,11 +12,24 @@
  *
  * Nodes are mapped via the same type table as the ARM extractor
  * (lookupServiceMeta), so both paths stay consistent. Resource Graph has no
- * `dependsOn`, so edges are INFERRED from real resource IDs embedded in each
- * resource's properties (e.g. serverFarmId, privateLinkServiceId, subnet IDs).
+ * `dependsOn`, so edges are INFERRED from evidence in each resource's
+ * properties and identity block:
+ *   • real resource IDs (serverFarmId, environmentId, privateLinkServiceId,
+ *     subnet IDs, userAssignedIdentities, env vars holding resource IDs)
+ *   • endpoint hostnames owned by another resource in the group (an env var
+ *     pointing at https://<cosmos>.documents.azure.com, a registry server
+ *     <acr>.azurecr.io, ...)
+ *   • Log Analytics workspace customer IDs (Container Apps environments log
+ *     by workspace GUID, not resource ID)
+ * Child resources that don't map to a node (DNS zone VNet links, ...) lend
+ * their references to their mapped parent. Each edge is labelled by what the
+ * reference means (classifyRelationship), e.g. "runs in", "pulls images from".
  */
 
-import { lookupServiceMeta, zoneForCategory, type ArmExtractResult } from './armExtractor';
+import {
+  classifyRelationship, EdgeCollector, lookupServiceMeta, walkStrings, zoneForCategory,
+  type ArmExtractResult,
+} from './armExtractor';
 
 /** A row returned by the /api/azure/resource-graph endpoint. */
 export interface ArgResource {
@@ -26,6 +39,7 @@ export interface ArgResource {
   kind?: string;
   location?: string;
   properties?: unknown;
+  identity?: unknown;
 }
 
 function makeId(type: string, name: string, seen: Set<string>): string {
@@ -47,15 +61,16 @@ export function buildArchitectureFromResources(resources: ArgResource[]): ArmExt
   const usedZones = new Map<string, string>(); // zone label → group id
   const skippedTypes = new Set<string>();
 
-  // Map each Azure resource id (lowercased) → the service node it belongs to,
-  // so property references can be resolved to edges.
-  const azIdToNode = new Map<string, ArmExtractResult['architecture']['services'][number]>();
-  const nodeProps = new Map<string, string>(); // node id → stringified properties
+  type Service = ArmExtractResult['architecture']['services'][number];
+  // Map each Azure resource id (lowercased) → its service node and source row.
+  const azIdToNode = new Map<string, Service>();
+  const nodeSource = new Map<string, ArgResource>();
+  const unmapped: ArgResource[] = [];
 
   for (const r of resources || []) {
     if (!r || !r.type || !r.id) continue;
     const meta = lookupServiceMeta(r.type, r.kind || '');
-    if (!meta) { skippedTypes.add(r.type); continue; }
+    if (!meta) { skippedTypes.add(r.type); unmapped.push(r); continue; }
     const zone = zoneForCategory(meta.category);
     if (!usedZones.has(zone)) usedZones.set(zone, `zone-${zone.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
     const svc = {
@@ -65,46 +80,86 @@ export function buildArchitectureFromResources(resources: ArgResource[]): ArmExt
       category: meta.category,
       description: r.name && r.name !== meta.name ? `${meta.name}: ${r.name}` : meta.name,
       groupId: usedZones.get(zone)!,
+      resourceName: String(r.name || '').split('/').pop() || undefined,
+      location: r.location || undefined,
     };
     services.push(svc);
     azIdToNode.set(r.id.toLowerCase(), svc);
-    let propsText = '';
-    try { propsText = JSON.stringify(r.properties ?? {}); } catch { propsText = ''; }
-    nodeProps.set(svc.id, propsText);
+    nodeSource.set(svc.id, r);
   }
 
-  // ── Edges inferred from resource IDs embedded in properties ────────────────
-  const connections: ArmExtractResult['architecture']['connections'] = [];
-  const edgeSeen = new Set<string>();
-  const azKeys = [...azIdToNode.keys()]; // lowercased resource ids
-  const REF_RE = /\/subscriptions\/[0-9a-fA-F-]+\/resourcegroups\/[^/"'\\\s]+\/providers\/[a-z0-9./-]+/gi;
-
-  const addEdge = (from: string, to: string) => {
-    if (from === to) return;
-    const key = `${from}->${to}`;
-    if (edgeSeen.has(key) || edgeSeen.has(`${to}->${from}`)) return;
-    edgeSeen.add(key);
-    connections.push({ from, to, label: 'references', type: 'sync' });
+  const azKeys = [...azIdToNode.keys()];
+  // Longest node id that is the reference or its ancestor (a subnet id resolves
+  // to its VNet, a child resource to its parent).
+  const nodeForId = (ref: string): Service | undefined => {
+    let best = '';
+    for (const key of azKeys) {
+      if ((ref === key || ref.startsWith(key + '/')) && key.length > best.length) best = key;
+    }
+    return best ? azIdToNode.get(best) : undefined;
   };
 
+  // Hostnames a resource owns: endpoints whose first DNS label is its own
+  // name, e.g. cosmos-x.documents.azure.com, acrx.azurecr.io.
+  const HOST_RE = /\b[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+){2,}\b/gi;
+  const hostOwner = new Map<string, Service>();
+  const ambiguousHosts = new Set<string>();
+  // Log Analytics customer (workspace) id → workspace node.
+  const workspaceByCustomerId = new Map<string, Service>();
   for (const svc of services) {
-    const props = nodeProps.get(svc.id) || '';
-    if (!props) continue;
-    const refs = props.match(REF_RE) || [];
-    for (const raw of refs) {
-      const ref = raw.toLowerCase();
-      // A property may reference a child resource (e.g. a subnet under a VNet);
-      // match the longest node id that is a prefix of the reference.
-      let bestKey = '';
-      for (const key of azKeys) {
-        if ((ref === key || ref.startsWith(key + '/')) && key.length > bestKey.length) bestKey = key;
+    const r = nodeSource.get(svc.id)!;
+    const name = String(r.name || '').toLowerCase().split('/').pop() || '';
+    walkStrings(r.properties, (_path, text) => {
+      for (const host of text.toLowerCase().match(HOST_RE) || []) {
+        if (host.split('.')[0] !== name) continue;
+        const owner = hostOwner.get(host);
+        if (owner && owner.id !== svc.id) ambiguousHosts.add(host);
+        else hostOwner.set(host, svc);
       }
-      if (bestKey) {
-        const target = azIdToNode.get(bestKey)!;
-        if (target.id !== svc.id) addEdge(svc.id, target.id);
-      }
+    });
+    const customerId = (r.properties as { customerId?: unknown } | undefined)?.customerId;
+    if (r.type.toLowerCase() === 'microsoft.operationalinsights/workspaces' && typeof customerId === 'string') {
+      workspaceByCustomerId.set(customerId.toLowerCase(), svc);
     }
   }
+  for (const host of ambiguousHosts) hostOwner.delete(host);
+
+  // ── Edges inferred from references in properties and identity ────────────
+  const edges = new EdgeCollector();
+  const REF_RE = /\/subscriptions\/[0-9a-fA-F-]+\/resourcegroups\/[^/"'\\\s]+\/providers\/[a-z0-9./-]+/gi;
+  const GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  const link = (source: Service, target: Service | undefined, path: string) => {
+    if (!target || target.id === source.id) return;
+    const s = nodeSource.get(source.id)!;
+    const t = nodeSource.get(target.id)!;
+    edges.add(source.id, target.id, classifyRelationship(s.type, t.type, t.kind || '', path, 'references'));
+  };
+  const scanFrom = (source: Service, r: ArgResource) => {
+    const isNetworkType = nodeSource.get(source.id)!.type.toLowerCase().startsWith('microsoft.network/');
+    const visit = (path: string, text: string) => {
+      for (const raw of text.match(REF_RE) || []) link(source, nodeForId(raw.toLowerCase()), path);
+      // Hostnames are application configuration (env vars, registry servers);
+      // network plumbing such as a private endpoint NIC only records DNS names.
+      if (!isNetworkType) {
+        for (const host of text.toLowerCase().match(HOST_RE) || []) link(source, hostOwner.get(host), path);
+      }
+      if (GUID_RE.test(text) && /(customerid|workspaceid)$/i.test(path)) {
+        link(source, workspaceByCustomerId.get(text.toLowerCase()), path);
+      }
+    };
+    walkStrings(r.properties, visit);
+    walkStrings(r.identity, visit, 'identity');
+  };
+
+  for (const svc of services) scanFrom(svc, nodeSource.get(svc.id)!);
+  // Unmapped child resources (e.g. privateDnsZones/virtualNetworkLinks)
+  // contribute their references to the mapped parent they belong to.
+  for (const r of unmapped) {
+    const parent = r.type.split('/').length > 2 ? nodeForId(r.id.toLowerCase()) : undefined;
+    if (parent) scanFrom(parent, r);
+  }
+  const connections = edges.list();
 
   const usedGroupIds = new Set(services.map(s => s.groupId));
   const groups = [...usedZones.entries()]

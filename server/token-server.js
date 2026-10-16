@@ -524,7 +524,7 @@ app.post('/api/azure/resource-graph', requireAzureImport, async (req, res) => {
     // resourceGroup is validated above; strip single quotes defensively so it
     // cannot break out of the KQL string literal.
     const rg = String(resourceGroup).replace(/'/g, '');
-    const query = `Resources | where resourceGroup =~ '${rg}' | project id, name, type, kind, location, properties | limit 1000`;
+    const query = `Resources | where resourceGroup =~ '${rg}' | project id, name, type, kind, location, properties, identity | limit 1000`;
     const r = await fetch(`${ARM_BASE}/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

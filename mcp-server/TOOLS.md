@@ -458,7 +458,13 @@ instead of hiding it:
   region rather than a guess.
 - `description` carries the raw ARM resource type for provenance.
 - Connections come from real `dependsOn` and `resourceId(...)` references, never
-  inferred; `groups` are the extractor's category zones.
+  inferred; `groups` are the extractor's category zones. Each connection is
+  labelled by what the reference means: first by the property that holds it
+  (`serverFarmId` → "runs on plan", `environmentId` → "runs in", a subnet id →
+  "deployed in subnet", `privateLinkServiceId` → "private link to"), then by the
+  target type (Key Vault → "reads secrets from", Container Registry → "pulls
+  images from", a database → "reads/writes data"), with `type` set to `sync`,
+  `async` or `association` accordingly. Unrecognized pairs keep "depends on".
 - Child/config sub-resources are **folded** into their parent (`coverage.folded`)
   and unmapped resource types are **skipped** and listed in
   `coverage.skippedTypes`.

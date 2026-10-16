@@ -182,4 +182,28 @@ const protectedGroup = privateEndpointPacking.groups.find(group => group.id === 
 assert.ok(protectedGroup.width >= 700, 'multiple private endpoint pairs should widen their owning group');
 assert.ok(protectedGroup.height < 1100, 'pair packing should avoid a tall single-column resource tower');
 
+// Members with no flow between them (common for imported resource groups,
+// where hosting/identity links are associations) pack into a grid, not a
+// single column as long as the group.
+const gridMembers = ['ca1', 'ca2', 'acr', 'cae', 'acr2', 'ca3'];
+const gridLayout = layoutArchitecture(
+  [
+    ...gridMembers.map(id => ({ id, name: 'Container Apps', type: 'containers', groupId: 'containers' })),
+    { id: 'kv', name: 'Key Vault', type: 'security', groupId: 'security' },
+  ],
+  [
+    { from: 'ca1', to: 'cae', label: 'runs in', type: 'association' },
+    { from: 'ca2', to: 'cae', label: 'runs in', type: 'association' },
+    { from: 'ca1', to: 'kv', label: 'reads secrets from', type: 'sync' },
+  ],
+  [{ id: 'containers', label: 'Containers' }, { id: 'security', label: 'Security' }],
+  { direction: 'LR' },
+);
+const gridPositions = gridLayout.services.filter(s => gridMembers.includes(s.id));
+const distinctX = new Set(gridPositions.map(s => Math.round(s.position.x))).size;
+const distinctY = new Set(gridPositions.map(s => Math.round(s.position.y))).size;
+assert.ok(distinctX >= 2 && distinctY >= 2, `six unconnected members should form a grid (got ${distinctX} columns x ${distinctY} rows)`);
+const containersGroup = gridLayout.groups.find(group => group.id === 'containers')!;
+assert.ok(containersGroup.height < containersGroup.width * 2, 'grid-packed group should not be a tall column');
+
 console.log('Grouped layout tests passed.');

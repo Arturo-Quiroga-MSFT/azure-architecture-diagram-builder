@@ -35,14 +35,25 @@ await build({
   outfile,
   logLevel: 'silent',
 });
-const { extractArchitectureFromArm } = await import(outfile);
+const { extractArchitectureFromArm, classifyRelationship } = await import(outfile);
 
 // Expectations: each fixture must map at least this many services and edges,
 // fold the vast majority of resources (noise), and skip almost nothing.
+// expectEdges: [from description fragment, label, to description fragment]
 const CASES = [
-  { file: 'AQ_FOUNDRY_RG.json', minServices: 20, minEdges: 10, maxSkippedTypes: 3, expectNames: ['AQ-DOC-INTEL', 'aq-app-insights-001'] },
-  { file: 'AZURE_DIAGRAM_RG.json', minServices: 5, minEdges: 1, maxSkippedTypes: 2, expectNames: ['aqcosmosdb007', 'azure-diagram-builder'] },
-  { file: 'DATASHEET_RG.json', minServices: 4, minEdges: 1, maxSkippedTypes: 2, expectNames: ['app-datasheet-processor'] },
+  { file: 'AQ_FOUNDRY_RG.json', minServices: 20, minEdges: 10, maxSkippedTypes: 3, expectNames: ['AQ-DOC-INTEL', 'aq-app-insights-001'],
+    expectEdges: [
+      ['AQ-ML-WORK-001', 'reads secrets from', 'Key Vault'],
+      ['AQ-ML-WORK-001', 'pulls images from', 'Container Registry'],
+      ['AQ-ML-WORK-001', 'sends telemetry to', 'Application Insights'],
+      ['Application Insights', 'stores telemetry in', 'Log Analytics'],
+      ['aq-hub-project', 'part of hub', 'aq-main-hub'],
+      ['Storage Account: aqmlwork', 'publishes events to', 'Event Grid'],
+    ] },
+  { file: 'AZURE_DIAGRAM_RG.json', minServices: 5, minEdges: 1, maxSkippedTypes: 2, expectNames: ['aqcosmosdb007', 'azure-diagram-builder'],
+    expectEdges: [['azure-diagram-builder', 'runs in', 'Container Apps Environment']] },
+  { file: 'DATASHEET_RG.json', minServices: 4, minEdges: 1, maxSkippedTypes: 2, expectNames: ['app-datasheet-processor'],
+    expectEdges: [['app-datasheet-processor', 'runs in', 'Container Apps Environment']] },
 ];
 
 let failures = 0;
@@ -74,11 +85,34 @@ for (const c of CASES) {
     else fail(`missing resolved name "${n}"`);
   }
 
+  // Edges carry meaningful labels, not just "depends on".
+  const desc = new Map(architecture.services.map((s) => [s.id, s.description]));
+  for (const [from, label, to] of c.expectEdges) {
+    const hit = architecture.connections.some((e) => e.label === label
+      && desc.get(e.from)?.includes(from) && desc.get(e.to)?.includes(to));
+    if (hit) ok(`edge ${from} —[${label}]→ ${to}`);
+    else fail(`missing edge ${from} —[${label}]→ ${to}`);
+  }
+  const generic = architecture.connections.filter((e) => e.label === 'depends on').length;
+  if (generic === 0) ok('no generic "depends on" labels left');
+  else fail(`${generic} edge(s) still labelled "depends on"`);
+
   // Every service must carry a group and a non-empty name.
   const bad = architecture.services.filter((s) => !s.name || !s.groupId);
   if (bad.length === 0) ok('all services have a name + zone');
   else fail(`${bad.length} services missing name/zone`);
 }
+
+console.log('\nclassifyRelationship');
+const rel = (...args) => classifyRelationship(...args);
+const expectRel = (got, label, type, msg) => (got.label === label && got.type === type ? ok(msg) : fail(`${msg}: got ${got.label}/${got.type}`));
+expectRel(rel('Microsoft.Web/sites', 'Microsoft.Web/serverfarms', '', 'serverFarmId'), 'runs on plan', 'association', 'serverFarmId path');
+expectRel(rel('Microsoft.Web/sites', 'Microsoft.KeyVault/vaults'), 'reads secrets from', 'sync', 'Key Vault target');
+expectRel(rel('Microsoft.App/containerApps', 'Microsoft.CognitiveServices/accounts', 'SpeechServices'), 'uses Speech', 'sync', 'Speech kind');
+expectRel(rel('Microsoft.Network/privateEndpoints', 'Microsoft.Sql/servers', '', 'privateLinkServiceConnections[0].properties.privateLinkServiceId'), 'private link to', 'sync', 'private link');
+expectRel(rel('Microsoft.Web/sites', 'Microsoft.Fabrikam/widgets', '', '', 'depends on'), 'depends on', 'sync', 'unknown target keeps fallback');
+const pathBeatsTarget = rel('Microsoft.App/containerApps', 'Microsoft.Network/virtualNetworks', '', 'vnetConfiguration.infrastructureSubnetId');
+expectRel(pathBeatsTarget, 'deployed in subnet', 'association', 'property path outranks target type');
 
 console.log(failures === 0 ? '\n✅ ARM extractor regression tests passed' : `\n❌ ${failures} assertion(s) failed`);
 process.exit(failures === 0 ? 0 : 1);

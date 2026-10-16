@@ -259,6 +259,11 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
                 {label}
               </div>
             )}
+            {typeof data.resourceName === 'string' && data.resourceName && (
+              <div className="node-resource-name" title={`Azure resource: ${data.resourceName}`}>
+                {data.resourceName}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -300,6 +305,7 @@ const AzureNode: React.FC<NodeProps> = memo(({ data, selected, id }) => {
     prevProps.selected === nextProps.selected &&
 prevProps.data.parentNode === nextProps.data.parentNode &&
     prevProps.data.label === nextProps.data.label &&
+    prevProps.data.resourceName === nextProps.data.resourceName &&
     prevProps.data.iconPath === nextProps.data.iconPath &&
     prevProps.data.stylePreset === nextProps.data.stylePreset &&
     JSON.stringify(prevProps.data.pricing) === JSON.stringify(nextProps.data.pricing)
