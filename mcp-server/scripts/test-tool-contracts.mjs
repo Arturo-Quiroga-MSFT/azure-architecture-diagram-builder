@@ -1088,7 +1088,7 @@ async function main() {
       { name: 'shared', type: 'Key Vault', region: 'eastus2', description: 'Microsoft.KeyVault/vaults', groupId: 'zone-identity-security' },
       { name: 'shared (2)', type: 'Storage Account', region: 'eastus2', description: 'Microsoft.Storage/storageAccounts', groupId: 'zone-data' },
     ]);
-    assert.deepEqual(armImport.connections, [{ from: 'contoso-web', to: 'sqlsrv', label: 'depends on', type: 'sync' }]);
+    assert.deepEqual(armImport.connections, [{ from: 'contoso-web', to: 'sqlsrv', label: 'reads/writes data', type: 'sync' }]);
     assert.equal(armImport.coverage.totalResources, 6);
     assert.equal(armImport.coverage.mapped, 4);
     assert.equal(armImport.coverage.folded, 1);

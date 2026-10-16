@@ -149,7 +149,8 @@ interface FlatResource {
   kind: string;         // resource `kind` (lower-cased), used to refine some types
   location: string;     // resolved region, '' when only an unresolvable expression
   dependsOn: string[];
-  propsText: string;    // stringified properties (for reference() scanning)
+  props: unknown;       // raw properties (scanned for resourceId()/reference() by path)
+  identity: unknown;    // raw identity block (userAssignedIdentities keys are references)
 }
 
 /** Map of ARM parameter name → its string defaultValue (real resource name). */
@@ -221,9 +222,7 @@ function flattenResources(resources: any[], paramMap: ParamMap, parentName = '')
     const rawName = String(r.name ?? '');
     const kind = String(r.kind ?? '').toLowerCase();
     const dependsOn = Array.isArray(r.dependsOn) ? r.dependsOn.map(String) : [];
-    let propsText = '';
-    try { propsText = JSON.stringify(r.properties ?? {}); } catch { propsText = ''; }
-    out.push({ armType, rawType, name: cleanName(rawName, paramMap) || parentName || 'resource', rawName, kind, location: resolveLocation(r.location, paramMap), dependsOn, propsText });
+    out.push({ armType, rawType, name: cleanName(rawName, paramMap) || parentName || 'resource', rawName, kind, location: resolveLocation(r.location, paramMap), dependsOn, props: r.properties ?? {}, identity: r.identity ?? null });
     if (Array.isArray(r.resources)) {
       out.push(...flattenResources(r.resources, paramMap, cleanName(rawName, paramMap)));
     }
@@ -258,6 +257,139 @@ export function lookupServiceMeta(armType: string, kind = ''): ServiceMeta | nul
 /** Public helper — the diagram zone (group) label for a service category. */
 export function zoneForCategory(category: string): string {
   return CATEGORY_ZONE[category] || 'Other';
+}
+
+// ─── Relationship semantics ───────────────────────────────────────────────────
+// Imported edges are labelled by what the reference means, not just that one
+// exists. Evidence, strongest first: the property path holding the reference
+// (environmentId → "runs in"), then the target's type (Key Vault → "reads
+// secrets from"), then the caller's generic fallback label.
+
+export type RelationshipType = 'sync' | 'async' | 'association';
+
+export interface Relationship {
+  label: string;
+  type: RelationshipType;
+  /** Evidence strength: 4 explicit link, 3 property path, 2 target type, 0 fallback. */
+  score: number;
+  /** The edge reads target → source (e.g. a storage account publishes to the system topic that watches it). */
+  reverse?: boolean;
+}
+
+const PATH_RULES: { re: RegExp; label: string; type: RelationshipType; score: number }[] = [
+  { re: /privatelinkserviceid$/i, label: 'private link to', type: 'sync', score: 4 },
+  { re: /privateendpoint\.id$/i, label: 'private endpoint', type: 'association', score: 1 },
+  { re: /(^|\.)(managed)?environmentid$/i, label: 'runs in', type: 'association', score: 3 },
+  { re: /serverfarmid$/i, label: 'runs on plan', type: 'association', score: 3 },
+  { re: /(subnets?(\[\d+\])?\.id|subnetid|subnetresourceid)$/i, label: 'deployed in subnet', type: 'association', score: 3 },
+  { re: /(virtualnetwork\.id|virtualnetworkid)$/i, label: 'linked to VNet', type: 'association', score: 3 },
+  { re: /networkinterfaces(\[\d+\])?\.id$/i, label: 'uses NIC', type: 'association', score: 3 },
+  { re: /hubresourceid$/i, label: 'part of hub', type: 'association', score: 3 },
+  { re: /networksecuritygroup\.id$/i, label: 'secured by NSG', type: 'association', score: 3 },
+  { re: /publicipaddress\.id$/i, label: 'exposed via public IP', type: 'association', score: 3 },
+];
+
+const TARGET_RULES: { re: RegExp; kind?: RegExp; label: string; type: RelationshipType }[] = [
+  { re: /^microsoft\.managedidentity\//, label: 'uses identity', type: 'association' },
+  { re: /^microsoft\.containerregistry\//, label: 'pulls images from', type: 'sync' },
+  { re: /^microsoft\.insights\/components$/, label: 'sends telemetry to', type: 'async' },
+  { re: /^microsoft\.operationalinsights\//, label: 'sends logs to', type: 'async' },
+  { re: /^microsoft\.keyvault\//, label: 'reads secrets from', type: 'sync' },
+  { re: /^microsoft\.cache\//, label: 'caches data in', type: 'sync' },
+  { re: /^microsoft\.(documentdb|sql|dbformysql|dbforpostgresql)\//, label: 'reads/writes data', type: 'sync' },
+  { re: /^microsoft\.storage\//, label: 'stores data in', type: 'sync' },
+  { re: /^microsoft\.search\//, label: 'queries index', type: 'sync' },
+  { re: /^microsoft\.cognitiveservices\//, kind: /^speechservices$/, label: 'uses Speech', type: 'sync' },
+  { re: /^microsoft\.cognitiveservices\//, kind: /^formrecognizer$/, label: 'extracts documents with', type: 'sync' },
+  { re: /^microsoft\.cognitiveservices\//, label: 'calls AI models', type: 'sync' },
+  { re: /^microsoft\.machinelearningservices\//, label: 'calls ML workspace', type: 'sync' },
+  { re: /^microsoft\.servicebus\//, label: 'sends messages to', type: 'async' },
+  { re: /^microsoft\.eventhub\//, label: 'streams events to', type: 'async' },
+  { re: /^microsoft\.eventgrid\//, label: 'publishes events to', type: 'async' },
+  { re: /^microsoft\.apimanagement\//, label: 'calls APIs via', type: 'sync' },
+  { re: /^microsoft\.web\/serverfarms$/, label: 'runs on plan', type: 'association' },
+  { re: /^microsoft\.app\/managedenvironments$/, label: 'runs in', type: 'association' },
+  { re: /^microsoft\.network\/virtualnetworks$/, label: 'deployed in VNet', type: 'association' },
+  { re: /^microsoft\.network\/privateendpoints$/, label: 'private endpoint', type: 'association' },
+  { re: /^microsoft\.network\/networksecuritygroups$/, label: 'secured by NSG', type: 'association' },
+  { re: /^microsoft\.network\/publicipaddresses$/, label: 'exposed via public IP', type: 'association' },
+  { re: /^microsoft\.network\/networkinterfaces$/, label: 'uses NIC', type: 'association' },
+  { re: /^microsoft\.web\/sites$/, label: 'calls', type: 'sync' },
+];
+
+/**
+ * Describe the relationship from a resource to a resource it references.
+ * `path` is the dotted property path that held the reference ('' when the
+ * evidence is a bare dependsOn entry).
+ */
+export function classifyRelationship(
+  sourceType: string,
+  targetType: string,
+  targetKind = '',
+  path = '',
+  fallbackLabel = 'references',
+): Relationship {
+  const src = sourceType.toLowerCase();
+  const tgt = targetType.toLowerCase();
+  if (src === 'microsoft.network/privateendpoints' && !tgt.startsWith('microsoft.network/')) {
+    return { label: 'private link to', type: 'sync', score: 4 };
+  }
+  if (src === 'microsoft.insights/components' && tgt.startsWith('microsoft.operationalinsights/')) {
+    return { label: 'stores telemetry in', type: 'async', score: 3 };
+  }
+  if ((src === 'microsoft.network/networksecuritygroups' || src === 'microsoft.network/routetables')
+    && tgt === 'microsoft.network/virtualnetworks') {
+    return { label: src.endsWith('routetables') ? 'routes subnet in' : 'secures subnet in', type: 'association', score: 3 };
+  }
+  if (src === 'microsoft.eventgrid/systemtopics' && (!path || /^source$/i.test(path))) {
+    return { label: 'publishes events to', type: 'async', score: 3, reverse: true };
+  }
+  for (const rule of PATH_RULES) {
+    if (path && rule.re.test(path)) return { label: rule.label, type: rule.type, score: rule.score };
+  }
+  const kind = targetKind.toLowerCase();
+  for (const rule of TARGET_RULES) {
+    if (rule.re.test(tgt) && (!rule.kind || rule.kind.test(kind))) return { label: rule.label, type: rule.type, score: 2 };
+  }
+  return { label: fallbackLabel, type: 'sync', score: 0 };
+}
+
+/**
+ * Visit every string value (and object key, which is where ARM puts
+ * userAssignedIdentities resource ids) with its dotted path.
+ */
+export function walkStrings(value: unknown, visit: (path: string, text: string) => void, path = ''): void {
+  if (typeof value === 'string') { visit(path, value); return; }
+  if (Array.isArray(value)) { value.forEach((v, i) => walkStrings(v, visit, `${path}[${i}]`)); return; }
+  if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      const childPath = path ? `${path}.${k}` : k;
+      if (/[/(]/.test(k)) visit(childPath, k);
+      walkStrings(v, visit, childPath);
+    }
+  }
+}
+
+/**
+ * Collects edges keeping one per unordered pair: the strongest evidence wins
+ * (and sets the direction); ties keep the first seen. Insertion order is kept.
+ */
+export class EdgeCollector {
+  private readonly edges = new Map<string, { from: string; to: string } & Relationship>();
+
+  add(from: string, to: string, rel: Relationship): void {
+    if (from === to) return;
+    if (rel.reverse) [from, to] = [to, from];
+    const key = from < to ? `${from}|${to}` : `${to}|${from}`;
+    const existing = this.edges.get(key);
+    if (existing && existing.score >= rel.score) return;
+    if (existing) { Object.assign(existing, { from, to, ...rel }); return; }
+    this.edges.set(key, { from, to, ...rel });
+  }
+
+  list(): { from: string; to: string; label: string; type: string }[] {
+    return [...this.edges.values()].map(({ from, to, label, type }) => ({ from, to, label, type }));
+  }
 }
 
 /** Build a stable service id from type + name. */
@@ -319,15 +451,12 @@ export function extractArchitectureFromArm(template: any): ArmExtractResult {
   }
 
   // ── Edges from dependsOn + resourceId()/reference() references ──────────────
-  const connections: ArmExtractResult['architecture']['connections'] = [];
-  const edgeSeen = new Set<string>();
-
-  const addEdge = (from: string, to: string) => {
-    if (from === to) return;
-    const key = `${from}->${to}`;
-    if (edgeSeen.has(key) || edgeSeen.has(`${to}->${from}`)) return;
-    edgeSeen.add(key);
-    connections.push({ from, to, label: 'depends on', type: 'sync' });
+  const edges = new EdgeCollector();
+  const addEdge = (from: typeof services[number], to: typeof services[number], path = '') => {
+    const target = svcFlat.get(to.id);
+    const source = svcFlat.get(from.id);
+    if (!source || !target) return;
+    edges.add(from.id, to.id, classifyRelationship(source.armType, target.armType, target.kind, path, 'depends on'));
   };
 
   // Resolve a resourceId('<type>', ...) expression to a target service.
@@ -363,18 +492,20 @@ export function extractArchitectureFromArm(template: any): ArmExtractResult {
     // dependsOn edges
     for (const dep of fr.dependsOn) {
       const target = resolveRef(dep);
-      if (target) addEdge(svc.id, target.id);
+      if (target) addEdge(svc, target);
     }
-    // resourceId()/reference() references inside properties
-    const refExprs = [
-      ...fr.propsText.matchAll(/resourceId\([^)]*\)/gi),
-      ...fr.propsText.matchAll(/reference\([^)]*\)/gi),
-    ].map(m => m[0]);
-    for (const expr of refExprs) {
-      const target = resolveRef(expr);
-      if (target && target.id !== svc.id) addEdge(svc.id, target.id);
-    }
+    // resourceId()/reference() references inside properties and identity,
+    // labelled by the property path that holds them.
+    const scan = (path: string, text: string) => {
+      for (const m of text.matchAll(/(resourceId|reference)\([^)]*\)/gi)) {
+        const target = resolveRef(m[0]);
+        if (target && target.id !== svc.id) addEdge(svc, target, path);
+      }
+    };
+    walkStrings(fr.props, scan);
+    walkStrings(fr.identity, scan, 'identity');
   });
+  const connections = edges.list();
 
   // ── Groups (only zones that ended up with services) ────────────────────────
   const usedGroupIds = new Set(services.map(s => s.groupId));

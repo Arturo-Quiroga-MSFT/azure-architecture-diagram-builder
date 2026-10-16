@@ -17,6 +17,7 @@
     "pricing:audit": "node scripts/audit-pricing-coverage.mjs",
     "pricing:audit-semantics": "tsx scripts/audit-pricing-semantics.ts",
     "test:arm": "node scripts/test-arm-extractor.mjs",
+    "test:resource-graph": "tsx scripts/test-resource-graph-import.ts",
     "test:dagre-migration": "tsx scripts/test-dagre-migration.ts",
     "test:layout-preservation": "tsx scripts/test-layout-preservation.ts",
     "test:refinement-containment": "tsx scripts/test-refinement-group-containment.ts",
