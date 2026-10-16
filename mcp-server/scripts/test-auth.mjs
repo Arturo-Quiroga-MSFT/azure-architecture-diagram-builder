@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from 'jose';
-import { authorizeRequest, loadAuthConfig, protectedResourceMetadata, verifyEntraToken } from '../dist/auth.js';
+import { authorizeRequest, hashClientKey, loadAuthConfig, parseClientKeys, protectedResourceMetadata, verifyEntraToken } from '../dist/auth.js';
 
 const CLIENT_ID = '11111111-2222-3333-4444-555555555555';
 const TID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
@@ -62,6 +62,26 @@ assert.equal((await authorizeRequest('Bearer wrong-static', both, keys)).error, 
 assert.equal((await authorizeRequest(`Bearer ${await token()}`, both, keys)).method, 'entra');
 assert.deepEqual(await authorizeRequest(undefined, {}, keys), { ok: true, method: 'none' });
 
+// ── Named client keys ──────────────────────────────────────────────────────
+const COPILOT_KEY = 'aadb_ck_test-copilot-key-value';
+const PARTNER_KEY = 'aadb_ck_test-partner-key-value';
+const clientKeys = parseClientKeys(`azure-copilot=${hashClientKey(COPILOT_KEY)}, partner-x=${hashClientKey(PARTNER_KEY).toUpperCase()}`);
+assert.deepEqual(clientKeys.map(k => k.name), ['azure-copilot', 'partner-x']);
+assert.deepEqual(parseClientKeys(undefined), []);
+assert.deepEqual(parseClientKeys(' none '), [], 'deploy placeholder means no keys');
+assert.throws(() => parseClientKeys('Bad Name=abc'), /invalid entry/);
+assert.throws(() => parseClientKeys(`a=${'0'.repeat(63)}`), /invalid entry/, 'short hash');
+assert.throws(() => parseClientKeys(`a=${'0'.repeat(64)},a=${'1'.repeat(64)}`), /duplicate/);
+const withKeys = { ...both, clientKeys };
+assert.deepEqual(await authorizeRequest(`Bearer ${COPILOT_KEY}`, withKeys, keys), { ok: true, method: 'client-key', client: 'azure-copilot' });
+assert.deepEqual(await authorizeRequest(undefined, withKeys, keys, PARTNER_KEY), { ok: true, method: 'client-key', client: 'partner-x' }, 'X-API-Key header');
+assert.equal((await authorizeRequest(undefined, withKeys, keys, 'wrong-key')).error, 'invalid_token', 'bad X-API-Key');
+assert.equal((await authorizeRequest(`Bearer ${COPILOT_KEY}`, both, keys)).error, 'invalid_token', 'revoked key (not configured)');
+assert.equal((await authorizeRequest(undefined, withKeys, keys, 'static-secret-value')).error, 'invalid_token', 'static token is not an API key');
+assert.deepEqual(await authorizeRequest(`Bearer ${COPILOT_KEY}`, { clientKeys }, keys), { ok: true, method: 'client-key', client: 'azure-copilot' }, 'keys alone enable auth');
+assert.equal((await authorizeRequest(undefined, { clientKeys }, keys)).error, 'missing_token', 'keys alone close the endpoint');
+assert.equal(loadAuthConfig({ MCP_CLIENT_KEYS: `azure-copilot=${hashClientKey(COPILOT_KEY)}` }).clientKeys[0].name, 'azure-copilot');
+
 // ── Config + metadata ──────────────────────────────────────────────────────
 const cfg = loadAuthConfig({ MCP_ENTRA_CLIENT_ID: CLIENT_ID, MCP_ENTRA_ALLOWED_TENANTS: ` ${TID.toUpperCase()} ` });
 assert.deepEqual(cfg.entra.allowedTenants, [TID]);
@@ -78,7 +98,7 @@ const port = await new Promise((resolve, reject) => {
   s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => resolve(p)); });
 });
 const child = spawn(process.execPath, ['dist/index.js', '--http'], {
-  env: { ...process.env, MCP_HTTP_PORT: String(port), MCP_HTTP_HOST: '127.0.0.1', MCP_ENTRA_CLIENT_ID: CLIENT_ID, MCP_AUTH_TOKEN: 'static-secret-value' },
+  env: { ...process.env, MCP_HTTP_PORT: String(port), MCP_HTTP_HOST: '127.0.0.1', MCP_ENTRA_CLIENT_ID: CLIENT_ID, MCP_AUTH_TOKEN: 'static-secret-value', MCP_CLIENT_KEYS: `azure-copilot=${hashClientKey(COPILOT_KEY)}` },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 let stderr = '';
@@ -134,6 +154,29 @@ try {
   const toolRec = records.find(r => r.tools?.includes('list_services'));
   assert.deepEqual(toolRec?.toolResults?.map(t => [t.tool, t.ok]), [['list_services', true]], 'usage log: tool outcome');
   assert.ok(!stdout.includes('static-secret-value') && !stdout.includes('databases'), 'usage log never contains tokens or tool arguments');
+  const postWith = (headers) => fetch(`${base}/mcp`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', ...headers },
+    body: JSON.stringify({ ...init, params: { ...init.params, clientInfo: { name: 'azure-copilot-test', version: '1' } } }),
+  });
+  res = await postWith({ authorization: `Bearer ${COPILOT_KEY}` });
+  assert.equal(res.status, 200, 'client key as bearer token');
+  await res.text();
+  res = await postWith({ 'x-api-key': COPILOT_KEY });
+  assert.equal(res.status, 200, 'client key in X-API-Key');
+  await res.text();
+  res = await postWith({ 'x-api-key': PARTNER_KEY });
+  assert.equal(res.status, 401, 'unconfigured client key rejected');
+  await res.text();
+  const cors = await fetch(`${base}/mcp`, { method: 'OPTIONS' });
+  assert.match(cors.headers.get('access-control-allow-headers') ?? '', /X-API-Key/, 'CORS allows X-API-Key');
+  await new Promise(r => setTimeout(r, 200));
+  const keyRecs = usageRecords().filter(r => r.auth === 'client-key');
+  assert.equal(keyRecs.length, 2, 'usage log: client-key calls');
+  assert.ok(keyRecs.every(r => r.clientKey === 'azure-copilot'), 'usage log: client attribution');
+  assert.ok(!stdout.includes(COPILOT_KEY) && !stdout.includes(PARTNER_KEY), 'usage log never contains client keys');
+  assert.match(stderr, /Client keys accepted on \/mcp: azure-copilot/);
+  assert.ok(!stderr.includes(COPILOT_KEY), 'startup log never contains client keys');
   assert.equal((await fetch(`${base}/healthz`)).status, 200, 'health stays open');
 } catch (err) {
   console.error(stderr);

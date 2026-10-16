@@ -30,8 +30,10 @@ export interface UsageRecord {
   status: number;
   durationMs: number;
   httpMethod: string;
-  auth: 'entra' | 'static' | 'none' | 'rejected';
+  auth: 'entra' | 'static' | 'client-key' | 'none' | 'rejected';
   authError?: string;
+  /** Named client for `client-key` auth. */
+  clientKey?: string;
   tenantId?: string;
   objectId?: string;
   userAgent?: string;
@@ -82,6 +84,7 @@ export function formatUsageRecord(record: UsageRecord, now: Date = new Date()): 
     httpMethod: record.httpMethod,
     auth: record.auth,
     authError: record.authError,
+    clientKey: record.clientKey,
     tenantId: record.tenantId,
     objectId: record.objectId,
     userAgent: clip(record.userAgent),

@@ -1930,6 +1930,8 @@ server.registerPrompt(
 //   MCP_ENTRA_ALLOWED_TENANTS — optional comma-separated tenant ID allow-list
 //   MCP_PUBLIC_URL      — public base URL (default: derived from forwarded headers)
 //   MCP_AUTH_TOKEN      — static bearer token accepted alongside Entra tokens.
+//   MCP_CLIENT_KEYS     — named client keys as `name=<sha256 hex>` entries
+//                         (comma-separated); sent as a bearer token or X-API-Key.
 //   With neither Entra nor a static token configured the endpoint is open
 //   (local/dev behavior). The health probe is always open.
 //
@@ -1998,6 +2000,9 @@ async function startHttp(): Promise<void> {
       `${authConfig.entra.allowedTenants.length ? `, tenants ${authConfig.entra.allowedTenants.join(',')}` : ', any organization'})`);
   }
   if (authConfig.staticToken) console.error('[mcp-http] Static bearer token accepted on', mcpPath);
+  if (authConfig.clientKeys?.length) {
+    console.error(`[mcp-http] Client keys accepted on ${mcpPath}: ${authConfig.clientKeys.map(k => k.name).join(', ')}`);
+  }
   if (!isAuthEnabled(authConfig)) {
     console.error('[mcp-http] WARNING: no MCP_ENTRA_CLIENT_ID or MCP_AUTH_TOKEN set — endpoint is OPEN (no auth)');
   }
@@ -2050,14 +2055,14 @@ async function startHttp(): Promise<void> {
         res.writeHead(204, {
           'Allow': 'GET, POST, DELETE, OPTIONS',
           'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Authorization, Content-Type, Mcp-Session-Id, MCP-Protocol-Version, Last-Event-ID, Accept',
+          'Access-Control-Allow-Headers': 'Authorization, X-API-Key, Content-Type, Mcp-Session-Id, MCP-Protocol-Version, Last-Event-ID, Accept',
         });
         res.end();
         return;
       }
 
-      // Authorization gate: an Entra access token for this API or the static token.
-      const auth = await authorizeRequest(req.headers['authorization'], authConfig);
+      // Authorization gate: an Entra access token for this API, a named client key, or the static token.
+      const auth = await authorizeRequest(req.headers['authorization'], authConfig, undefined, req.headers['x-api-key']);
       const userAgent = req.headers['user-agent'];
       if (!auth.ok) {
         res.once('finish', () => logUsage({
@@ -2093,6 +2098,7 @@ async function startHttp(): Promise<void> {
         res.once('finish', () => logUsage({
           status: res.statusCode, durationMs: Date.now() - started, httpMethod: req.method ?? '',
           auth: auth.method,
+          clientKey: auth.method === 'client-key' ? auth.client : undefined,
           tenantId: auth.method === 'entra' ? auth.tenantId : undefined,
           objectId: auth.method === 'entra' ? auth.objectId : undefined,
           userAgent, rpc, toolResults,

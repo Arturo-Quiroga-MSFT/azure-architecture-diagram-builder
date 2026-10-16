@@ -10,7 +10,7 @@ let McpRequests = ContainerAppConsoleLogs_CL
 | where Log_s startswith "{" and Log_s has "\"mcp_request\""
 | extend r = parse_json(Log_s)
 | project TimeGenerated, Status = toint(r.status), DurationMs = toint(r.durationMs),
-    Auth = tostring(r.auth), AuthError = tostring(r.authError),
+    Auth = tostring(r.auth), AuthError = tostring(r.authError), ClientKey = tostring(r.clientKey),
     TenantId = tostring(r.tenantId), ObjectId = tostring(r.objectId),
     ClientName = tostring(r.clientName), ClientVersion = tostring(r.clientVersion),
     UserAgent = tostring(r.userAgent), RpcMethods = r.rpcMethods, Tools = r.tools,
@@ -25,6 +25,7 @@ McpRequests
     EntraUsers = dcountif(ObjectId, Auth == "entra" and isnotempty(ObjectId)),
     Tenants = dcountif(TenantId, isnotempty(TenantId)),
     StaticTokenCalls = countif(Auth == "static"),
+    ClientKeyCalls = countif(Auth == "client-key"),
     ToolCalls = countif(array_length(Tools) > 0)
   by Day = bin(TimeGenerated, 1d)
 | order by Day desc
@@ -35,6 +36,14 @@ McpRequests
 // | summarize FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated), Requests = count(),
 //     ToolCalls = countif(array_length(Tools) > 0), Clients = make_set_if(ClientName, isnotempty(ClientName))
 //   by TenantId, ObjectId
+// | order by LastSeen desc
+
+// ── 2b. Service integrations using named client keys (e.g. azure-copilot) ─
+// McpRequests
+// | where TimeGenerated > ago(30d) and Auth == "client-key"
+// | summarize FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated), Requests = count(),
+//     ToolCalls = countif(array_length(Tools) > 0), Clients = make_set_if(ClientName, isnotempty(ClientName))
+//   by ClientKey
 // | order by LastSeen desc
 
 // ── 3. Sign-in / auth failures by reason (e.g. a user stuck on OAuth) ─────

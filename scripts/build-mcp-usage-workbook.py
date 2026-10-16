@@ -16,7 +16,7 @@ BASE = (
     '| where Log_s startswith "{" and Log_s has "\\"mcp_request\\""\n'
     '| extend r = parse_json(Log_s)\n'
     '| project TimeGenerated, Status = toint(r.status), DurationMs = toint(r.durationMs),\n'
-    '    Auth = tostring(r.auth), AuthError = tostring(r.authError),\n'
+    '    Auth = tostring(r.auth), AuthError = tostring(r.authError), ClientKey = tostring(r.clientKey),\n'
     '    TenantId = tostring(r.tenantId), ObjectId = tostring(r.objectId),\n'
     '    ClientName = tostring(r.clientName), ClientVersion = tostring(r.clientVersion),\n'
     '    UserAgent = tostring(r.userAgent), RpcMethods = r.rpcMethods, Tools = r.tools,\n'
@@ -96,7 +96,7 @@ items = [
           "| order by Count desc"),
     query("clients", "MCP clients in use (from initialize)",
           "McpRequests\n| where RpcMethods has 'initialize'\n"
-          "| summarize Sessions = count(), Users = dcount(ObjectId) by ClientName, ClientVersion, Auth\n| order by Sessions desc",
+          "| summarize Sessions = count(), Users = dcount(ObjectId) by ClientName, ClientVersion, Auth, ClientKey\n| order by Sessions desc",
           viz="table"),
     query("errors", "Recent tool errors",
           "McpRequests\n| mv-expand T = ToolResults\n| where tobool(T.ok) == false\n"
