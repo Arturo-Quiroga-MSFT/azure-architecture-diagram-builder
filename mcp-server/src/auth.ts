@@ -13,9 +13,15 @@
  *
  * A static bearer token (MCP_AUTH_TOKEN) is still accepted for clients that
  * cannot do OAuth (connector wizards, scripts). Either credential is enough.
+ *
+ * Named client keys (MCP_CLIENT_KEYS) serve service-to-service integrations
+ * from other tenants, where Entra sign-in would need guest accounts or
+ * cross-tenant consent. Only SHA-256 hashes are configured; each key can be
+ * revoked on its own and its calls are attributed to the client name. Keys
+ * are accepted as a bearer token or in the X-API-Key header.
  */
 
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey, type JWTPayload } from 'jose';
 
 export interface EntraAuthConfig {
@@ -35,13 +41,22 @@ export interface EntraAuthConfig {
   extraAudiences?: string[];
 }
 
+export interface ClientKey {
+  /** Client name used in usage telemetry, e.g. `azure-copilot`. */
+  name: string;
+  /** Hex SHA-256 of the key. */
+  sha256: string;
+}
+
 export interface McpAuthConfig {
   entra?: EntraAuthConfig;
   staticToken?: string;
+  clientKeys?: ClientKey[];
 }
 
 export type AuthResult =
   | { ok: true; method: 'entra'; tenantId: string; objectId?: string }
+  | { ok: true; method: 'client-key'; client: string }
   | { ok: true; method: 'static' | 'none' }
   | { ok: false; error: 'missing_token' | 'invalid_token' | 'insufficient_scope'; description: string };
 
@@ -49,6 +64,7 @@ export function loadAuthConfig(env: NodeJS.ProcessEnv = process.env): McpAuthCon
   const clientId = env.MCP_ENTRA_CLIENT_ID?.trim();
   return {
     staticToken: env.MCP_AUTH_TOKEN?.trim() || undefined,
+    clientKeys: parseClientKeys(env.MCP_CLIENT_KEYS),
     entra: clientId
       ? {
           clientId,
@@ -62,6 +78,42 @@ export function loadAuthConfig(env: NodeJS.ProcessEnv = process.env): McpAuthCon
   };
 }
 
+const CLIENT_NAME = /^[a-z0-9][a-z0-9-]{0,62}$/;
+const SHA256_HEX = /^[0-9a-f]{64}$/;
+
+/**
+ * Parse `name=sha256hex` entries separated by commas or whitespace. `none` is
+ * the deploy-time placeholder for "no keys" (Container Apps secrets cannot be empty).
+ */
+export function parseClientKeys(raw: string | undefined): ClientKey[] {
+  const keys: ClientKey[] = [];
+  if (raw?.trim().toLowerCase() === 'none') return keys;
+  for (const entry of (raw ?? '').split(/[\s,]+/).filter(Boolean)) {
+    const [name, hash] = entry.split('=').map(part => part?.trim().toLowerCase());
+    if (!CLIENT_NAME.test(name ?? '') || !SHA256_HEX.test(hash ?? '')) {
+      throw new Error(`MCP_CLIENT_KEYS: invalid entry '${entry.split('=')[0]}=…' (expected name=<sha256 hex>)`);
+    }
+    if (keys.some(k => k.name === name)) throw new Error(`MCP_CLIENT_KEYS: duplicate client '${name}'`);
+    keys.push({ name, sha256: hash });
+  }
+  return keys;
+}
+
+export function hashClientKey(key: string): string {
+  return createHash('sha256').update(key, 'utf8').digest('hex');
+}
+
+function matchClientKey(token: string, keys: ClientKey[] | undefined): string | undefined {
+  if (!keys?.length) return undefined;
+  const digest = Buffer.from(hashClientKey(token), 'hex');
+  let match: string | undefined;
+  // Compare against every entry so timing does not reveal which client matched.
+  for (const key of keys) {
+    if (timingSafeEqual(digest, Buffer.from(key.sha256, 'hex'))) match = key.name;
+  }
+  return match;
+}
+
 function publicResourceAudiences(env: NodeJS.ProcessEnv): string[] {
   const base = env.MCP_PUBLIC_URL?.trim().replace(/\/+$/, '');
   if (!base) return [];
@@ -70,7 +122,7 @@ function publicResourceAudiences(env: NodeJS.ProcessEnv): string[] {
 }
 
 export function isAuthEnabled(config: McpAuthConfig): boolean {
-  return Boolean(config.entra || config.staticToken);
+  return Boolean(config.entra || config.staticToken || config.clientKeys?.length);
 }
 
 /** Resource identifier advertised in metadata and expected as token audience. */
@@ -159,14 +211,23 @@ export async function authorizeRequest(
   authorizationHeader: string | string[] | undefined,
   config: McpAuthConfig,
   keys?: JWTVerifyGetKey,
+  apiKeyHeader?: string | string[],
 ): Promise<AuthResult> {
   if (!isAuthEnabled(config)) return { ok: true, method: 'none' };
+  const apiKey = (Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader)?.trim();
+  if (apiKey) {
+    const client = matchClientKey(apiKey, config.clientKeys);
+    if (client) return { ok: true, method: 'client-key', client };
+    return { ok: false, error: 'invalid_token', description: 'The API key is not valid.' };
+  }
   const header = Array.isArray(authorizationHeader) ? authorizationHeader[0] : authorizationHeader;
   const match = header?.match(/^Bearer\s+(\S+)\s*$/i);
   if (!match) return { ok: false, error: 'missing_token', description: 'A bearer token is required.' };
   const token = match[1];
 
   if (config.staticToken && safeEqual(token, config.staticToken)) return { ok: true, method: 'static' };
+  const client = matchClientKey(token, config.clientKeys);
+  if (client) return { ok: true, method: 'client-key', client };
   // Only JWT-shaped tokens go to Entra validation.
   if (config.entra && token.split('.').length === 3) return verifyEntraToken(token, config.entra, keys);
   return { ok: false, error: 'invalid_token', description: 'The bearer token is not valid.' };

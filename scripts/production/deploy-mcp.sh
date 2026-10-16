@@ -11,6 +11,8 @@
 #   VS Code / GitHub Copilot, plus a static bearer token fallback for clients
 #   that cannot do OAuth. The static token is generated once and kept in
 #   .env.mcp.<target> (gitignored).
+# - Named client keys (MCP_CLIENT_KEYS hashes in .env.mcp.<target>, managed
+#   with mcp-client-key.sh) for cross-tenant service-to-service connectors.
 # - Verifies health, Protected Resource Metadata and the 401 challenge after
 #   the rollout; keeps the previous revision for rollback.
 #
@@ -85,7 +87,11 @@ PUBLIC_URL="https://$FQDN"
 PREVIOUS_REVISION="$(az containerapp show -n "$MCP_APP" -g "$RG" --query properties.latestReadyRevisionName -o tsv)"
 
 # ── 3. Roll out the real image with auth configuration ─────────────────────
-az containerapp secret set -n "$MCP_APP" -g "$RG" --secrets "mcp-auth-token=$MCP_AUTH_TOKEN" -o none
+CLIENT_KEYS_SECRET="${MCP_CLIENT_KEYS:-none}"
+PREVIOUS_CLIENT_KEYS="$(az containerapp secret show -n "$MCP_APP" -g "$RG" --secret-name mcp-client-keys \
+  --query value -o tsv 2>/dev/null || true)"
+az containerapp secret set -n "$MCP_APP" -g "$RG" \
+  --secrets "mcp-auth-token=$MCP_AUTH_TOKEN" "mcp-client-keys=$CLIENT_KEYS_SECRET" -o none
 ENV_VARS=(
   "MCP_AUTH_TOKEN=secretref:mcp-auth-token"
   "MCP_HTTP_HOST=0.0.0.0" "MCP_HTTP_PORT=3030" "MCP_HTTP_PATH=/mcp"
@@ -93,9 +99,20 @@ ENV_VARS=(
 )
 [[ -n "${MCP_ENTRA_CLIENT_ID:-}" ]] && ENV_VARS+=("MCP_ENTRA_CLIENT_ID=$MCP_ENTRA_CLIENT_ID")
 [[ -n "${MCP_ENTRA_ALLOWED_TENANTS:-}" ]] && ENV_VARS+=("MCP_ENTRA_ALLOWED_TENANTS=$MCP_ENTRA_ALLOWED_TENANTS")
+[[ -n "${MCP_CLIENT_KEYS:-}" ]] && ENV_VARS+=("MCP_CLIENT_KEYS=secretref:mcp-client-keys")
 
 if az containerapp revision show -n "$MCP_APP" -g "$RG" --revision "$MCP_APP--$REV_SUFFIX" -o none 2>/dev/null; then
   echo "✓ Revision $MCP_APP--$REV_SUFFIX already exists"
+  if [[ "$PREVIOUS_CLIENT_KEYS" != "$CLIENT_KEYS_SECRET" ]]; then
+    HAS_KEYS_ENV="$(az containerapp revision show -n "$MCP_APP" -g "$RG" --revision "$MCP_APP--$REV_SUFFIX" \
+      --query "properties.template.containers[0].env[?name=='MCP_CLIENT_KEYS'] | length(@)" -o tsv)"
+    if [[ "$HAS_KEYS_ENV" == "0" && -n "${MCP_CLIENT_KEYS:-}" ]]; then
+      echo "❌ Client keys changed but this revision has no MCP_CLIENT_KEYS setting; deploy a new commit." >&2
+      exit 1
+    fi
+    az containerapp revision restart -n "$MCP_APP" -g "$RG" --revision "$MCP_APP--$REV_SUFFIX" -o none
+    echo "  ✓ Client keys updated; revision restarted"
+  fi
 else
   echo "🚀 Rolling out $ACR_IMAGE ..."
   az containerapp ingress update -n "$MCP_APP" -g "$RG" --target-port 3030 -o none
@@ -116,4 +133,5 @@ echo ""
 echo "✅ MCP server deployed: $PUBLIC_URL/mcp"
 echo "   Image: $ACR_IMAGE"
 echo "   Auth: Entra OAuth${MCP_ENTRA_CLIENT_ID:+ (client $MCP_ENTRA_CLIENT_ID)} + static token in $(basename "$TOKEN_FILE")"
+[[ -n "${MCP_CLIENT_KEYS:-}" ]] && echo "   Client keys: $(printf '%s' "$MCP_CLIENT_KEYS" | tr ',' '\n' | cut -d= -f1 | paste -sd, -)"
 [[ -n "$PREVIOUS_REVISION" ]] && echo "   Previous revision: $PREVIOUS_REVISION"
