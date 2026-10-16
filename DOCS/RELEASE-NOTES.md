@@ -6,7 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v2.1.6` | 2026-10-16 | Imported diagrams: meaningful edge labels, real resource names, compact group layout, fresh titles; MCP client keys | Pending deployment |
+| `v2.1.6` | 2026-10-16 | Imported diagrams: meaningful edge labels, real resource names, compact group layout, fresh titles; MCP client keys | Deployed |
 | `v2.1.5` | 2026-10-12 | Narrator selector (avatar and voice), avatar session-leak fix, dependency vulnerabilities fixed | Deployed |
 | `v2.0.7` | 2026-09-28 | Bottom dock for canvas details; dismissible pop-ups; Private Connectivity lines and labels | Deployed |
 | `v2.0.6` | 2026-09-26 | Vite 8 toolchain; no open Dependabot alerts; lockfiles install through the Microsoft package proxy | Deployed |
