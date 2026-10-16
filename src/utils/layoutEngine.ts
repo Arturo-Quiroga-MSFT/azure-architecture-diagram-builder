@@ -179,10 +179,20 @@ function layoutGroupMembers(
   const memberIds = new Set(members.map(member => member.id));
   const privateEndpointLayout = layoutPrivateEndpointPairs(members, connections, options);
   if (privateEndpointLayout) return privateEndpointLayout;
+  const nodesep = Math.max(90, Math.round(options.nodeSpacing * 0.45));
+  const internalFlows = connections.filter(connection =>
+    !isSemanticRelationship(connection) && connection.from !== connection.to
+    && memberIds.has(connection.from) && memberIds.has(connection.to));
+  // With no flow between members Dagre puts them all in one rank, i.e. a
+  // single line as long as the group. A near-square grid is compact and
+  // easier to rearrange by hand.
+  if (internalFlows.length === 0 && members.length >= 3) {
+    return layoutMembersAsGrid(members, nodesep, direction);
+  }
   const graph = new dagre.graphlib.Graph();
   graph.setGraph({
     rankdir: direction,
-    nodesep: Math.max(90, Math.round(options.nodeSpacing * 0.45)),
+    nodesep,
     ranksep: Math.max(180, Math.round(options.rankSpacing * 0.75)),
     marginx: 0,
     marginy: 0,
@@ -191,11 +201,7 @@ function layoutGroupMembers(
   graph.setDefaultEdgeLabel(() => ({}));
 
   members.forEach(member => graph.setNode(member.id, { width: NODE_WIDTH, height: NODE_HEIGHT }));
-  connections.forEach(connection => {
-    if (!isSemanticRelationship(connection) && connection.from !== connection.to && memberIds.has(connection.from) && memberIds.has(connection.to)) {
-      graph.setEdge(connection.from, connection.to, dagreEdgeOptions(connection));
-    }
-  });
+  internalFlows.forEach(connection => graph.setEdge(connection.from, connection.to, dagreEdgeOptions(connection)));
   dagre.layout(graph);
 
   let minX = Infinity;
@@ -221,6 +227,35 @@ function layoutGroupMembers(
   });
 
   return { positions, width: maxX - minX, height: maxY - minY };
+}
+
+// Members fill rows (TB/BT) or columns (LR/RL) in input order, which keeps
+// same-type services next to each other.
+function layoutMembersAsGrid(
+  members: LayoutService[],
+  gap: number,
+  direction: LayoutOptions['direction']
+): GroupSubLayout {
+  const lines = Math.ceil(Math.sqrt(members.length));
+  const perLine = Math.ceil(members.length / lines);
+  const vertical = direction === 'TB' || direction === 'BT';
+  const columns = vertical ? perLine : lines;
+  const rows = vertical ? lines : perLine;
+  const positions = new Map<string, { x: number; y: number }>();
+  members.forEach((member, index) => {
+    const major = Math.floor(index / perLine);
+    const minor = index % perLine;
+    const col = vertical ? minor : major;
+    const row = vertical ? major : minor;
+    positions.set(member.id, { x: col * (NODE_WIDTH + gap), y: row * (NODE_HEIGHT + gap) });
+  });
+  const usedColumns = vertical ? Math.min(columns, members.length) : Math.ceil(members.length / perLine);
+  const usedRows = vertical ? Math.ceil(members.length / perLine) : Math.min(rows, members.length);
+  return {
+    positions,
+    width: usedColumns * NODE_WIDTH + Math.max(0, usedColumns - 1) * gap,
+    height: usedRows * NODE_HEIGHT + Math.max(0, usedRows - 1) * gap,
+  };
 }
 
 // Dagre centres every node of a rank on one axis line, so a narrow group beside
