@@ -155,6 +155,12 @@ const PROMPT_CLAMP_CHARS = 200;
 // (used as a fallback when no manifest title is available). Strips common
 // prefixes like "MODIFY EXISTING ARCHITECTURE: ...", "Build a", "Design a",
 // then takes the first ~8 words and title-cases them.
+// Diagram title for an imported template: the file name without extension.
+function importTitle(filename: string): string {
+  const base = filename.replace(/^.*[\\/]/, '').replace(/\.(json|bicep|tf|tfstate|tfvars)$/i, '').trim();
+  return base || 'Imported Architecture';
+}
+
 function deriveTitleFromPrompt(prompt: string | undefined | null): string | undefined {
   if (!prompt) return undefined;
   let p = String(prompt).trim();
@@ -2153,7 +2159,8 @@ function App() {
       // A generation while a diagram already exists is a refinement (the modal
       // builds a modification prompt); only the first, from-empty generation
       // establishes the original brief.
-      const isRefinement = nodes.length > 0;
+      // Imports describe a whole new architecture, never a tweak of the canvas.
+      const isRefinement = nodes.length > 0 && !architecture?.isImport;
       const validationTransition = resolveValidationFreshness(
         validationResult !== null,
         preserveValidationForRecheck,
@@ -2439,15 +2446,28 @@ function App() {
     }
 
     // Create service nodes with calculated positions
+    const previousResourceNames = new Map(
+      nodes.filter(n => n.type === 'azureNode' && n.data?.resourceName).map(n => [n.id, n.data.resourceName as string]),
+    );
     positionedServices.forEach((service: any) => {
       const icon = iconCache.get(service.id);
-      
+      // Real Azure resource name (imports), shown under the service label so
+      // two "Container Apps" nodes stay distinguishable. The label itself stays
+      // the service name because icons, pricing and validation key off it.
+      const rawResourceName = typeof service.resourceName === 'string' && service.resourceName.trim()
+        ? service.resourceName.trim()
+        : (isRefinement ? previousResourceNames.get(service.id) : undefined);
+      const resourceName = rawResourceName && rawResourceName.toLowerCase() !== String(service.name).toLowerCase()
+        ? rawResourceName
+        : undefined;
+
       const node: Node = {
         id: service.id,
         type: 'azureNode',
         position: service.position,  // ✅ Use position from layout engine
         data: {
           label: service.name,
+          ...(resourceName ? { resourceName } : {}),
           iconPath: icon?.path || '',
           // 'line' | 'badge' when behind the Private Connectivity boundary. Set
           // explicitly so a refinement that un-protects a service clears it.
@@ -2835,7 +2855,7 @@ function App() {
           clearSourceModel();
           const promptLabel = `ARM Template: ${filenames[0]}${extraCount} — ${summarizeCoverage(coverage)}`;
           trackTemplateImport('arm', filenames[0], filenames.length);
-          handleAIGenerate(architecture, promptLabel);
+          handleAIGenerate({ ...architecture, isImport: true, architectureName: importTitle(filenames[0]) }, promptLabel);
           return;
         }
         console.warn('Deterministic ARM extraction found no mappable resources; falling back to LLM.');
@@ -2866,7 +2886,7 @@ function App() {
       const promptLabel = `${detection.label} Template: ${filenames[0]}${extraCount}`;
 
       trackTemplateImport(detection.format, filenames[0], filenames.length);
-      handleAIGenerate(result, promptLabel);
+      handleAIGenerate({ ...result, isImport: true, architectureName: result.architectureName || importTitle(filenames[0]) }, promptLabel);
     } catch (error: any) {
       console.error('Template import error:', error);
       notify(`Failed to import template: ${error.message}`, 'error');
@@ -2890,7 +2910,7 @@ function App() {
     clearSourceModel();
     const promptLabel = `Azure RG: ${resourceGroup} — ${summarizeCoverage(coverage)}`;
     trackTemplateImport('arm', `rg:${resourceGroup}`, 1);
-    handleAIGenerate(architecture, promptLabel);
+    handleAIGenerate({ ...architecture, isImport: true, architectureName: `${resourceGroup} (Azure)` }, promptLabel);
   }, [handleAIGenerate]);
 
   const handleAlign = useCallback((type: string) => {

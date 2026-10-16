@@ -87,6 +87,11 @@ assert.deepEqual(edges, expected);
 assert.equal(coverage.edgeCount, expected.length);
 assert.ok(!architecture.connections.some(c => c.label === 'references'), 'no generic "references" labels');
 assert.deepEqual(coverage.skippedTypes, ['microsoft.network/privatednszones/virtualnetworklinks']);
+// Real resource names travel with each node so same-type services are distinguishable.
+assert.deepEqual(
+  architecture.services.filter(s => s.name === 'Foundry Tools').map(s => s.resourceName).sort(),
+  ['aif-demo', 'spch-demo'],
+);
 
 // Unknown reference targets keep the generic fallback label.
 const generic = buildArchitectureFromResources([

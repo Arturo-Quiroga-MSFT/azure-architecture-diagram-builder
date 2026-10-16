@@ -80,6 +80,8 @@ export function buildArchitectureFromResources(resources: ArgResource[]): ArmExt
       category: meta.category,
       description: r.name && r.name !== meta.name ? `${meta.name}: ${r.name}` : meta.name,
       groupId: usedZones.get(zone)!,
+      resourceName: String(r.name || '').split('/').pop() || undefined,
+      location: r.location || undefined,
     };
     services.push(svc);
     azIdToNode.set(r.id.toLowerCase(), svc);
