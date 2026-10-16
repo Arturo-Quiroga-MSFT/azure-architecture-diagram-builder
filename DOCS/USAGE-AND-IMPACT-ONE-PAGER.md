@@ -103,4 +103,4 @@ This tool has outgrown a hobby footprint. To sustain and scale it responsibly:
 ---
 
 _Reproduce these numbers anytime:_
-`./scripts/usage-report.sh 120` (usage) and `python3 scripts/llm-cost-report.py --days 30` (cost).
+`./scripts/usage-report-range.sh <START> <END>` (usage), `python3 scripts/generate-usage-html.py <START> <END>` (shareable HTML) and `python3 scripts/llm-cost-report.py --days 30` (cost). The scripts read the deployment target (`AADB_TARGET`, default `fdpo`); this snapshot came from the retired MCAPS resource (`AADB_TARGET=mcap094150`).

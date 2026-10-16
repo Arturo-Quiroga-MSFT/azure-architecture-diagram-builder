@@ -1,29 +1,26 @@
 #!/usr/bin/env python3
-"""llm-cost-report.py — Combined LLM cost + telemetry report.
+"""llm-cost-report.py — What AADB costs to run, and what each model costs per use.
 
-Joins ACTUAL Azure cost (Cost Management) with App Insights token telemetry
-(``AI_Model_Usage`` events) to compute cost-per-call, cost-per-user, and
-blended cost-per-1M-tokens for each model deployment.
+Joins ACTUAL Azure cost (Cost Management, the deployment target's resource
+group) with App Insights ``AI_Model_Usage`` telemetry to report:
 
-Data sources
-------------
-1. Azure Cost Management query API (via ``az rest``) — scoped to the Foundry
-   resource group, grouped by the ``deployment`` tag and by Meter.
-2. Application Insights (via ``az monitor app-insights query``) — the
-   ``AI_Model_Usage`` custom events emitted by the app.
+* total running cost by resource (hosting, models, Speech, data, networking);
+* per-model cost, calls, users, tokens, $/call and blended $/1M tokens;
+* input / output / cached cost split.
 
-The two sources are joined on the model deployment: telemetry records the
-model's display name (e.g. ``GPT-5.1``) while cost rows carry the deployment
-tag (e.g. ``gpt-5.1``). The mapping below bridges them via ``.env``.
+Model cost is attributed by **meter name**: Foundry meters name the model
+(``5.6 sol ShortCo Opt Std Gl 1M Tokens``, ``V4 Pro Outp glbl Tokens``,
+``K2.6 Thinking Inp glbl Tokens``), so no deployment tags are needed.
 
 Usage
 -----
     python3 scripts/llm-cost-report.py [--days 30]
+    AADB_TARGET=mcap094150 python3 scripts/llm-cost-report.py   # old MCAPS
 
-Requires: Azure CLI logged in (``az login``) with Cost Management Reader on the
-subscription and Reader on the Application Insights resource.
-
-Outputs a markdown + CSV report under ``Azure_cost_breakdowns/llm-cost-reports/``.
+The resource group, App Insights, subscription and CLI profile come from the
+deployment target (scripts/usage-target.sh, default: fdpo). Requires Cost
+Management Reader on the resource group and Reader on the App Insights
+resource. Writes markdown + CSV to ``usage-reports/`` (gitignored).
 """
 from __future__ import annotations
 
@@ -31,521 +28,281 @@ import argparse
 import csv
 import datetime as dt
 import json
-import os
+import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-# Repo root = parent of this script's directory.
-REPO_ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = REPO_ROOT / "Azure_cost_breakdowns" / "llm-cost-reports"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from usage_target import load_target  # noqa: E402
 
-# Defaults (overridable via CLI flags).
-# Subscription is read from the AZURE_SUBSCRIPTION_ID env var (no hardcoded ID).
-DEFAULT_SUBSCRIPTION = os.environ.get("AZURE_SUBSCRIPTION_ID", "")
-DEFAULT_RG = "AQ-FOUNDRY-RG"
-DEFAULT_APPINSIGHTS = "aq-app-insights-001"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+OUT_DIR = REPO_ROOT / "usage-reports"
 COST_API_VERSION = "2023-11-01"
 
-# Maps the .env deployment env var -> the model display name used in telemetry.
-# Mirrors MODEL_CONFIG in src/stores/modelSettingsStore.ts.
-ENVVAR_TO_DISPLAY = {
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT51": "GPT-5.1",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52": "GPT-5.2",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT52CODEX": "GPT-5.2 Codex",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT53CODEX": "GPT-5.3 Codex",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT54": "GPT-5.4",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT54MINI": "GPT-5.4 Mini",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT56SOL": "GPT-5.6 Sol",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT56TERRA": "GPT-5.6 Terra",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GPT56LUNA": "GPT-5.6 Luna",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_MAI_THINKING_1": "MAI-Thinking-1 (Preview)",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK": "DeepSeek V3.2 Speciale",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_DEEPSEEK_V4_PRO": "DeepSeek V4 Pro",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GROK4FAST": "Grok 4.1 Fast",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_GROK43": "Grok 4.3",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_MISTRALLARGE3": "Mistral Large 3",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK25": "Kimi K2.5",
-    "VITE_AZURE_OPENAI_DEPLOYMENT_KIMIK27CODE": "Kimi K2.7 Code",
-}
+# Telemetry display-name prefix -> token that appears in the meter subcategory.
+FAMILIES = [
+    ("gpt-", "openai"), ("deepseek ", "deepseek"), ("kimi ", "kimi"), ("grok ", "grok"),
+    ("mistral ", "mistral"), ("claude ", "claude"), ("mai-", "mai"),
+]
 
 
 def run(cmd: list[str], stdin: str | None = None) -> str:
-    """Run a command, returning stdout. Raises with stderr on failure."""
-    proc = subprocess.run(
-        cmd, input=stdin, capture_output=True, text=True
-    )
+    proc = subprocess.run(cmd, input=stdin, capture_output=True, text=True)
     if proc.returncode != 0:
-        raise RuntimeError(
-            f"command failed ({proc.returncode}): {' '.join(cmd)}\n{proc.stderr.strip()}"
-        )
+        raise RuntimeError(f"command failed ({proc.returncode}): {' '.join(cmd[:4])}…\n{proc.stderr.strip()}")
     return proc.stdout
 
 
-def load_env_deployments(env_path: Path) -> dict[str, str]:
-    """Parse .env -> {display_name: deployment_id} for configured models."""
-    raw: dict[str, str] = {}
-    if not env_path.exists():
-        return {}
-    for line in env_path.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, val = line.partition("=")
-        key = key.strip()
-        val = val.strip().strip('"').strip("'")
-        if key in ENVVAR_TO_DISPLAY and val:
-            raw[ENVVAR_TO_DISPLAY[key]] = val
-    return raw
+def norm(text: str) -> str:
+    return re.sub(r"[-\s]+", " ", text.lower()).strip()
 
 
-def read_env_var(env_path: Path, name: str) -> str:
-    """Read a single ``NAME=value`` entry from a .env file (or "" if absent)."""
-    if not env_path.exists():
-        return ""
-    for line in env_path.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, val = line.partition("=")
-        if key.strip() == name:
-            return val.strip().strip('"').strip("'")
-    return ""
+def model_key(display: str) -> tuple[str, str]:
+    """('gpt-5.6 sol' -> ('openai', '5.6 sol')); MAI keeps its full name."""
+    s = display.lower().replace("(preview)", "").strip()
+    for prefix, family in FAMILIES:
+        if s.startswith(prefix):
+            return family, norm(s if family == "mai" else s[len(prefix):])
+    return "", norm(s)
 
 
 def classify_meter(meter: str) -> str:
-    """Bucket a Cost Management meter name into input / output / cached / other.
-
-    Foundry token meters look like ``GPT 5.2 inp Gl 1M Tokens`` (input),
-    ``GPT 5.2 opt Gl 1M Tokens`` (output), ``GPT 5.2 cd inp Gl 1M Tokens``
-    (cached input), ``o4-mini 0416 cached Inp glbl Tokens`` (cached),
-    ``V3.2 SP Outp glbl Tokens`` (output). Cached is checked first because
-    cached meters also contain the ``inp`` token.
-    """
+    """Bucket a meter into input / output / cached / other (cached checked first)."""
     m = f" {meter.lower()} "
     if " cd " in m or "cached" in m:
         return "cached"
-    if "inp" in m or "input" in m:
+    if " inp " in m or "input" in m:
         return "input"
-    if "opt" in m or "outp" in m or "output" in m:
+    if " opt " in m or " outp " in m or "output" in m:
         return "output"
     return "other"
 
 
 def query_cost(subscription: str, rg: str, days: int):
-    """Query Cost Management with a single deployment×meter grouping.
-
-    Returns ``(cost_by_deployment, cost_by_meter, cost_by_deployment_split, error)``
-    where ``cost_by_deployment_split`` maps ``deployment -> {input, output,
-    cached, other}``.
-    """
+    """ActualCost for the resource group grouped by resource, meter subcategory and meter."""
     today = dt.date.today()
-    start = today - dt.timedelta(days=days)
-    scope = f"/subscriptions/{subscription}/resourceGroups/{rg}"
-    url = (
-        f"https://management.azure.com{scope}"
-        f"/providers/Microsoft.CostManagement/query?api-version={COST_API_VERSION}"
-    )
-
     body = {
         "type": "ActualCost",
         "timeframe": "Custom",
-        "timePeriod": {"from": start.isoformat(), "to": today.isoformat()},
+        "timePeriod": {"from": (today - dt.timedelta(days=days)).isoformat(), "to": today.isoformat()},
         "dataset": {
             "granularity": "None",
-            "aggregation": {"totalCost": {"name": "Cost", "function": "Sum"}},
+            "aggregation": {"cost": {"name": "Cost", "function": "Sum"}},
             "grouping": [
-                {"type": "TagKey", "name": "deployment"},
+                {"type": "Dimension", "name": "ResourceId"},
+                {"type": "Dimension", "name": "MeterSubCategory"},
                 {"type": "Dimension", "name": "Meter"},
             ],
         },
     }
-
-    # Cost Management is aggressively throttled — retry 429s with backoff.
-    last_exc: Exception | None = None
-    out = ""
+    url = (f"https://management.azure.com/subscriptions/{subscription}/resourceGroups/{rg}"
+           f"/providers/Microsoft.CostManagement/query?api-version={COST_API_VERSION}")
     for attempt in range(6):
         try:
-            out = run(
-                [
-                    "az", "rest", "--method", "post", "--url", url,
-                    "--headers", "Content-Type=application/json",
-                    "--body", "@-",
-                ],
-                stdin=json.dumps(body),
-            )
+            out = run(["az", "rest", "--method", "post", "--url", url,
+                       "--headers", "Content-Type=application/json", "--body", "@-"], stdin=json.dumps(body))
             break
         except RuntimeError as exc:
-            last_exc = exc
             if "429" in str(exc) or "Too Many Requests" in str(exc):
                 wait = min(60, 5 * (2 ** attempt))
-                print(f"    cost query throttled (429); retrying in {wait}s "
-                      f"(attempt {attempt + 1}/6)…", file=sys.stderr)
+                print(f"    cost query throttled (429); retrying in {wait}s…", file=sys.stderr)
                 time.sleep(wait)
                 continue
-            return {}, {}, {}, str(exc)
+            return [], str(exc)
     else:
-        return {}, {}, {}, str(last_exc or "cost query failed")
-
-    try:
-        data = json.loads(out)
-        props = data.get("properties", {})
-        cols = [c["name"] for c in props.get("columns", [])]
-        rows = props.get("rows", [])
-        cost_idx = next(
-            (i for i, n in enumerate(cols) if n.lower() in ("cost", "pretaxcost")), 0
-        )
-        dep_idx = cols.index("TagValue") if "TagValue" in cols else 2
-        meter_idx = cols.index("Meter") if "Meter" in cols else 3
-    except Exception as exc:  # noqa: BLE001
-        return {}, {}, {}, str(exc)
-
-    by_dep: dict[str, float] = {}
-    by_meter: dict[str, float] = {}
-    by_dep_split: dict[str, dict[str, float]] = {}
-    for r in rows:
-        dep = str(r[dep_idx]) if r[dep_idx] not in (None, "") else "(untagged)"
-        dep = dep.lower()
-        meter = str(r[meter_idx]) if r[meter_idx] not in (None, "") else "(no meter)"
-        cost = float(r[cost_idx])
-        by_dep[dep] = by_dep.get(dep, 0.0) + cost
-        by_meter[meter] = by_meter.get(meter, 0.0) + cost
-        bucket = classify_meter(meter)
-        split = by_dep_split.setdefault(
-            dep, {"input": 0.0, "output": 0.0, "cached": 0.0, "other": 0.0}
-        )
-        split[bucket] += cost
-    return by_dep, by_meter, by_dep_split, None
+        return [], "cost query kept being throttled"
+    props = json.loads(out).get("properties", {})
+    cols = [c["name"] for c in props.get("columns", [])]
+    i = {n: cols.index(n) for n in ("Cost", "ResourceId", "MeterSubCategory", "Meter") if n in cols}
+    rows = [{
+        "cost": float(r[i["Cost"]] or 0),
+        "resource": str(r[i["ResourceId"]] or "").split("/")[-1] or "(none)",
+        "subcategory": str(r[i["MeterSubCategory"]] or ""),
+        "meter": str(r[i["Meter"]] or ""),
+    } for r in props.get("rows", [])]
+    return rows, None
 
 
-
-def query_telemetry(app: str, rg: str, days: int) -> tuple[dict, str | None]:
-    """Query App Insights AI_Model_Usage. Returns ({display_name: stats}, error)."""
+def query_telemetry(cfg: dict, days: int):
     kql = f"""
 customEvents
 | where timestamp > ago({days}d) and name == 'AI_Model_Usage'
-| extend model = tostring(customDimensions.model),
-         promptTok = toint(customMeasurements.promptTokens),
-         compTok   = toint(customMeasurements.completionTokens),
-         totalTok  = toint(customMeasurements.totalTokens)
-| summarize Calls = count(),
-            Users = dcount(user_Id),
-            Sessions = dcount(session_Id),
-            Workflows = dcountif(tostring(customDimensions.workflowId), isnotempty(tostring(customDimensions.workflowId))),
-            PromptTokens = sum(promptTok),
-            CompletionTokens = sum(compTok),
-            TotalTokens = sum(totalTok)
+| extend model = tostring(customDimensions.model)
+| summarize Calls = count(), Users = dcount(user_Id), Sessions = dcount(session_Id),
+            PromptTokens = sum(toint(customMeasurements.promptTokens)),
+            CompletionTokens = sum(toint(customMeasurements.completionTokens)),
+            TotalTokens = sum(toint(customMeasurements.totalTokens))
     by model
-| order by Calls desc
+| union (customEvents | where timestamp > ago({days}d) | summarize Users = dcount(user_Id) | extend model = '__all__')
 """.strip()
     try:
-        out = run(
-            [
-                "az", "monitor", "app-insights", "query",
-                "--app", app, "-g", rg,
-                "--analytics-query", kql,
-                "--offset", f"{days}d",
-            ]
-        )
-    except Exception as exc:  # noqa: BLE001
-        return {}, str(exc)
-    data = json.loads(out)
-    table = data.get("tables", [{}])[0]
-    cols = [c["name"] for c in table.get("columns", [])]
-    idx = {n: i for i, n in enumerate(cols)}
-    stats: dict[str, dict] = {}
-    for r in table.get("rows", []):
-        model = r[idx["model"]]
-        stats[model] = {
-            "calls": int(r[idx["Calls"]] or 0),
-            "users": int(r[idx["Users"]] or 0),
-            "sessions": int(r[idx["Sessions"]] or 0),
-            "workflows": int(r[idx["Workflows"]] or 0),
-            "promptTokens": int(r[idx["PromptTokens"]] or 0),
-            "completionTokens": int(r[idx["CompletionTokens"]] or 0),
-            "totalTokens": int(r[idx["TotalTokens"]] or 0),
-        }
-    return stats, None
+        out = run(["az", "monitor", "app-insights", "query", "--app", cfg["app"], "-g", cfg["ai_rg"],
+                   "--subscription", cfg["subscription"], "--analytics-query", kql,
+                   "--offset", f"{days + 1}d", "-o", "json"])
+    except RuntimeError as exc:
+        return {}, 0, str(exc)
+    table = json.loads(out)["tables"][0]
+    idx = {c["name"]: n for n, c in enumerate(table["columns"])}
+    stats, active_users = {}, 0
+    for r in table["rows"]:
+        if r[idx["model"]] == "__all__":
+            active_users = int(r[idx["Users"]] or 0)
+            continue
+        stats[r[idx["model"]] or "unknown"] = {k: int(r[idx[c]] or 0) for k, c in (
+            ("calls", "Calls"), ("users", "Users"), ("sessions", "Sessions"),
+            ("promptTokens", "PromptTokens"), ("completionTokens", "CompletionTokens"),
+            ("totalTokens", "TotalTokens"))}
+    return stats, active_users, None
 
 
-def fmt_money(v: float) -> str:
+def attribute(cost_rows: list[dict], telemetry: dict) -> tuple[dict, list[dict]]:
+    """Assign model-token meters to telemetry models. Returns (by_model, unmatched_ai_rows)."""
+    keys = {m: model_key(m) for m in telemetry}
+    by_model: dict[str, dict] = {}
+    unmatched = []
+    for r in cost_rows:
+        sub = r["subcategory"].lower()
+        if not re.search(r"\btokens?\b", r["meter"], re.I) or "defender" in sub:
+            continue
+        meter = norm(r["meter"])
+        best, best_len = None, -1
+        for model, (family, key) in keys.items():
+            if family and family not in sub:
+                continue
+            if (meter == key or meter.startswith(key + " ")) and len(key) > best_len:
+                best, best_len = model, len(key)
+        if best is None:
+            unmatched.append(r)
+            continue
+        slot = by_model.setdefault(best, {"input": 0.0, "output": 0.0, "cached": 0.0, "other": 0.0})
+        slot[classify_meter(r["meter"])] += r["cost"]
+    return by_model, unmatched
+
+
+def money(v: float) -> str:
     return f"${v:,.4f}" if 0 < abs(v) < 0.01 else f"${v:,.2f}"
 
 
-def fmt_int(v: int) -> str:
-    return f"{v:,}"
-
-
-def build_report(args, env_deployments, cost_by_dep, cost_by_meter,
-                 cost_by_dep_split, cost_err, telemetry,
-                 tele_err) -> tuple[str, list[dict]]:
-    now = dt.datetime.now()
+def build_report(args, cfg, cost_rows, cost_err, telemetry, active_users, tele_err):
     start = (dt.date.today() - dt.timedelta(days=args.days)).isoformat()
-    end = dt.date.today().isoformat()
+    lines = [f"# AADB cost + LLM usage report (last {args.days} days)", "",
+             f"_Generated {dt.datetime.now():%Y-%m-%d %H:%M}_ · Window: `{start}` → today · "
+             f"Target: `{cfg['target']}` · RG: `{cfg['rg']}` · App Insights: `{cfg['app']}`", ""]
+    for label, err in (("Cost query failed", cost_err), ("Telemetry query failed", tele_err)):
+        if err:
+            lines += [f"> ⚠️ **{label}.**", ">", "> ```", *[f"> {l}" for l in err.splitlines()[:6]], "> ```", ""]
 
-    lines: list[str] = []
-    lines.append(f"# LLM Cost + Usage Report (last {args.days} days)")
-    lines.append("")
-    lines.append(
-        f"_Generated {now:%Y-%m-%d %H:%M}_ · Window: `{start}` → `{end}` · "
-        f"RG: `{args.rg}` · App Insights: `{args.app}`"
-    )
-    lines.append("")
+    by_model, unmatched = attribute(cost_rows, telemetry)
+    total = sum(r["cost"] for r in cost_rows)
+    llm = sum(sum(v.values()) for v in by_model.values()) + sum(r["cost"] for r in unmatched)
+    speech = sum(r["cost"] for r in cost_rows if "speech" in r["subcategory"].lower())
 
-    if cost_err:
-        lines.append("> ⚠️ **Cost query failed** — actuals unavailable. Check Cost "
-                     "Management Reader role and `az login`.")
-        lines.append(">")
-        lines.append(f"> ```\n> {cost_err}\n> ```")
-        lines.append("")
-    if tele_err:
-        lines.append("> ⚠️ **Telemetry query failed** — token counts unavailable.")
-        lines.append(">")
-        lines.append(f"> ```\n> {tele_err}\n> ```")
-        lines.append("")
-
-    # Build the joined per-model rows.
-    rows: list[dict] = []
-    matched_deps: set[str] = set()
-    for display, dep in sorted(env_deployments.items()):
-        dep_l = dep.lower()
-        matched_deps.add(dep_l)
-        cost = cost_by_dep.get(dep_l, 0.0)
-        split = cost_by_dep_split.get(dep_l, {})
-        t = telemetry.get(display, {})
-        calls = t.get("calls", 0)
-        users = t.get("users", 0)
-        sessions = t.get("sessions", 0)
-        workflows = t.get("workflows", 0)
-        total_tok = t.get("totalTokens", 0)
+    rows = []
+    for model in sorted(set(telemetry) | set(by_model)):
+        t = telemetry.get(model, {})
+        split = by_model.get(model, {"input": 0.0, "output": 0.0, "cached": 0.0, "other": 0.0})
+        cost = sum(split.values())
+        calls, tokens, users = t.get("calls", 0), t.get("totalTokens", 0), t.get("users", 0)
         rows.append({
-            "model": display,
-            "deployment": dep,
-            "cost": cost,
-            "inputCost": split.get("input", 0.0),
-            "outputCost": split.get("output", 0.0),
-            "cachedCost": split.get("cached", 0.0),
-            "otherCost": split.get("other", 0.0),
-            "calls": calls,
-            "users": users,
-            "sessions": sessions,
-            "workflows": workflows,
-            "promptTokens": t.get("promptTokens", 0),
-            "completionTokens": t.get("completionTokens", 0),
-            "totalTokens": total_tok,
-            "costPerCall": (cost / calls) if calls else 0.0,
-            "costPerUser": (cost / users) if users else 0.0,
-            "costPerSession": (cost / sessions) if sessions else 0.0,
-            "costPerWorkflow": (cost / workflows) if workflows else 0.0,
-            "costPer1M": (cost / (total_tok / 1_000_000)) if total_tok else 0.0,
+            "model": model, "cost": cost,
+            "inputCost": split["input"], "outputCost": split["output"],
+            "cachedCost": split["cached"], "otherCost": split["other"],
+            "calls": calls, "users": users, "sessions": t.get("sessions", 0),
+            "promptTokens": t.get("promptTokens", 0), "completionTokens": t.get("completionTokens", 0),
+            "totalTokens": tokens,
+            "costPerCall": cost / calls if calls else 0.0,
+            "costPerUser": cost / users if users else 0.0,
+            "costPer1M": cost / (tokens / 1_000_000) if tokens else 0.0,
         })
+    rows.sort(key=lambda r: (r["cost"], r["calls"]), reverse=True)
+    calls = sum(r["calls"] for r in rows)
+    tokens = sum(r["totalTokens"] for r in rows)
+    matched_cost = sum(r["cost"] for r in rows)
 
-    rows.sort(key=lambda r: r["cost"], reverse=True)
-
-    total_cost = sum(r["cost"] for r in rows)
-    total_input = sum(r["inputCost"] for r in rows)
-    total_output = sum(r["outputCost"] for r in rows)
-    total_cached = sum(r["cachedCost"] for r in rows)
-    total_calls = sum(r["calls"] for r in rows)
-    total_tokens = sum(r["totalTokens"] for r in rows)
-    total_prompt = sum(r["promptTokens"] for r in rows)
-    total_completion = sum(r["completionTokens"] for r in rows)
-    blended_1m = (total_cost / (total_tokens / 1_000_000)) if total_tokens else 0.0
-
-    # Headline KPIs.
-    lines.append("## Headline")
-    lines.append("")
-    lines.append("| Metric | Value |")
-    lines.append("| --- | --- |")
-    lines.append(f"| Total LLM cost ({args.days}d) | **{fmt_money(total_cost)}** |")
-    lines.append(f"| Total model calls | {fmt_int(total_calls)} |")
-    lines.append(f"| Total tokens | {fmt_int(total_tokens)} "
-                 f"({fmt_int(total_prompt)} in / {fmt_int(total_completion)} out) |")
-    lines.append(f"| Blended cost / 1M tokens | {fmt_money(blended_1m)} |")
-    if total_calls:
-        lines.append(f"| Avg cost / call | {fmt_money(total_cost / total_calls)} |")
-    cost_split = total_input + total_output + total_cached
-    if cost_split:
-        lines.append(
-            f"| Cost by token type | {fmt_money(total_input)} input / "
-            f"{fmt_money(total_output)} output / {fmt_money(total_cached)} cached |"
-        )
+    lines += ["## Headline", "", "| Metric | Value |", "| --- | --- |",
+              f"| **Total cost to run AADB ({args.days}d)** | **{money(total)}** |",
+              f"| Model (LLM) tokens | {money(llm)} |",
+              f"| Speech (narrator avatar) | {money(speech)} |",
+              f"| Everything else (hosting, registry, data, networking, logs) | {money(total - llm - speech)} |",
+              f"| Active users (any feature) | {active_users:,} |"]
+    if active_users:
+        lines.append(f"| Cost per active user | {money(total / active_users)} |")
+    lines += [f"| Model calls | {calls:,} |", f"| Tokens | {tokens:,} |"]
+    if tokens:
+        lines.append(f"| Blended model cost / 1M tokens | {money(matched_cost / (tokens / 1_000_000))} |")
+    if calls:
+        lines.append(f"| Avg model cost / call | {money(matched_cost / calls)} |")
     lines.append("")
 
-    # Per-model joined table.
-    lines.append("## Per-model cost vs usage")
+    by_resource: dict[str, float] = {}
+    for r in cost_rows:
+        by_resource[r["resource"]] = by_resource.get(r["resource"], 0.0) + r["cost"]
+    lines += ["## Cost by resource", "", "| Resource | Cost | Share |", "| --- | ---: | ---: |"]
+    for name, cost in sorted(by_resource.items(), key=lambda kv: -kv[1]):
+        if cost >= 0.005:
+            lines.append(f"| `{name}` | {money(cost)} | {cost / total * 100 if total else 0:.0f}% |")
     lines.append("")
-    lines.append("| Model | Deployment | Cost | Calls | Users | Sessions | Workflows | Total Tokens | "
-                 "$/Call | $/Session | $/Workflow | $/1M Tok |")
-    lines.append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+
+    lines += ["## Per-model cost vs usage", "",
+              "| Model | Cost | Calls | Users | Total tokens | $/call | $/user | $/1M tokens | Input | Output | Cached |",
+              "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for r in rows:
         lines.append(
-            f"| {r['model']} | `{r['deployment']}` | {fmt_money(r['cost'])} | "
-            f"{fmt_int(r['calls'])} | {fmt_int(r['users'])} | "
-            f"{fmt_int(r['sessions'])} | {fmt_int(r['workflows'])} | "
-            f"{fmt_int(r['totalTokens'])} | "
-            f"{fmt_money(r['costPerCall']) if r['calls'] else '—'} | "
-            f"{fmt_money(r['costPerSession']) if r['sessions'] else '—'} | "
-            f"{fmt_money(r['costPerWorkflow']) if r['workflows'] else '—'} | "
-            f"{fmt_money(r['costPer1M']) if r['totalTokens'] else '—'} |"
-        )
-    lines.append(f"| **Total** | | **{fmt_money(total_cost)}** | "
-                 f"**{fmt_int(total_calls)}** | | | | **{fmt_int(total_tokens)}** | | | | "
-                 f"**{fmt_money(blended_1m)}** |")
+            f"| {r['model']} | {money(r['cost'])} | {r['calls']:,} | {r['users']:,} | {r['totalTokens']:,} | "
+            f"{money(r['costPerCall']) if r['calls'] else '—'} | {money(r['costPerUser']) if r['users'] else '—'} | "
+            f"{money(r['costPer1M']) if r['totalTokens'] else '—'} | {money(r['inputCost'])} | "
+            f"{money(r['outputCost'])} | {money(r['cachedCost'])} |")
     lines.append("")
 
-    # Per-model cost split by token type (input / output / cached).
-    lines.append("## Per-model cost by token type")
-    lines.append("")
-    lines.append("| Model | Deployment | Input | Output | Cached | Other | Total | "
-                 "Out % |")
-    lines.append("| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |")
-    for r in rows:
-        billable = r["inputCost"] + r["outputCost"] + r["cachedCost"] + r["otherCost"]
-        if billable:
-            out_pct = r["outputCost"] / billable * 100
-            other = fmt_money(r["otherCost"]) if r["otherCost"] else "—"
-            lines.append(
-                f"| {r['model']} | `{r['deployment']}` | "
-                f"{fmt_money(r['inputCost'])} | {fmt_money(r['outputCost'])} | "
-                f"{fmt_money(r['cachedCost'])} | {other} | "
-                f"{fmt_money(r['cost'])} | {out_pct:.0f}% |"
-            )
-        else:
-            lines.append(
-                f"| {r['model']} | `{r['deployment']}` | — | — | — | — | "
-                f"{fmt_money(r['cost'])} | — |"
-            )
-    total_other = sum(r["otherCost"] for r in rows)
-    total_billable = total_input + total_output + total_cached + total_other
-    total_out_pct = (total_output / total_billable * 100) if total_billable else 0.0
-    lines.append(
-        f"| **Total** | | **{fmt_money(total_input)}** | "
-        f"**{fmt_money(total_output)}** | **{fmt_money(total_cached)}** | "
-        f"**{fmt_money(total_other) if total_other else '—'}** | "
-        f"**{fmt_money(total_cost)}** | **{total_out_pct:.0f}%** |"
-    )
-    lines.append("")
-
-    # Telemetry models with no matching configured deployment (e.g. legacy).
-    extra_tele = sorted(set(telemetry) - set(env_deployments))
-    if extra_tele:
-        lines.append("### Telemetry models not in current .env config")
-        lines.append("")
-        lines.append("| Model (telemetry) | Calls | Users | Total Tokens |")
-        lines.append("| --- | ---: | ---: | ---: |")
-        for m in extra_tele:
-            t = telemetry[m]
-            lines.append(f"| {m} | {fmt_int(t['calls'])} | {fmt_int(t['users'])} | "
-                         f"{fmt_int(t['totalTokens'])} |")
+    if unmatched:
+        agg: dict[tuple, float] = {}
+        for r in unmatched:
+            agg[(r["subcategory"], r["meter"])] = agg.get((r["subcategory"], r["meter"]), 0.0) + r["cost"]
+        lines += ["### Model cost with no matching telemetry", "",
+                  "Retired models, other callers of the shared Foundry resource, or meters the matcher did not recognize.", "",
+                  "| Meter subcategory | Meter | Cost |", "| --- | --- | ---: |"]
+        for (sub, meter), cost in sorted(agg.items(), key=lambda kv: -kv[1]):
+            if cost >= 0.005:
+                lines.append(f"| {sub} | {meter} | {money(cost)} |")
         lines.append("")
 
-    # Cost rows tagged with a deployment that isn't in .env, plus untagged.
-    unmatched_cost = {k: v for k, v in cost_by_dep.items()
-                      if k not in matched_deps and v}
-    if unmatched_cost:
-        lines.append("### Tagged cost without a configured model (or untagged)")
-        lines.append("")
-        lines.append("| Deployment tag | Cost |")
-        lines.append("| --- | ---: |")
-        for k, v in sorted(unmatched_cost.items(), key=lambda kv: kv[1], reverse=True):
-            lines.append(f"| `{k}` | {fmt_money(v)} |")
-        lines.append("")
-
-    # Meter-level breakdown (input vs output vs cached).
-    if cost_by_meter:
-        lines.append("## Cost by meter (input / output / cached)")
-        lines.append("")
-        lines.append("| Meter | Cost |")
-        lines.append("| --- | ---: |")
-        for k, v in sorted(cost_by_meter.items(), key=lambda kv: kv[1], reverse=True):
-            if v:
-                lines.append(f"| {k} | {fmt_money(v)} |")
-        lines.append("")
-
-    # Caveats.
-    lines.append("## Notes & caveats")
-    lines.append("")
-    lines.append(f"- **Cost** is ActualCost from Azure Cost Management for RG "
-                 f"`{args.rg}`, grouped by the `deployment` tag. Today's spend is "
-                 "partial and may lag a few hours.")
-    lines.append("- **Tokens / calls / users** come from App Insights "
-                 "`AI_Model_Usage` events — these reflect *this app only*, while "
-                 "cost reflects *all traffic* to each deployment (other apps, the "
-                 "portal playground, and Foundry agents share the same Foundry "
-                 "resource). $/call and $/1M-token are therefore upper-bound "
-                 "estimates where the deployment is shared.")
-    lines.append("- Models with cost but no telemetry (e.g. image models like "
-                 "`flux.2-pro`) appear under the unmatched-cost table.")
-    lines.append("- Join key: telemetry display name ↔ `.env` "
-                 "`VITE_AZURE_OPENAI_DEPLOYMENT_*` ↔ cost `deployment` tag "
-                 "(case-insensitive).")
-    lines.append("")
-
+    lines += ["## Notes", "",
+              f"- Cost is ActualCost from Cost Management for resource group `{cfg['rg']}`; today's spend is partial and lags a few hours.",
+              "- Model cost is matched to telemetry by meter name (e.g. `5.6 sol` → GPT-5.6 Sol). Calls and tokens count this app only, while cost includes every caller of the Foundry resource, so $/call is an upper bound if the resource is shared.",
+              "- Models with calls but $0 cost are usually billed outside the resource group (for example Anthropic models billed through Azure Marketplace) or not yet in Cost Management.",
+              "- Users are anonymous browser cookies, not verified people.", ""]
     return "\n".join(lines) + "\n", rows
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--days", type=int, default=30, help="rolling window (default 30)")
-    ap.add_argument("--subscription", default=DEFAULT_SUBSCRIPTION,
-                    help="Azure subscription ID (default: $AZURE_SUBSCRIPTION_ID)")
-    ap.add_argument("--rg", default=DEFAULT_RG)
-    ap.add_argument("--app", default=DEFAULT_APPINSIGHTS)
-    ap.add_argument("--env", default=str(REPO_ROOT / ".env"))
+    ap = argparse.ArgumentParser(description="AADB cost + LLM usage report")
+    ap.add_argument("--days", type=int, default=30, help="rolling window in days (default 30)")
     args = ap.parse_args()
+    cfg = load_target()
 
-    # Fall back to AZURE_SUBSCRIPTION_ID in .env if not set in the environment.
-    if not args.subscription:
-        args.subscription = read_env_var(Path(args.env), "AZURE_SUBSCRIPTION_ID")
-    if not args.subscription:
-        print("❌ No subscription ID. Set AZURE_SUBSCRIPTION_ID (env or .env) or pass "
-              "--subscription <id>.", file=sys.stderr)
-        return 2
-
-    env_deployments = load_env_deployments(Path(args.env))
-    if not env_deployments:
-        print(f"⚠️  No deployment vars found in {args.env}", file=sys.stderr)
-
-    print(f"▶ Querying Cost Management (RG {args.rg}, last {args.days}d)…")
-    cost_by_dep, cost_by_meter, cost_by_dep_split, cost_err = query_cost(
-        args.subscription, args.rg, args.days
-    )
+    print(f"▶ Querying Cost Management (RG {cfg['rg']}, last {args.days}d)…")
+    cost_rows, cost_err = query_cost(cfg["subscription"], cfg["rg"], args.days)
     if cost_err:
         print(f"  ⚠️ cost query failed: {cost_err}", file=sys.stderr)
-
-    print(f"▶ Querying App Insights telemetry ({args.app})…")
-    telemetry, tele_err = query_telemetry(args.app, args.rg, args.days)
+    print(f"▶ Querying App Insights telemetry ({cfg['app']})…")
+    telemetry, active_users, tele_err = query_telemetry(cfg, args.days)
     if tele_err:
         print(f"  ⚠️ telemetry query failed: {tele_err}", file=sys.stderr)
 
-    report, rows = build_report(
-        args, env_deployments, cost_by_dep, cost_by_meter, cost_by_dep_split,
-        cost_err, telemetry, tele_err,
-    )
-
+    report, rows = build_report(args, cfg, cost_rows, cost_err, telemetry, active_users, tele_err)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    ts = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-    md_path = OUT_DIR / f"llm-cost-report-{args.days}d-{ts}.md"
-    csv_path = OUT_DIR / f"llm-cost-report-{args.days}d-{ts}.csv"
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    md_path = OUT_DIR / f"llm-cost-report-{cfg['target']}-{args.days}d-{stamp}.md"
+    csv_path = md_path.with_suffix(".csv")
     md_path.write_text(report)
-
     with csv_path.open("w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=[
-            "model", "deployment", "cost",
-            "inputCost", "outputCost", "cachedCost", "otherCost",
-            "calls", "users", "sessions", "workflows",
-            "promptTokens", "completionTokens", "totalTokens",
-            "costPerCall", "costPerUser", "costPerSession", "costPerWorkflow", "costPer1M",
-        ])
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()) if rows else ["model"])
         w.writeheader()
-        for r in rows:
-            w.writerow(r)
-
-    print(f"✅ Wrote {md_path}")
-    print(f"✅ Wrote {csv_path}")
-    return 0
+        w.writerows(rows)
+    print(f"✅ Wrote {md_path}\n✅ Wrote {csv_path}")
+    return 0 if not (cost_err and tele_err) else 1
 
 
 if __name__ == "__main__":
