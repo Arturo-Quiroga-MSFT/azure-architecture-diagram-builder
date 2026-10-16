@@ -113,7 +113,9 @@ ContainerAppConsoleLogs_CL
 
 ## Cost Reports
 
-`scripts/llm-cost-report.py` joins `AI_Model_Usage` with Azure Cost Management and now includes all current model deployment variables. It reports cost per call, anonymous browser, browser session, workflow, and one million tokens.
+`scripts/llm-cost-report.py` joins `AI_Model_Usage` with Azure Cost Management for the deployment target's resource group (`AADB_TARGET`, default `fdpo`). It reports the total cost to run AADB by resource, and per model the cost, calls, users, tokens, cost per call, per user and per one million tokens, with the input / output / cached split. Model cost is matched to telemetry by Foundry meter name (for example `5.6 sol` → GPT-5.6 Sol), so deployments need no cost tags. Models billed outside the resource group (Anthropic, through Azure Marketplace) show calls with no cost.
+
+`scripts/usage-report-range.sh` (Markdown) and `scripts/generate-usage-html.py` (interactive HTML) produce dated usage snapshots for the same target; the Markdown report also summarizes remote MCP server usage. History before the September 2026 move to FDPO is archived outside the repo (see the telemetry archive's `tools/combine_mcaps_fdpo.py`).
 
 Cost attribution remains an allocation estimate when a Foundry deployment is shared with other applications. Azure Cost Management is the billing source of truth; telemetry is the usage-allocation source.
 

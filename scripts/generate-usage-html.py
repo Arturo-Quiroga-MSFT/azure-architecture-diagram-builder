@@ -8,6 +8,10 @@ into scripts/usage-report-template.html.
 
 Usage:
     python scripts/generate-usage-html.py [START_YYYY-MM-DD] [END_YYYY-MM-DD]
+    AADB_TARGET=mcap094150 python scripts/generate-usage-html.py ...   # old MCAPS
+
+The App Insights resource, subscription and CLI profile come from the
+deployment target (scripts/usage-target.sh, default: fdpo).
 
 Notes:
   * END is exclusive (pass the day AFTER the last day you want included).
@@ -26,8 +30,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-APP = "aq-app-insights-001"
-RG = "AQ-FOUNDRY-RG"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from usage_target import load_target  # noqa: E402
+
+TARGET = load_target()
+APP = TARGET["app"]
+RG = TARGET["ai_rg"]
+SUBSCRIPTION = TARGET["subscription"]
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "scripts" / "usage-report-template.html"
 VENDOR_CHARTJS = ROOT / "scripts" / "vendor" / "chart.umd.min.js"
@@ -98,7 +107,7 @@ def run_kql(query: str, offset: str) -> list[list]:
     """Run a KQL query via az CLI and return the first table's rows (list of lists)."""
     cmd = [
         "az", "monitor", "app-insights", "query",
-        "--app", APP, "-g", RG,
+        "--app", APP, "-g", RG, "--subscription", SUBSCRIPTION,
         "--analytics-query", dedup(query),
         "--offset", offset,
         "-o", "json",
@@ -117,7 +126,7 @@ def cols(query: str, offset: str) -> tuple[list[str], list[list]]:
     """Return (column_names, rows) for a query."""
     cmd = [
         "az", "monitor", "app-insights", "query",
-        "--app", APP, "-g", RG,
+        "--app", APP, "-g", RG, "--subscription", SUBSCRIPTION,
         "--analytics-query", dedup(query),
         "--offset", offset,
         "-o", "json",
@@ -149,7 +158,7 @@ def main() -> int:
     start_d = dt.date.fromisoformat(start)
     span_days = (today - start_d).days + 2
     offset = f"{span_days}d"
-    win = f"between (datetime({start}) .. datetime({end}))"
+    win = f"between (datetime({start}) .. (datetime({end}) - 1tick))"
 
     print(f"▶ Querying App Insights '{APP}' for {start} → {end} (offset {offset})…")
 

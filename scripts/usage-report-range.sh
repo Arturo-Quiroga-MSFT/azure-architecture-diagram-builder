@@ -3,7 +3,14 @@
 # Insights for an EXPLICIT date range (inclusive start, exclusive end).
 #
 # Usage:  ./scripts/usage-report-range.sh <START_YYYY-MM-DD> <END_YYYY-MM-DD>
-# Example: ./scripts/usage-report-range.sh 2026-01-01 2026-07-15
+# Example: ./scripts/usage-report-range.sh 2026-10-01 2026-11-01
+#          AADB_TARGET=mcap094150 ./scripts/usage-report-range.sh ...  (old MCAPS)
+#
+# Reads the deployment target from scripts/usage-target.sh (default: fdpo), so
+# the browser App Insights, subscription and CLI profile match the deploy
+# scripts. The report ends with remote MCP server usage from the Container Apps
+# Log Analytics workspace. History before the Sep 2026 move to FDPO lives in the
+# OneDrive AADB-Telemetry-Archive (tools/combine_mcaps_fdpo.py).
 #
 # Notes:
 #  * END is exclusive — pass the day AFTER the last day you want included.
@@ -14,8 +21,8 @@ set -euo pipefail
 
 START="${1:-2026-01-01}"
 END="${2:-$(date -u +%Y-%m-%d)}"
-APP="aq-app-insights-001"
-RG="AQ-FOUNDRY-RG"
+# shellcheck source=usage-target.sh
+source "$(dirname "$0")/usage-target.sh"
 OUT_DIR="$(cd "$(dirname "$0")/.." && pwd)/usage-reports"
 mkdir -p "$OUT_DIR"
 REPORT="$OUT_DIR/usage-report-${START}_to_${END}.md"
@@ -35,7 +42,7 @@ OFFSET="${SPAN_DAYS}d"
 # Diagram-builder events only (filter out Foundry agent traces that share this App Insights)
 DB_EVENTS='customEvents | where name in ("Architecture_Generated","Architecture_Validated","DeploymentGuide_Generated","Diagram_Exported","Template_Imported","ARM_Template_Imported","Image_Imported","Models_Compared","Recommendations_Applied","Version_Operation","Region_Changed","Start_Fresh","AI_Model_Usage","Guided_Journey","User_Feedback")'
 # KQL fragment for the window (inclusive start, exclusive end)
-WIN="between (datetime(${START}) .. datetime(${END}))"
+WIN="between (datetime(${START}) .. (datetime(${END}) - 1tick))"
 
 json_to_md_table () {
   jq -r '
@@ -68,7 +75,7 @@ run_kql () {
   local dq
   dq="${DEDUP_PREAMBLE}$(printf '%s' "$query" | sed -e 's/customEvents/_ce/g' -e 's/pageViews/_pv/g')"
   local result
-  if ! result=$(az monitor app-insights query --app "$APP" -g "$RG" \
+  if ! result=$(az monitor app-insights query --app "$APP" -g "$AI_RG" --subscription "$SUBSCRIPTION" \
         --analytics-query "$dq" --offset "$OFFSET" 2>&1); then
     echo "_query failed_" >> "$REPORT"
     echo '```' >> "$REPORT"; echo "$result" >> "$REPORT"; echo '```' >> "$REPORT"
@@ -85,7 +92,7 @@ run_kql () {
 
 echo "# Azure Diagram Builder — Usage Report (${START} → ${END} exclusive)" > "$REPORT"
 echo "" >> "$REPORT"
-echo "_Generated $(date)_ · App Insights: \`$APP\` · RG: \`$RG\` · API offset: \`$OFFSET\`" >> "$REPORT"
+echo "_Generated $(date)_ · Target: \`$AADB_TARGET\` · App Insights: \`$APP\` · RG: \`$AI_RG\` · API offset: \`$OFFSET\`" >> "$REPORT"
 
 run_kql "Headline KPIs" "
 $DB_EVENTS
@@ -286,6 +293,63 @@ $DB_EVENTS
 | summarize Events = count()
     by Feature = name, Month = format_datetime(startofmonth(timestamp), 'yyyy-MM')
 | order by Feature asc, Month asc
+"
+
+# ── Remote MCP server (Container Apps console logs, one JSON line per request) ─
+MCP_WS=""
+if [[ -n "$ACA_ENV" ]]; then
+  MCP_WS=$(az containerapp env show -n "$ACA_ENV" -g "$RG" --subscription "$SUBSCRIPTION" \
+    --query properties.appLogsConfiguration.logAnalyticsConfiguration.customerId -o tsv 2>/dev/null || true)
+fi
+MCP_BASE="ContainerAppConsoleLogs_CL
+| where TimeGenerated $WIN and ContainerAppName_s == '${MCP_APP:-azure-diagram-mcp}'
+| where Log_s startswith '{' and Log_s has '\"mcp_request\"'
+| extend r = parse_json(Log_s)
+| extend Auth = tostring(r.auth), ObjectId = tostring(r.objectId), TenantId = tostring(r.tenantId),
+         ClientKey = tostring(r.clientKey), ClientName = tostring(r.clientName), Tools = r.tools, Status = toint(r.status)"
+
+run_mcp () {
+  local title="$1"; local query="$2"
+  echo "▶ $title"
+  echo -e "\n## $title\n" >> "$REPORT"
+  if [[ -z "$MCP_WS" ]]; then echo "_MCP log workspace not found for target $AADB_TARGET_" >> "$REPORT"; return; fi
+  local result
+  if ! result=$(az monitor log-analytics query -w "$MCP_WS" --analytics-query "$query" --timespan "P${SPAN_DAYS}D" -o json 2>&1); then
+    echo "_query failed_" >> "$REPORT"; echo '```' >> "$REPORT"; echo "$result" >> "$REPORT"; echo '```' >> "$REPORT"
+    return
+  fi
+  if [[ "$(echo "$result" | jq 'length')" == "0" ]]; then echo "_no data_" >> "$REPORT"; return; fi
+  echo "$result" | jq -r '
+    (.[0] | keys_unsorted | map(select(. != "TableName"))) as $cols
+    | ($cols | join(" | ")), ($cols | map("---") | join(" | ")),
+      (.[] | [ $cols[] as $c | (.[$c] // "" | tostring) ] | join(" | "))
+    | "| " + . + " |"' >> "$REPORT"
+}
+
+run_mcp "MCP server — summary" "
+$MCP_BASE
+| summarize Requests = count(),
+            ToolCalls = countif(array_length(Tools) > 0),
+            AuthRejected = countif(Auth == 'rejected'),
+            EntraUsers = dcountif(ObjectId, Auth == 'entra' and isnotempty(ObjectId)),
+            EntraTenants = dcountif(TenantId, Auth == 'entra' and isnotempty(TenantId)),
+            ClientKeyCalls = countif(Auth == 'client-key'),
+            StaticTokenCalls = countif(Auth == 'static')
+"
+
+run_mcp "MCP server — tools" "
+$MCP_BASE
+| mv-expand Tool = Tools to typeof(string)
+| where isnotempty(Tool)
+| summarize Calls = count(), Users = dcountif(ObjectId, isnotempty(ObjectId)) by Tool
+| order by Calls desc
+"
+
+run_mcp "MCP server — clients" "
+$MCP_BASE
+| where isnotempty(ClientName) or isnotempty(ClientKey)
+| summarize Sessions = count(), Users = dcountif(ObjectId, isnotempty(ObjectId)) by ClientName, Auth, ClientKey
+| order by Sessions desc
 "
 
 echo ""
