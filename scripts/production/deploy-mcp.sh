@@ -7,9 +7,10 @@
 #
 # - Immutable image tag from the Git commit; refuses a dirty mcp-server/ tree.
 # - Managed identity with AcrPull (no registry admin credentials).
-# - Auth: Microsoft Entra OAuth (MCP_ENTRA_CLIENT_ID from the target file) for
-#   VS Code / GitHub Copilot, plus a static bearer token fallback for clients
-#   that cannot do OAuth. The static token is generated once and kept in
+# - Auth: optional Microsoft Entra OAuth (MCP_ENTRA_CLIENT_ID from the target
+#   file) for VS Code / GitHub Copilot, plus a static bearer token for clients
+#   that cannot do OAuth. Targets without MCP_ENTRA_CLIENT_ID have the Entra
+#   settings removed from the container app, so OAuth is really off. The static token is generated once and kept in
 #   .env.mcp.<target> (gitignored).
 # - Named client keys (MCP_CLIENT_KEYS hashes in .env.mcp.<target>, managed
 #   with mcp-client-key.sh) for cross-tenant service-to-service connectors.
@@ -100,6 +101,12 @@ ENV_VARS=(
 [[ -n "${MCP_ENTRA_CLIENT_ID:-}" ]] && ENV_VARS+=("MCP_ENTRA_CLIENT_ID=$MCP_ENTRA_CLIENT_ID")
 [[ -n "${MCP_ENTRA_ALLOWED_TENANTS:-}" ]] && ENV_VARS+=("MCP_ENTRA_ALLOWED_TENANTS=$MCP_ENTRA_ALLOWED_TENANTS")
 [[ -n "${MCP_CLIENT_KEYS:-}" ]] && ENV_VARS+=("MCP_CLIENT_KEYS=secretref:mcp-client-keys")
+# Settings the target no longer defines must be removed, not left behind.
+EXISTING_ENV="$(az containerapp show -n "$MCP_APP" -g "$RG" --query "properties.template.containers[0].env[].name" -o tsv 2>/dev/null || true)"
+REMOVE_ENV=()
+for name in MCP_ENTRA_CLIENT_ID MCP_ENTRA_ALLOWED_TENANTS; do
+  if [[ -z "${!name:-}" ]] && grep -qx "$name" <<<"$EXISTING_ENV"; then REMOVE_ENV+=("$name"); fi
+done
 
 if az containerapp revision show -n "$MCP_APP" -g "$RG" --revision "$MCP_APP--$REV_SUFFIX" -o none 2>/dev/null; then
   echo "✓ Revision $MCP_APP--$REV_SUFFIX already exists"
@@ -117,7 +124,9 @@ else
   echo "🚀 Rolling out $ACR_IMAGE ..."
   az containerapp ingress update -n "$MCP_APP" -g "$RG" --target-port 3030 -o none
   az containerapp update -n "$MCP_APP" -g "$RG" --image "$ACR_IMAGE" \
-    --set-env-vars "${ENV_VARS[@]}" --revision-suffix "$REV_SUFFIX" -o none
+    --set-env-vars "${ENV_VARS[@]}" ${REMOVE_ENV[@]+--remove-env-vars "${REMOVE_ENV[@]}"} \
+    --revision-suffix "$REV_SUFFIX" -o none
+  [[ ${#REMOVE_ENV[@]} -gt 0 ]] && echo "  ✓ Removed settings: ${REMOVE_ENV[*]}"
 fi
 
 # ── 4. Verify the live endpoint ────────────────────────────────────────────
@@ -132,6 +141,6 @@ fi
 echo ""
 echo "✅ MCP server deployed: $PUBLIC_URL/mcp"
 echo "   Image: $ACR_IMAGE"
-echo "   Auth: Entra OAuth${MCP_ENTRA_CLIENT_ID:+ (client $MCP_ENTRA_CLIENT_ID)} + static token in $(basename "$TOKEN_FILE")"
+echo "   Auth: ${MCP_ENTRA_CLIENT_ID:+Entra OAuth (client $MCP_ENTRA_CLIENT_ID) + }static token in $(basename "$TOKEN_FILE")"
 [[ -n "${MCP_CLIENT_KEYS:-}" ]] && echo "   Client keys: $(printf '%s' "$MCP_CLIENT_KEYS" | tr ',' '\n' | cut -d= -f1 | paste -sd, -)"
 [[ -n "$PREVIOUS_REVISION" ]] && echo "   Previous revision: $PREVIOUS_REVISION"

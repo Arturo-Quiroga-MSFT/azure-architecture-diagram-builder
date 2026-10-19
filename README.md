@@ -463,26 +463,27 @@ The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server
 
 ### Use it from VS Code (GitHub Copilot)
 
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_AADB_MCP-0098FF?logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=azure-diagram-builder&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A//azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp%22%7D) [![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_AADB_MCP-24bfa5?logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=azure-diagram-builder&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A//azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp%22%7D&quality=insiders)
-
-One click adds the hosted server; VS Code then signs you in with your **Microsoft Entra** work account (no token to copy) and the tools appear in Copilot agent mode. `render_diagram` returns an **MCP App**, so the diagram renders interactively inside the chat. Manage access later from **Accounts › Manage Trusted MCP Servers**.
-
-Prefer a config file? Add this to `.vscode/mcp.json`:
+The hosted server uses **API keys**: ask the maintainer for a personal key. Add this to `.vscode/mcp.json`; VS Code prompts for the key once and stores it securely, and the tools appear in Copilot agent mode. `render_diagram` returns an **MCP App**, so the diagram renders interactively inside the chat.
 
 ```jsonc
 {
+  "inputs": [
+    { "type": "promptString", "id": "aadb-mcp-key", "description": "AADB MCP API key", "password": true }
+  ],
   "servers": {
-    "azure-diagram-builder": { "type": "http", "url": "https://azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp" }
+    "azure-diagram-builder": {
+      "type": "http",
+      "url": "https://azure-diagram-mcp.ashywater-ce264412.eastus2.azurecontainerapps.io/mcp",
+      "headers": { "X-API-Key": "${input:aadb-mcp-key}" }
+    }
   }
 }
 ```
 
 Attach resources via **Add Context › MCP Resources**, and invoke prompts with `/azure-diagram-builder.design-secure-web-app`. For local development the bundled config also defines a `stdio` server that runs `mcp-server/dist/index.js` (run `npm run build` in `mcp-server/` first).
 
-> **First sign-in:** the MCP API is a multi-tenant Entra app. Microsoft corporate accounts can sign in directly; some organizations require an administrator to approve the app first.
-
 ### Use it from GitHub Copilot CLI, Scout and other clients
-Clients that support MCP OAuth discover Entra from the server automatically. Clients that only accept a static header (for example Microsoft Scout's custom remote servers or the Azure SRE Agent) can use `Authorization: Bearer <MCP_AUTH_TOKEN>` instead; see [`SCOUT/README.md`](SCOUT/README.md). Deploy your own instance with `AADB_TARGET=<target> ./scripts/production/deploy-mcp.sh`.
+Any client that can send a header works: use `X-API-Key: <key>` or `Authorization: Bearer <key>` (for example GitHub Copilot CLI's `headers` field, Microsoft Scout's custom remote servers or the Azure SRE Agent); see [`SCOUT/README.md`](SCOUT/README.md). Self-hosted deployments can additionally enable Microsoft Entra sign-in with `MCP_ENTRA_CLIENT_ID` (see *Transport & auth*). Deploy your own instance with `AADB_TARGET=<target> ./scripts/production/deploy-mcp.sh`.
 
 ---
 
