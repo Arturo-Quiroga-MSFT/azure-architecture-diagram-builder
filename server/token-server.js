@@ -648,6 +648,11 @@ app.get('/api/feedback/list', async (req, res) => {
 });
 
 const PORT = parseInt(process.env.TOKEN_SERVER_PORT || '3001', 10);
-app.listen(PORT, '127.0.0.1', () => {
+const httpServer = app.listen(PORT, '127.0.0.1', () => {
   console.log(`[speech-token] Listening on 127.0.0.1:${PORT}`);
+});
+
+require('./voice-live-relay').attachVoiceLiveRelay(httpServer, {
+  credential,
+  endpoint: OPENAI_ENDPOINT,
 });

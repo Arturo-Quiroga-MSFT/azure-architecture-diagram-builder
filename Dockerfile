@@ -56,6 +56,7 @@ ARG VITE_AZURE_AD_CLIENT_ID
 ARG VITE_AZURE_AD_AUTHORITY
 ARG VITE_ARM_SCOPE
 ARG VITE_ENABLE_ADOPTION_IMPACT=false
+ARG VITE_ENABLE_VOICE_LIVE=false
 ARG LOAD_ENV_BUILD=true
 # Set environment variables for build
 ENV VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT
@@ -87,6 +88,7 @@ ENV VITE_AZURE_AD_CLIENT_ID=$VITE_AZURE_AD_CLIENT_ID
 ENV VITE_AZURE_AD_AUTHORITY=$VITE_AZURE_AD_AUTHORITY
 ENV VITE_ARM_SCOPE=$VITE_ARM_SCOPE
 ENV VITE_ENABLE_ADOPTION_IMPACT=$VITE_ENABLE_ADOPTION_IMPACT
+ENV VITE_ENABLE_VOICE_LIVE=$VITE_ENABLE_VOICE_LIVE
 
 # App Insights connection string workaround:
 # The connection string contains semicolons (e.g. "InstrumentationKey=...;IngestionEndpoint=...")
@@ -128,6 +130,7 @@ COPY server/package*.json ./
 RUN npm ci --omit=dev
 COPY server/token-server.js ./
 COPY server/instrumentation.js ./
+COPY server/voice-live-relay.js ./
 COPY server/impact-routes.js server/impact-records.js ./
 RUN if [ "$ENABLE_ADOPTION_IMPACT" != "true" ]; then rm -f impact-routes.js impact-records.js; fi
 

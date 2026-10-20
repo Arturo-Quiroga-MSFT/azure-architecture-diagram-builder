@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Sparkles, X, Send, Loader2, AlertCircle, AlertTriangle, MessageSquare, ChevronDown, ChevronUp, Shield, Activity, DollarSign, Wrench, Zap, Lightbulb, type LucideIcon } from 'lucide-react';
+import { Sparkles, X, Send, Loader2, AlertCircle, AlertTriangle, MessageSquare, ChevronDown, ChevronUp, Shield, Activity, DollarSign, Wrench, Zap, Lightbulb, Mic, MicOff, PenLine, type LucideIcon } from 'lucide-react';
 import { generateArchitectureWithAI, generateFollowUpSuggestions, isAzureOpenAIConfigured } from '../services/azureOpenAI';
 import { useModelSettings, MODEL_CONFIG } from '../stores/modelSettingsStore';
 import {
@@ -17,12 +17,15 @@ import {
 } from '../services/refinementGuard';
 import './ArchitectureChatPanel.css';
 import { useEscapeToClose } from '../hooks/useEscapeToClose';
+import { VoiceLiveSession, isVoiceLiveEnabled, type VoiceLiveStatus } from '../services/voiceLiveClient';
 
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'error';
   text: string;
   ts: number;
+  /** Spoken turn from the Voice Live beta (display only; never auto-applied). */
+  voice?: boolean;
 }
 
 interface PendingRefinement {
@@ -171,6 +174,12 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   const [pendingRefinement, setPendingRefinement] = useState<PendingRefinement | null>(null);
   const [modelSettings] = useModelSettings();
 
+  const voiceEnabled = isVoiceLiveEnabled();
+  const [voiceStatus, setVoiceStatus] = useState<VoiceLiveStatus>('idle');
+  const voiceRef = useRef<VoiceLiveSession | null>(null);
+  // Index in `messages` where the not-yet-drawn voice conversation starts.
+  const [voiceDrawFrom, setVoiceDrawFrom] = useState(0);
+
   const threadRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -211,6 +220,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
     setModelFollowUps(null);
     setPendingRefinement(null);
     setShowAdvanced(false);
+    setVoiceDrawFrom(0);
   }, [resetSignal]);
 
   // Focus the composer when the panel opens.
@@ -387,6 +397,52 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
     }
   };
 
+  const stopVoice = useCallback(() => {
+    voiceRef.current?.stop();
+    voiceRef.current = null;
+  }, []);
+
+  const toggleVoice = useCallback(() => {
+    if (voiceRef.current) {
+      stopVoice();
+      return;
+    }
+    const push = (role: ChatMessage['role'], text: string, voice = true) =>
+      setMessages((prev) => [...prev, { id: uid(), role, text, ts: Date.now(), voice }]);
+    const session = new VoiceLiveSession({
+      onStatus: setVoiceStatus,
+      onUserTranscript: (text) => push('user', text),
+      onAssistantTranscript: (text) => push('assistant', text),
+      onError: (text) => {
+        push('error', text, false);
+        voiceRef.current = null;
+      },
+    });
+    voiceRef.current = session;
+    void session.start();
+  }, [stopVoice]);
+
+  // End the voice session when the panel closes or unmounts.
+  useEffect(() => {
+    if (!isOpen) stopVoice();
+  }, [isOpen, stopVoice]);
+  useEffect(() => stopVoice, [stopVoice]);
+
+  const pendingVoiceTurns = messages.slice(voiceDrawFrom).filter((m) => m.voice);
+  const canDrawFromVoice = pendingVoiceTurns.some((m) => m.role === 'assistant');
+
+  const drawFromVoice = () => {
+    if (!canDrawFromVoice || isSending) return;
+    const transcript = pendingVoiceTurns
+      .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
+      .join('\n');
+    setVoiceDrawFrom(messages.length + 1);
+    void send(
+      `${hasDiagram ? 'Update the diagram' : 'Create an Azure architecture'} based on this spoken design conversation. ` +
+      `Use the services and decisions the user agreed to:\n${transcript}`,
+    );
+  };
+
   useEscapeToClose(isOpen, onClose);
 
   if (!isOpen) return null;
@@ -467,7 +523,9 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
         {messages.map((m) => (
           <div key={m.id} className={`arch-chat-msg arch-chat-msg-${m.role}`}>
             {m.role === 'error' && <AlertCircle size={15} className="arch-chat-msg-icon" />}
-            {m.role === 'assistant' && <Sparkles size={15} className="arch-chat-msg-icon" />}
+            {m.role === 'assistant' && (m.voice
+              ? <Mic size={15} className="arch-chat-msg-icon" />
+              : <Sparkles size={15} className="arch-chat-msg-icon" />)}
             <div className="arch-chat-bubble">{m.text}</div>
           </div>
         ))}
@@ -568,6 +626,28 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       )}
 
       <div className="arch-chat-composer">
+        {voiceEnabled && (voiceStatus !== 'idle' || canDrawFromVoice) && (
+          <div className={`arch-chat-voice-bar arch-chat-voice-${voiceStatus}`} role="status" aria-live="polite">
+            <span className="arch-chat-voice-dot" />
+            <span className="arch-chat-voice-label">
+              {voiceStatus === 'connecting' && 'Connecting to Voice Live…'}
+              {voiceStatus === 'listening' && 'Listening — talk through your architecture'}
+              {voiceStatus === 'speaking' && 'Speaking — talk to interrupt'}
+              {voiceStatus === 'idle' && 'Voice conversation ready to draw'}
+            </span>
+            {canDrawFromVoice && (
+              <button
+                type="button"
+                className="arch-chat-voice-draw"
+                onClick={drawFromVoice}
+                disabled={isSending || !configured || pendingRefinement !== null}
+                title="Turn the spoken conversation into a diagram"
+              >
+                <PenLine size={13} /> Draw it
+              </button>
+            )}
+          </div>
+        )}
         {!configured && (
           <div className="arch-chat-warning">
             <AlertCircle size={14} /> Azure OpenAI is not configured.
@@ -584,6 +664,18 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
             rows={2}
             disabled={isSending || !configured || pendingRefinement !== null}
           />
+          {voiceEnabled && (
+            <button
+              type="button"
+              className={`arch-chat-mic${voiceStatus !== 'idle' ? ' active' : ''}`}
+              onClick={toggleVoice}
+              title={voiceStatus !== 'idle' ? 'Stop voice conversation' : 'Talk it through (Voice Live beta)'}
+              aria-label={voiceStatus !== 'idle' ? 'Stop voice conversation' : 'Start voice conversation'}
+              aria-pressed={voiceStatus !== 'idle'}
+            >
+              {voiceStatus !== 'idle' ? <MicOff size={18} /> : <Mic size={18} />}
+            </button>
+          )}
           <button
             className="arch-chat-send"
             onClick={() => send(input)}
