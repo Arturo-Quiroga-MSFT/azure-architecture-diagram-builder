@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.7` | 2026-10-20 | Voice Live in Guided Chat: talk through a design with Ava, who draws and refines the diagram herself | Pending deployment |
 | `v2.1.6` | 2026-10-16 | Imported diagrams: meaningful edge labels, real resource names, compact group layout, fresh titles; MCP client keys | Deployed |
 | `v2.1.5` | 2026-10-12 | Narrator selector (avatar and voice), avatar session-leak fix, dependency vulnerabilities fixed | Deployed |
 | `v2.0.7` | 2026-09-28 | Bottom dock for canvas details; dismissible pop-ups; Private Connectivity lines and labels | Deployed |
@@ -26,6 +27,19 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.7: Talk Through an Architecture with Ava
+
+### Voice Live in Guided Chat
+- A microphone button in Guided Chat starts a spoken conversation with Ava (Azure AI Voice Live, `gpt-realtime-2.1`, Ava HD voice). Ava asks one clarifying question at a time (workload, scale, regions, compliance, data, integration) and keeps replies short.
+- When the design is agreed, Ava draws it herself; asking for a change ("add Azure Digital Twins") refines the diagram in place through the same minimal-change path as typed requests. She can also check what is already on the canvas. Each step appears in the chat thread, and **Draw it** still turns the conversation into a diagram manually.
+- You can interrupt Ava at any time by speaking. Suggestion chips are hidden while a voice session is active.
+- Diagrams created from a conversation are named after the scenario, and derived titles no longer drop the first letter after "Create a…".
+
+### Security and operations
+- The browser never receives a token or key: it opens a WebSocket to `/api/voice-live`, and the server opens the Voice Live session with its managed identity. The server owns the model, voice, instructions and tools; the browser may only stream microphone audio, cancel a reply, and return results for tool calls the model actually made (once each, size-capped).
+- Sessions are capped at 5 concurrent and 10 minutes each (`VOICE_LIVE_MAX_SESSIONS`, `VOICE_LIVE_MAX_SESSION_SECONDS`).
+- Voice Live is enabled per deployment target (`ENABLE_VOICE_LIVE` in `scripts/production/targets/*.env`, managed-identity targets only). The deploy script bakes the UI flag, sets the runtime flag and grants the app identity **Foundry User** on the Foundry resource.
 
 ## v2.1.6: Imports That Read Like Architecture
 

@@ -9,6 +9,7 @@ declare const __APP_VERSION__: string
 interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string
   readonly VITE_ENABLE_ADOPTION_IMPACT?: string
+  readonly VITE_ENABLE_VOICE_LIVE?: string
   // add more env variables here
 }
 

@@ -22,6 +22,13 @@ source "$(dirname "$0")/target.sh"
 BUILD_ONLY="${BUILD_ONLY:-false}"
 ROTATE_OPENAI_SECRET="${ROTATE_OPENAI_SECRET:-false}"
 ROTATE_SERVER_TELEMETRY_SECRET="${ROTATE_SERVER_TELEMETRY_SECRET:-false}"
+# Voice Live (talk through a design in Guided Chat) is enabled per target. The
+# relay authenticates with the app's managed identity, so key-auth targets keep it off.
+VOICE_LIVE="${ENABLE_VOICE_LIVE:-false}"
+if [[ "$VOICE_LIVE" == "true" && "$OPENAI_AUTH" != "managed-identity" ]]; then
+  echo "⚠️  ENABLE_VOICE_LIVE needs a managed-identity target; Voice Live stays off for '$AADB_TARGET'."
+  VOICE_LIVE="false"
+fi
 NPM_REGISTRY="${NPM_REGISTRY:-https://packagefeedproxy.microsoft.io/npm/}"
 COSMOS_DATA_CONTRIBUTOR="00000000-0000-0000-0000-000000000002"  # Cosmos DB Built-in Data Contributor
 
@@ -96,7 +103,7 @@ while IFS='=' read -r key value; do
       [[ -n "${WEB_APP_INSIGHTS:-}" ]] || echo "$key=$value" > "$APPINSIGHTS_FILE"
       continue
     fi
-    if [[ "$key" == "VITE_AZURE_OPENAI_API_KEY" || "$key" == "VITE_ENABLE_ADOPTION_IMPACT" ]]; then
+    if [[ "$key" == "VITE_AZURE_OPENAI_API_KEY" || "$key" == "VITE_ENABLE_ADOPTION_IMPACT" || "$key" == "VITE_ENABLE_VOICE_LIVE" ]]; then
       continue
     fi
     BUILD_ARGS+=(--build-arg "$key=$value")
@@ -115,6 +122,7 @@ else
     --build-arg "LOAD_ENV_BUILD=false" \
     --build-arg "VITE_ENABLE_ADOPTION_IMPACT=false" \
     --build-arg "ENABLE_ADOPTION_IMPACT=false" \
+    --build-arg "VITE_ENABLE_VOICE_LIVE=$VOICE_LIVE" \
     "$SOURCE_DIR"
 fi
 
@@ -209,6 +217,18 @@ else
   else
     echo "  • Cognitive Services User already present on $FOUNDRY_ACCOUNT"
   fi
+  if [[ "$VOICE_LIVE" == "true" ]]; then
+    # The Voice Live relay requests an https://ai.azure.com token for the realtime session.
+    EXISTING_VOICE_ROLE="$(az role assignment list --assignee-object-id "$PRINCIPAL" --scope "$FOUNDRY_ID" \
+      --query "[?roleDefinitionName=='Foundry User'] | [0].id" -o tsv)"
+    if [[ -z "$EXISTING_VOICE_ROLE" ]]; then
+      az role assignment create --assignee-object-id "$PRINCIPAL" --assignee-principal-type ServicePrincipal \
+        --role "Foundry User" --scope "$FOUNDRY_ID" -o none
+      echo "  ✓ Foundry User on $FOUNDRY_ACCOUNT (Voice Live)"
+    else
+      echo "  • Foundry User already present on $FOUNDRY_ACCOUNT"
+    fi
+  fi
 fi
 
 EXISTING_SERVER_TELEMETRY_SECRET="$(az containerapp secret list -n "$NEW_APP" -g "$RG" \
@@ -292,7 +312,7 @@ trap 'rm -f "$CANDIDATE_FILE"' EXIT
 az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$PREVIOUS_REVISION" \
   --query properties.template -o json \
   | node "$SOURCE_DIR/scripts/production/render-webapp-revision.mjs" \
-      "$ACR_IMAGE" "$REV_SUFFIX" "$APP_VERSION" "https://$FQDN" "$OPENAI_AUTH" \
+      "$ACR_IMAGE" "$REV_SUFFIX" "$APP_VERSION" "https://$FQDN" "$OPENAI_AUTH" "$VOICE_LIVE" \
   > "$CANDIDATE_FILE"
 
 echo "🚀 Creating candidate revision $REV_SUFFIX with production traffic pinned to $PREVIOUS_REVISION ..."

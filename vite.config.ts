@@ -64,6 +64,10 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         // Forward /api/ to the local speech token server (mirrors nginx in production)
+        '/api/voice-live': {
+          target: 'ws://127.0.0.1:3001',
+          ws: true,
+        },
         '/api': {
           target: 'http://127.0.0.1:3001',
           changeOrigin: false,
