@@ -22,6 +22,9 @@ source "$(dirname "$0")/target.sh"
 BUILD_ONLY="${BUILD_ONLY:-false}"
 ROTATE_OPENAI_SECRET="${ROTATE_OPENAI_SECRET:-false}"
 ROTATE_SERVER_TELEMETRY_SECRET="${ROTATE_SERVER_TELEMETRY_SECRET:-false}"
+# Each active revision keeps a replica running even at 0% traffic. After a
+# successful release, keep only the newest N (live + rollback targets) active.
+KEEP_ACTIVE_REVISIONS="${KEEP_ACTIVE_REVISIONS:-3}"
 # Voice Live (talk through a design in Guided Chat) is enabled per target. The
 # relay authenticates with the app's managed identity, so key-auth targets keep it off.
 VOICE_LIVE="${ENABLE_VOICE_LIVE:-false}"
@@ -361,6 +364,17 @@ if [[ "$LIVE_VERSION" != "$APP_VERSION" ]]; then
   az containerapp ingress traffic set -n "$NEW_APP" -g "$RG" \
     --revision-weight "$PREVIOUS_REVISION=100" "$CANDIDATE_REVISION=0" -o none
   exit 1
+fi
+
+# ── Prune: deactivate older revisions (reactivate with `az containerapp revision activate`) ──
+if [[ "$KEEP_ACTIVE_REVISIONS" =~ ^[0-9]+$ && "$KEEP_ACTIVE_REVISIONS" -ge 2 ]]; then
+  while read -r OLD_REVISION; do
+    [[ -z "$OLD_REVISION" || "$OLD_REVISION" == "$CANDIDATE_REVISION" || "$OLD_REVISION" == "$PREVIOUS_REVISION" ]] && continue
+    az containerapp revision deactivate -n "$NEW_APP" -g "$RG" --revision "$OLD_REVISION" -o none \
+      && echo "  • Deactivated old revision $OLD_REVISION"
+  done < <(az containerapp revision list -n "$NEW_APP" -g "$RG" \
+    --query "reverse(sort_by([?properties.active && properties.trafficWeight==\`0\`], &properties.createdTime))[].name" -o tsv \
+    | tail -n +"$KEEP_ACTIVE_REVISIONS")
 fi
 
 echo ""
