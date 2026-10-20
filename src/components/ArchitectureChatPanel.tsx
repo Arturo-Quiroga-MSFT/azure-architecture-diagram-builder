@@ -537,7 +537,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
           </div>
         )}
 
-        {messages.length > 0 && configured && !isSending && (hasDiagram ? followUps.length > 0 : true) && (
+        {messages.length > 0 && configured && !isSending && voiceStatus === 'idle' && (hasDiagram ? followUps.length > 0 : true) && (
           <div className="arch-chat-followups">
             <div className="arch-chat-followups-label">
               <Sparkles size={12} />
