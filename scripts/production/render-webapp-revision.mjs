@@ -2,15 +2,19 @@
 
 import { readFileSync } from 'node:fs';
 
-const [image, revisionSuffix, appVersion, publicUrl, openAiAuth = 'key'] = process.argv.slice(2);
+const [image, revisionSuffix, appVersion, publicUrl, openAiAuth = 'key', voiceLive = 'false'] = process.argv.slice(2);
 
 if (!image || !revisionSuffix || !appVersion || !publicUrl) {
-  console.error('Usage: render-webapp-revision.mjs <image> <revision-suffix> <app-version> <public-url> [key|managed-identity]');
+  console.error('Usage: render-webapp-revision.mjs <image> <revision-suffix> <app-version> <public-url> [key|managed-identity] [true|false]');
   process.exit(1);
 }
 
 if (openAiAuth !== 'key' && openAiAuth !== 'managed-identity') {
   throw new Error(`Invalid OpenAI auth mode: ${openAiAuth}`);
+}
+
+if (voiceLive !== 'true' && voiceLive !== 'false') {
+  throw new Error(`Invalid Voice Live flag: ${voiceLive}`);
 }
 
 if (!/^v[0-9]+-[0-9]+-[0-9]+-[a-f0-9]{7,12}$/.test(revisionSuffix)) {
@@ -85,6 +89,7 @@ setSecretRef('TELEMETRY_HASH_SECRET', 'telemetry-hash-secret');
 setValue('APP_VERSION', appVersion);
 setValue('PUBLIC_URL', publicUrl);
 setValue('ENABLE_ADOPTION_IMPACT', 'false');
+setValue('ENABLE_VOICE_LIVE', voiceLive);
 setValue('NODE_ENV', 'production');
 setValue('OTEL_SERVICE_NAME', 'aadb-token-server');
 
