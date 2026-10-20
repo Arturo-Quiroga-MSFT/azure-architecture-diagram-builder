@@ -496,3 +496,20 @@
   cursor: pointer;
 }
 .arch-chat-voice-draw:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Ava tool activity (search, drawing) */
+.arch-chat-msg-tool .arch-chat-bubble {
+  font-size: 12.5px;
+  border: 1px dashed rgba(139, 92, 246, 0.55);
+  background: rgba(139, 92, 246, 0.08);
+  color: inherit;
+}
+.arch-chat-msg-user.arch-chat-msg-tool .arch-chat-bubble {
+  background: rgba(139, 92, 246, 0.14);
+}
+.arch-chat-tool-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #8B5CF6;
+}

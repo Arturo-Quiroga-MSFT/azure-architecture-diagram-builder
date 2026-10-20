@@ -15,7 +15,14 @@ export interface VoiceLiveCallbacks {
   onUserTranscript: (text: string) => void;
   onAssistantTranscript: (text: string) => void;
   onError: (message: string) => void;
+  /** Every tool call Ava makes (server- or browser-side), for display. */
+  onToolActivity?: (name: string, args: Record<string, unknown>) => void;
+  /** Runs a browser-side tool and resolves with its JSON result. */
+  onToolCall?: (name: string, args: Record<string, unknown>) => Promise<unknown>;
 }
+
+/** Tools the relay expects the browser to execute (it owns the canvas). */
+export const BROWSER_TOOLS = new Set(['draw_architecture', 'describe_canvas']);
 
 export const isVoiceLiveEnabled = (): boolean =>
   String(import.meta.env.VITE_ENABLE_VOICE_LIVE || '').toLowerCase() === 'true';
@@ -176,12 +183,34 @@ export class VoiceLiveSession {
       case 'response.audio_transcript.done':
         if (ev.transcript?.trim()) this.cb.onAssistantTranscript(ev.transcript.trim());
         break;
+      case 'response.function_call_arguments.done':
+        void this.handleToolCall(ev);
+        break;
       case 'error':
-        this.cb.onError(ev.error?.message || 'Voice service error');
+        // A queued response.create racing an active reply is harmless; don't surface it.
+        if (!/active response/i.test(ev.error?.message || '')) {
+          this.cb.onError(ev.error?.message || 'Voice service error');
+        }
         break;
       default:
         break;
     }
+  }
+
+  private async handleToolCall(ev: any): Promise<void> {
+    let args: Record<string, unknown> = {};
+    try { args = JSON.parse(ev.arguments || '{}'); } catch { /* keep empty */ }
+    this.cb.onToolActivity?.(ev.name, args);
+    trackEvent('VoiceLive_ToolCall', { tool: String(ev.name) });
+    if (!BROWSER_TOOLS.has(ev.name) || !ev.call_id) return;
+    let result: unknown;
+    try {
+      result = this.cb.onToolCall ? await this.cb.onToolCall(ev.name, args) : { error: 'Tool not available' };
+    } catch (err: any) {
+      result = { error: err?.message || String(err) };
+    }
+    if (this.stopped || this.ws?.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify({ type: 'tool.result', call_id: ev.call_id, output: JSON.stringify(result ?? {}) }));
   }
 
   private enqueue(b64: string): void {

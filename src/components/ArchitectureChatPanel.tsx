@@ -26,7 +26,23 @@ interface ChatMessage {
   ts: number;
   /** Spoken turn from the Voice Live beta (display only; never auto-applied). */
   voice?: boolean;
+  /** Ava's tool activity (search, drawing); excluded from the "Draw it" transcript. */
+  tool?: boolean;
+  /** Voice turns before this message have already been drawn. */
+  drawMarker?: boolean;
 }
+
+/** What a canvas change produced, reported back to Ava for voice-initiated changes. */
+type ChangeOutcome =
+  | { status: 'drawn'; summary: string; title?: string; services: string[] }
+  | { status: 'awaiting_user_review'; extraServices: string[] }
+  | { status: 'error'; error: string };
+
+const serviceNames = (result: any): string[] => (Array.isArray(result?.services)
+  ? result.services
+      .map((service: any) => String(service?.label ?? service?.name ?? service?.service ?? '').trim())
+      .filter(Boolean)
+  : []);
 
 interface PendingRefinement {
   before: CurrentArchitecture;
@@ -248,11 +264,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       { id: asstId, role: 'assistant', text: summary, ts: Date.now() },
     ]);
 
-    const nextServices = Array.isArray(result?.services)
-      ? result.services
-          .map((service: any) => String(service?.label ?? service?.name ?? service?.service ?? '').trim())
-          .filter(Boolean)
-      : [];
+    const nextServices = serviceNames(result);
     setModelFollowUps(null);
     setFollowUpsLoading(true);
     void generateFollowUpSuggestions({
@@ -266,16 +278,21 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       })
       .catch(() => { /* fall back to static chips */ })
       .finally(() => setFollowUpsLoading(false));
+    return summary;
   }, [onApply]);
 
-  const send = useCallback(
-    async (raw: string) => {
-      const text = raw.trim();
-      if (!text || isSending) return;
-
-      setInput('');
-      const userMsg: ChatMessage = { id: uid(), role: 'user', text, ts: Date.now() };
-      setMessages((prev) => [...prev, userMsg]);
+  /**
+   * Applies one change request to the canvas (create when empty, refine otherwise).
+   * Shared by typed messages, chips, "Draw it" and Ava's draw_architecture tool.
+   */
+  const performChange = useCallback(
+    async (
+      text: string,
+      opts: { echo?: boolean; title?: string; userMessage?: Partial<ChatMessage> } = {},
+    ): Promise<ChangeOutcome> => {
+      if (opts.echo !== false) {
+        setMessages((prev) => [...prev, { id: uid(), role: 'user', text, ts: Date.now(), ...opts.userMessage }]);
+      }
       setIsSending(true);
 
       // Snapshot the canvas state BEFORE applying so we can diff for a summary.
@@ -286,35 +303,39 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       };
 
       // Recent user instructions help the model resolve references.
-      const recentRequests = [...messages, userMsg]
-        .filter((m) => m.role === 'user')
-        .slice(-5)
-        .map((m) => m.text);
+      const recentRequests = [...messages.filter((m) => m.role === 'user').map((m) => m.text), text]
+        .slice(-5);
 
       try {
         const prompt = buildModificationPrompt(before, text, recentRequests.slice(0, -1));
         const result = await generateArchitectureWithAI(prompt);
+        if (opts.title && result && typeof result === 'object') result.architectureName = opts.title;
         const review = reviewRefinement(before, result, text);
         if (review.isRefinement && review.unrequestedAdditions.length > 0) {
           setPendingRefinement({ before, result, request: text, recentRequests, review });
-        } else {
-          await applyReviewedResult(before, result, text, recentRequests, false);
+          return { status: 'awaiting_user_review', extraServices: review.unrequestedAdditions.map((c) => c.name) };
         }
+        const summary = await applyReviewedResult(before, result, text, recentRequests, false);
+        return { status: 'drawn', summary, title: result?.architectureName, services: serviceNames(result) };
       } catch (err: any) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: uid(),
-            role: 'error',
-            text: err?.message || 'Something went wrong updating the diagram. Please try again.',
-            ts: Date.now(),
-          },
-        ]);
+        const message = err?.message || 'Something went wrong updating the diagram. Please try again.';
+        setMessages((prev) => [...prev, { id: uid(), role: 'error', text: message, ts: Date.now() }]);
+        return { status: 'error', error: message };
       } finally {
         setIsSending(false);
       }
     },
-    [isSending, messages, currentArchitecture, applyReviewedResult],
+    [messages, currentArchitecture, applyReviewedResult],
+  );
+
+  const send = useCallback(
+    async (raw: string) => {
+      const text = raw.trim();
+      if (!text || isSending) return;
+      setInput('');
+      await performChange(text);
+    },
+    [isSending, performChange],
   );
 
   const keepCurrentArchitecture = () => {
@@ -397,6 +418,47 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
     }
   };
 
+  // ── Ava's browser-side tools ─────────────────────────────────────────────
+  const pushToolNote = (text: string, drawMarker = false) =>
+    setMessages((prev) => [...prev, { id: uid(), role: 'assistant', text, ts: Date.now(), voice: true, tool: true, drawMarker }]);
+
+  const runVoiceTool = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
+    if (name === 'describe_canvas') {
+      const services = currentArchitecture.nodes.filter((n) => n.type === 'azureNode').map((n) => String(n.data?.label || '')).filter(Boolean);
+      const groups = currentArchitecture.nodes.filter((n) => n.type === 'groupNode').map((n) => String(n.data?.label || '')).filter(Boolean);
+      return services.length
+        ? { title: currentArchitecture.architectureName, services, groups, connections: currentArchitecture.edges.length }
+        : { empty: true };
+    }
+    if (isSending || pendingRefinement) {
+      return { error: pendingRefinement
+        ? 'The user still has to answer the review dialog on screen.'
+        : 'Another change is being drawn; try again in a few seconds.' };
+    }
+
+    if (name === 'draw_architecture') {
+      const request = String(args.request || '').trim();
+      if (!request) return { error: 'request is required' };
+      const title = String(args.title || '').trim().slice(0, 80) || undefined;
+      const outcome = await performChange(request, {
+        userMessage: { voice: true, tool: true, drawMarker: true },
+        title: hasDiagram ? undefined : title,
+      });
+      return outcome;
+    }
+
+    return { error: `Unknown tool ${name}` };
+  };
+  // Tool calls arrive asynchronously; always run against the latest render.
+  const runVoiceToolRef = useRef(runVoiceTool);
+  runVoiceToolRef.current = runVoiceTool;
+
+  const describeToolCall = (name: string) => {
+    if (name === 'describe_canvas') {
+      pushToolNote('👀 Ava is reviewing the current diagram');
+    }
+  };
+
   const stopVoice = useCallback(() => {
     voiceRef.current?.stop();
     voiceRef.current = null;
@@ -413,6 +475,8 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       onStatus: setVoiceStatus,
       onUserTranscript: (text) => push('user', text),
       onAssistantTranscript: (text) => push('assistant', text),
+      onToolActivity: describeToolCall,
+      onToolCall: (name, args) => runVoiceToolRef.current(name, args),
       onError: (text) => {
         push('error', text, false);
         voiceRef.current = null;
@@ -428,7 +492,8 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
   }, [isOpen, stopVoice]);
   useEffect(() => stopVoice, [stopVoice]);
 
-  const pendingVoiceTurns = messages.slice(voiceDrawFrom).filter((m) => m.voice);
+  const lastDrawIndex = messages.reduce((acc, m, i) => (m.drawMarker ? i + 1 : acc), 0);
+  const pendingVoiceTurns = messages.slice(Math.max(voiceDrawFrom, lastDrawIndex)).filter((m) => m.voice && !m.tool);
   const canDrawFromVoice = pendingVoiceTurns.some((m) => m.role === 'assistant');
 
   const drawFromVoice = () => {
@@ -437,7 +502,7 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
       .join('\n');
     setVoiceDrawFrom(messages.length + 1);
-    void send(
+    void performChange(
       `${hasDiagram ? 'Update the diagram' : 'Voice-designed Azure architecture'}. ` +
       `Apply the services and decisions agreed in this spoken design conversation:\n${transcript}`,
     );
@@ -521,12 +586,15 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
         )}
 
         {messages.map((m) => (
-          <div key={m.id} className={`arch-chat-msg arch-chat-msg-${m.role}`}>
+          <div key={m.id} className={`arch-chat-msg arch-chat-msg-${m.role}${m.tool ? ' arch-chat-msg-tool' : ''}`}>
             {m.role === 'error' && <AlertCircle size={15} className="arch-chat-msg-icon" />}
             {m.role === 'assistant' && (m.voice
               ? <Mic size={15} className="arch-chat-msg-icon" />
               : <Sparkles size={15} className="arch-chat-msg-icon" />)}
-            <div className="arch-chat-bubble">{m.text}</div>
+            <div className="arch-chat-bubble">
+              {m.tool && m.role === 'user' && <span className="arch-chat-tool-label">✏️ Ava is drawing</span>}
+              {m.text}
+            </div>
           </div>
         ))}
 
