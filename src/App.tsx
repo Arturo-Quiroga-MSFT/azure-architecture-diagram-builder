@@ -168,7 +168,7 @@ function deriveTitleFromPrompt(prompt: string | undefined | null): string | unde
   const modMatch = p.match(/CHANGE REQUESTED:\s*(.+)$/is);
   if (modMatch) p = modMatch[1].trim();
   // Drop leading verbs / fillers.
-  p = p.replace(/^(please\s+)?(build|design|create|generate|make|draw|architect|show|produce)\s+(me\s+)?(a|an|the)?\s*/i, '');
+  p = p.replace(/^(please\s+)?(build|design|create|generate|make|draw|architect|show|produce)\s+(me\s+)?((an|a|the)\s+)?/i, '');
   // Take first sentence / line.
   p = p.split(/[\n.!?]/)[0].trim();
   if (!p) return undefined;

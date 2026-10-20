@@ -438,9 +438,8 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
       .join('\n');
     setVoiceDrawFrom(messages.length + 1);
     void send(
-      `${hasDiagram ? 'Update the diagram' : 'Create an Azure architecture'} based on this spoken design conversation. ` +
-      `Use the services and decisions the user agreed to. Name the architecture after the customer ` +
-      `scenario (for example "Wind Turbine Predictive Maintenance"), never after this request.\n${transcript}`,
+      `${hasDiagram ? 'Update the diagram' : 'Voice-designed Azure architecture'}. ` +
+      `Apply the services and decisions agreed in this spoken design conversation:\n${transcript}`,
     );
   };
 
