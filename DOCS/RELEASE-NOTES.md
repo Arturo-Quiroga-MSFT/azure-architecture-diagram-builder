@@ -6,7 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
-| `v2.1.10` | 2026-10-21 | Exports render the diagram itself at full resolution, not a shrunken screenshot of the canvas | Pending deployment |
+| `v2.1.10` | 2026-10-21 | Exports render the diagram itself at full resolution, not a shrunken screenshot of the canvas | Deployed |
 | `v2.1.9` | 2026-10-21 | Fabric Capacity always priced with Fabric items; Work IQ icon | Deployed |
 | `v2.1.8` | 2026-10-21 | Microsoft IQ: Fabric IQ and Foundry IQ as first-class services with icons and costing | Deployed |
 | `v2.1.7` | 2026-10-20 | Voice Live in Guided Chat: talk through a design with Ava, who draws and refines the diagram herself | Deployed |
