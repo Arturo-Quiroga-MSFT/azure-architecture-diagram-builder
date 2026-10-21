@@ -1154,6 +1154,7 @@ function App() {
       await new Promise(res => setTimeout(res, 800));
       try {
         const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: exportCanvasBackground,
           exportBackground,
         });
@@ -1191,6 +1192,7 @@ function App() {
         // captureDiagramAsSvg serialises the DOM natively — SVG edge paths
         // (curves, dashes, orthogonal bends) are preserved as vector data.
         const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: exportCanvasBackground,
           excludePanels: true,
           exportBackground,
@@ -1264,6 +1266,7 @@ function App() {
       await new Promise(res => setTimeout(res, 800));
       try {
         const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: exportCanvasBackground,
           excludePanels: true,
           exportBackground,
@@ -1306,6 +1309,7 @@ function App() {
       await new Promise(res => setTimeout(res, 800));
       try {
         const svgText = await captureDiagramAsSvg(reactFlowWrapper.current as HTMLElement, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: exportCanvasBackground,
           excludePanels: true,
           exportBackground,
@@ -1389,6 +1393,7 @@ function App() {
       await new Promise(res => setTimeout(res, 800));
       try {
         const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: exportCanvasBackground,
           excludePanels: true,
           exportBackground,
@@ -1426,6 +1431,7 @@ function App() {
       await new Promise(res => setTimeout(res, 800));
       try {
         const imageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current as HTMLElement, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: exportCanvasBackground,
           excludePanels: true,
           exportBackground,
@@ -3021,6 +3027,7 @@ function App() {
         await new Promise(resolve => setTimeout(resolve, 400));
         const isDark = document.body.classList.contains('dark-mode');
         diagramImageDataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
+          nodes: reactFlowInstance?.getNodes(),
           backgroundColor: isDark ? '#1a1a2e' : '#f8fafc',
         });
         console.log('\uD83D\uDCF8 Diagram snapshot captured for validation report');
@@ -3228,6 +3235,7 @@ function App() {
           }
           if (!reactFlowWrapper.current) continue;
           const dataUrl = await captureDiagramAsPng(reactFlowWrapper.current, {
+            nodes: reactFlowInstance?.getNodes(),
             backgroundColor: exportCanvasBackground,
             exportBackground,
           });

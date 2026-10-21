@@ -22,6 +22,7 @@
  */
 
 import { toPng, toSvg } from 'html-to-image';
+import { getNodesBounds, type Node } from 'reactflow';
 
 export type ExportBackground = 'plain' | 'dots' | 'grid';
 
@@ -127,6 +128,12 @@ export interface CaptureOptions {
    * Defaults to `plain` for presentation-ready exports.
    */
   exportBackground?: ExportBackground;
+  /**
+   * The diagram's nodes. When given, only the diagram itself is rendered, at
+   * its natural size, cropped to its bounds — not the on-screen canvas with
+   * its toolbar, dock and empty margins, which left the diagram tiny in exports.
+   */
+  nodes?: Node[];
 }
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
@@ -139,6 +146,15 @@ function makeFilter(excludeClasses: string[]) {
 }
 
 function captureStyle(exportBackground: ExportBackground): Partial<CSSStyleDeclaration> {
+  if (exportBackground === 'dots') {
+    // The React Flow background layer sits outside the cropped viewport, so
+    // draw the dots on the captured element itself.
+    return {
+      backgroundImage: 'radial-gradient(rgba(148, 163, 184, 0.45) 1px, transparent 1px)',
+      backgroundSize: '20px 20px',
+      backgroundPosition: '0 0',
+    };
+  }
   if (exportBackground !== 'grid') return {};
   return {
     backgroundImage: [
@@ -158,6 +174,53 @@ function captureClasses(options: CaptureOptions): string[] {
   return classes;
 }
 
+// Room around the node bounds for edge labels and routed edges that bend
+// outside the outermost nodes.
+const DIAGRAM_MARGIN = 64;
+// Small diagrams are upscaled to at least this many pixels on the long side;
+// large ones are capped so the browser can still allocate the canvas.
+const MIN_LONG_SIDE_PX = 2400;
+const MAX_LONG_SIDE_PX = 8000;
+
+interface CaptureTarget {
+  element: HTMLElement;
+  width?: number;
+  height?: number;
+  pixelRatio: number;
+  style: Partial<CSSStyleDeclaration>;
+}
+
+/**
+ * Work out what to render: the diagram layer cropped to the nodes' bounds at
+ * zoom 1 when nodes are given, otherwise the whole element as shown on screen.
+ */
+function captureTarget(element: HTMLElement, options: CaptureOptions): CaptureTarget {
+  const background = captureStyle(options.exportBackground ?? 'plain');
+  const nodes = (options.nodes ?? []).filter((node) => !node.hidden);
+  const viewport = element.querySelector<HTMLElement>('.react-flow__viewport');
+  if (!viewport || nodes.length === 0) {
+    return { element, pixelRatio: options.pixelRatio ?? 2, style: background };
+  }
+  const bounds = getNodesBounds(nodes);
+  const width = Math.ceil(bounds.width + DIAGRAM_MARGIN * 2);
+  const height = Math.ceil(bounds.height + DIAGRAM_MARGIN * 2);
+  const longSide = Math.max(width, height);
+  const pixelRatio = options.pixelRatio
+    ?? Math.min(Math.max(2, MIN_LONG_SIDE_PX / longSide), MAX_LONG_SIDE_PX / longSide);
+  return {
+    element: viewport,
+    width,
+    height,
+    pixelRatio,
+    style: {
+      ...background,
+      width: `${width}px`,
+      height: `${height}px`,
+      transform: `translate(${DIAGRAM_MARGIN - bounds.x}px, ${DIAGRAM_MARGIN - bounds.y}px) scale(1)`,
+    },
+  };
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
@@ -170,16 +233,18 @@ export async function captureDiagramAsPng(
   element: HTMLElement,
   options: CaptureOptions,
 ): Promise<string> {
-  const exportBackground = options.exportBackground ?? 'plain';
   const excludeClasses = captureClasses(options);
+  const target = captureTarget(element, options);
   const restore = prepareEdgesForCapture(element);
 
   try {
-    return await toPng(element, {
+    return await toPng(target.element, {
       backgroundColor: options.backgroundColor,
-      pixelRatio: options.pixelRatio ?? 2,
+      pixelRatio: target.pixelRatio,
+      width: target.width,
+      height: target.height,
       filter: makeFilter(excludeClasses),
-      style: captureStyle(exportBackground),
+      style: target.style,
       imagePlaceholder:
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     });
@@ -198,16 +263,18 @@ export async function captureDiagramAsSvg(
   element: HTMLElement,
   options: CaptureOptions,
 ): Promise<string> {
-  const exportBackground = options.exportBackground ?? 'plain';
   const excludeClasses = captureClasses(options);
+  const target = captureTarget(element, options);
   const restore = prepareEdgesForCapture(element);
 
   try {
-    const dataUrl = await toSvg(element, {
+    const dataUrl = await toSvg(target.element, {
       backgroundColor: options.backgroundColor,
-      pixelRatio: options.pixelRatio ?? 2,
+      pixelRatio: target.pixelRatio,
+      width: target.width,
+      height: target.height,
       filter: makeFilter(excludeClasses),
-      style: captureStyle(exportBackground),
+      style: target.style,
       imagePlaceholder:
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     });
