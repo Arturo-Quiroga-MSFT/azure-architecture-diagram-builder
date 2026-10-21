@@ -14,7 +14,7 @@
 
 **A professional AI-powered tool for designing, validating, and deploying Azure cloud architectures**
 
-[Live Demo](https://azure-diagram-builder-vnet.thankfulbeach-7e8f01bc.eastus2.azurecontainerapps.io) • [Short Link](https://aka.ms/diagram-builder) • [Documentation](DOCS/ARCHITECTURE.md) • [Report Bug](../../issues)
+[Live Demo](https://azure-diagram-builder.ashywater-ce264412.eastus2.azurecontainerapps.io) • [Short Link](https://aka.ms/diagram-builder) • [Documentation](DOCS/ARCHITECTURE.md) • [Report Bug](../../issues)
 
 </div>
 
@@ -79,6 +79,14 @@ Refine your diagram through a natural back-and-forth conversation instead of one
 - Every change is **auto-saved to version history**, so you can step back at any time
 - Suggestion chips help you get started, and the panel shows which model is active
 
+### 🎤 Talk Through a Design with Ava (Voice Live)
+Click the **microphone** in Guided Chat to design out loud with **Ava** (Azure AI Voice Live, `gpt-realtime-2.1`, Ava HD voice):
+
+- Ava asks one clarifying question at a time — workload, scale, regions, compliance, data, integrations — and keeps replies short
+- When the design is agreed, **Ava draws the diagram herself**; say *"add Azure Digital Twins"* and she refines it in place through the same minimal-change path as typed requests. She can also check what is already on the canvas
+- Interrupt her at any time by speaking; every step also appears in the chat thread, and **Draw it** still turns the conversation into a diagram
+- **No keys in the browser** — the browser streams microphone audio over `/api/voice-live`, and the server opens the Voice Live session with its managed identity and owns the model, voice, instructions and tools. Sessions are capped (`VOICE_LIVE_MAX_SESSIONS`, `VOICE_LIVE_MAX_SESSION_SECONDS`); enable per deployment with `ENABLE_VOICE_LIVE` (managed-identity targets only)
+
 ### ✏️ Blueprint Diagrams (BETA)
 Generate a hand-drawn, **whiteboard-style blueprint** of your architecture — nested zones (Azure / VNet / On-prem) with numbered, labeled arrows that trace the end-to-end flow, just like an architect explaining a system at a whiteboard. Three generation modes are available in the AI Generator modal:
 
@@ -102,7 +110,7 @@ Validate your architecture against all five WAF pillars:
 Select specific recommendations and automatically regenerate an improved architecture. During analysis, a dismiss hint lets you close the panel and return later via the **Validation Score** button in the toolbar.
 
 ### 🔀 Multi-Model Comparison
-Compare AI output side-by-side across all 15 supported models when their deployments are configured:
+Compare AI output side-by-side across all 14 supported models when their deployments are configured:
 
 - **Architecture Comparison** — Run the same prompt through multiple models and compare service counts, connection counts, groups, workflow steps, token usage, and latency
 - **Validation Comparison** — Run WAF validation across models and compare overall scores, pillar-level scores, severity breakdowns, finding counts, and quick wins. An inline WAF info box explains the five pillars being assessed
@@ -211,6 +219,8 @@ A built-in feedback widget captures a rating, category, and free-text comment. S
 - **Maximize the canvas** — a **Hide/Show Toolbar** toggle collapses the top toolbar, and **Focus** mode hides the side panels plus the generation banner/model badge for a clean, diagram-only view (both persist across sessions)
 
 ### 📤 Export Options
+Image, slide and report exports render the **diagram itself**, cropped to its nodes at full resolution (2400–8000 px on the long side) — never a screenshot of the canvas with toolbars and margins. PowerPoint slides keep the diagram's own aspect ratio.
+
 | Format | Use Case |
 |--------|----------|
 | **PNG** | Documentation, presentations |
@@ -456,7 +466,7 @@ The Diagram Builder ships a **Model Context Protocol (MCP) server** (`mcp-server
 
 ### Transport & auth
 - **Dual transport** — stdio (local clients) and **Streamable-HTTP** (remote clients). Launch HTTP with `npm run start:http` (or `MCP_TRANSPORT=http`).
-- **Microsoft Entra sign-in (OAuth 2.1)** — set `MCP_ENTRA_CLIENT_ID` to the MCP API app registration. The server publishes [Protected Resource Metadata](https://datatracker.ietf.org/doc/html/rfc9728) at `/.well-known/oauth-protected-resource/mcp`, answers unauthenticated calls with a `401` challenge that points to it, and validates Entra access tokens locally (signature, audience, per-tenant issuer, expiry and the `mcp.tools` scope). Optionally restrict tenants with `MCP_ENTRA_ALLOWED_TENANTS`. Register the public MCP URL (for example `https://<mcp-host>/mcp`) as an additional **Application ID URI** next to `api://<client-id>`: clients such as VS Code send it as the RFC 8707 `resource` parameter, and Entra otherwise rejects the sign-in with `AADSTS9010010`. The server accepts that URL as a token audience when `MCP_PUBLIC_URL` is set.
+- **Microsoft Entra sign-in (OAuth 2.1, optional for self-hosted deployments; the hosted server uses API keys)** — set `MCP_ENTRA_CLIENT_ID` to the MCP API app registration. The server publishes [Protected Resource Metadata](https://datatracker.ietf.org/doc/html/rfc9728) at `/.well-known/oauth-protected-resource/mcp`, answers unauthenticated calls with a `401` challenge that points to it, and validates Entra access tokens locally (signature, audience, per-tenant issuer, expiry and the `mcp.tools` scope). Optionally restrict tenants with `MCP_ENTRA_ALLOWED_TENANTS`. Register the public MCP URL (for example `https://<mcp-host>/mcp`) as an additional **Application ID URI** next to `api://<client-id>`: clients such as VS Code send it as the RFC 8707 `resource` parameter, and Entra otherwise rejects the sign-in with `AADSTS9010010`. The server accepts that URL as a token audience when `MCP_PUBLIC_URL` is set.
 - **Usage logging** — the HTTP endpoint writes one JSON line per request (`event: "mcp_request"`) with status, auth method or rejection reason, caller tenant and Entra object ID, MCP client name/version, tool names and per-tool outcome. It never logs names, emails, tokens or tool arguments. On Azure Container Apps the lines land in `ContainerAppConsoleLogs_CL`; ready-made queries are in [`infra/mcp-usage-queries.kql`](infra/mcp-usage-queries.kql), and the **MCP Usage Monitor** workbook ([`infra/mcp-usage-workbook.json`](infra/mcp-usage-workbook.json), generated by `scripts/build-mcp-usage-workbook.py`) sits next to the LLM Cost Monitor in the Application Insights workbook gallery. Set `MCP_USAGE_LOG=off` to disable.
 - **Static bearer token** — `MCP_AUTH_TOKEN` is still accepted alongside Entra tokens for clients that cannot do OAuth (connector wizards, scripts). A `/healthz` probe and a pre-auth liveness response on `/mcp` keep those wizards happy.
 - **Named client keys** — for service-to-service connectors in other tenants (for example an agent platform's custom MCP connector), where Entra sign-in would need guest accounts or cross-tenant consent. `MCP_CLIENT_KEYS` holds `name=<sha256>` entries (only hashes reach the server); clients send the key as `Authorization: Bearer <key>` or `X-API-Key: <key>`. Each key is revocable on its own and its calls are attributed by name in the usage log. Manage keys with `AADB_TARGET=<target> ./scripts/production/mcp-client-key.sh add|revoke|list <name>`, then run `deploy-mcp.sh`.
@@ -942,6 +952,33 @@ azure-diagrams/
 ---
 
 ## 🌟 What's New
+
+### October 21, 2026 — AADB v2.1.10 Full-Size Diagram Exports
+
+- **Exports show the diagram, not the canvas** — PNG, SVG, animated SVG, PowerPoint slide, customer deck, validation report and batch PNG exports render the diagram cropped to its nodes at full resolution (2400–8000 px), with no tool row, bottom dock or empty margins.
+- **Slides fill the frame** — PowerPoint places the diagram at its own aspect ratio instead of shrinking a window-sized screenshot onto the slide. The Dots background is still drawn when selected.
+
+### October 21, 2026 — AADB v2.1.8 & v2.1.9 Microsoft IQ
+
+- **Fabric IQ** (business ontology over OneLake, with optional **Graph Model** and **Operations Agent**) and **Foundry IQ** (agent knowledge base with agentic retrieval on Azure AI Search) are first-class services with their own icons and costing.
+- **Work IQ** has its own catalog entry and icon as an external Microsoft 365 integration.
+- **Fabric Capacity is guaranteed** — whenever a diagram contains Fabric items, the capacity that bills them is added if the model left it out.
+
+### October 20, 2026 — AADB v2.1.7 Talk Through an Architecture with Ava
+
+- **Voice Live in Guided Chat** — a microphone button starts a spoken design conversation; Ava asks clarifying questions, draws the diagram herself and refines it on request. See [Talk Through a Design with Ava](#-talk-through-a-design-with-ava-voice-live).
+- **Keyless by design** — a server-side relay authenticates to Voice Live with managed identity; the browser never receives a token or key.
+
+### October 16, 2026 — AADB v2.1.6 Imports That Read Like Architecture
+
+- **Meaningful connection labels** on ARM template and Azure resource-group imports — "runs in", "private link to", "pulls images from" — instead of a generic "depends on", and structural links drawn as associations so the layout follows data flow.
+- **Real resource names** under each imported node, compact grid layout for groups without internal flows, and a fresh title per import.
+- **Named MCP client keys** — revocable, hash-stored keys for service-to-service connectors in other tenants, attributed by name in the MCP Usage Monitor.
+
+### October 12, 2026 — AADB v2.1.5 Choose Your Narrator
+
+- **Settings → Narrator** — pick from 13 full-body and 15 photo avatars and 12 neural voices, with a live preview; deployments can add a custom avatar via `VITE_AVATAR_CUSTOM_*`.
+- **Avatar sessions that fail to start are closed**, ending "throttled (4429)" errors, and `npm audit` findings dropped from 15 to 0 across all packages.
 
 ### September 28, 2026 — AADB v2.0.7 Cleaner Canvas, Connected Private Networking
 
