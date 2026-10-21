@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+    viewBox="34 92 1532 676"
+    width="1532" height="676"
+  preserveAspectRatio="xMidYMid meet"
+  data-render-profile="technical"
+     style="background: #1E1E1E; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
+
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1578" height="798" fill="#1E1E1E" />
+
+  
+  
+    <g class="metadata">
+      
+    </g>
+
+  <g transform="translate(0, 56)">
+    <!-- Groups (background) -->
+    
+    <g class="group" data-group="clients">
+      <!-- Container -->
+      <rect x="562.5" y="48" width="469" height="118"
+            rx="12" fill="#0078D40D" stroke="#0078D4"
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <!-- Header bar -->
+      <path d="M 562.5 60 q 0 -12 12 -12 h 445 q 12 0 12 12 v 12 h -469 z"
+            fill="#0078D4" opacity="0.92" />
+      <text x="574.5" y="64" text-anchor="start"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#FFFFFF">Clients</text>
+    </g>
+
+    <g class="group" data-group="app">
+      <!-- Container -->
+      <rect x="948.5" y="288" width="469" height="118"
+            rx="12" fill="#8764B80D" stroke="#8764B8"
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <!-- Header bar -->
+      <path d="M 948.5 300 q 0 -12 12 -12 h 445 q 12 0 12 12 v 12 h -469 z"
+            fill="#8764B8" opacity="0.92" />
+      <text x="960.5" y="304" text-anchor="start"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#FFFFFF">Container Apps (VNet-integrated)</text>
+    </g>
+
+    <g class="group" data-group="ai">
+      <!-- Container -->
+      <rect x="836" y="528" width="714" height="118"
+            rx="12" fill="#FFB9000D" stroke="#FFB900"
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <!-- Header bar -->
+      <path d="M 836 540 q 0 -12 12 -12 h 690 q 12 0 12 12 v 12 h -714 z"
+            fill="#FFB900" opacity="0.92" />
+      <text x="848" y="544" text-anchor="start"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#FFFFFF">AI services (managed identity)</text>
+    </g>
+
+    <g class="group" data-group="data">
+      <!-- Container -->
+      <rect x="44" y="528" width="714" height="118"
+            rx="12" fill="#00B2940D" stroke="#00B294"
+            stroke-width="1.5" stroke-dasharray="6,3" />
+      <!-- Header bar -->
+      <path d="M 44 540 q 0 -12 12 -12 h 690 q 12 0 12 12 v 12 h -714 z"
+            fill="#00B294" opacity="0.92" />
+      <text x="56" y="544" text-anchor="start"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="600"
+            fill="#FFFFFF">Data &amp; operations</text>
+    </g>
+
+    <!-- Edge paths (drawn first so nothing paints over labels) -->
+    
+    <g class="edge" data-from="Architect&apos;s browser (Entra sign-in)" data-to="Web app + token server">
+      <path d="M 703.1666666666666 154 L 791.8333333333333 154 Q 801.8333333333333 154 801.8333333333333 164 L 801.8333333333333 314 Q 801.8333333333333 324 811.8333333333333 324 L 1060.5 324" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="1060.5,324 1051.289390059971,327.89418342308653 1051.289390059971,320.10581657691347" fill="#0078D4" />
+    </g>
+
+    <g class="edge" data-from="AI agents (Copilot, Scout, SRE Agent)" data-to="MCP server">
+      <path d="M 919.5 154 L 1166.5 154 Q 1176.5 154 1176.5 164 L 1176.5 314 Q 1176.5 324 1186.5 324 L 1305.5 324" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="1305.5,324 1296.289390059971,327.89418342308653 1296.289390059971,320.10581657691347" fill="#0078D4" />
+    </g>
+
+    <g class="edge" data-from="Web app + token server" data-to="Microsoft Foundry (14 models)">
+      <path d="M 1060.5 394 L 1060.5 469 Q 1060.5 479 1050.5 479 L 958 479 Q 948 479 948 489 L 948 564" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="948,564 944.1058165769135,554.7893900599712 951.8941834230865,554.7893900599712" fill="#0078D4" />
+    </g>
+
+    <g class="edge" data-from="Web app + token server" data-to="Voice Live">
+      <path d="M 1089.1666666666667 394 L 1089.1666666666667 469 Q 1089.1666666666667 479 1099.1666666666667 479 L 1183 479 Q 1193 479 1193 489 L 1193 564" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="1193,564 1189.1058165769134,554.7893900599712 1196.8941834230866,554.7893900599712" fill="#0078D4" />
+    </g>
+
+    <g class="edge" data-from="Web app + token server" data-to="Speech avatar">
+      <path d="M 1117.8333333333333 394 L 1134.8333333333333 394 Q 1141.8333333333333 394 1141.8333333333333 401 L 1141.8333333333333 401 Q 1141.8333333333333 408 1148.8333333333333 408 L 1404 408 Q 1414 408 1414 418 L 1414 554 Q 1414 564 1424 564 L 1438 564" fill="none" stroke="#A0A0A0" stroke-width="1.5"
+            stroke-dasharray="4,4" />
+      <polygon points="1438,564 1428.789390059971,567.8941834230865 1428.789390059971,560.1058165769135" fill="#A0A0A0" />
+    </g>
+
+    <g class="edge" data-from="Web app + token server" data-to="Cosmos DB (private endpoint)">
+      <path d="M 1003.1666666666666 394 L 301.58333333333326 394 Q 291.58333333333326 394 291.58333333333326 404 L 291.58333333333326 554 Q 291.58333333333326 564 281.58333333333326 564 L 156 564" fill="none" stroke="#0078D4" stroke-width="1.5"
+             />
+      <polygon points="156,564 165.21060994002886,560.1058165769135 165.21060994002886,567.8941834230865" fill="#0078D4" />
+    </g>
+
+    <g class="edge" data-from="Web app + token server" data-to="Log Analytics">
+      <path d="M 1031.8333333333333 394 L 834.5833333333333 394 Q 824.5833333333333 394 824.5833333333333 404 L 824.5833333333333 554 Q 824.5833333333333 564 814.5833333333333 564 L 617.3333333333334 564" fill="none" stroke="#8764B8" stroke-width="1.5"
+            stroke-dasharray="6,4" />
+      <polygon points="617.3333333333334,564 626.5439432733622,560.1058165769135 626.5439432733622,567.8941834230865" fill="#8764B8" />
+    </g>
+
+    <g class="edge" data-from="MCP server" data-to="Log Analytics">
+      <path d="M 1305.5 394 L 1288.5 394 Q 1281.5 394 1281.5 401 L 1281.5 401 Q 1281.5 408 1274.5 408 L 708.6666666666666 408 Q 698.6666666666666 408 698.6666666666666 418 L 698.6666666666666 554 Q 698.6666666666666 564 688.6666666666666 564 L 674.6666666666666 564" fill="none" stroke="#8764B8" stroke-width="1.5"
+            stroke-dasharray="6,4" />
+      <polygon points="674.6666666666666,564 683.8772766066954,560.1058165769135 683.8772766066954,567.8941834230865" fill="#8764B8" />
+    </g>
+
+    <g class="edge" data-from="Architect&apos;s browser (Entra sign-in)" data-to="Application Insights">
+      <path d="M 645.8333333333334 154 L 645.8333333333334 349 Q 645.8333333333334 359 635.8333333333334 359 L 411 359 Q 401 359 401 369 L 401 564" fill="none" stroke="#8764B8" stroke-width="1.5"
+            stroke-dasharray="6,4" />
+      <polygon points="401,564 397.10581657691347,554.7893900599712 404.89418342308653,554.7893900599712" fill="#8764B8" />
+    </g>
+
+    <!-- Nodes (foreground) -->
+    
+    <!-- Architect&apos;s browser (Entra sign-in) -->
+    <g class="node" data-service="Architect&apos;s browser (Entra sign-in)" data-type="Microsoft Entra ID">
+      <!-- Shadow -->
+      <rect x="576.5" y="86" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="574.5" y="84" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#F9A825" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="574.5" y="84" width="6" height="70"
+            rx="3" fill="#F9A825" />
+      <image x="588.5" y="105" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyBpZD0iZWQ4ZmJlNWMtNjE4Yi00N2NlLThkNjgtM2RiZDFlMTBmODFhIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImU3ODUxOWNkLTM2ZDItNGVlNS05ODdmLWJlODRiZTI0ZDk1ZSIgeDE9IjcuOTMiIHkxPSIxNy45NSIgeDI9IjcuOTMiIHkyPSI1LjYyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNWU5NjI0IiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2I0ZWMzNiIgLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iYWMzZjk1ZWMtNjM5MS00ZjM0LWI0MzEtOTUzNGQ0Y2RmMDEzIiB4MT0iNy45NSIgeTE9IjkuMjEiIHgyPSI3Ljk1IiB5Mj0iLTIuMDIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM1ZTk2MjQiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjYjRlYzM2IiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxwYXRoIGQ9Ik0xNCwxNi44NWExLjMsMS4zLDAsMCwwLDEuMzItMS4zMS44MS44MSwwLDAsMCwwLS4xNmMtLjUyLTQuMTUtMi44OC03LjUzLTcuNC03LjUzUzEsMTAuNzEuNTEsMTUuMzlBMS4zNCwxLjM0LDAsMCwwLDEuNywxNi44NUgxNFoiIGZpbGw9InVybCgjZTc4NTE5Y2QtMzZkMi00ZWU1LTk4N2YtYmU4NGJlMjRkOTVlKSIgLz48cGF0aCBkPSJNOCw4LjgzYTQuMTYsNC4xNiwwLDAsMS0yLjI2LS42Nkw3LjkyLDE0bDIuMjItNS43OUE0LjIsNC4yLDAsMCwxLDgsOC44M1oiIGZpbGw9IiNmZmYiIC8+PGNpcmNsZSBjeD0iNy45NSIgY3k9IjQuNjciIHI9IjQuMTciIGZpbGw9InVybCgjYWMzZjk1ZWMtNjM5MS00ZjM0LWI0MzEtOTUzNGQ0Y2RmMDEzKSIgLz48cG9seWdvbiBwb2ludHM9IjE3LjQ5IDExLjEzIDE3LjQ5IDE1LjM3IDEzLjg1IDE3LjUgMTMuODUgMTMuMjYgMTcuNDkgMTEuMTMiIGZpbGw9IiMzMmJlZGQiIC8+PHBvbHlnb24gcG9pbnRzPSIxNy40OSAxMS4xMyAxMy44NSAxMy4yNiAxMC4yMSAxMS4xMyAxMy44NSA5IDE3LjQ5IDExLjEzIiBmaWxsPSIjOWNlYmZmIiAvPjxwb2x5Z29uIHBvaW50cz0iMTMuODUgMTMuMjYgMTMuODUgMTcuNSAxMC4yMSAxNS4zNyAxMC4yMSAxMS4xMyAxMy44NSAxMy4yNiIgZmlsbD0iIzUwZTZmZiIgLz48cG9seWdvbiBwb2ludHM9IjEwLjIxIDE1LjM3IDEzLjg1IDEzLjI2IDEzLjg1IDE3LjUgMTAuMjEgMTUuMzciIGZpbGw9IiM5Y2ViZmYiIC8+PHBvbHlnb24gcG9pbnRzPSIxNy40OSAxNS4zNyAxMy44NSAxMy4yNiAxMy44NSAxNy41IDE3LjQ5IDE1LjM3IiBmaWxsPSIjNTBlNmZmIiAvPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="624.5" y="108" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Architect&apos;s browser</text>
+       <text x="624.5" y="124" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">(Entra sign-in)</text>
+      <!-- Type badge -->
+      <text x="624.5" y="140" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#F9A825">
+        Entra ID
+      </text>
+      
+    </g>
+
+    <!-- AI agents (Copilot, Scout, SRE Agent) -->
+    <g class="node" data-service="AI agents (Copilot, Scout, SRE Agent)" data-type="Azure AI Foundry Agent Service">
+      <!-- Shadow -->
+      <rect x="821.5" y="86" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="819.5" y="84" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#4285F4" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="819.5" y="84" width="6" height="70"
+            rx="3" fill="#4285F4" />
+      <image x="833.5" y="105" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyBpZD0idXVpZC02YjgzODBjMy0wZWU1LTRjNDQtOTJhMi1mMTg1YzgyZGI2YmEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiB2aWV3Qm94PSIwIDAgMTggMTgiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0idXVpZC0wNTg3NmM3Mi04ZjI2LTQwZGEtOTk2ZS1hNDg4MTcyZWMwNzIiIHgxPSItNjAzLjU2MyIgeTE9Ii0yMTguMzc4IiB4Mj0iLTYwNi42IiB5Mj0iLTIwNi4yMiIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg2MTcuMTI2IC0yMDUuNzU4KSBzY2FsZSgxIC0xKSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzcxMjU3NSIgLz48c3RvcCBvZmZzZXQ9Ii4wOSIgc3RvcC1jb2xvcj0iIzlhMjg4NCIgLz48c3RvcCBvZmZzZXQ9Ii4xOCIgc3RvcC1jb2xvcj0iI2JmMmM5MiIgLz48c3RvcCBvZmZzZXQ9Ii4yNyIgc3RvcC1jb2xvcj0iI2RhMmU5YyIgLz48c3RvcCBvZmZzZXQ9Ii4zNCIgc3RvcC1jb2xvcj0iI2ViMzBhMiIgLz48c3RvcCBvZmZzZXQ9Ii40IiBzdG9wLWNvbG9yPSIjZjEzMWE1IiAvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNlYzMwYTMiIC8+PHN0b3Agb2Zmc2V0PSIuNjEiIHN0b3AtY29sb3I9IiNkZjJmOWUiIC8+PHN0b3Agb2Zmc2V0PSIuNzIiIHN0b3AtY29sb3I9IiNjOTJkOTYiIC8+PHN0b3Agb2Zmc2V0PSIuODMiIHN0b3AtY29sb3I9IiNhYTJhOGEiIC8+PHN0b3Agb2Zmc2V0PSIuOTUiIHN0b3AtY29sb3I9IiM4MzI2N2MiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNzEyNTc1IiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJ1dWlkLWM0YTJmNjI3LWQ3MzAtNDQ3ZS05MTUyLTYyMDA5YzY0YzM2MSIgeDE9Ii02MDIuNDEyIiB5MT0iLTIwNi4wMjUiIHgyPSItNjAyLjQxMiIgeTI9Ii0yMjMuMTc1IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDYxNy4xMjYgLTIwNS43NTgpIHNjYWxlKDEgLTEpIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZGE3ZWQwIiAvPjxzdG9wIG9mZnNldD0iLjA4IiBzdG9wLWNvbG9yPSIjYjE3YmQ1IiAvPjxzdG9wIG9mZnNldD0iLjE5IiBzdG9wLWNvbG9yPSIjODc3OGRiIiAvPjxzdG9wIG9mZnNldD0iLjMiIHN0b3AtY29sb3I9IiM2Mjc2ZTEiIC8+PHN0b3Agb2Zmc2V0PSIuNDEiIHN0b3AtY29sb3I9IiM0NTc0ZTUiIC8+PHN0b3Agb2Zmc2V0PSIuNTQiIHN0b3AtY29sb3I9IiMyZTcyZTgiIC8+PHN0b3Agb2Zmc2V0PSIuNjciIHN0b3AtY29sb3I9IiMxZDcxZWIiIC8+PHN0b3Agb2Zmc2V0PSIuODEiIHN0b3AtY29sb3I9IiMxNDcxZWMiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTE3MWVkIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJ1dWlkLTVhNGNmMjE1LTQ5MzItNGYxMi04YWYxLTFiNjgzM2RmMjU5YyIgeDE9Ii02MDMuNDM4IiB5MT0iLTIwNi40MTQiIHgyPSItNjE0LjgwNyIgeTI9Ii0yMjQuNjQ0IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDYxNy4xMjYgLTIwNS43NTgpIHNjYWxlKDEgLTEpIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZGE3ZWQwIiAvPjxzdG9wIG9mZnNldD0iLjA1IiBzdG9wLWNvbG9yPSIjYjc3YmQ0IiAvPjxzdG9wIG9mZnNldD0iLjExIiBzdG9wLWNvbG9yPSIjOTA3OWRhIiAvPjxzdG9wIG9mZnNldD0iLjE4IiBzdG9wLWNvbG9yPSIjNmU3N2RmIiAvPjxzdG9wIG9mZnNldD0iLjI1IiBzdG9wLWNvbG9yPSIjNTE3NWUzIiAvPjxzdG9wIG9mZnNldD0iLjMzIiBzdG9wLWNvbG9yPSIjMzk3M2U3IiAvPjxzdG9wIG9mZnNldD0iLjQyIiBzdG9wLWNvbG9yPSIjMjc3MmU5IiAvPjxzdG9wIG9mZnNldD0iLjU0IiBzdG9wLWNvbG9yPSIjMWE3MWViIiAvPjxzdG9wIG9mZnNldD0iLjY4IiBzdG9wLWNvbG9yPSIjMTM3MWVjIiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzExNzFlZCIgLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBkPSJtMTIuMDYxLjAxMmMuNTM0LDAsMS4wMDguNDAxLDEuMTc4Ljk4NHMxLjE2Niw0LjE5LDEuMTY2LDQuMTl2Ny4xNjZoLTMuNjA3bC4wNzMtMTIuMzUyaDEuMTl2LjAxMloiIGZpbGw9InVybCgjdXVpZC0wNTg3NmM3Mi04ZjI2LTQwZGEtOTk2ZS1hNDg4MTcyZWMwNzIpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZS13aWR0aD0iMCIgLz48cGF0aCBkPSJtMTcuMzU2LDUuNjExYzAtLjI1NS0uMjA2LS40NDktLjQ0OS0uNDQ5aC0yLjEyNmMtMS40OTQsMC0yLjcwOSwxLjIxNS0yLjcwOSwyLjcwOXY0LjQ5NGgyLjU3NWMxLjQ5NCwwLDIuNzA5LTEuMjE1LDIuNzA5LTIuNzA5di00LjA0NVoiIGZpbGw9InVybCgjdXVpZC1jNGEyZjYyNy1kNzMwLTQ0N2UtOTE1Mi02MjAwOWM2NGMzNjEpIiBzdHJva2Utd2lkdGg9IjAiIC8+PHBhdGggZD0ibTEyLjA2MS4wMTJjLS40MTMsMC0uNzQxLjMyOC0uNzQxLjc0MWwtLjA3MywxMy42NGMwLDEuOTkyLTEuNjE1LDMuNjA3LTMuNjA3LDMuNjA3SDEuMDkzYy0uMzE2LDAtLjUyMi0uMzA0LS40MjUtLjU5NUw1LjkxNSwyLjQyOUM2LjQyNS45ODQsNy43ODUuMDEyLDkuMzE2LjAxMmgyLjc1Ny0uMDEyWiIgZmlsbD0idXJsKCN1dWlkLTVhNGNmMjE1LTQ5MzItNGYxMi04YWYxLTFiNjgzM2RmMjU5YykiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlLXdpZHRoPSIwIiAvPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="869.5" y="108" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">AI agents (Copilot,</text>
+       <text x="869.5" y="124" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Scout, SRE Agent)</text>
+      <!-- Type badge -->
+      <text x="869.5" y="140" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#4285F4">
+        Azure AI Foundry…
+      </text>
+      
+    </g>
+
+    <!-- Web app + token server -->
+    <g class="node" data-service="Web app + token server" data-type="Azure Container Apps">
+      <!-- Shadow -->
+      <rect x="962.5" y="326" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="960.5" y="324" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#616161" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="960.5" y="324" width="6" height="70"
+            rx="3" fill="#616161" />
+      <image x="974.5" y="345" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEzYTQ0MDkzLWIxNTctNDI2ZS1hOGZlLWNlYzlmOWMyMzk3OCIgeDE9IjExLjcyOSIgeTE9IjQuODgiIHgyPSIxMS43MjkiIHkyPSIxMy4wOTkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAuMDAxIiBzdG9wLWNvbG9yPSIjNzczYWRjIiAvPjxzdG9wIG9mZnNldD0iMC41MjgiIHN0b3AtY29sb3I9IiM2NjM1YmIiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTUyZjk5IiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZDgzODg1OS0wM2Y0LTQ3MmYtODFiYy1lYmM5MjFkNzEzMzUiIHgxPSI2LjM1IiB5MT0iMTMuOTE0IiB4Mj0iNi4zNSIgeTI9IjQuMTk4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwLjAwMSIgc3RvcC1jb2xvcj0iIzc3M2FkYyIgLz48c3RvcCBvZmZzZXQ9IjAuMzA3IiBzdG9wLWNvbG9yPSIjNzkzZGRkIiAvPjxzdG9wIG9mZnNldD0iMC41MzIiIHN0b3AtY29sb3I9IiM4MDQ2ZTEiIC8+PHN0b3Agb2Zmc2V0PSIwLjczMSIgc3RvcC1jb2xvcj0iIzhjNTZlNyIgLz48c3RvcCBvZmZzZXQ9IjAuOTE1IiBzdG9wLWNvbG9yPSIjOWM2ZGVmIiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2E2N2FmNCIgLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48ZyBpZD0iYWU4MjQ3MGQtN2E2Yy00ZGZlLTg1MzMtNTlkOGZmOTQ4NjI5Ij48Zz48cGF0aCBkPSJNOC42MTcsOC42NDRILjYzOVYxLjc4NEExLjE2LDEuMTYsMCwwLDEsMS43ODguNjI0SDguNjE3Wk0xLjYzLDcuNjUzaDZWMS41OTRIMS43ODhhLjE1OC4xNTgsMCwwLDAtLjE1OC4xNThoMFoiIGZpbGw9IiM5NDk0OTQiIC8+PHBhdGggZD0iTTE3LjUsOC42NDRIOS41MjNWLjYyNGg2LjgyOEExLjE2LDEuMTYsMCwwLDEsMTcuNSwxLjc4NFptLTYuOTg3LS45OTFoNlYxLjc4NGEuMTU3LjE1NywwLDAsMC0uMTIzLS4xODcuMi4yLDAsMCwwLS4wMzUsMEgxMC41MTNaIiBmaWxsPSIjOTQ5NDk0IiAvPjxwYXRoIGQ9Ik04LjYxNywxNy40ODVIMS43ODhBMS4xNDksMS4xNDksMCwwLDEsLjYzOSwxNi4zNDdWOS40NzZIOC42MTdaTTEuNjMsMTAuNDY3djUuODhhLjE1OC4xNTgsMCwwLDAsLjE1OC4xNThINy42MjZWMTAuNDY3WiIgZmlsbD0iIzk0OTQ5NCIgLz48cGF0aCBkPSJNMTYuMzUxLDE3LjQ4NUg5LjUyM1Y5LjQ3NkgxNy41djYuODcxQTEuMTQ5LDEuMTQ5LDAsMCwxLDE2LjM1MSwxNy40ODVabS01LjgzOC0uOTkxaDUuODM4YS4xNTcuMTU3LDAsMCwwLC4xNTgtLjE1OFYxMC40NjdoLTZaIiBmaWxsPSIjOTQ5NDk0IiAvPjxwYXRoIGQ9Ik0xNC42LDYuMjk0YS4yOTQuMjk0LDAsMCwwLS4yLS4yNzhMOS4wNDQsNC4yMDVBLjEyOC4xMjgsMCwwLDAsOSw0LjJIOWEuMTMyLjEzMiwwLDAsMC0uMTMzLjEzM3Y5LjQ0NUEuMTMzLjEzMywwLDAsMCw5LDEzLjkxMUg5YS4xMzguMTM4LDAsMCwwLC4wNDktLjAxbDUuMzY1LTIuMTQ1YS4yOTIuMjkyLDAsMCwwLC4xODQtLjI3MloiIGZpbGw9InVybCgjYTNhNDQwOTMtYjE1Ny00MjZlLWE4ZmUtY2VjOWY5YzIzOTc4KSIgLz48cGF0aCBkPSJNOC45NjYsNC4ybC01LjI5My45NjZhLjE2MS4xNjEsMCwwLDAtLjEzLjE1OFYxMi42M2EuMTYuMTYsMCwwLDAsLjEyNi4xNTdMOC45NjIsMTMuOTFhLjE2MS4xNjEsMCwwLDAsLjE5MS0uMTIxLjIyLjIyLDAsMCwwLDAtLjAzNlY0LjM1OEEuMTYuMTYsMCwwLDAsOSw0LjIuMTYzLjE2MywwLDAsMCw4Ljk2Niw0LjJaIiBmaWxsPSJ1cmwoI2FkODM4ODU5LTAzZjQtNDcyZi04MWJjLWViYzkyMWQ3MTMzNSkiIC8+PHBhdGggZD0iTTYuNTIsNS42NTZ2Ni44bDEuODQyLjNWNS4zMzVabS0yLjI2Mi4zNjd2NS45NTVsMS42LjMyNlY1Ljc1NFoiIGZpbGw9IiNiNzk2ZjkiIG9wYWNpdHk9IjAuNSIgLz48L2c+PC9nPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="1010.5" y="348" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Web app + token</text>
+       <text x="1010.5" y="364" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">server</text>
+      <!-- Type badge -->
+      <text x="1010.5" y="380" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#616161">
+        Azure Container…
+      </text>
+      
+    </g>
+
+    <!-- MCP server -->
+    <g class="node" data-service="MCP server" data-type="Azure Container Apps">
+      <!-- Shadow -->
+      <rect x="1207.5" y="326" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="1205.5" y="324" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#616161" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="1205.5" y="324" width="6" height="70"
+            rx="3" fill="#616161" />
+      <image x="1219.5" y="345" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEzYTQ0MDkzLWIxNTctNDI2ZS1hOGZlLWNlYzlmOWMyMzk3OCIgeDE9IjExLjcyOSIgeTE9IjQuODgiIHgyPSIxMS43MjkiIHkyPSIxMy4wOTkiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAuMDAxIiBzdG9wLWNvbG9yPSIjNzczYWRjIiAvPjxzdG9wIG9mZnNldD0iMC41MjgiIHN0b3AtY29sb3I9IiM2NjM1YmIiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNTUyZjk5IiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJhZDgzODg1OS0wM2Y0LTQ3MmYtODFiYy1lYmM5MjFkNzEzMzUiIHgxPSI2LjM1IiB5MT0iMTMuOTE0IiB4Mj0iNi4zNSIgeTI9IjQuMTk4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwLjAwMSIgc3RvcC1jb2xvcj0iIzc3M2FkYyIgLz48c3RvcCBvZmZzZXQ9IjAuMzA3IiBzdG9wLWNvbG9yPSIjNzkzZGRkIiAvPjxzdG9wIG9mZnNldD0iMC41MzIiIHN0b3AtY29sb3I9IiM4MDQ2ZTEiIC8+PHN0b3Agb2Zmc2V0PSIwLjczMSIgc3RvcC1jb2xvcj0iIzhjNTZlNyIgLz48c3RvcCBvZmZzZXQ9IjAuOTE1IiBzdG9wLWNvbG9yPSIjOWM2ZGVmIiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2E2N2FmNCIgLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48ZyBpZD0iYWU4MjQ3MGQtN2E2Yy00ZGZlLTg1MzMtNTlkOGZmOTQ4NjI5Ij48Zz48cGF0aCBkPSJNOC42MTcsOC42NDRILjYzOVYxLjc4NEExLjE2LDEuMTYsMCwwLDEsMS43ODguNjI0SDguNjE3Wk0xLjYzLDcuNjUzaDZWMS41OTRIMS43ODhhLjE1OC4xNTgsMCwwLDAtLjE1OC4xNThoMFoiIGZpbGw9IiM5NDk0OTQiIC8+PHBhdGggZD0iTTE3LjUsOC42NDRIOS41MjNWLjYyNGg2LjgyOEExLjE2LDEuMTYsMCwwLDEsMTcuNSwxLjc4NFptLTYuOTg3LS45OTFoNlYxLjc4NGEuMTU3LjE1NywwLDAsMC0uMTIzLS4xODcuMi4yLDAsMCwwLS4wMzUsMEgxMC41MTNaIiBmaWxsPSIjOTQ5NDk0IiAvPjxwYXRoIGQ9Ik04LjYxNywxNy40ODVIMS43ODhBMS4xNDksMS4xNDksMCwwLDEsLjYzOSwxNi4zNDdWOS40NzZIOC42MTdaTTEuNjMsMTAuNDY3djUuODhhLjE1OC4xNTgsMCwwLDAsLjE1OC4xNThINy42MjZWMTAuNDY3WiIgZmlsbD0iIzk0OTQ5NCIgLz48cGF0aCBkPSJNMTYuMzUxLDE3LjQ4NUg5LjUyM1Y5LjQ3NkgxNy41djYuODcxQTEuMTQ5LDEuMTQ5LDAsMCwxLDE2LjM1MSwxNy40ODVabS01LjgzOC0uOTkxaDUuODM4YS4xNTcuMTU3LDAsMCwwLC4xNTgtLjE1OFYxMC40NjdoLTZaIiBmaWxsPSIjOTQ5NDk0IiAvPjxwYXRoIGQ9Ik0xNC42LDYuMjk0YS4yOTQuMjk0LDAsMCwwLS4yLS4yNzhMOS4wNDQsNC4yMDVBLjEyOC4xMjgsMCwwLDAsOSw0LjJIOWEuMTMyLjEzMiwwLDAsMC0uMTMzLjEzM3Y5LjQ0NUEuMTMzLjEzMywwLDAsMCw5LDEzLjkxMUg5YS4xMzguMTM4LDAsMCwwLC4wNDktLjAxbDUuMzY1LTIuMTQ1YS4yOTIuMjkyLDAsMCwwLC4xODQtLjI3MloiIGZpbGw9InVybCgjYTNhNDQwOTMtYjE1Ny00MjZlLWE4ZmUtY2VjOWY5YzIzOTc4KSIgLz48cGF0aCBkPSJNOC45NjYsNC4ybC01LjI5My45NjZhLjE2MS4xNjEsMCwwLDAtLjEzLjE1OFYxMi42M2EuMTYuMTYsMCwwLDAsLjEyNi4xNTdMOC45NjIsMTMuOTFhLjE2MS4xNjEsMCwwLDAsLjE5MS0uMTIxLjIyLjIyLDAsMCwwLDAtLjAzNlY0LjM1OEEuMTYuMTYsMCwwLDAsOSw0LjIuMTYzLjE2MywwLDAsMCw4Ljk2Niw0LjJaIiBmaWxsPSJ1cmwoI2FkODM4ODU5LTAzZjQtNDcyZi04MWJjLWViYzkyMWQ3MTMzNSkiIC8+PHBhdGggZD0iTTYuNTIsNS42NTZ2Ni44bDEuODQyLjNWNS4zMzVabS0yLjI2Mi4zNjd2NS45NTVsMS42LjMyNlY1Ljc1NFoiIGZpbGw9IiNiNzk2ZjkiIG9wYWNpdHk9IjAuNSIgLz48L2c+PC9nPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="1255.5" y="354" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">MCP server</text>
+      <!-- Type badge -->
+      <text x="1255.5" y="374" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#616161">
+        Azure Container…
+      </text>
+      
+    </g>
+
+    <!-- Microsoft Foundry (14 models) -->
+    <g class="node" data-service="Microsoft Foundry (14 models)" data-type="Azure AI Foundry">
+      <!-- Shadow -->
+      <rect x="850" y="566" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="848" y="564" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#4285F4" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="848" y="564" width="6" height="70"
+            rx="3" fill="#4285F4" />
+      <image x="862" y="585" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyBpZD0idXVpZC02YjgzODBjMy0wZWU1LTRjNDQtOTJhMi1mMTg1YzgyZGI2YmEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiB2aWV3Qm94PSIwIDAgMTggMTgiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0idXVpZC0wNTg3NmM3Mi04ZjI2LTQwZGEtOTk2ZS1hNDg4MTcyZWMwNzIiIHgxPSItNjAzLjU2MyIgeTE9Ii0yMTguMzc4IiB4Mj0iLTYwNi42IiB5Mj0iLTIwNi4yMiIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg2MTcuMTI2IC0yMDUuNzU4KSBzY2FsZSgxIC0xKSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzcxMjU3NSIgLz48c3RvcCBvZmZzZXQ9Ii4wOSIgc3RvcC1jb2xvcj0iIzlhMjg4NCIgLz48c3RvcCBvZmZzZXQ9Ii4xOCIgc3RvcC1jb2xvcj0iI2JmMmM5MiIgLz48c3RvcCBvZmZzZXQ9Ii4yNyIgc3RvcC1jb2xvcj0iI2RhMmU5YyIgLz48c3RvcCBvZmZzZXQ9Ii4zNCIgc3RvcC1jb2xvcj0iI2ViMzBhMiIgLz48c3RvcCBvZmZzZXQ9Ii40IiBzdG9wLWNvbG9yPSIjZjEzMWE1IiAvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNlYzMwYTMiIC8+PHN0b3Agb2Zmc2V0PSIuNjEiIHN0b3AtY29sb3I9IiNkZjJmOWUiIC8+PHN0b3Agb2Zmc2V0PSIuNzIiIHN0b3AtY29sb3I9IiNjOTJkOTYiIC8+PHN0b3Agb2Zmc2V0PSIuODMiIHN0b3AtY29sb3I9IiNhYTJhOGEiIC8+PHN0b3Agb2Zmc2V0PSIuOTUiIHN0b3AtY29sb3I9IiM4MzI2N2MiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNzEyNTc1IiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJ1dWlkLWM0YTJmNjI3LWQ3MzAtNDQ3ZS05MTUyLTYyMDA5YzY0YzM2MSIgeDE9Ii02MDIuNDEyIiB5MT0iLTIwNi4wMjUiIHgyPSItNjAyLjQxMiIgeTI9Ii0yMjMuMTc1IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDYxNy4xMjYgLTIwNS43NTgpIHNjYWxlKDEgLTEpIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZGE3ZWQwIiAvPjxzdG9wIG9mZnNldD0iLjA4IiBzdG9wLWNvbG9yPSIjYjE3YmQ1IiAvPjxzdG9wIG9mZnNldD0iLjE5IiBzdG9wLWNvbG9yPSIjODc3OGRiIiAvPjxzdG9wIG9mZnNldD0iLjMiIHN0b3AtY29sb3I9IiM2Mjc2ZTEiIC8+PHN0b3Agb2Zmc2V0PSIuNDEiIHN0b3AtY29sb3I9IiM0NTc0ZTUiIC8+PHN0b3Agb2Zmc2V0PSIuNTQiIHN0b3AtY29sb3I9IiMyZTcyZTgiIC8+PHN0b3Agb2Zmc2V0PSIuNjciIHN0b3AtY29sb3I9IiMxZDcxZWIiIC8+PHN0b3Agb2Zmc2V0PSIuODEiIHN0b3AtY29sb3I9IiMxNDcxZWMiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTE3MWVkIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJ1dWlkLTVhNGNmMjE1LTQ5MzItNGYxMi04YWYxLTFiNjgzM2RmMjU5YyIgeDE9Ii02MDMuNDM4IiB5MT0iLTIwNi40MTQiIHgyPSItNjE0LjgwNyIgeTI9Ii0yMjQuNjQ0IiBncmFkaWVudFRyYW5zZm9ybT0idHJhbnNsYXRlKDYxNy4xMjYgLTIwNS43NTgpIHNjYWxlKDEgLTEpIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZGE3ZWQwIiAvPjxzdG9wIG9mZnNldD0iLjA1IiBzdG9wLWNvbG9yPSIjYjc3YmQ0IiAvPjxzdG9wIG9mZnNldD0iLjExIiBzdG9wLWNvbG9yPSIjOTA3OWRhIiAvPjxzdG9wIG9mZnNldD0iLjE4IiBzdG9wLWNvbG9yPSIjNmU3N2RmIiAvPjxzdG9wIG9mZnNldD0iLjI1IiBzdG9wLWNvbG9yPSIjNTE3NWUzIiAvPjxzdG9wIG9mZnNldD0iLjMzIiBzdG9wLWNvbG9yPSIjMzk3M2U3IiAvPjxzdG9wIG9mZnNldD0iLjQyIiBzdG9wLWNvbG9yPSIjMjc3MmU5IiAvPjxzdG9wIG9mZnNldD0iLjU0IiBzdG9wLWNvbG9yPSIjMWE3MWViIiAvPjxzdG9wIG9mZnNldD0iLjY4IiBzdG9wLWNvbG9yPSIjMTM3MWVjIiAvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzExNzFlZCIgLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cGF0aCBkPSJtMTIuMDYxLjAxMmMuNTM0LDAsMS4wMDguNDAxLDEuMTc4Ljk4NHMxLjE2Niw0LjE5LDEuMTY2LDQuMTl2Ny4xNjZoLTMuNjA3bC4wNzMtMTIuMzUyaDEuMTl2LjAxMloiIGZpbGw9InVybCgjdXVpZC0wNTg3NmM3Mi04ZjI2LTQwZGEtOTk2ZS1hNDg4MTcyZWMwNzIpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHN0cm9rZS13aWR0aD0iMCIgLz48cGF0aCBkPSJtMTcuMzU2LDUuNjExYzAtLjI1NS0uMjA2LS40NDktLjQ0OS0uNDQ5aC0yLjEyNmMtMS40OTQsMC0yLjcwOSwxLjIxNS0yLjcwOSwyLjcwOXY0LjQ5NGgyLjU3NWMxLjQ5NCwwLDIuNzA5LTEuMjE1LDIuNzA5LTIuNzA5di00LjA0NVoiIGZpbGw9InVybCgjdXVpZC1jNGEyZjYyNy1kNzMwLTQ0N2UtOTE1Mi02MjAwOWM2NGMzNjEpIiBzdHJva2Utd2lkdGg9IjAiIC8+PHBhdGggZD0ibTEyLjA2MS4wMTJjLS40MTMsMC0uNzQxLjMyOC0uNzQxLjc0MWwtLjA3MywxMy42NGMwLDEuOTkyLTEuNjE1LDMuNjA3LTMuNjA3LDMuNjA3SDEuMDkzYy0uMzE2LDAtLjUyMi0uMzA0LS40MjUtLjU5NUw1LjkxNSwyLjQyOUM2LjQyNS45ODQsNy43ODUuMDEyLDkuMzE2LjAxMmgyLjc1Ny0uMDEyWiIgZmlsbD0idXJsKCN1dWlkLTVhNGNmMjE1LTQ5MzItNGYxMi04YWYxLTFiNjgzM2RmMjU5YykiIGZpbGwtcnVsZT0iZXZlbm9kZCIgc3Ryb2tlLXdpZHRoPSIwIiAvPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="898" y="588" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Microsoft Foundry</text>
+       <text x="898" y="604" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">(14 models)</text>
+      <!-- Type badge -->
+      <text x="898" y="620" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#4285F4">
+        Azure AI Foundry
+      </text>
+      
+    </g>
+
+    <!-- Voice Live -->
+    <g class="node" data-service="Voice Live" data-type="Azure AI Speech">
+      <!-- Shadow -->
+      <rect x="1095" y="566" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="1093" y="564" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#4285F4" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="1093" y="564" width="6" height="70"
+            rx="3" fill="#4285F4" />
+      <image x="1107" y="585" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImU1NWQwYzI5LWFmMWUtNDdmOC04Njg3LTNiNTc3ODRhOWZlMiIgeDE9IjUuNjgxIiB5MT0iLTAuODYyIiB4Mj0iNS42ODEiIHkyPSIxNS4wMDgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM1ZWEwZWYiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDA3OGQ0IiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIGlkPSJiNWY5Y2E4ZS1lNDRiLTRkYTAtYWM1OS1iNDQ0YzA3NjFjMDUiPjxwYXRoIGQ9Ik03LjMsNy4wMTlIMTcuMzQxQS42NTkuNjU5LDAsMCwxLDE4LDcuNjc3djcuOTgxYS42Ni42NiwwLDAsMS0uNjU5LjY1OGgtNC4xMWEuMTA5LjEwOSwwLDAsMC0uMDY3LjAyM2wtMi4xMDgsMS42MTVhLjIxOS4yMTksMCwwLDEtLjM1My0uMTc0VjE2LjQyNmEuMTEuMTEsMCwwLDAtLjEwOS0uMTFINy4zYS42NTkuNjU5LDAsMCwxLS42NTgtLjY1OFY3LjY3N0EuNjYuNjYsMCwwLDEsNy4zLDcuMDE5WiIgZmlsbD0iIzUwZTZmZiIgLz48cGF0aCBkPSJNMTEuMzYxLjY1OXY3Ljk4QS42NTkuNjU5LDAsMCwxLDEwLjcsOS4zaC0zLjNhLjExLjExLDAsMCwwLS4xMDkuMTF2MS4zNTVhLjIyLjIyLDAsMCwxLS4zNTMuMTc0TDQuODM2LDkuMzJBLjEwOS4xMDksMCwwLDAsNC43NjksOS4zSC42NTlBLjY2LjY2LDAsMCwxLDAsOC42MzlWLjY1OUEuNjU5LjY1OSwwLDAsMSwuNjU5LDBIMTAuN0EuNjYuNjYsMCwwLDEsMTEuMzYxLjY1OVoiIGZpbGw9InVybCgjZTU1ZDBjMjktYWYxZS00N2Y4LTg2ODctM2I1Nzc4NGE5ZmUyKSIgLz48cGF0aCBkPSJNOC4xLDQuMjZhMy40OCwzLjQ4LDAsMCwxLS4wNy43LDMuNjg4LDMuNjg4LDAsMCwxLS4yLjY2NywzLjI0OSwzLjI0OSwwLDAsMS0uMzI5LjYxNSw0LjAzLDQuMDMsMCwwLDEtLjMzNi40MjYuMTU2LjE1NiwwLDAsMS0uMjI2LDBsLS4wMzEtLjAzYS4xNTkuMTU5LDAsMCwxLDAtLjIyLDMuMjYxLDMuMjYxLDAsMCwwLC4zLS4zNzgsMy4xNjQsMy4xNjQsMCwwLDAsLjQ3Ny0xLjE1MywzLjI0MiwzLjI0MiwwLDAsMCwwLTEuMjYyLDMuMTMsMy4xMywwLDAsMC0uMTgxLS42LDMuMzExLDMuMzExLDAsMCwwLS4zLS41NTMsMy4xMDcsMy4xMDcsMCwwLDAtLjMtLjM4LjE2LjE2LDAsMCwxLDAtLjIybC4wMzItLjAzMWEuMTU2LjE1NiwwLDAsMSwuMjI1LDAsMy41NTUsMy41NTUsMCwwLDEsLjMzNi40MjgsMy40NTMsMy40NTMsMCwwLDEsLjMyNi42MTUsMy43NiwzLjc2LDAsMCwxLC4yLjY2N0EzLjMsMy4zLDAsMCwxLDguMSw0LjI2Wk02LjkyNCwzLjNhMi41MTYsMi41MTYsMCwwLDAtLjQzMS0uNjkzLjE1NS4xNTUsMCwwLDAtLjIyNiwwbC0uMDMxLjAzMWEuMTU0LjE1NCwwLDAsMC0uMDEuMjExLDIuMTQyLDIuMTQyLDAsMCwxLDAsMi44MjUuMTU1LjE1NSwwLDAsMCwuMDEuMjEybC4wMzEuMDMxYS4xNTUuMTU1LDAsMCwwLC4yMjYsMCwyLjU0NiwyLjU0NiwwLDAsMCwuNDMxLS42OTMsMi41MSwyLjUxLDAsMCwwLDAtMS45MTZabS0xLjIzOC4zYTEuMTM0LDEuMTM0LDAsMCwxLC4xNDMuMjQ4LDEuMDg4LDEuMDg4LDAsMCwxLDAsLjgyNCwxLjAxMSwxLjAxMSwwLDAsMS0uMTQyLjI0NS4xNTYuMTU2LDAsMCwwLC4wMTQuMjA1bC4wMy4wM2EuMTU5LjE1OSwwLDAsMCwuMjM1LS4wMTIsMS40MjEsMS40MjEsMCwwLDAsLjItLjMzNCwxLjQ0NCwxLjQ0NCwwLDAsMCwuMTA2LS41NDcsMS40ODYsMS40ODYsMCwwLDAtLjEwOS0uNTQ3LDEuMzU5LDEuMzU5LDAsMCwwLS4xOTMtLjMzMi4xNTguMTU4LDAsMCwwLS4yMzYtLjAxM0w1LjcsMy40QS4xNTMuMTUzLDAsMCwwLDUuNjg2LDMuNlptLTItLjQxM0gzLjMxNEEuMzE0LjMxNCwwLDAsMCwzLDMuNVY1LjAxOGEuMzE1LjMxNSwwLDAsMCwuMzE0LjMxNGguMzc0YS4zMTQuMzE0LDAsMCwxLC4yMjIuMDkybC45MzcuOTM1YS4xNjEuMTYxLDAsMCwwLC4xMTEuMDQ2aDBhLjE4Ny4xODcsMCwwLDAsLjE4Ny0uMTg3VjIuM2EuMTg5LjE4OSwwLDAsMC0uMTg5LS4xODloMGEuMTYyLjE2MiwwLDAsMC0uMTEyLjA0NkwzLjkxLDMuMUEuMzE1LjMxNSwwLDAsMSwzLjY4OCwzLjE4OFoiIGZpbGw9IiNmZmYiIC8+PHBhdGggZD0iTTE1LjIxMSwxMC45MzJhLjgzMS44MzEsMCwxLDEtLjgzLjgzQS44My44MywwLDAsMSwxNS4yMTEsMTAuOTMyWm0tMy40OC44MzdhLjgzMS44MzEsMCwxLDAsLjgzMS0uODNBLjgzMS44MzEsMCwwLDAsMTEuNzMxLDExLjc2OVptLTIuNjQ5LDBhLjgzMS44MzEsMCwxLDAsLjgzMS0uODNBLjgzMS44MzEsMCwwLDAsOS4wODIsMTEuNzY5WiIgZmlsbD0iI2ZmZiIgLz48L2c+PC9zdmc+" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="1143" y="594" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Voice Live</text>
+      <!-- Type badge -->
+      <text x="1143" y="614" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#4285F4">
+        Azure AI Speech
+      </text>
+      
+    </g>
+
+    <!-- Speech avatar -->
+    <g class="node" data-service="Speech avatar" data-type="Azure AI Speech">
+      <!-- Shadow -->
+      <rect x="1340" y="566" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="1338" y="564" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#4285F4" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="1338" y="564" width="6" height="70"
+            rx="3" fill="#4285F4" />
+      <image x="1352" y="585" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImU1NWQwYzI5LWFmMWUtNDdmOC04Njg3LTNiNTc3ODRhOWZlMiIgeDE9IjUuNjgxIiB5MT0iLTAuODYyIiB4Mj0iNS42ODEiIHkyPSIxNS4wMDgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM1ZWEwZWYiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDA3OGQ0IiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIGlkPSJiNWY5Y2E4ZS1lNDRiLTRkYTAtYWM1OS1iNDQ0YzA3NjFjMDUiPjxwYXRoIGQ9Ik03LjMsNy4wMTlIMTcuMzQxQS42NTkuNjU5LDAsMCwxLDE4LDcuNjc3djcuOTgxYS42Ni42NiwwLDAsMS0uNjU5LjY1OGgtNC4xMWEuMTA5LjEwOSwwLDAsMC0uMDY3LjAyM2wtMi4xMDgsMS42MTVhLjIxOS4yMTksMCwwLDEtLjM1My0uMTc0VjE2LjQyNmEuMTEuMTEsMCwwLDAtLjEwOS0uMTFINy4zYS42NTkuNjU5LDAsMCwxLS42NTgtLjY1OFY3LjY3N0EuNjYuNjYsMCwwLDEsNy4zLDcuMDE5WiIgZmlsbD0iIzUwZTZmZiIgLz48cGF0aCBkPSJNMTEuMzYxLjY1OXY3Ljk4QS42NTkuNjU5LDAsMCwxLDEwLjcsOS4zaC0zLjNhLjExLjExLDAsMCwwLS4xMDkuMTF2MS4zNTVhLjIyLjIyLDAsMCwxLS4zNTMuMTc0TDQuODM2LDkuMzJBLjEwOS4xMDksMCwwLDAsNC43NjksOS4zSC42NTlBLjY2LjY2LDAsMCwxLDAsOC42MzlWLjY1OUEuNjU5LjY1OSwwLDAsMSwuNjU5LDBIMTAuN0EuNjYuNjYsMCwwLDEsMTEuMzYxLjY1OVoiIGZpbGw9InVybCgjZTU1ZDBjMjktYWYxZS00N2Y4LTg2ODctM2I1Nzc4NGE5ZmUyKSIgLz48cGF0aCBkPSJNOC4xLDQuMjZhMy40OCwzLjQ4LDAsMCwxLS4wNy43LDMuNjg4LDMuNjg4LDAsMCwxLS4yLjY2NywzLjI0OSwzLjI0OSwwLDAsMS0uMzI5LjYxNSw0LjAzLDQuMDMsMCwwLDEtLjMzNi40MjYuMTU2LjE1NiwwLDAsMS0uMjI2LDBsLS4wMzEtLjAzYS4xNTkuMTU5LDAsMCwxLDAtLjIyLDMuMjYxLDMuMjYxLDAsMCwwLC4zLS4zNzgsMy4xNjQsMy4xNjQsMCwwLDAsLjQ3Ny0xLjE1MywzLjI0MiwzLjI0MiwwLDAsMCwwLTEuMjYyLDMuMTMsMy4xMywwLDAsMC0uMTgxLS42LDMuMzExLDMuMzExLDAsMCwwLS4zLS41NTMsMy4xMDcsMy4xMDcsMCwwLDAtLjMtLjM4LjE2LjE2LDAsMCwxLDAtLjIybC4wMzItLjAzMWEuMTU2LjE1NiwwLDAsMSwuMjI1LDAsMy41NTUsMy41NTUsMCwwLDEsLjMzNi40MjgsMy40NTMsMy40NTMsMCwwLDEsLjMyNi42MTUsMy43NiwzLjc2LDAsMCwxLC4yLjY2N0EzLjMsMy4zLDAsMCwxLDguMSw0LjI2Wk02LjkyNCwzLjNhMi41MTYsMi41MTYsMCwwLDAtLjQzMS0uNjkzLjE1NS4xNTUsMCwwLDAtLjIyNiwwbC0uMDMxLjAzMWEuMTU0LjE1NCwwLDAsMC0uMDEuMjExLDIuMTQyLDIuMTQyLDAsMCwxLDAsMi44MjUuMTU1LjE1NSwwLDAsMCwuMDEuMjEybC4wMzEuMDMxYS4xNTUuMTU1LDAsMCwwLC4yMjYsMCwyLjU0NiwyLjU0NiwwLDAsMCwuNDMxLS42OTMsMi41MSwyLjUxLDAsMCwwLDAtMS45MTZabS0xLjIzOC4zYTEuMTM0LDEuMTM0LDAsMCwxLC4xNDMuMjQ4LDEuMDg4LDEuMDg4LDAsMCwxLDAsLjgyNCwxLjAxMSwxLjAxMSwwLDAsMS0uMTQyLjI0NS4xNTYuMTU2LDAsMCwwLC4wMTQuMjA1bC4wMy4wM2EuMTU5LjE1OSwwLDAsMCwuMjM1LS4wMTIsMS40MjEsMS40MjEsMCwwLDAsLjItLjMzNCwxLjQ0NCwxLjQ0NCwwLDAsMCwuMTA2LS41NDcsMS40ODYsMS40ODYsMCwwLDAtLjEwOS0uNTQ3LDEuMzU5LDEuMzU5LDAsMCwwLS4xOTMtLjMzMi4xNTguMTU4LDAsMCwwLS4yMzYtLjAxM0w1LjcsMy40QS4xNTMuMTUzLDAsMCwwLDUuNjg2LDMuNlptLTItLjQxM0gzLjMxNEEuMzE0LjMxNCwwLDAsMCwzLDMuNVY1LjAxOGEuMzE1LjMxNSwwLDAsMCwuMzE0LjMxNGguMzc0YS4zMTQuMzE0LDAsMCwxLC4yMjIuMDkybC45MzcuOTM1YS4xNjEuMTYxLDAsMCwwLC4xMTEuMDQ2aDBhLjE4Ny4xODcsMCwwLDAsLjE4Ny0uMTg3VjIuM2EuMTg5LjE4OSwwLDAsMC0uMTg5LS4xODloMGEuMTYyLjE2MiwwLDAsMC0uMTEyLjA0NkwzLjkxLDMuMUEuMzE1LjMxNSwwLDAsMSwzLjY4OCwzLjE4OFoiIGZpbGw9IiNmZmYiIC8+PHBhdGggZD0iTTE1LjIxMSwxMC45MzJhLjgzMS44MzEsMCwxLDEtLjgzLjgzQS44My44MywwLDAsMSwxNS4yMTEsMTAuOTMyWm0tMy40OC44MzdhLjgzMS44MzEsMCwxLDAsLjgzMS0uODNBLjgzMS44MzEsMCwwLDAsMTEuNzMxLDExLjc2OVptLTIuNjQ5LDBhLjgzMS44MzEsMCwxLDAsLjgzMS0uODNBLjgzMS44MzEsMCwwLDAsOS4wODIsMTEuNzY5WiIgZmlsbD0iI2ZmZiIgLz48L2c+PC9zdmc+" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="1388" y="594" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Speech avatar</text>
+      <!-- Type badge -->
+      <text x="1388" y="614" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#4285F4">
+        Azure AI Speech
+      </text>
+      
+    </g>
+
+    <!-- Cosmos DB (private endpoint) -->
+    <g class="node" data-service="Cosmos DB (private endpoint)" data-type="Azure Cosmos DB">
+      <!-- Shadow -->
+      <rect x="58" y="566" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="56" y="564" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#0B8043" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="56" y="564" width="6" height="70"
+            rx="3" fill="#0B8043" />
+      <image x="70" y="585" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyBpZD0iYjA4OWNmY2EtMGRlMS00NTFjLWExY2EtNjY4MGVhNTBjYjRmIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImIyNWQwODM2LTk2NGEtNGM4NC04YzIwLTg1NWY2NmU4MzQ1ZSIgY3g9Ii0xMDUuMDA2IiBjeT0iLTEwLjQwOSIgcj0iNS45NTQiIGdyYWRpZW50VHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTE3LjczOSAxOS42NDQpIHNjYWxlKDEuMDM2IDEuMDI3KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMC4xODMiIHN0b3AtY29sb3I9IiM1ZWEwZWYiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDA3OGQ0IiAvPjwvcmFkaWFsR3JhZGllbnQ+PGNsaXBQYXRoIGlkPSJiMzZjN2Y1ZC0yZWYxLTQ3NjAtOGEyNS1lZWI5NjYxZjRlNDciPjxwYXRoIGQ9Ik0xNC45NjksNy41M0E2LjEzNyw2LjEzNywwLDEsMSw3LjU3NCwyLjk4Nyw2LjEzNyw2LjEzNywwLDAsMSwxNC45NjksNy41M1oiIGZpbGw9Im5vbmUiIC8+PC9jbGlwUGF0aD48L2RlZnM+PHRpdGxlPkljb24tZGF0YWJhc2VzLTEyMTwvdGl0bGU+PHBhdGggZD0iTTIuOTU0LDUuMjY2YS4xNzUuMTc1LDAsMCwxLS4xNzYtLjE3NmgwQTIuMDEyLDIuMDEyLDAsMCwwLC43NjksMy4wODFhLjE3Ni4xNzYsMCwwLDEtLjE3Ni0uMTc1aDBhLjE3Ni4xNzYsMCwwLDEsLjE3Ni0uMTc2QTIuMDEyLDIuMDEyLDAsMCwwLDIuNzc4LjcyLjE3NS4xNzUsMCwwLDEsMi45NTQuNTQ0aDBBLjE3NS4xNzUsMCwwLDEsMy4xMy43MmgwQTIuMDEyLDIuMDEyLDAsMCwwLDUuMTM5LDIuNzI5YS4xNzUuMTc1LDAsMCwxLC4xNzYuMTc2aDBhLjE3NS4xNzUsMCwwLDEtLjE3Ni4xNzZoMEEyLjAxMSwyLjAxMSwwLDAsMCwzLjEzLDUuMDkuMTc3LjE3NywwLDAsMSwyLjk1NCw1LjI2NloiIGZpbGw9IiM1MGU2ZmYiIC8+PHBhdGggZD0iTTE1LjYxMSwxNy40NTZhLjE0MS4xNDEsMCwwLDEtLjE0MS0uMTQxaDBhMS42MDksMS42MDksMCwwLDAtMS42MDctMS42MDcuMTQxLjE0MSwwLDAsMS0uMTQxLS4xNGgwYS4xNDEuMTQxLDAsMCwxLC4xNDEtLjE0MWgwYTEuNjA4LDEuNjA4LDAsMCwwLDEuNjA3LTEuNjA3LjE0MS4xNDEsMCwwLDEsLjE0MS0uMTQxaDBhLjE0MS4xNDEsMCwwLDEsLjE0MS4xNDFoMGExLjYwOCwxLjYwOCwwLDAsMCwxLjYwNywxLjYwNy4xNDEuMTQxLDAsMSwxLDAsLjI4MmgwYTEuNjA5LDEuNjA5LDAsMCwwLTEuNjA3LDEuNjA3QS4xNDEuMTQxLDAsMCwxLDE1LjYxMSwxNy40NTZaIiBmaWxsPSIjNTBlNmZmIiAvPjxnPjxwYXRoIGQ9Ik0xNC45NjksNy41M0E2LjEzNyw2LjEzNywwLDEsMSw3LjU3NCwyLjk4Nyw2LjEzNyw2LjEzNywwLDAsMSwxNC45NjksNy41M1oiIGZpbGw9InVybCgjYjI1ZDA4MzYtOTY0YS00Yzg0LThjMjAtODU1ZjY2ZTgzNDVlKSIgLz48ZyBjbGlwLXBhdGg9InVybCgjYjM2YzdmNWQtMmVmMS00NzYwLThhMjUtZWViOTY2MWY0ZTQ3KSI+PHBhdGggZD0iTTUuNzA5LDEzLjExNUExLjYzOCwxLjYzOCwwLDEsMCw1LjcxNCw5Ljg0LDEuMzA3LDEuMzA3LDAsMCwwLDUuNzIxLDkuNywxLjY1MSwxLjY1MSwwLDAsMCw0LjA2LDguMDY0SDIuODMyYTYuMjUxLDYuMjUxLDAsMCwwLDEuNTk1LDUuMDUxWiIgZmlsbD0iI2YyZjJmMiIgLz48cGF0aCBkPSJNMTUuMDQ1LDcuODE1YzAtLjAxNSwwLS4wMy0uMDA3LS4wNDRhNS45NzgsNS45NzgsMCwwLDAtMS40MDYtMi44OCwxLjgyNSwxLjgyNSwwLDAsMC0uMjg5LS4wOSwxLjgwNiwxLjgwNiwwLDAsMC0yLjMsMS42NjMsMiwyLDAsMCwwLS4yLS4wMTMsMS43MzcsMS43MzcsMCwwLDAtLjU4MSwzLjM3NCwxLjQ1MSwxLjQ1MSwwLDAsMCwuNTQxLjFoMi4wM0ExMy40NTMsMTMuNDUzLDAsMCwwLDE1LjA0NSw3LjgxNVoiIGZpbGw9IiNmMmYyZjIiIC8+PC9nPjwvZz48cGF0aCBkPSJNMTcuMTkxLDMuODMyYy0uNjI5LTEuMDQ3LTIuMS0xLjQ1NS00LjE1NS0xLjE0OWExNC42MDYsMTQuNjA2LDAsMCwwLTIuMDgyLjQ1Miw2LjQ1Niw2LjQ1NiwwLDAsMSwxLjUyOC43NjdjLjI0MS0uMDUzLjQ4My0uMTE2LjcxNS0uMTUxQTcuNDksNy40OSwwLDAsMSwxNC4zLDMuNjYyYTIuMTg4LDIuMTg4LDAsMCwxLDEuOTU5LjcyNWgwYy4zODMuNjM4LjA2LDEuNzI5LS44ODYsM2ExNi43MjMsMTYuNzIzLDAsMCwxLTQuNzQ5LDQuMDUxQTE2Ljc1OCwxNi43NTgsMCwwLDEsNC44LDEzLjdjLTEuNTY0LjIzNC0yLjY4MiwwLTMuMDY1LS42MzZzLS4wNi0xLjczLjg4Ni0yLjk5NWMuMTE3LS4xNTcuMTQ2LS4yMzQuMjc5LS4zOTJhNi4yNTIsNi4yNTIsMCwwLDEsLjAyNi0xLjYzQTExLjU1MiwxMS41NTIsMCwwLDAsMS43NTYsOS40MTlDLjUxNywxMS4wNzYuMTgxLDEyLjU2Ni44MDksMTMuNjEzYTMuMTY1LDMuMTY1LDAsMCwwLDIuOSwxLjI0OSw4LjQzNCw4LjQzNCwwLDAsMCwxLjI1MS0uMSwxNy44NTUsMTcuODU1LDAsMCwwLDYuMjE5LTIuNCwxNy44MDgsMTcuODA4LDAsMCwwLDUuMDYxLTQuMzMyQzE3LjQ4Myw2LjM2OSwxNy44MTksNC44OCwxNy4xOTEsMy44MzJaIiBmaWxsPSIjNTBlNmZmIiAvPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="106" y="588" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Cosmos DB (private</text>
+       <text x="106" y="604" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">endpoint)</text>
+      <!-- Type badge -->
+      <text x="106" y="620" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#0B8043">
+        Cosmos DB
+      </text>
+      
+    </g>
+
+    <!-- Application Insights -->
+    <g class="node" data-service="Application Insights" data-type="Application Insights">
+      <!-- Shadow -->
+      <rect x="303" y="566" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="301" y="564" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#5E35B1" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="301" y="564" width="6" height="70"
+            rx="3" fill="#5E35B1" />
+      <image x="315" y="585" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyBpZD0iYjZmNmQ5OWUtZjMzMC00ODFkLTgzNmYtZWE1OGNjNDIyMTdmIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImE3YTFjNDMxLTZjNmQtNGE4Zi05YTY5LThkYTQzN2U1YjBjNSIgY3g9IjkiIGN5PSI3LjM1IiByPSI2LjQyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYjc3YWY0IiAvPjxzdG9wIG9mZnNldD0iMC4yMSIgc3RvcC1jb2xvcj0iI2IzNzhmMiIgLz48c3RvcCBvZmZzZXQ9IjAuNDMiIHN0b3AtY29sb3I9IiNhNjcyZWQiIC8+PHN0b3Agb2Zmc2V0PSIwLjY1IiBzdG9wLWNvbG9yPSIjOTI2N2U0IiAvPjxzdG9wIG9mZnNldD0iMC44OCIgc3RvcC1jb2xvcj0iIzc1NTlkOCIgLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2MjRmZDAiIC8+PC9yYWRpYWxHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9ImVjMGM0ZjBkLTVjOGUtNDg4Mi05NmExLTg5ZDYxODA4ZWI0OSIgeDE9IjkuMDIiIHkxPSIzLjkxIiB4Mj0iOS4wOCIgeTI9IjExLjQ5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjJmMmYyIiAvPjxzdG9wIG9mZnNldD0iMC4yMyIgc3RvcC1jb2xvcj0iI2YxZjFmMiIgc3RvcC1vcGFjaXR5PSIwLjk5IiAvPjxzdG9wIG9mZnNldD0iMC4zNyIgc3RvcC1jb2xvcj0iI2VkZWRmMSIgc3RvcC1vcGFjaXR5PSIwLjk1IiAvPjxzdG9wIG9mZnNldD0iMC40OCIgc3RvcC1jb2xvcj0iI2U3ZTVmMCIgc3RvcC1vcGFjaXR5PSIwLjg5IiAvPjxzdG9wIG9mZnNldD0iMC41OCIgc3RvcC1jb2xvcj0iI2RlZGJlZSIgc3RvcC1vcGFjaXR5PSIwLjgxIiAvPjxzdG9wIG9mZnNldD0iMC42NyIgc3RvcC1jb2xvcj0iI2QzY2VlYiIgc3RvcC1vcGFjaXR5PSIwLjciIC8+PHN0b3Agb2Zmc2V0PSIwLjc2IiBzdG9wLWNvbG9yPSIjYzRiZWU4IiBzdG9wLW9wYWNpdHk9IjAuNTciIC8+PHN0b3Agb2Zmc2V0PSIwLjg0IiBzdG9wLWNvbG9yPSIjYjRhYmU1IiBzdG9wLW9wYWNpdHk9IjAuNDEiIC8+PHN0b3Agb2Zmc2V0PSIwLjkyIiBzdG9wLWNvbG9yPSIjYTA5NWUxIiBzdG9wLW9wYWNpdHk9IjAuMjIiIC8+PHN0b3Agb2Zmc2V0PSIwLjk5IiBzdG9wLWNvbG9yPSIjOGI3ZGRjIiBzdG9wLW9wYWNpdHk9IjAuMDIiIC8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjODk3YmRjIiBzdG9wLW9wYWNpdHk9IjAiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRpdGxlPkljb24tbWFuYWdlLTMxMDwvdGl0bGU+PHBhdGggZD0iTTEwLjIzLDE3LjM5bC44MS0uODdWMTQuMkg3djIuMzJsLjgxLjg3QS4zMi4zMiwwLDAsMCw4LDE3LjVoMkEuMzIuMzIsMCwwLDAsMTAuMjMsMTcuMzlaIiBmaWxsPSIjY2VjZWNlIiAvPjxwYXRoIGQ9Ik05LC41QTUuODksNS44OSwwLDAsMCwzLjA5LDcuMDdjLjI3LDIuNDcsMi42MiwzLjYyLDMuMjksNi43NWEuNDkuNDksMCwwLDAsLjQ3LjM4aDQuM2EuNDkuNDksMCwwLDAsLjQ3LS4zOGMuNjctMy4xMywzLTQuMjgsMy4yOS02Ljc1QTUuODksNS44OSwwLDAsMCw5LC41Wk03LDE0LjIiIGZpbGw9InVybCgjYTdhMWM0MzEtNmM2ZC00YThmLTlhNjktOGRhNDM3ZTViMGM1KSIgLz48cGF0aCBkPSJNMTEuNDYsMy43OWExLjQsMS40LDAsMCwwLTEuMzUsMS40NFY2SDhWNS4yM0ExLjQxLDEuNDEsMCwwLDAsNi41OSwzLjc5LDEuNCwxLjQsMCwwLDAsNS4yNCw1LjIzLDEuNDEsMS40MSwwLDAsMCw2LjU5LDYuNjhoLjY0djZhLjM2LjM2LDAsMCwwLC43Miwwdi02aDIuMTZ2NmEuMzYuMzYsMCwxLDAsLjcyLDB2LTZoLjYzYTEuNCwxLjQsMCwwLDAsMS4zNS0xLjQ1QTEuNCwxLjQsMCwwLDAsMTEuNDYsMy43OVpNNy4yMyw2SDYuNTVhLjc0Ljc0LDAsMCwxLS42OC0uNzcuNzQuNzQsMCwwLDEsLjY4LS43Ny43NC43NCwwLDAsMSwuNjguNzdabTQuMjgsMGgtLjY4VjUuMTlhLjY4LjY4LDAsMSwxLDEuMzUsMEEuNzMuNzMsMCwwLDEsMTEuNTEsNloiIGZpbGw9InVybCgjZWMwYzRmMGQtNWM4ZS00ODgyLTk2YTEtODlkNjE4MDhlYjQ5KSIgLz48cG9seWdvbiBwb2ludHM9IjYuOTYgMTUuOCAxMS4wNCAxNS4wMSAxMS4wNCAxNC41NiA2Ljk2IDE1LjM2IDYuOTYgMTUuOCIgZmlsbD0iIzk5OSIgLz48cG9seWdvbiBwb2ludHM9IjExLjA0IDE2LjExIDExLjA0IDE1LjY3IDYuOTYgMTYuNDggNi45NiAxNi41MiA3LjI3IDE2Ljg2IDExLjA0IDE2LjExIiBmaWxsPSIjOTk5IiAvPjwvc3ZnPg==" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="351" y="594" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Application Insights</text>
+      <!-- Type badge -->
+      <text x="351" y="614" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#5E35B1">
+        App Insights
+      </text>
+      
+    </g>
+
+    <!-- Log Analytics -->
+    <g class="node" data-service="Log Analytics" data-type="Log Analytics">
+      <!-- Shadow -->
+      <rect x="548" y="566" width="200" height="70"
+            rx="8" fill="#00000040" />
+      <!-- Card -->
+      <rect x="546" y="564" width="200" height="70"
+            rx="8" fill="#2D2D30" stroke="#5E35B1" stroke-width="2" />
+      <!-- Color accent bar -->
+      <rect x="546" y="564" width="6" height="70"
+            rx="3" fill="#5E35B1" />
+      <image x="560" y="585" width="28" height="28"
+            href="data:image/svg+xml;base64,PHN2ZyBpZD0iYjM4OGU5NDQtNTUwOS00OWM5LTg0ZDctZjM4YmZmYTk5NWIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgdmlld0JveD0iMCAwIDE4IDE4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImE5OTdlMjAzLTFkN2QtNGNiOS1iMTMxLTVkYzQ0ZTAyOWI0NiIgeDE9IjUuMjMiIHkxPSIxNy40NSIgeDI9IjUuMjMiIHkyPSI4LjA5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMTk4OGQ5IiAvPjxzdG9wIG9mZnNldD0iMC45IiBzdG9wLWNvbG9yPSIjNTRhZWYwIiAvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJlMTIyZTlkOC1hZWU1LTRmMWEtYTYwZS1iMWVhZTM1NWRhYTUiIHgxPSIxMS41IiB5MT0iMTIuNDUiIHgyPSIxMS41IiB5Mj0iMC41NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzE5OGFiMyIgLz48c3RvcCBvZmZzZXQ9IjAuMDEiIHN0b3AtY29sb3I9IiMxOThiYjQiIC8+PHN0b3Agb2Zmc2V0PSIwLjQ0IiBzdG9wLWNvbG9yPSIjMjdiMmQ3IiAvPjxzdG9wIG9mZnNldD0iMC43OSIgc3RvcC1jb2xvcj0iIzJmY2JlZCIgLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMzMmQ0ZjUiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHRpdGxlPkljb24tbWFuYWdlLTMwNzwvdGl0bGU+PHBhdGggZD0iTTUuNTksMTMuMTNIOS45MXY0LjMySDUuNTlaTTEuMTUsMTcuNDVINC44N1YxMy4xM0guNTV2My43MkEuNi42LDAsMCwwLDEuMTUsMTcuNDVabS0uNi01SDQuODdWOC4wOUguNTVaIiBmaWxsPSJ1cmwoI2E5OTdlMjAzLTFkN2QtNGNiOS1iMTMxLTVkYzQ0ZTAyOWI0NikiIC8+PHBhdGggZD0iTTExLjUuNTVhNS44OSw1Ljg5LDAsMCwxLDUuOTUsNiw1Ljg5LDUuODksMCwwLDEtNS45NSw1Ljk1SDUuNTVWNi41QTUuODksNS44OSwwLDAsMSwxMS41LjU1WiIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsPSJ1cmwoI2UxMjJlOWQ4LWFlZTUtNGYxYS1hNjBlLWIxZWFlMzU1ZGFhNSkiIC8+PHJlY3QgeD0iNy41OSIgeT0iNS42NSIgd2lkdGg9IjEuMzYiIGhlaWdodD0iNC4wOCIgZmlsbD0iI2ZmZiIgLz48cmVjdCB4PSIxMC4zMSIgeT0iNy4wMSIgd2lkdGg9IjEuMzYiIGhlaWdodD0iMi43MiIgZmlsbD0iI2ZmZiIgLz48cmVjdCB4PSIxMy4wMyIgeT0iNC4yOSIgd2lkdGg9IjEuMzYiIGhlaWdodD0iNS40NCIgZmlsbD0iI2ZmZiIgLz48L3N2Zz4=" preserveAspectRatio="xMidYMid meet" />
+      <!-- Name -->
+      <text x="596" y="594" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="13" font-weight="600" fill="#F3F3F3">Log Analytics</text>
+      <!-- Type badge -->
+      <text x="596" y="614" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="11" fill="#5E35B1">
+        Log Analytics
+      </text>
+      
+    </g>
+
+    <!-- Edge labels (top-most for legibility; collision-avoided) -->
+    
+    <g class="edge-label" data-from="Architect&apos;s browser (Entra sign-in)" data-to="Web app + token server" data-placement="route">
+      <rect x="735.9333333333333" y="223" width="131.8" height="32" rx="4"
+            fill="#2D2D30" stroke="#0078D4" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#0078D4"><tspan x="801.8333333333333" y="237">Load app, call /api</tspan><tspan x="801.8333333333333" y="249">over HTTPS</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="AI agents (Copilot, Scout, SRE Agent)" data-to="MCP server" data-placement="route">
+      <rect x="1101.3" y="223" width="150.4" height="32" rx="4"
+            fill="#2D2D30" stroke="#0078D4" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#0078D4"><tspan x="1176.5" y="237">Call design tools with</tspan><tspan x="1176.5" y="249">API key</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="Web app + token server" data-to="Microsoft Foundry (14 models)" data-placement="route">
+      <rect x="938.35" y="463" width="131.8" height="32" rx="4"
+            fill="#2D2D30" stroke="#0078D4" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#0078D4"><tspan x="1004.25" y="477">Generate and refine</tspan><tspan x="1004.25" y="489">architectures</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="Web app + token server" data-to="Voice Live" data-placement="route">
+      <rect x="1075.1833333333334" y="463" width="131.8" height="32" rx="4"
+            fill="#2D2D30" stroke="#0078D4" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#0078D4"><tspan x="1141.0833333333335" y="477">Relay voice session</tspan><tspan x="1141.0833333333335" y="489">over WebSocket</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="Web app + token server" data-to="Speech avatar" data-placement="route">
+      <rect x="1354.3" y="423.2" width="119.4" height="32" rx="4"
+            fill="#2D2D30" stroke="#A0A0A0" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#A0A0A0"><tspan x="1414" y="437.2">Issue short-lived</tspan><tspan x="1414" y="449.2">avatar token</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="Web app + token server" data-to="Cosmos DB (private endpoint)" data-placement="route">
+      <rect x="241.18333333333325" y="463" width="100.8" height="32" rx="4"
+            fill="#2D2D30" stroke="#0078D4" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#0078D4"><tspan x="291.58333333333326" y="477">Store feedback</tspan><tspan x="291.58333333333326" y="489">privately</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="Web app + token server" data-to="Log Analytics" data-placement="route">
+      <rect x="752.4833333333332" y="463" width="144.2" height="32" rx="4"
+            fill="#2D2D30" stroke="#8764B8" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#8764B8"><tspan x="824.5833333333333" y="477">Log model traffic and</tspan><tspan x="824.5833333333333" y="489">tokens</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="MCP server" data-to="Log Analytics" data-placement="route">
+      <rect x="629.6666666666666" y="423.2" width="138" height="32" rx="4"
+            fill="#2D2D30" stroke="#8764B8" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#8764B8"><tspan x="698.6666666666666" y="437.2">Log MCP requests and</tspan><tspan x="698.6666666666666" y="449.2">tools</tspan></text>
+    </g>
+
+    <g class="edge-label" data-from="Architect&apos;s browser (Entra sign-in)" data-to="Application Insights" data-placement="route">
+      <rect x="463.71666666666675" y="343" width="119.4" height="32" rx="4"
+            fill="#2D2D30" stroke="#8764B8" stroke-width="0.75" />
+      <text text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="10" fill="#8764B8"><tspan x="523.4166666666667" y="357">Send privacy-safe</tspan><tspan x="523.4166666666667" y="369">feature events</tspan></text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  
+
+
+
+
+
+<line x1="860" y1="748" x2="886" y2="748" stroke="#0078D4" stroke-width="2"/><text x="892" y="752" font-family="Segoe UI, system-ui, sans-serif" font-size="10" fill="#A0A0A0">Sync</text>
+<line x1="970" y1="748" x2="996" y2="748" stroke="#8764B8" stroke-width="2" stroke-dasharray="6,4"/><text x="1002" y="752" font-family="Segoe UI, system-ui, sans-serif" font-size="10" fill="#A0A0A0">Async</text>
+<line x1="1080" y1="748" x2="1106" y2="748" stroke="#A0A0A0" stroke-width="2" stroke-dasharray="4,4"/><text x="1112" y="752" font-family="Segoe UI, system-ui, sans-serif" font-size="10" fill="#A0A0A0">Optional</text>
+  <!-- Total cost -->
+  
+
+  <!-- Watermark -->
+  
+</svg>

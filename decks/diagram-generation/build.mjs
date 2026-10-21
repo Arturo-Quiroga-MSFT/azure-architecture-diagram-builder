@@ -35,7 +35,7 @@ const STAGES = [
   { n: '02', t: 'Prompt assembly',  k: 'llm' },
   { n: '03', t: 'Model call',       k: 'llm' },
   { n: '04', t: 'JSON contract',    k: 'llm' },
-  { n: '05', t: 'Parse + normalize',k: 'det' },
+  { n: '05', t: 'Parse + repair',k: 'det' },
   { n: '06', t: 'Icon resolution',  k: 'det' },
   { n: '07', t: 'Groups / zones',   k: 'det' },
   { n: '08', t: 'Edges',            k: 'det' },
@@ -103,7 +103,8 @@ function chip(slide, x, y, w, label, color) {
   s.addText('Deterministic code decides visuals', { x: M + 4.52, y: 4.44, w: 5, h: 0.34, fontFace: BODY, fontSize: 14, color: INK, margin: 0, valign: 'middle' });
   s.addText([
     { text: 'Technical walkthrough for AI PSAs', options: { color: DET, bold: true } },
-    { text: '   •   Worked example: HIPAA-compliant Healthcare FHIR API', options: { color: FAINT } },
+    { text: '   •   Worked example: HIPAA-compliant Healthcare FHIR API', options: { color: '9AA2C8' } },
+    { text: '   •   AADB v2.1.10 · October 2026', options: { color: '9AA2C8' } },
   ], { x: M, y: 5.6, w: 12, h: 0.4, fontFace: HDR, fontSize: 12.5, margin: 0 });
 }
 
@@ -198,13 +199,13 @@ function stageSlide(idx, heading, bullets, codeTitle, codeLines, opts = {}) {
 // ═══════════════════════════════════════════════════════════════════════════
 // SLIDE 4 — Stage 1: Input
 // ═══════════════════════════════════════════════════════════════════════════
-stageSlide(0, 'Input — one prompt, four entry points',
+stageSlide(0, 'Input — one contract, many ways in',
   [
     { text: 'Natural language is the primary path — free-form intent, no schema required.', options: { bullet: true, breakLine: true } },
-    { text: 'Voice input is transcribed (Azure Speech) into the same prompt box.', options: { bullet: true, breakLine: true } },
+    { text: 'Voice Live: Ava gathers requirements by voice, then calls a draw_architecture tool with a written brief that enters this same pipeline.', options: { bullet: true, breakLine: true } },
     { text: 'Two deterministic entry points skip the model entirely:', options: { bullet: true, breakLine: true } },
     { text: 'Import Template — ARM JSON parsed directly (<1s)', options: { bullet: true, indentLevel: 1, breakLine: true, color: MUTE } },
-    { text: 'Import from Azure — live Resource Graph of a resource group', options: { bullet: true, indentLevel: 1, breakLine: true, color: MUTE } },
+    { text: 'Import from Azure — live Resource Graph read', options: { bullet: true, indentLevel: 1, breakLine: true, color: MUTE } },
     { text: 'Everything converges on the same architecture object downstream.', options: { bullet: true } },
   ],
   'EXAMPLE PROMPT (ACTUAL)', [
@@ -227,7 +228,7 @@ stageSlide(1, 'Prompt assembly — the system prompt does the heavy lifting',
     { text: 'Role: "expert Azure cloud architect… return a JSON specification."', options: { bullet: true, breakLine: true } },
     { text: 'Known-services catalog injected from SERVICE_ICON_MAP so the model uses exact display names.', options: { bullet: true, breakLine: true } },
     { text: 'Icon-category vocabulary (17 categories) constrains the "category" field.', options: { bullet: true, breakLine: true } },
-    { text: '13 rules encode Microsoft-reference-architecture conventions: grouping, edge budget, hub-and-spoke monitoring, service caps.', options: { bullet: true, breakLine: true } },
+    { text: '22 rules encode reference-architecture conventions: grouping, edge budget, monitoring, service caps, refinement discipline, private connectivity, Microsoft Fabric and Microsoft IQ.', options: { bullet: true, breakLine: true } },
     { text: 'The exact output JSON schema is spelled out inline.', options: { bullet: true } },
   ],
   'SYSTEM PROMPT (EXCERPT)', [
@@ -238,7 +239,7 @@ stageSlide(1, 'Prompt assembly — the system prompt does the heavy lifting',
     { text: 'Rules (excerpt):', options: { color: MUTE, breakLine: true } },
     { text: '1  Create 2-5 logical groups', options: { breakLine: true } },
     { text: '3  Use "Microsoft Entra ID"', options: { breakLine: true } },
-    { text: '9  Hub-and-spoke for monitoring', options: { breakLine: true } },
+    { text: '9  Consolidate monitoring edges', options: { breakLine: true } },
     { text: '10 Limit connections to 12-18', options: { breakLine: true } },
     { text: '12 Total services: 8-12 max', options: {} },
   ], { page: 5, codeColor: LLM, codeSize: 10.5 });
@@ -248,9 +249,9 @@ stageSlide(1, 'Prompt assembly — the system prompt does the heavy lifting',
 // ═══════════════════════════════════════════════════════════════════════════
 stageSlide(2, 'Model call — proxied, model-agnostic, JSON-only',
   [
-    { text: 'The browser never holds the API key. All traffic goes through the token server at /api/openai (the security boundary).', options: { bullet: true, breakLine: true } },
-    { text: '12 selectable models (GPT-5.x, DeepSeek, Grok, Mistral, Kimi) — the pipeline is identical regardless of model.', options: { bullet: true, breakLine: true } },
-    { text: 'The system + user messages are sent; JSON output is requested.', options: { bullet: true, breakLine: true } },
+    { text: 'The browser never holds a key. All traffic goes through the token server at /api/openai, which calls Foundry with its managed identity.', options: { bullet: true, breakLine: true } },
+    { text: '14 selectable models (GPT-6.x, GPT-5.6, Claude, MAI, DeepSeek, Grok, Mistral, Kimi) — the pipeline is identical regardless of model.', options: { bullet: true, breakLine: true } },
+    { text: 'System + user messages sent; JSON output requested.', options: { bullet: true, breakLine: true } },
     { text: 'Latency + token metrics are captured and attached to the result for the leaderboard.', options: { bullet: true } },
   ],
   'REQUEST SHAPE', [
@@ -260,7 +261,7 @@ stageSlide(2, 'Model call — proxied, model-agnostic, JSON-only',
     { text: '  { role: "user",   content: prompt }', options: { breakLine: true } },
     { text: ']', options: { breakLine: true } },
     { text: '', options: { breakLine: true } },
-    { text: 'key stays server-side  ✔', options: { color: GOLD, breakLine: true } },
+    { text: 'no key in the browser  ✔', options: { color: GOLD, breakLine: true } },
     { text: 'model swappable         ✔', options: { color: GOLD } },
   ], { page: 6, codeColor: LLM });
 
@@ -291,12 +292,12 @@ stageSlide(3, 'The JSON contract — four sections, zero coordinates',
 // ═══════════════════════════════════════════════════════════════════════════
 // SLIDE 8 — Stage 5: Parse + normalize
 // ═══════════════════════════════════════════════════════════════════════════
-stageSlide(4, 'Parse + normalize — trust, but verify the model',
+stageSlide(4, 'Parse, normalize, repair — trust, but verify the model',
   [
     { text: 'JSON.parse with strict error handling; malformed output is rejected, not rendered.', options: { bullet: true, breakLine: true } },
-    { text: 'Every service is matched against SERVICE_ICON_MAP by name, then by type.', options: { bullet: true, breakLine: true } },
-    { text: 'On a match, the code overwrites name, type and category with the curated canonical values — so a diagram is consistent even if the model is loose.', options: { bullet: true, breakLine: true } },
-    { text: 'Fuzzy matching catches near-misses (e.g. "FHIR service" → Azure Health Data Services).', options: { bullet: true } },
+    { text: 'Every service is matched against SERVICE_ICON_MAP by name, then by type, and takes the curated name, type and category.', options: { bullet: true, breakLine: true } },
+    { text: 'Repairs: merge duplicate shared services, drop dangling edges and group refs, turn policy and identity links into associations, collapse parallel edges.', options: { bullet: true, breakLine: true } },
+    { text: 'Guarantees: Fabric items always come with the Fabric Capacity that bills them.', options: { bullet: true } },
   ],
   'NORMALIZATION', [
     { text: 'mapping = getServiceIconMapping(', options: { breakLine: true } },
@@ -342,7 +343,7 @@ stageSlide(6, 'Groups & zones — structure the model already chose',
     { text: 'Each service carries a groupId; groups become compound container nodes.', options: { bullet: true, breakLine: true } },
     { text: 'Prompt rules shape the topology: 2-5 groups, max 6 services each.', options: { bullet: true, breakLine: true } },
     { text: 'Directional flow is enforced: Ingress/Edge → Application → Data, left-to-right.', options: { bullet: true, breakLine: true } },
-    { text: 'Cross-cutting zones are pinned: Identity/Security bottom-left, Monitoring bottom-right.', options: { bullet: true, breakLine: true } },
+    { text: 'Cross-cutting zones (Identity/Security, Monitoring) sit apart from the main request flow.', options: { bullet: true, breakLine: true } },
     { text: 'Tightly-coupled services are kept in the same group to minimize cross-group clutter.', options: { bullet: true } },
   ],
   'ACTUAL GROUPS (FHIR EXAMPLE)', [
@@ -435,34 +436,26 @@ stageSlide(9, 'Costing — grounded in Azure Retail Prices, per region',
   const hasImg = existsSync(new URL(`./${IMG}`, import.meta.url));
 
   if (hasImg) {
-    // ── Full-bleed diagram (aspect preserved), overlays on top ──────────────
-    // Source PNG is ~1297×768 (≈1.69:1); fit to full slide height.
-    const ih = H, iw = ih * (1297 / 768), ix = (W - iw) / 2;
-    s.addImage({ path: IMG, x: ix, y: 0, w: iw, h: ih, sizing: { type: 'contain', w: iw, h: ih } });
-
-    // Title pill (top-left overlay)
-    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.35, y: 0.3, w: 6.9, h: 0.62, rectRadius: 0.08, fill: { color: BG2, transparency: 14 }, line: { color: DET, width: 1 } });
+    // ── Diagram exported by v2.1.10 (cropped, full resolution) + cost card ──
+    title(s, 'Worked example — the Healthcare FHIR diagram');
+    const iy = 1.2, ih = 5.55, iw = ih * (3200 / 2099), ix = M;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: ix - 0.06, y: iy - 0.06, w: iw + 0.12, h: ih + 0.12, rectRadius: 0.06, fill: { color: 'F7F9FB' }, line: { color: BORDER, width: 1 } });
+    s.addImage({ path: IMG, x: ix, y: iy, w: iw, h: ih });
+    const cx = ix + iw + 0.45, cw = W - M - cx;
+    card(s, cx, iy, cw, ih, PANEL, GOLD);
+    s.addText('MONTHLY ESTIMATE', { x: cx + 0.25, y: iy + 0.25, w: cw - 0.5, h: 0.3, fontFace: HDR, fontSize: 10.5, color: GOLD, charSpacing: 1, margin: 0 });
+    s.addText('~$287', { x: cx + 0.25, y: iy + 0.6, w: cw - 0.5, h: 0.7, fontFace: HDR, fontSize: 32, bold: true, color: INK, margin: 0 });
+    s.addText('PAYG / month · East US 2', { x: cx + 0.25, y: iy + 1.32, w: cw - 0.5, h: 0.3, fontFace: BODY, fontSize: 11, color: MUTE, margin: 0 });
     s.addText([
-      { text: 'WORKED EXAMPLE   ', options: { color: DET, bold: true } },
-      { text: 'Healthcare FHIR — real exported diagram', options: { color: INK } },
-    ], { x: 0.55, y: 0.3, w: 6.6, h: 0.62, fontFace: HDR, fontSize: 12.5, valign: 'middle', margin: 0, charSpacing: 1 });
-
-    // Cost band (bottom, full-width overlay)
-    const by = H - 0.86;
-    s.addShape(pres.shapes.RECTANGLE, { x: 0, y: by, w: W, h: 0.86, fill: { color: BG2, transparency: 10 }, line: { type: 'none' } });
-    s.addShape(pres.shapes.RECTANGLE, { x: 0, y: by, w: W, h: 0.05, fill: { color: GOLD } });
-    s.addText([
-      { text: '$287', options: { color: GOLD, bold: true, fontSize: 20 } },
-      { text: ' /mo PAYG', options: { color: INK, fontSize: 12 } },
-    ], { x: 0.5, y: by + 0.02, w: 2.6, h: 0.82, fontFace: HDR, valign: 'middle', margin: 0 });
-    s.addText([
-      { text: 'East US 2', options: { color: MUTE } },
-      { text: '     12 services  ·  5 groups  ·  14 edges (9 sync / 5 async)', options: { color: INK } },
-      { text: '     Azure Retail Prices snapshot', options: { color: MUTE } },
-    ], { x: 3.15, y: by, w: 8.9, h: 0.86, fontFace: BODY, fontSize: 12, valign: 'middle', margin: 0 });
-    s.addText('14 / 16', { x: W - 1.2, y: by, w: 1.0, h: 0.86, fontFace: HDR, fontSize: 10, color: FAINT, align: 'right', valign: 'middle', margin: 0 });
-    s.addText('DICOM tier unpriced in this snapshot',
-      { x: 0.5, y: by - 0.32, w: 7, h: 0.28, fontFace: BODY, fontSize: 9, italic: true, color: FAINT, margin: 0 });
+      { text: '12 services', options: { bullet: true, breakLine: true } },
+      { text: '5 groups', options: { bullet: true, breakLine: true } },
+      { text: '14 edges · 9 sync / 5 async', options: { bullet: true, breakLine: true } },
+      { text: 'Azure Retail Prices snapshot', options: { bullet: true, color: GOLD } },
+    ], { x: cx + 0.25, y: iy + 1.7, w: cw - 0.5, h: 1.8, fontFace: BODY, fontSize: 12, color: INK, lineSpacingMultiple: 1.2, margin: 0 });
+    s.addText('Exported with v2.1.10: the diagram itself at full resolution, no canvas chrome. DICOM tier unpriced in this snapshot.', {
+      x: cx + 0.25, y: iy + ih - 1.25, w: cw - 0.5, h: 1.05, fontFace: BODY, fontSize: 10, italic: true, color: MUTE, margin: 0, valign: 'bottom',
+    });
+    footer(s, 14);
   } else {
     // ── Fallback: stylized schematic + cost card (no PNG present) ───────────
     title(s, 'Worked example — the Healthcare FHIR diagram');
@@ -514,13 +507,13 @@ stageSlide(9, 'Costing — grounded in Azure Retail Prices, per region',
 
   const rows = [
     ['Stage', 'LLM (purple)', 'Deterministic code (teal)'],
-    ['Input', '—', 'Capture prompt / template / ARG'],
+    ['Input', 'Voice Live gathers the brief', 'Capture prompt / template / ARG'],
     ['Prompt assembly', 'Receives rules + schema', 'Build system prompt from icon map'],
     ['Model call', 'Infers architecture', 'Proxy key, capture metrics'],
     ['JSON contract', 'Emits groups/services/edges', 'Validate JSON shape'],
-    ['Normalize', '—', 'Canonicalize names + categories'],
+    ['Normalize', '—', 'Canonicalize, repair, add Fabric Capacity'],
     ['Icons', '—', 'Resolve category → real SVG'],
-    ['Groups & edges', 'Chose grouping + flows', 'Build containers + typed edges'],
+    ['Groups & edges', 'Chooses grouping + flows', 'Build containers + typed edges'],
     ['Layout', '—', 'Compute all positions (Dagre/ELK)'],
     ['Costing', '—', 'Map to Retail Prices, sum monthly'],
   ];
@@ -531,8 +524,8 @@ stageSlide(9, 'Costing — grounded in Azure Retail Prices, per region',
     const head = i === 0;
     s.addShape(pres.shapes.RECTANGLE, { x, y, w: tw, h: rowH, fill: { color: head ? PANEL : (i % 2 ? PANEL2 : BG) }, line: { color: BORDER, width: 0.5 } });
     s.addText(r[0], { x: x + 0.15, y, w: c0 - 0.2, h: rowH, fontFace: HDR, fontSize: head ? 12 : 11.5, bold: head, color: head ? INK : INK, valign: 'middle', margin: 0 });
-    s.addText(r[1], { x: x + c0, y, w: c1 - 0.1, h: rowH, fontFace: BODY, fontSize: head ? 12 : 11.5, bold: head, color: head ? LLM : (r[1] === '—' ? FAINT : MUTE), valign: 'middle', margin: 0 });
-    s.addText(r[2], { x: x + c0 + c1, y, w: c2 - 0.1, h: rowH, fontFace: BODY, fontSize: head ? 12 : 11.5, bold: head, color: head ? DET : INK, valign: 'middle', margin: 0 });
+    s.addText(r[1], { x: x + c0 + 0.12, y, w: c1 - 0.22, h: rowH, fontFace: BODY, fontSize: head ? 12 : 11.5, bold: head, color: head ? LLM : (r[1] === '—' ? FAINT : MUTE), valign: 'middle', margin: 0 });
+    s.addText(r[2], { x: x + c0 + c1 + 0.12, y, w: c2 - 0.22, h: rowH, fontFace: BODY, fontSize: head ? 12 : 11.5, bold: head, color: head ? DET : INK, valign: 'middle', margin: 0 });
   });
   // color spine
   s.addShape(pres.shapes.RECTANGLE, { x: x + c0 - 0.03, y: top, w: 0.03, h: rowH * rows.length, fill: { color: LLM } });
@@ -552,7 +545,7 @@ stageSlide(9, 'Costing — grounded in Azure Retail Prices, per region',
 
   const items = [
     ['Reproducible', 'Same JSON → same diagram, every time. No render-time guessing.'],
-    ['Model-swappable', 'All 12 models flow through one pipeline; swap models freely.'],
+    ['Model-swappable', 'All 14 models — and Voice Live — flow through one pipeline.'],
     ['Correct by construction', 'Curated icon map + validation beat model hallucination.'],
     ['Fast where it counts', 'ARM & Resource Graph imports skip the model — sub-second.'],
   ];
