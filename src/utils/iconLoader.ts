@@ -53,6 +53,8 @@ const iconDisplayNameOverrides: Record<string, string> = {
   'azure-cognitive-search': 'Azure AI Search',
   'cognitive-services': 'Foundry Tools',
   'document-intelligence': 'Azure AI Document Intelligence',
+  'fabric-iq': 'Fabric IQ',
+  'foundry-iq': 'Foundry IQ',
 };
 
 const supersededIconFiles = new Set([

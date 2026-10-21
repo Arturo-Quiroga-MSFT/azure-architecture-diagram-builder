@@ -156,6 +156,7 @@ export const SERVICE_NAME_MAPPING: Record<string, string> = {
   'Azure AI Search': 'Azure Cognitive Search',
   'AI Search': 'Azure Cognitive Search',
   'Azure Search': 'Azure Cognitive Search',
+  'Foundry IQ': 'Azure Cognitive Search',
   
   // Identity & Security
   'Active Directory': 'Microsoft Entra ID',
@@ -283,6 +284,7 @@ export const USAGE_BASED_SERVICES = [
   'Azure Cognitive Search',
   'Cognitive Search',
   'AI Search',
+  'Foundry IQ',
   // IoT
   'IoT Hub',
   'Azure IoT Hub',
@@ -398,6 +400,7 @@ export const DEFAULT_TIERS: Record<string, string> = {
   'Cognitive Search': 'Basic',
   'Azure AI Search': 'Basic',
   'AI Search': 'Basic',
+  'Foundry IQ': 'Basic',
   // IoT
   'IoT Hub': 'S1',
   'Azure IoT Hub': 'S1',
@@ -1017,6 +1020,12 @@ export const FALLBACK_PRICING: Record<string, {
     unit: 'per instance/month'
   },
   'AI Search': {
+    basic: 73.73,
+    standard: 245.28,
+    premium: 1962.24,
+    unit: 'per instance/month'
+  },
+  'Foundry IQ': {
     basic: 73.73,
     standard: 245.28,
     premium: 1962.24,

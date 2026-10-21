@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.8` | 2026-10-21 | Microsoft IQ: Fabric IQ and Foundry IQ as first-class services with icons and costing | Pending deployment |
 | `v2.1.7` | 2026-10-20 | Voice Live in Guided Chat: talk through a design with Ava, who draws and refines the diagram herself | Deployed |
 | `v2.1.6` | 2026-10-16 | Imported diagrams: meaningful edge labels, real resource names, compact group layout, fresh titles; MCP client keys | Deployed |
 | `v2.1.5` | 2026-10-12 | Narrator selector (avatar and voice), avatar session-leak fix, dependency vulnerabilities fixed | Deployed |
@@ -27,6 +28,24 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.8: Fabric IQ and Foundry IQ
+
+Reported symptom: architectures generated for industry use cases that name Fabric IQ never showed it, and Foundry IQ appeared only as Azure AI Search.
+
+### The cause
+- Neither service was in the service catalog, so neither appeared in the KNOWN SERVICES list given to the model, had an icon, or had costing. Both are newer than the models' training data, so the model rarely added them unprompted.
+
+### New services
+- **Fabric IQ** (`fabric`): the business ontology over OneLake and semantic models, shown with the official Fabric Ontology icon and an "incl. capacity" badge. Aliases include "Ontology" and "Fabric IQ Ontology".
+- **Fabric Graph Model** and **Fabric Operations Agent** (`fabric`): optional Fabric IQ items, also consuming Fabric capacity. Icons come from `@fabric-msft/svg-icons` 11.1.0 (MIT).
+- **Foundry IQ** (`ai + machine learning`): the agent knowledge base with agentic retrieval. It runs on Azure AI Search, so it uses the AI Search glyph and is priced as an AI Search instance.
+- A generation rule keeps named IQ services as their own nodes instead of folding them into Microsoft Fabric or Azure AI Search, avoids a duplicate AI Search node next to Foundry IQ, and keeps Work IQ (Microsoft 365) as an external integration.
+- The MCP server catalog has 99 services (from 95).
+
+### Verification
+- Typecheck and MCP service-catalog and tool-contract tests pass.
+- Local generation of an insurance underwriting use case that names both services: Fabric IQ appeared in the Microsoft Fabric group with its icon and "incl. capacity" badge, Foundry IQ appeared next to Microsoft Foundry at $73.73/mo with no separate AI Search node, and Work IQ appeared only as an integration.
 
 ## v2.1.7: Talk Through an Architecture with Ava
 

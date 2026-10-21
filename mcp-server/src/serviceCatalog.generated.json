@@ -257,6 +257,22 @@
     "isUsageBased": false,
     "costRange": "$75-2500/mo"
   },
+  "Foundry IQ": {
+    "displayName": "Foundry IQ",
+    "aliases": [
+      "Foundry IQ Knowledge Base",
+      "Knowledge Base (Foundry IQ)",
+      "Foundry Knowledge Base",
+      "Microsoft Foundry IQ",
+      "Agentic Retrieval"
+    ],
+    "iconFile": "foundry-iq",
+    "category": "ai + machine learning",
+    "hasPricingData": true,
+    "pricingServiceName": "Azure Cognitive Search",
+    "isUsageBased": false,
+    "costRange": "$75-2500/mo (Azure AI Search capacity)"
+  },
   "Virtual Machines": {
     "displayName": "Virtual Machines",
     "aliases": [
@@ -1297,6 +1313,47 @@
       "Fabric AI Skill"
     ],
     "iconFile": "fabric-data-agent",
+    "category": "fabric",
+    "hasPricingData": false,
+    "costRange": "$0 (consumes Fabric capacity)"
+  },
+  "Fabric IQ": {
+    "displayName": "Fabric IQ",
+    "aliases": [
+      "Fabric IQ Ontology",
+      "Ontology (Fabric IQ)",
+      "Fabric Ontology",
+      "Ontology",
+      "Fabric IQ workload",
+      "Microsoft Fabric IQ"
+    ],
+    "iconFile": "fabric-iq",
+    "category": "fabric",
+    "hasPricingData": false,
+    "costRange": "$0 (consumes Fabric capacity)"
+  },
+  "Fabric Graph Model": {
+    "displayName": "Fabric Graph Model",
+    "aliases": [
+      "Graph Model",
+      "Graph in Fabric",
+      "Fabric Graph",
+      "Fabric IQ Graph",
+      "Ontology Graph"
+    ],
+    "iconFile": "fabric-graph-model",
+    "category": "fabric",
+    "hasPricingData": false,
+    "costRange": "$0 (consumes Fabric capacity)"
+  },
+  "Fabric Operations Agent": {
+    "displayName": "Fabric Operations Agent",
+    "aliases": [
+      "Operations Agent",
+      "Operations Agent (Fabric)",
+      "Fabric IQ Operations Agent"
+    ],
+    "iconFile": "fabric-operations-agent",
     "category": "fabric",
     "hasPricingData": false,
     "costRange": "$0 (consumes Fabric capacity)"

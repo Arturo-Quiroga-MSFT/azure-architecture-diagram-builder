@@ -182,6 +182,17 @@
       "AI Search"
     ]
   },
+  "Foundry IQ": {
+    "iconFile": "foundry-iq",
+    "category": "ai + machine learning",
+    "aliases": [
+      "Foundry IQ Knowledge Base",
+      "Knowledge Base (Foundry IQ)",
+      "Foundry Knowledge Base",
+      "Microsoft Foundry IQ",
+      "Agentic Retrieval"
+    ]
+  },
   "Virtual Machines": {
     "iconFile": "virtual-machines",
     "category": "compute",
@@ -881,6 +892,38 @@
     "aliases": [
       "Data Agent (Fabric)",
       "Fabric AI Skill"
+    ]
+  },
+  "Fabric IQ": {
+    "iconFile": "fabric-iq",
+    "category": "fabric",
+    "aliases": [
+      "Fabric IQ Ontology",
+      "Ontology (Fabric IQ)",
+      "Fabric Ontology",
+      "Ontology",
+      "Fabric IQ workload",
+      "Microsoft Fabric IQ"
+    ]
+  },
+  "Fabric Graph Model": {
+    "iconFile": "fabric-graph-model",
+    "category": "fabric",
+    "aliases": [
+      "Graph Model",
+      "Graph in Fabric",
+      "Fabric Graph",
+      "Fabric IQ Graph",
+      "Ontology Graph"
+    ]
+  },
+  "Fabric Operations Agent": {
+    "iconFile": "fabric-operations-agent",
+    "category": "fabric",
+    "aliases": [
+      "Operations Agent",
+      "Operations Agent (Fabric)",
+      "Fabric IQ Operations Agent"
     ]
   }
 }
