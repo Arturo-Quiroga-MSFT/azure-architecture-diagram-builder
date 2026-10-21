@@ -20,9 +20,9 @@ const pricing = JSON.parse(
 const catalogKeys = Object.keys(SERVICE_CATALOG);
 const iconKeys = Object.keys(iconMap);
 // Tripwire: update this count (and the tool-contract test) whenever a service
-// is added to src/data/serviceIconMapping.ts. 99 = 95 + Fabric IQ, Fabric Graph Model,
-// Fabric Operations Agent and Foundry IQ (v2.1.8).
-const EXPECTED_SERVICE_COUNT = 99;
+// is added to src/data/serviceIconMapping.ts. 100 = 95 + Fabric IQ, Fabric Graph Model,
+// Fabric Operations Agent, Foundry IQ (v2.1.8) and Work IQ (v2.1.9).
+const EXPECTED_SERVICE_COUNT = 100;
 assert.equal(catalogKeys.length, EXPECTED_SERVICE_COUNT, `Expected all ${EXPECTED_SERVICE_COUNT} canonical AADB services`);
 assert(catalogKeys.includes('Private Endpoint'), 'Private Endpoint must be in the canonical catalog');
 assert.deepEqual(catalogKeys.sort(), iconKeys.sort(), 'Catalog and icon-map keys must match');

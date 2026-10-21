@@ -182,6 +182,17 @@
       "AI Search"
     ]
   },
+  "Work IQ": {
+    "iconFile": "work-iq",
+    "category": "other",
+    "aliases": [
+      "Work IQ (Microsoft 365 Copilot)",
+      "Microsoft 365 Copilot (Work IQ)",
+      "Work IQ (Microsoft 365)",
+      "Microsoft Work IQ",
+      "Work IQ Integration"
+    ]
+  },
   "Foundry IQ": {
     "iconFile": "foundry-iq",
     "category": "ai + machine learning",

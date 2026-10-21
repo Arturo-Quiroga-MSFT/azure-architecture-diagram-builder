@@ -249,6 +249,19 @@ export const SERVICE_ICON_MAP: Record<string, ServiceIconMapping> = {
   // Foundry IQ (part of Microsoft IQ): a knowledge base with agentic retrieval
   // that grounds agents in enterprise content. Azure AI Search provides its
   // indexing and retrieval, so it reuses the AI Search glyph and pricing.
+  // Work IQ (part of Microsoft IQ) is Microsoft 365 work context (mail,
+  // meetings, chats, files) surfaced through Microsoft 365 Copilot. It is not
+  // an Azure resource, so it carries no Azure cost. Icon: Fluent UI System
+  // Icons people_chat_24_color (MIT), since no Work IQ or Copilot brand icon
+  // is published for architecture diagrams.
+  'Work IQ': {
+    displayName: 'Work IQ',
+    aliases: ['Work IQ (Microsoft 365 Copilot)', 'Microsoft 365 Copilot (Work IQ)', 'Work IQ (Microsoft 365)', 'Microsoft Work IQ', 'Work IQ Integration'],
+    iconFile: 'work-iq',
+    category: 'other',
+    hasPricingData: false,
+    costRange: 'External (Microsoft 365 Copilot license)'
+  },
   'Foundry IQ': {
     displayName: 'Foundry IQ',
     aliases: ['Foundry IQ Knowledge Base', 'Knowledge Base (Foundry IQ)', 'Foundry Knowledge Base', 'Microsoft Foundry IQ', 'Agentic Retrieval'],

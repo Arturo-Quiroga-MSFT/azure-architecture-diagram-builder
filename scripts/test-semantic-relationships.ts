@@ -226,4 +226,36 @@ assert.match(buildModificationPrompt({
   }],
 }, 'Keep private connectivity'), /connect privately to virtual network/i);
 
-console.log('Semantic relationship tests passed: WAF, and the Private Connectivity group (no per-resource Private Endpoint nodes)');
+// Microsoft IQ: Fabric items always come with the capacity that bills them,
+// and Work IQ normalizes to its own external-integration icon.
+const quiet = { log: () => {}, warn: () => {} };
+const iq = postProcessArchitecture({
+  groups: [{ id: 'fabric', label: 'Microsoft Fabric' }, { id: 'm365', label: 'Microsoft 365 Integration' }],
+  services: [
+    { id: 'lake', name: 'Lakehouse', type: 'Lakehouse', groupId: 'fabric' },
+    { id: 'ont', name: 'Fabric IQ', type: 'Fabric IQ', groupId: 'fabric' },
+    { id: 'work', name: 'Work IQ (Microsoft 365 Copilot)', type: 'Work IQ (Microsoft 365 Copilot)', groupId: 'm365' },
+  ],
+  connections: [{ from: 'lake', to: 'ont', label: 'Map ontology entities' }],
+}, quiet);
+const capacity = iq.services.find((s: any) => s.name === 'Microsoft Fabric Capacity');
+assert.ok(capacity, 'Fabric items without a capacity get a Microsoft Fabric Capacity node');
+assert.equal(capacity.groupId, 'fabric');
+assert.ok(iq.connections.some((c: any) => c.from === capacity.id && c.to === 'lake'), 'capacity is linked to a Fabric item');
+assert.equal(iq.integrity.addedFabricCapacity, true);
+const work = iq.services.find((s: any) => s.id === 'work');
+assert.equal(work.name, 'Work IQ');
+assert.equal(work.category, 'other');
+assert.equal(getServiceIconMapping('Work IQ')?.iconFile, 'work-iq');
+const withCapacity = postProcessArchitecture({
+  services: [
+    { id: 'lake', name: 'Lakehouse', type: 'Lakehouse' },
+    { id: 'cap', name: 'Fabric Capacity', type: 'Fabric Capacity' },
+  ],
+  connections: [{ from: 'cap', to: 'lake', label: 'Provide capacity' }],
+}, quiet);
+assert.equal(withCapacity.services.filter((s: any) => s.name === 'Microsoft Fabric Capacity').length, 1, 'an existing capacity is not duplicated');
+const noFabric = postProcessArchitecture({ services: [{ id: 'web', name: 'App Service', type: 'App Service' }], connections: [] }, quiet);
+assert.equal(noFabric.services.length, 1, 'no capacity without Fabric items');
+
+console.log('Semantic relationship tests passed: WAF, and the Private Connectivity group (no per-resource Private Endpoint nodes), Fabric Capacity, Work IQ');

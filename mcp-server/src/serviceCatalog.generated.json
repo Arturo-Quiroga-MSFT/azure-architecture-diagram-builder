@@ -257,6 +257,20 @@
     "isUsageBased": false,
     "costRange": "$75-2500/mo"
   },
+  "Work IQ": {
+    "displayName": "Work IQ",
+    "aliases": [
+      "Work IQ (Microsoft 365 Copilot)",
+      "Microsoft 365 Copilot (Work IQ)",
+      "Work IQ (Microsoft 365)",
+      "Microsoft Work IQ",
+      "Work IQ Integration"
+    ],
+    "iconFile": "work-iq",
+    "category": "other",
+    "hasPricingData": false,
+    "costRange": "External (Microsoft 365 Copilot license)"
+  },
   "Foundry IQ": {
     "displayName": "Foundry IQ",
     "aliases": [

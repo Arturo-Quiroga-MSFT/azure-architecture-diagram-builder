@@ -177,7 +177,7 @@ Features include:
 Design **Microsoft Fabric** data platforms alongside core Azure services:
 - **~21 Fabric items** with official Fabric icons — Fabric Capacity, OneLake, Lakehouse, Warehouse, Eventhouse, Eventstream, KQL Database, Fabric Notebook, Dataflow Gen2, Semantic Model, Power BI Report, Mirrored Database, and more
 - **Capacity-aware costing** — Fabric Capacity (F-SKU) carries the cost; compute items show an **“incl. capacity”** badge instead of double-counting, and OneLake is billed as usage-based storage. The full F2→F2048 ladder (PAYG + 1-yr reserved) is built in.
-- **Microsoft IQ** — **Fabric IQ** (business ontology over OneLake, with optional Graph Model and Operations Agent) and **Foundry IQ** (agent knowledge base on Azure AI Search) are first-class services with their own icons and costing
+- **Microsoft IQ** — **Fabric IQ** (business ontology over OneLake, with optional Graph Model and Operations Agent) and **Foundry IQ** (agent knowledge base on Azure AI Search) are first-class services with their own icons and costing; **Work IQ** appears as an external Microsoft 365 integration, and Fabric items always come with the Fabric Capacity that bills them
 - **Fabric example prompts** — medallion lakehouse, real-time intelligence, and Direct Lake Power BI scenarios
 
 ### ❓ Help & Learn Panel

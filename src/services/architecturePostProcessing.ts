@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { getServiceIconMapping } from '../data/serviceIconMapping';
+import { getServiceIconMapping, isCapacityConsumed } from '../data/serviceIconMapping';
 
 export interface ArchitectureProcessingLogger {
   log: (...args: unknown[]) => void;
@@ -331,6 +331,47 @@ function repairSemanticRelationships(architecture: any, logger: ArchitectureProc
   return repairs;
 }
 
+const FABRIC_CAPACITY = 'Microsoft Fabric Capacity';
+
+/**
+ * Fabric items bill through the shared F SKU, so a diagram with Fabric items
+ * but no capacity node under-reports cost. Add the capacity to the group that
+ * holds most of the Fabric items and link it to one of them.
+ */
+function ensureFabricCapacity(architecture: any, logger: ArchitectureProcessingLogger): boolean {
+  const services: any[] = architecture.services;
+  if (services.some((service) => service.name === FABRIC_CAPACITY)) return false;
+  const consumers = services.filter((service) => isCapacityConsumed(String(service.name ?? '')));
+  if (consumers.length === 0) return false;
+
+  const groupCounts = new Map<string, number>();
+  consumers.forEach((service) => {
+    if (service.groupId) groupCounts.set(service.groupId, (groupCounts.get(service.groupId) ?? 0) + 1);
+  });
+  const groupId = [...groupCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const ids = new Set(services.map((service) => String(service.id)));
+  let id = 'fabric-capacity';
+  for (let n = 2; ids.has(id); n++) id = `fabric-capacity-${n}`;
+
+  services.push({
+    id,
+    name: FABRIC_CAPACITY,
+    type: FABRIC_CAPACITY,
+    category: 'fabric',
+    groupId,
+    description: 'Shared F SKU capacity; the Fabric items in this workspace consume its Capacity Units.',
+  });
+  const anchor = consumers.find((service) => service.groupId === groupId) ?? consumers[0];
+  architecture.connections.push({
+    from: id,
+    to: String(anchor.id),
+    label: 'Provide Capacity Units to Fabric items',
+    type: 'association',
+  });
+  logger.warn(`Added ${FABRIC_CAPACITY}: ${consumers.length} Fabric item(s) had no capacity node`);
+  return true;
+}
+
 export function postProcessArchitecture(
   architecture: any,
   logger: ArchitectureProcessingLogger = defaultLogger,
@@ -432,6 +473,8 @@ export function postProcessArchitecture(
       service.groupId = null;
     }
   });
+
+  const addedFabricCapacity = ensureFabricCapacity(architecture, logger);
 
   const slug = (value: unknown) => String(value ?? '')
     .trim()
@@ -547,6 +590,7 @@ export function postProcessArchitecture(
     orphanCount: orphans.length,
     orphanServices: orphans.map((service: any) => String(service.name || service.id)),
     semanticRepairs,
+    addedFabricCapacity,
   };
 
   return architecture;

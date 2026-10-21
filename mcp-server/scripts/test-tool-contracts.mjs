@@ -222,7 +222,7 @@ async function main() {
     });
     const fullCatalog = textPayload(fullCatalogResult);
     assert.deepEqual(fullCatalogResult.structuredContent, fullCatalog);
-    assert.equal(fullCatalog.totalServices, 99);
+    assert.equal(fullCatalog.totalServices, 100);
     assert(fullCatalog.services.some(service => service.key === 'Microsoft Foundry'));
     assert(fullCatalog.services.some(service => service.key === 'Microsoft Fabric Capacity'));
 

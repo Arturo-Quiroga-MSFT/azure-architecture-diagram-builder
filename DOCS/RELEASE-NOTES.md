@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.9` | 2026-10-21 | Fabric Capacity always priced with Fabric items; Work IQ icon | Pending deployment |
 | `v2.1.8` | 2026-10-21 | Microsoft IQ: Fabric IQ and Foundry IQ as first-class services with icons and costing | Deployed |
 | `v2.1.7` | 2026-10-20 | Voice Live in Guided Chat: talk through a design with Ava, who draws and refines the diagram herself | Deployed |
 | `v2.1.6` | 2026-10-16 | Imported diagrams: meaningful edge labels, real resource names, compact group layout, fresh titles; MCP client keys | Deployed |
@@ -28,6 +29,15 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.9: Fabric Capacity and Work IQ
+
+Found while testing v2.1.8 with an underwriting prompt: the diagram had Fabric IQ, Graph Model and Operations Agent but no Fabric Capacity, so the monthly total left out the F SKU; Work IQ showed a generic API Connections icon.
+
+- **Fabric Capacity is guaranteed.** The generation rule already asked for it, but models sometimes skip it. Post-processing now adds "Microsoft Fabric Capacity" to the group that holds most Fabric items whenever any capacity-consuming Fabric item is present without one, and links it to a Fabric item. An existing capacity is never duplicated.
+- **Work IQ** (`other`) is a catalog entry with its own icon (Fluent UI System Icons `people_chat_24_color`, MIT; no Work IQ or Copilot brand icon is published for diagrams). It stays an external Microsoft 365 integration with no Azure cost.
+- MCP catalog: 100 services.
+- Tests: `test:semantic-relationships` covers the added capacity, no duplicate capacity, no capacity without Fabric, and Work IQ normalization.
 
 ## v2.1.8: Fabric IQ and Foundry IQ
 
