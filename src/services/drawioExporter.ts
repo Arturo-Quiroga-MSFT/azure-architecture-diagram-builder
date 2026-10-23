@@ -229,7 +229,8 @@ async function createServiceCell(
         <mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />
       </mxCell>`;
   
-  // Try to load and embed icon as Base64 - create as separate absolute-positioned cell
+  // Embed the icon as a child of the service cell, so moving the card in
+  // draw.io moves its icon too (draw.io selects the card first on click).
   const iconPath = node.data?.iconPath;
   console.log('[Draw.io Export] Node:', label, 'iconPath:', iconPath);
   
@@ -242,14 +243,14 @@ async function createServiceCell(
       
       const iconCellId = generateCellId();
       const iconSize = 48;
-      const iconX = x + (width - iconSize) / 2; // Absolute center position
-      const iconY = y + 8; // Absolute top padding
+      const iconX = (width - iconSize) / 2; // Relative to the service cell
+      const iconY = 8;
       
       // Draw.io image style - use raw data URI (they handle encoding internally)
       const iconStyle = `shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;html=1;image=${iconDataUri};`;
       
       iconCell = `
-      <mxCell id="${iconCellId}" value="" style="${iconStyle}" vertex="1" parent="${parentCellId}">
+      <mxCell id="${iconCellId}" value="" style="${iconStyle}" vertex="1" connectable="0" parent="${cellId}">
         <mxGeometry x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" as="geometry" />
       </mxCell>`;
     } else {
@@ -382,7 +383,8 @@ export async function exportToDrawio(
     }
   }
   
-  // Combine all cells - put icons after services so they appear on top
+  // Combine all cells. Icons come after services: each icon is a child of its
+  // service cell, and children are drawn on top of their parent.
   const allCells = [...groupCells, ...serviceCells, ...iconCells, ...edgeCells].join('');
   
   // Calculate diagram bounds for page size

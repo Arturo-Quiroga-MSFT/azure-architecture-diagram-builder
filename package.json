@@ -1,6 +1,6 @@
 {
   "name": "azure-architecture-diagram-builder",
-  "version": "2.1.12",
+  "version": "2.1.13",
   "description": "Azure architecture diagram builder with official icon library",
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
     "pricing:audit": "node scripts/audit-pricing-coverage.mjs",
     "pricing:audit-semantics": "tsx scripts/audit-pricing-semantics.ts",
     "test:arm": "node scripts/test-arm-extractor.mjs",
+    "test:drawio-export": "esbuild scripts/test-drawio-export.ts --bundle --platform=node --format=esm --log-level=warning --define:import.meta.env={} --outfile=node_modules/.cache/test-drawio-export.mjs && node node_modules/.cache/test-drawio-export.mjs",
     "test:resource-graph": "tsx scripts/test-resource-graph-import.ts",
     "test:dagre-migration": "tsx scripts/test-dagre-migration.ts",
     "test:layout-preservation": "tsx scripts/test-layout-preservation.ts",
