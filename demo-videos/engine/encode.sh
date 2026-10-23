@@ -9,7 +9,9 @@ FF="$FFMPEG"
 NAME="$(python3 -c "import json;print(json.load(open('$D/episode.json'))['output'])")"
 mkdir -p "$OUTPUT_DIR/captions" "$OUTPUT_DIR/thumbnails" "$D/review"
 OUT="$OUTPUT_DIR/$NAME.mp4"
-$FF -y -loglevel error -i "$D/out/screen.webm" -i "$D/out/audio.wav" -filter_complex "$(cat "$D/out/filter.txt");[1:a]loudnorm=I=-16:TP=-1.5:LRA=11[a]" \
+# Recorded episodes write out/screen.webm; built ones (the trailer) write out/screen.mkv.
+SCREEN="$D/out/screen.webm"; [[ -f "$D/out/screen.mkv" ]] && SCREEN="$D/out/screen.mkv"
+$FF -y -loglevel error -i "$SCREEN" -i "$D/out/audio.wav" -filter_complex "$(cat "$D/out/filter.txt");[1:a]loudnorm=I=-16:TP=-1.5:LRA=11[a]" \
   -map '[v]' -map '[a]' -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart "$OUT"
 cp "$D/out/captions.srt" "$OUTPUT_DIR/captions/$NAME.srt"
 THUMB_AT="$(python3 -c "import json;c=json.load(open('$D/out/cut.json'));r=c['reveals'];print(round((r[0]+3) if r else c['total']*0.4,2))")"

@@ -34,7 +34,7 @@ export const PROD_URL = config('AADB_APP_URL', 'https://aka.ms/diagram-builder')
 const W = 1920, H = 1080;
 
 // Extra card styles for the series (episode badge, bullet lists, end card).
-function seriesCss() {
+export function seriesCss() {
   if (window !== window.top) return;
   const CSS = `
   #v-card .ep { display: inline-block; padding: 8px 18px; border-radius: 999px; border: 1px solid #a78bfa88; background: #4c1d9533; color: #ddd6fe; font-size: 20px; letter-spacing: .2em; text-transform: uppercase; }

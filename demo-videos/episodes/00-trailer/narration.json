@@ -1,0 +1,15 @@
+[
+ ["t01", "What if every Azure architecture conversation ended with something you could actually deploy?"],
+ ["t02", "Describe it."],
+ ["t03", "Sketch it."],
+ ["t04", "Or import what's already running."],
+ ["t05", "Refine it in plain language."],
+ ["t06", "Talk it through, <break time='100ms'/> and Ava draws it for you."],
+ ["t07", "Validate it against the Well-Architected Framework."],
+ ["t08", "Compare what different AI models would build."],
+ ["t09", "Know what it costs to run, <break time='100ms'/> in any region."],
+ ["t10", "Deploy it, with Bicep that's compiled and checked."],
+ ["t11", "Share it: a customer-ready deck, an interactive page, Visio or draw.io."],
+ ["t12", "And use it from your AI agent, through MCP."],
+ ["t13", "The Azure Architecture Diagram Builder. <break time='200ms'/> Design, validate, price and deploy, <break time='100ms'/> in minutes."]
+]

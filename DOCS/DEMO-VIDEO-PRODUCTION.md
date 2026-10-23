@@ -13,8 +13,9 @@ This guide explains how the Azure Architecture Diagram Builder (AADB) demo video
 4. [The film engine API](#the-film-engine-api)
 5. [Making an episode, step by step](#making-an-episode-step-by-step)
 6. [Lessons learned](#lessons-learned)
-7. [Reusing this for another project](#reusing-this-for-another-project)
-8. [Episode log](#episode-log)
+7. [The trailer](#the-trailer)
+8. [Reusing this for another project](#reusing-this-for-another-project)
+9. [Episode log](#episode-log)
 
 ## The approach in one paragraph
 
@@ -183,6 +184,18 @@ Known gap: the Visio export still places icons as separate shapes, so Episode 9 
 - **Order matters when the product resets state.** Switching region reprices every node at its default tier, so tier edits come after the region tour.
 - **Deploy with a zero-traffic candidate revision** and move traffic only after health checks pass. When a candidate stalled after being scheduled (no image pull), restarting that revision fixed it, and production never saw it.
 
+## The trailer
+
+The trailer (`episodes/00-trailer`) is not recorded. It is cut from the episodes' raw recordings (`out/screen.webm`), so it shows the same live product and never needs a separate take.
+
+- **`trailer.json` lists the beats:** source episode, a `from`/`to` window in that episode's recording clock, a verb ("Describe it"), the episode label, and a length in bars. Pick windows where the episode's own subtitles and callouts are not on screen; the trailer adds its own.
+- **Cut on the beat.** Every beat lasts a whole number of bars of the score (124 bpm), and `music.py` adds a crash and kick on each cut (`hits` in the timeline). The builder adds bars when a narration line needs more room.
+- **Fit the source to the beat:** speed it up when it is longer, hold its last frame when it is shorter, and add a slow push-in so held frames still move.
+- **Build `out/screen.mkv` directly** and skip recording; `encode.sh` uses it when present, and `mix.py` mixes as usual.
+- **Join segments with ffmpeg's concat filter**, not the concat demuxer or `-c copy`. The demuxer dropped frames at segment boundaries, which shifted every later cut off the music.
+- **Hide the overlay's card before rendering transparent overlay PNGs.** It starts visible, and the first PNG came out as an opaque card that blanked the cold open.
+- **Re-cut after re-filming.** When an episode is re-recorded, check its trailer windows against the new recording.
+
 ## Reusing this for another project
 
 Copy [`demo-videos/`](../demo-videos/README.md) (the engine plus `episodes/00-example` as a template), then:
@@ -211,3 +224,4 @@ Requirements: Node.js with Playwright and Chromium, Python 3 with NumPy and SciP
 | 9 | Share It | 2:22 | Customer deck, interactive web page, workflow animation, Draw.io and Visio |
 | 10 | AADB Everywhere (MCP) | 1:47 | A real GitHub Copilot CLI session designs, validates, hardens, prices and exports through the MCP server; the result opens in the web app |
 | 11–12 | Microsoft IQ and Fabric, and one more | — | Planned |
+| 0 | Trailer: AADB in 90 Seconds | 1:17 | Eleven beats cut from Episodes 1–10 to the music, with an end card listing the series |

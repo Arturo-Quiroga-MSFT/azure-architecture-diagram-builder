@@ -62,7 +62,8 @@ for c in tl.get('captions', []):
 srt.sort()
 
 reveals = [remap(r) for r in tl.get('reveals', [])]
-music = render(ep.get('music', 'drive'), total, reveals=reveals, rate=RATE)
+hits = [remap(h) for h in tl.get('hits', [])]
+music = render(ep.get('music', 'drive'), total, reveals=reveals, rate=RATE, hits=hits)
 music = duck(music, active, RATE, depth=ep.get('duck', 0.62)) * ep.get('musicLevel', 0.42)
 mix = music + voice[:, None] * 0.95
 mix /= max(1.0, np.abs(mix).max() / 0.97)

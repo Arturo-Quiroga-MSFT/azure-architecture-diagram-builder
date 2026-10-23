@@ -1,0 +1,19 @@
+{
+  "comment": "Beats cut from the episodes' raw recordings (episodes/<ep>/out/screen.webm). from/to are recording times (the timeline's clock) chosen where no narration subtitle is on screen. bars: beat length in bars of the score (pulse, 124 bpm); the builder adds bars if the narration needs them.",
+  "open": { "cue": "t01", "bars": 3 },
+  "beats": [
+    { "verb": "Describe it", "cue": "t02", "ep": "01-prompt-to-architecture", "label": "Episode 1 · Prompt to Architecture", "from": 71.6, "to": 83.5, "bars": 3 },
+    { "verb": "Sketch it", "cue": "t03", "ep": "02-whiteboard-and-import", "label": "Episode 2 · Whiteboard and Import", "from": 67.7, "to": 79.5, "bars": 3 },
+    { "verb": "Import it", "cue": "t04", "ep": "02-whiteboard-and-import", "label": "Episode 2 · Whiteboard and Import", "from": 138.2, "to": 142.8, "bars": 2 },
+    { "verb": "Refine it", "cue": "t05", "ep": "03-refine-with-guided-chat", "label": "Episode 3 · Refine with Guided Chat", "from": 109.6, "to": 116.0, "bars": 2 },
+    { "verb": "Talk it through", "cue": "t06", "ep": "04-talk-to-your-architecture", "label": "Episode 4 · Talk to Your Architecture", "from": 181.0, "to": 190.0, "bars": 3 },
+    { "verb": "Validate it", "cue": "t07", "ep": "05-well-architected-review", "label": "Episode 5 · Well-Architected Review", "from": 182.8, "to": 191.2, "bars": 3 },
+    { "verb": "Compare models", "cue": "t08", "ep": "07-compare-models", "label": "Episode 7 · Compare Models", "from": 120.2, "to": 126.2, "bars": 3 },
+    { "verb": "Price it", "cue": "t09", "ep": "06-cost-and-regions", "label": "Episode 6 · Cost and Regions", "from": 59.2, "to": 63.4, "bars": 2 },
+    { "verb": "Deploy it", "cue": "t10", "ep": "08-deploy-it", "label": "Episode 8 · Deploy It", "from": 179.2, "to": 183.9, "bars": 2 },
+    { "verb": "Share it", "cue": "t11", "ep": "09-share-it", "label": "Episode 9 · Share It", "from": 107.5, "to": 119.3, "bars": 3 },
+    { "verb": "Use it anywhere", "cue": "t12", "ep": "10-aadb-everywhere-mcp", "label": "Episode 10 · AADB Everywhere", "from": 84.0, "to": 128.0, "bars": 3 }
+  ],
+  "close": { "cue": "t13", "bars": 4 },
+  "series": ["Prompt to Architecture", "Whiteboard and Import", "Refine with Guided Chat", "Talk to Your Architecture", "Well-Architected Review", "Cost and Regions", "Compare Models", "Deploy It", "Share It", "AADB Everywhere"]
+}

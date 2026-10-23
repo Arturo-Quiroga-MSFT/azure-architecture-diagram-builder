@@ -1,6 +1,7 @@
 """Original synthesized scores for the AADB video series (no samples, no licensing).
 
-render(preset, total, reveals=(), rate=48000) -> float32 array (n, 2), peak ~0.9.
+render(preset, total, reveals=(), rate=48000, hits=()) -> float32 array (n, 2), peak ~0.9.
+hits: extra accents (a crash and a kick) without the break before them, e.g. on a trailer's cuts.
 Presets: drive (118 bpm, upbeat corporate), lift (104 bpm, piano-led optimistic),
 pulse (124 bpm, energetic sidechain), ambient (the original slow film score feel).
 Song shape: intro, groove with A/B variations every 8 bars, a 2-bar break + riser before
@@ -142,7 +143,7 @@ PRESETS = {
 }
 
 
-def render(preset='drive', total=60.0, reveals=(), rate=48000, outro=True):
+def render(preset='drive', total=60.0, reveals=(), rate=48000, outro=True, hits=()):
     P = PRESETS[preset]
     beat = 60 / P['bpm']
     barlen = 4 * beat
@@ -222,6 +223,9 @@ def render(preset='drive', total=60.0, reveals=(), rate=48000, outro=True):
             S.add(r - d, riser(d, rate), 0.30, 0)
         S.add(r, crash(rate), 0.55, 0)
         S.add(r, K, 0.7)
+    for h in hits:
+        S.add(h, crash(rate), 0.38, 0)
+        S.add(h, K, 0.6)
 
     x = S.buf
     x = np.tanh(x * 1.3) / np.tanh(1.3)  # gentle glue

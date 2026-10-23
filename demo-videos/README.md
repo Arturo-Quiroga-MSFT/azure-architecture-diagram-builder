@@ -51,6 +51,7 @@ Output: `videos/<output>.mp4` (1080p30, −16 LUFS), `videos/captions/<output>.s
 | Folder | Video | Notes |
 | --- | --- | --- |
 | `00-example` | Example | Template and smoke test, no AI calls |
+| `00-trailer` | Trailer: AADB in 90 Seconds | Cut from the episodes' raw recordings, so film Episodes 1–10 first. `engine/run.sh episodes/00-trailer` narrates, cuts and mixes it |
 | `01-prompt-to-architecture` | Prompt to Architecture | |
 | `02-whiteboard-and-import` | Whiteboard and Import | Assets: an AI-generated whiteboard photo and a fictional Contoso ARM template |
 | `03-refine-with-guided-chat` | Refine with Guided Chat | Starts from the saved clinic booking draft |
