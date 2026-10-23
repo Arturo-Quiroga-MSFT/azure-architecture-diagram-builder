@@ -62,6 +62,7 @@ Output: `videos/<output>.mp4` (1080p30, −16 LUFS), `videos/captions/<output>.s
 | `08-deploy-it` | Deploy It | Set `WHATIF_RESOURCE_GROUP` (an empty resource group) to show a real `what-if` |
 | `09-share-it` | Share It | Renders the deck with PowerPoint (or LibreOffice) and records a diagrams.net session |
 | `10-aadb-everywhere-mcp` | AADB Everywhere (MCP) | A real GitHub Copilot CLI session in a pseudo-terminal; needs `AADB_MCP_URL`, `AADB_MCP_KEY`, the `copilot` CLI signed in, and `npm install` in `demo-videos/` |
+| `11-microsoft-iq-and-fabric` | Microsoft IQ and Fabric | Generates an agent design that names Work IQ, Fabric IQ and Foundry IQ, then adds a Fabric Graph Model with Guided Chat; the cost line is chosen from the live before/after run rate |
 
 Model output varies between takes, so narration never quotes AI-generated values: scenes read them from the page and show them in callouts.
 

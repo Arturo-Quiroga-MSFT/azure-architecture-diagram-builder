@@ -1,0 +1,62 @@
+[
+ [
+  "n01-open",
+  "Agents are only as good as the context they get. <break time='200ms'/> Microsoft IQ gives them three kinds: <break time='120ms'/> Work IQ for how people work, <break time='120ms'/> Fabric IQ for what the business data means, <break time='120ms'/> and Foundry IQ for the knowledge an agent retrieves."
+ ],
+ [
+  "n02-title",
+  "Here's how to design with them in the Azure Architecture Diagram Builder."
+ ],
+ [
+  "n03-brief",
+  "A commercial insurer wants an underwriting copilot in Microsoft Teams. <break time='150ms'/> The brief names the IQ services the way the customer would."
+ ],
+ [
+  "n04-gen",
+  "Generate. <break time='120ms'/> AADB knows these services, so each one stays its own node with its own icon, instead of being folded into Fabric or AI Search."
+ ],
+ [
+  "n05-workiq",
+  "Work IQ brings in the broker emails and meetings from Microsoft 365. <break time='120ms'/> It's licensed with Microsoft 365 Copilot, so it's shown as external, and adds nothing to the Azure bill."
+ ],
+ [
+  "n06-foundryiq",
+  "Foundry IQ is the agent's knowledge base over the underwriting guidelines. <break time='120ms'/> It runs on Azure AI Search, and that's how it's priced."
+ ],
+ [
+  "n07-fabriciq",
+  "Fabric IQ is the business ontology over OneLake: <break time='100ms'/> policies, claims and brokers, and how they relate."
+ ],
+ [
+  "n08-opsagent",
+  "And a Fabric Operations Agent watches submissions as they arrive, and flags the risky ones."
+ ],
+ [
+  "n09-capacity",
+  "Fabric items don't bill on their own. They run on a Fabric capacity. <break time='150ms'/> AADB always includes the capacity, even when the model forgets it, so the run rate is right."
+ ],
+ [
+  "n10-ask",
+  "Now the underwriters want to trace how brokers, policies and claims are connected. <break time='120ms'/> Ask Guided Chat for a Graph Model."
+ ],
+ [
+  "n11-wait",
+  "The change is reviewed before it lands."
+ ],
+ [
+  "n12-added",
+  "The Graph Model joins the design, built over the Fabric IQ ontology, as asked."
+ ],
+ [
+  "n13-same-cost",
+  "It runs on the same capacity, so the monthly cost doesn't change."
+ ],
+ [
+  "n13-new-cost",
+  "The run rate updates with the change."
+ ],
+ [
+  "n14-close",
+  "Work IQ, Fabric IQ and Foundry IQ on one diagram, <break time='120ms'/> each where it belongs, and priced the way it's billed. <break time='150ms'/> Ready to validate, deploy and share."
+ ]
+]
