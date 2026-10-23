@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.16` | 2026-10-23 | Video tour: Help → Video Tour, trailer on Start Here, Watch links on features, shareable /videos page | Deployed |
 | `v2.1.15` | 2026-10-23 | MCP: Well-Architected design score; configuration settings listed separately | Deployed (MCP only) |
 | `v2.1.14` | 2026-10-23 | Interactive HTML export: zoom-out button shows − instead of `\u2212` | Deployed |
 | `v2.1.13` | 2026-10-23 | Draw.io export: each service icon moves with its card | Deployed |
@@ -35,6 +36,19 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.16: Video tour
+
+The 12 narrated demo videos (trailer plus Episodes 1–11, 31 minutes) now play inside the app, where people look for help.
+
+- **Help → Video Tour:** every episode with poster, length and summary, filterable by playlist (Get started, Partners, Architects). The player has a chapter list that follows playback, Up next, and Copy link (opens the video at the current time).
+- **Start Here** opens with the trailer; **Watch** chips on the start paths and on 15 feature cards open the right episode at the right moment (for example, Cost and region → Episode 6 at "Compare regions").
+- **`/videos`** is a shareable page (`/videos?v=<episode>&t=<seconds>`), usable on a phone.
+- Each video shows when it was filmed and on which app version, when known.
+- Media is served by a small nginx Container App (CORS, byte ranges, caching) and read at runtime from `videos.json`, so a re-filmed episode needs only `publish-web.sh` and `deploy-media.sh`, not an app release. Set with `VITE_VIDEO_BASE_URL`; development serves `public/media/videos`.
+- Telemetry: `Video_Tour` events (open, play, 25/50/75 % progress, complete, chapter, share) with where they started.
+- Tests: `test:video-tour` (in the deterministic suite) checks formatting, manifest validation, and that every Help Watch key exists in the catalog.
+- Docs: `DOCS/DEMO-VIDEO-PRODUCTION.md` → Publishing to the app's video tour.
 
 ## v2.1.15: MCP design score
 
