@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.11` | 2026-10-22 | Deployment Guide Bicep is compile-checked with the real Bicep CLI and repaired from real compiler errors | Deployed |
 | `v2.1.10` | 2026-10-21 | Exports render the diagram itself at full resolution, not a shrunken screenshot of the canvas | Deployed |
 | `v2.1.9` | 2026-10-21 | Fabric Capacity always priced with Fabric items; Work IQ icon | Deployed |
 | `v2.1.8` | 2026-10-21 | Microsoft IQ: Fabric IQ and Foundry IQ as first-class services with icons and costing | Deployed |
@@ -30,6 +31,17 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.11: Compile-checked Bicep in the Deployment Guide
+
+Found while preparing the Deploy It demo: Bicep templates written by the model sometimes failed `az bicep build` (wrong module output names, missing parameters, invalid property access), so the guide could hand out IaC that never deployed.
+
+### The fix
+- **Real compiler check.** The token server exposes `POST /api/bicep/build`, which compiles the guide's templates with the Bicep CLI (0.48.1, pinned and checksum-verified in the image) in a throwaway directory and returns only diagnostics, never the ARM JSON. Module restore is disabled, file-loading functions are refused, and file count, size, time and concurrency are bounded. `GET /api/bicep/version` reports the CLI.
+- **Repair.** A deterministic pass fixes common mistakes first; if errors remain, the model gets one repair round with the real compiler messages, and the templates are recompiled.
+- **Shown in the guide.** The modal reports progress (compiling, fixing compiler errors, recompiling) and a badge: "Compiled with the Bicep CLI: 0 errors" with the CLI version and linter warnings, how many errors the model fixed, or the errors that remain.
+- Verified locally with GPT-5.6 Luna on the clinic booking draft: 9 templates, 0 errors, 1 linter warning; a seeded wrong output name returns `BCP053` at the right file and line.
+- Tests: `test:bicep-repair`.
 
 ## v2.1.10: Full-size diagram exports
 
