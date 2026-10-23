@@ -250,6 +250,51 @@ async function main() {
     });
     assert.equal(typeof validation.structuredContent?.score, 'number');
 
+    // The score is a design score: per-service configuration settings (HTTPS-only, TDE, ...) are
+    // listed separately and never lower it, so hardening a realistic design visibly raises it.
+    const clinicDraft = {
+      services: [
+        { name: 'App Service', type: 'App Service', region: 'eastus2' },
+        { name: 'Azure Functions', type: 'Azure Functions', region: 'eastus2' },
+        { name: 'SQL Database', type: 'SQL Database', region: 'eastus2' },
+        { name: 'Storage Account', type: 'Storage Account', region: 'eastus2' },
+        { name: 'Key Vault', type: 'Key Vault' },
+        { name: 'Microsoft Entra ID', type: 'Microsoft Entra ID' },
+        { name: 'Application Insights', type: 'Application Insights' },
+        { name: 'Log Analytics', type: 'Log Analytics' },
+      ],
+      connections: [
+        { from: 'App Service', to: 'Azure Functions', label: 'Submit booking requests' },
+        { from: 'Azure Functions', to: 'SQL Database', label: 'Store appointment records' },
+        { from: 'Azure Functions', to: 'Storage Account', label: 'Upload referral documents' },
+        { from: 'Azure Functions', to: 'Key Vault', label: 'Read connection secrets' },
+        { from: 'Microsoft Entra ID', to: 'Azure Functions', label: 'Authorize managed identity' },
+        { from: 'Azure Functions', to: 'Application Insights', label: 'Send API telemetry' },
+        { from: 'Application Insights', to: 'Log Analytics', label: 'Persist diagnostic logs' },
+      ],
+    };
+    const clinicValidation = (await client.callTool({ name: 'validate_architecture', arguments: clinicDraft })).structuredContent;
+    assert.equal(clinicValidation.scoreBasis, 'design');
+    assert(clinicValidation.designGapCount > 0);
+    assert(clinicValidation.configurationItemCount > 0);
+    assert.equal(clinicValidation.totalFindings, clinicValidation.designGapCount + clinicValidation.configurationItemCount);
+    const clinicFindings = Object.values(clinicValidation.findingsByPillar).flatMap(pillar => pillar.findings);
+    assert.equal(clinicFindings.filter(f => f.scope === 'design').length, clinicValidation.designGapCount);
+    assert.equal(clinicFindings.filter(f => f.scope === 'configuration').length, clinicValidation.configurationItemCount);
+    assert(clinicFindings.some(f => f.scope === 'configuration' && /HTTPS-only/.test(f.issue)));
+    // A plausible first draft scores in the design band, not at the floor.
+    assert(clinicValidation.score >= 60 && clinicValidation.score < 100, `clinic draft design score ${clinicValidation.score}`);
+
+    const clinicHardened = textPayload(await client.callTool({
+      name: 'harden_architecture',
+      arguments: { ...clinicDraft, groups: [], secondaryRegion: 'centralus' },
+    }));
+    assert.equal(clinicHardened.before.score, clinicValidation.score);
+    assert.equal(clinicHardened.after.patternsDetected.length, 0);
+    assert.equal(clinicHardened.after.designGapCount, 0);
+    assert.equal(clinicHardened.after.score, 100);
+    assert(clinicHardened.after.configurationItemCount > 0);
+    assert.match(clinicHardened.summary, /design score \d+ → 100/);
     const frontDoorOneRegion = await client.callTool({
       name: 'validate_architecture',
       arguments: {

@@ -102,6 +102,8 @@ floor  = 10
 
 This preliminary score is **not** what the user sees — it is a sanity check that gets sent into Phase 2.
 
+**MCP server (no Phase 2).** The MCP `validate_architecture` tool has no LLM refinement, so its number *is* the score an agent sees. Since v2.1.15 it is a **design score**: only architecture-wide design gaps are deducted (same weights and floor). Per-service configuration settings (HTTPS-only, TDE, Key Vault soft-delete, autoscale, …) are returned as a separate checklist (`scope: "configuration"`) and are not deducted, because a diagram can't express them and they would push every realistic design to the floor. `harden_architecture` reports the design score before and after, and `generate_bicep` / `generate_terraform` pre-set most configuration settings. See [mcp-server/TOOLS.md](../mcp-server/TOOLS.md#2-validate_architecture).
+
 ### Phase 2 — LLM Contextual Refinement
 
 Source: [src/services/architectureValidator.ts](src/services/architectureValidator.ts) (`validateArchitecture`).

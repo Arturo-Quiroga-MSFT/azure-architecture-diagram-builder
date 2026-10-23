@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.15` | 2026-10-23 | MCP: Well-Architected design score; configuration settings listed separately | Deployed (MCP only) |
 | `v2.1.14` | 2026-10-23 | Interactive HTML export: zoom-out button shows − instead of `\u2212` | Deployed |
 | `v2.1.13` | 2026-10-23 | Draw.io export: each service icon moves with its card | Deployed |
 | `v2.1.12` | 2026-10-22 | Role-assignment names built from module outputs (BCP120) fixed automatically; up to two model repair rounds | Deployed |
@@ -34,6 +35,16 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.15: MCP design score
+
+Found while preparing the AADB Everywhere (MCP) demo: through MCP, `validate_architecture` scored the clinic booking draft 10/100 (the floor), the same draft the web app's review scores in the 60s, and `harden_architecture` reported 10 → 10 after clearing every design gap. Each per-service setting (HTTPS-only, TDE, soft-delete, autoscale…) was deducted for every instance of the service, so any realistic design hit the floor and agents reported a misleading headline number.
+
+- `score` is now a **design score**: only architecture-wide design gaps are deducted (same weights and floor). The clinic draft scores 70, and 100 after hardening with `secondaryRegion: centralus`.
+- Configuration settings are a separate checklist: each finding carries `scope: "design" | "configuration"`, with `designGapCount` and `configurationItemCount` (also in `harden_architecture`'s before/after). They don't lower the score; `generate_bicep` / `generate_terraform` pre-set most of them.
+- Tool descriptions and summaries say "design score". The web app is unchanged (its AI review produces its own score).
+- Tests: `mcp-server` `test:contracts` covers the clinic draft (score band, scopes, counts, 100 after hardening).
+- Docs: `mcp-server/TOOLS.md`, `DOCS/WAF-SCORING-METHODOLOGY.md`.
 
 ## v2.1.14: Interactive HTML zoom-out button
 

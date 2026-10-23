@@ -54,9 +54,12 @@ export interface ConnectionInput {
 
 export interface PatternDetectionResult {
   findings: ValidationFinding[];
+  /** Architecture-wide design gaps: the diagram can fix these (see harden_architecture). */
   patternFindings: ValidationFinding[];
+  /** Per-service settings a diagram can't show (HTTPS-only, TDE, soft-delete, ...): applied at deployment. */
   serviceFindings: ValidationFinding[];
   patternsDetected: string[];
+  /** Design score, 0-100: deducted for design gaps only, never for configuration settings. */
   score: number;
   serviceRulesApplied: number;
   patternRulesApplied: number;
@@ -369,10 +372,12 @@ export function detectWafPatterns(
 
   const findings = [...patternFindings, ...serviceFindings];
 
-  // Score: start at 100, deduct by severity
+  // Design score: start at 100 and deduct by severity for design gaps only. Per-service settings
+  // apply to every instance of a service type and can't be expressed in a diagram, so deducting
+  // them would drive any realistic design to the floor and hide the effect of design changes.
   const deductions: Record<Severity, number> = { critical: 12, high: 7, medium: 3, low: 1 };
   let score = 100;
-  for (const f of findings) score -= deductions[f.severity] ?? 2;
+  for (const f of patternFindings) score -= deductions[f.severity] ?? 2;
   score = Math.max(10, score);
 
   return {

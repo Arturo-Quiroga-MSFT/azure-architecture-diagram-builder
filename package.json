@@ -1,6 +1,6 @@
 {
   "name": "azure-architecture-diagram-builder",
-  "version": "2.1.14",
+  "version": "2.1.15",
   "description": "Azure architecture diagram builder with official icon library",
   "type": "module",
   "scripts": {

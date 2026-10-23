@@ -62,16 +62,31 @@ their structured result as well.
 **Module:** [`src/wafDetector.ts`](src/wafDetector.ts)
 
 Deterministic Well-Architected Framework analysis (no LLM). Runs two rule
-classes — **pattern** rules (architecture-wide anti-patterns) and **service**
-rules (per-service best practices) — and returns a 0–100 score.
+classes — **pattern** rules (architecture-wide design gaps) and **service**
+rules (per-service configuration settings) — and returns a 0–100 **design score**.
+
+- **Design gaps** (`scope: "design"`) lower the score: start at 100, deduct
+  12 / 7 / 3 / 1 per critical / high / medium / low gap, floor 10. The diagram
+  can fix them (`harden_architecture`).
+- **Configuration settings** (`scope: "configuration"`: HTTPS-only, TDE,
+  soft-delete, autoscale, …) are listed as a checklist and **do not** lower the
+  score. A diagram can't express them, and they apply to every instance of a
+  service type; `generate_bicep` / `generate_terraform` pre-set most of them.
+
+Until v2.1.15 every finding was deducted, so any realistic design hit the floor
+(the clinic booking draft scored 10/100 before and after hardening). The same
+draft now scores 70 → 100 after hardening, with 17 configuration settings listed.
 
 **Input:** `{ services[], connections?[] }`
 
 **Output (`structuredContent`):**
 ```jsonc
 {
-  "score": 55,
+  "score": 79,
+  "scoreBasis": "design",
   "totalFindings": 7,
+  "designGapCount": 3,
+  "configurationItemCount": 4,
   "patternsDetected": ["single-region"],
   "rulesApplied": { "pattern": N, "service": M },
   "regionalTopology": {
@@ -81,7 +96,7 @@ rules (per-service best practices) — and returns a 0–100 score.
     "redundantDatabaseTypes": [],
     "hasMultiRegionDatabaseTier": false
   },
-  "findingsByPillar": { "Security": { "count": 3, "findings": [ { "severity", "category", "issue", "recommendation", "resources" } ] } }
+  "findingsByPillar": { "Security": { "count": 3, "findings": [ { "severity", "category", "issue", "recommendation", "resources", "scope": "design | configuration" } ] } }
 }
 ```
 
@@ -89,8 +104,8 @@ Regional and WAF findings require explicit topology evidence. Global routing
 does not count as a second serving region, and a WAF policy must be associated
 by an edge with Front Door or Application Gateway.
 
-> The score is capped at the diagram layer. Topology findings are cleared by
-> `harden_architecture` (§6); config-level findings are resolved by
+> Design gaps are cleared by `harden_architecture` (§6), which reports the
+> design score before and after; configuration settings are resolved by
 > `generate_bicep` (§5) / `generate_terraform` (§11).
 
 ---
@@ -261,10 +276,10 @@ shrinking, then re-validates.
 | `no-backup` | Azure Backup |
 | `no-monitoring` | Application Insights + Azure Monitor |
 
-> **Scope:** only *topology* is fixed here. Config-level findings (HTTPS-only,
-> TDE, Key Vault soft-delete, autoscale, …) are **not** diagram-addressable and
-> are resolved by `generate_bicep`. So the WAF score rises but is still capped
-> at the diagram layer — that's expected and intentional.
+> **Scope:** only *topology* is fixed here. Configuration settings (HTTPS-only,
+> TDE, Key Vault soft-delete, autoscale, …) are **not** diagram-addressable, are
+> not part of the design score, and are resolved by `generate_bicep`. Clearing
+> every design gap brings the design score to 100.
 
 ### Input
 
@@ -294,9 +309,9 @@ Regional evidence is conservative:
 
 ```jsonc
 {
-  "summary":   "Hardened: WAF score 10 → 18. Patterns 7 → 0 (all cleared). 7 change(s) applied.",
-  "before":    { "score": 10, "patternsDetected": [...], "totalFindings": N },
-  "after":     { "score": 18, "patternsDetected": [], "totalFindings": M },
+  "summary":   "Hardened: WAF design score 70 → 100. Patterns 6 → 0 (all cleared). 7 change(s) applied.",
+  "before":    { "score": 70, "patternsDetected": [...], "totalFindings": 16, "designGapCount": 6, "configurationItemCount": 10 },
+  "after":     { "score": 100, "patternsDetected": [], "totalFindings": 17, "designGapCount": 0, "configurationItemCount": 17 },
   "changes":   [{ "pattern": "no-identity", "action": "...", "addedServices": [...], "addedConnections": ["A → B"] }],
   "unresolved":[],          // topology patterns that couldn't be auto-fixed
   "note":      "Regional findings remain unresolved without secondaryRegion; otherwise all remediated pattern findings are revalidated.",

@@ -247,7 +247,7 @@ server.registerTool(
   {
     title: 'Validate Azure Architecture',
     description:
-      'Validate an Azure architecture against the Well-Architected Framework (WAF). Runs deterministic rule-based analysis — detects anti-patterns, missing best practices, and security gaps. Returns a 0-100 score, findings grouped by WAF pillar, and actionable recommendations. No LLM required.',
+      'Validate an Azure architecture against the Well-Architected Framework (WAF). Runs deterministic rule-based analysis — detects design anti-patterns, missing best practices, and security gaps. Returns a 0-100 design score (deducted only for design gaps the diagram can fix, e.g. with harden_architecture), the design gaps, and a separate configuration checklist (per-service settings such as HTTPS-only or TDE that a diagram cannot show; generate_bicep / generate_terraform pre-set most of them). Findings are grouped by WAF pillar and tagged with their scope. No LLM required.',
     inputSchema: {
       services: z
         .array(
@@ -270,8 +270,11 @@ server.registerTool(
         .describe('Connections between services'),
     },
     outputSchema: {
-      score: z.number().describe('Overall WAF score, 0-100'),
-      totalFindings: z.number(),
+      score: z.number().describe('Design score, 0-100: deducted only for design gaps, not for configuration settings'),
+      scoreBasis: z.literal('design').describe('The score covers diagram-level design gaps only'),
+      totalFindings: z.number().describe('Design gaps plus configuration checklist items'),
+      designGapCount: z.number().describe('Architecture-level design gaps (they lower the score)'),
+      configurationItemCount: z.number().describe('Per-service settings to apply at deployment (they do not lower the score)'),
       patternsDetected: z.array(z.string()).describe('Architecture-level anti-pattern ids detected'),
       rulesApplied: z.object({
         pattern: z.number(),
@@ -299,6 +302,7 @@ server.registerTool(
               issue: z.string(),
               recommendation: z.string(),
               resources: z.array(z.string()).optional(),
+              scope: z.enum(['design', 'configuration']).describe('design: lowers the score, fixable in the diagram; configuration: a deployment setting'),
             }),
           ),
         }),
@@ -316,10 +320,14 @@ server.registerTool(
     const result = detectWafPatterns(services, conns);
     const grouped = groupFindingsByPillar(result.findings);
     const regionalTopology = getRegionalTopologyEvidence(services);
+    const designFindings = new Set(result.patternFindings);
 
     const structured = {
       score: result.score,
+      scoreBasis: 'design' as const,
       totalFindings: result.findings.length,
+      designGapCount: result.patternFindings.length,
+      configurationItemCount: result.serviceFindings.length,
       patternsDetected: result.patternsDetected,
       rulesApplied: {
         pattern: result.patternRulesApplied,
@@ -337,14 +345,17 @@ server.registerTool(
               issue: f.issue,
               recommendation: f.recommendation,
               resources: f.resources,
+              scope: designFindings.has(f) ? 'design' as const : 'configuration' as const,
             })),
           },
         ]),
       ),
     };
 
-    const pillarCount = Object.keys(structured.findingsByPillar).length;
-    const summary = `WAF score ${result.score}/100 — ${result.findings.length} finding(s) across ${pillarCount} pillar(s). Patterns detected: ${result.patternsDetected.length ? result.patternsDetected.join(', ') : 'none'}.`;
+    const summary =
+      `WAF design score ${result.score}/100 — ${result.patternFindings.length} design gap(s)` +
+      (result.patternsDetected.length ? ` (${result.patternsDetected.join(', ')})` : '') +
+      `; ${result.serviceFindings.length} configuration setting(s) to apply at deployment (not scored; generate_bicep / generate_terraform pre-set most of them).`;
 
     return {
       content: [{ type: 'text' as const, text: summary }],
@@ -964,7 +975,7 @@ server.registerTool(
   {
     title: 'Harden Azure Architecture',
     description:
-      'Deterministically harden an architecture by clearing diagram-addressable WAF anti-patterns and re-validating. Regional risks are evidence-based: Front Door alone never clears single-region, and database replicas are never invented without a concrete target. Pass secondaryRegion to add an explicitly located secondary serving instance, explicit database replicas, and routing to both regions. Without secondaryRegion, single-region and single-database remain unresolved. No LLM; config-level findings are resolved by generate_bicep.',
+      'Deterministically harden an architecture by clearing diagram-addressable WAF anti-patterns and re-validating. Regional risks are evidence-based: Front Door alone never clears single-region, and database replicas are never invented without a concrete target. Pass secondaryRegion to add an explicitly located secondary serving instance, explicit database replicas, and routing to both regions. Without secondaryRegion, single-region and single-database remain unresolved. The design score (deducted only for design gaps) is reported before and after. No LLM; configuration settings are not scored and are resolved by generate_bicep / generate_terraform.',
     inputSchema: {
       secondaryRegion: z
         .string()
@@ -1006,8 +1017,8 @@ server.registerTool(
     },
     outputSchema: {
       summary: z.string(),
-      before: z.object({ score: z.number(), patternsDetected: z.array(z.string()), totalFindings: z.number() }),
-      after: z.object({ score: z.number(), patternsDetected: z.array(z.string()), totalFindings: z.number() }),
+      before: z.object({ score: z.number().describe('Design score, 0-100'), patternsDetected: z.array(z.string()), totalFindings: z.number(), designGapCount: z.number(), configurationItemCount: z.number() }),
+      after: z.object({ score: z.number().describe('Design score, 0-100'), patternsDetected: z.array(z.string()), totalFindings: z.number(), designGapCount: z.number(), configurationItemCount: z.number() }),
       changes: z.array(z.object({
         pattern: z.string(),
         action: z.string(),
@@ -1061,7 +1072,7 @@ server.registerTool(
     );
 
     const summary =
-      `Hardened: WAF score ${result.before.score} → ${result.after.score}. ` +
+      `Hardened: WAF design score ${result.before.score} → ${result.after.score}. ` +
       `Patterns ${result.before.patternsDetected.length} → ${result.after.patternsDetected.length}` +
       (result.after.patternsDetected.length ? ` (remaining: ${result.after.patternsDetected.join(', ')})` : ' (all cleared)') +
       `. ${result.changes.length} change(s) applied.`;

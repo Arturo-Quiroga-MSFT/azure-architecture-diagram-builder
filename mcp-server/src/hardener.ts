@@ -40,9 +40,13 @@ export interface HardenChange {
 }
 
 export interface HardenSnapshot {
+  /** Design score, 0-100 (design gaps only). */
   score: number;
   patternsDetected: string[];
   totalFindings: number;
+  designGapCount: number;
+  /** Per-service settings for deployment; not scored. */
+  configurationItemCount: number;
 }
 
 export interface HardenResult {
@@ -426,13 +430,19 @@ export function hardenArchitecture(
   }
 
   const note = after.patternsDetected.length === 0
-    ? 'All pattern-level anti-patterns cleared. Remaining WAF findings are config-level — resolve them with generate_bicep.'
-    : `Cleared ${before.patternsDetected.length - after.patternsDetected.length} of ${before.patternsDetected.length} pattern anti-patterns. Remaining: ${after.patternsDetected.join(', ')}. Config-level findings are resolved by generate_bicep.`;
+    ? `All design gaps cleared. ${after.configurationItemCount} configuration setting(s) remain for deployment (not scored) — generate_bicep / generate_terraform pre-set most of them.`
+    : `Cleared ${before.patternsDetected.length - after.patternsDetected.length} of ${before.patternsDetected.length} design gaps. Remaining: ${after.patternsDetected.join(', ')}. ${after.configurationItemCount} configuration setting(s) remain for deployment (not scored) — generate_bicep / generate_terraform pre-set most of them.`;
 
   return { services, connections, groups, changes, before, after, unresolved, note };
 }
 
 function snapshot(services: ServiceInput[], connections: ConnectionInput[]): HardenSnapshot {
   const r = detectWafPatterns(services, connections);
-  return { score: r.score, patternsDetected: r.patternsDetected, totalFindings: r.findings.length };
+  return {
+    score: r.score,
+    patternsDetected: r.patternsDetected,
+    totalFindings: r.findings.length,
+    designGapCount: r.patternFindings.length,
+    configurationItemCount: r.serviceFindings.length,
+  };
 }
