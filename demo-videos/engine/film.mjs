@@ -2,7 +2,8 @@
 //
 // An episode is a folder with:
 //   episode.json   { "output": "1_Prompt-to-Architecture", "title": "...", "music": "drive",
-//                    "url": "<app url, overrides AADB_APP_URL>", "internal": false }
+//                    "url": "<app url, overrides AADB_APP_URL>", "internal": false,
+//                    "basicAuth": { "username": "...", "passwordEnv": "<env var or .env key>" } }
 //   narration.json [["n01-intro", "text or SSML"], ...]
 //   scene.mjs      import { film } from '../../engine/film.mjs'; await film(import.meta.url, async (f) => { ... });
 //
@@ -144,7 +145,12 @@ export async function film(sceneUrl, scene) {
   const browser = await chromium.launch({ args });
   const ctxOpts = { viewport: { width: W, height: H }, deviceScaleFactor: 1, acceptDownloads: true, recordVideo: { dir: OUT, size: { width: W, height: H } } };
   if (EP.voice_live) ctxOpts.permissions = ['microphone'];
-  if (EP.basicAuth) ctxOpts.httpCredentials = EP.basicAuth;
+  // basicAuth: { username, password } or { username, passwordEnv: "NAME" } to keep the secret out of episode.json.
+  if (EP.basicAuth) {
+    const password = EP.basicAuth.passwordEnv ? config(EP.basicAuth.passwordEnv, '') : EP.basicAuth.password;
+    if (!password) throw new Error(`basicAuth: set ${EP.basicAuth.passwordEnv || 'password'}`);
+    ctxOpts.httpCredentials = { username: EP.basicAuth.username, password };
+  }
   const ctx = await browser.newContext(ctxOpts);
   await ctx.addInitScript(overlayInit);
   await ctx.addInitScript(seriesCss);

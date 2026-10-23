@@ -200,7 +200,7 @@ The trailer (`episodes/00-trailer`) is not recorded. It is cut from the episodes
 
 Copy [`demo-videos/`](../demo-videos/README.md) (the engine plus `episodes/00-example` as a template), then:
 
-1. Set `AADB_APP_URL` in `demo-videos/.env` (or `"url"` in `episode.json`), plus `basicAuth` in `episode.json` if the app needs it.
+1. Set `AADB_APP_URL` in `demo-videos/.env` (or `"url"` in `episode.json`), plus `basicAuth` in `episode.json` if the app needs it. Use `{ "username": "...", "passwordEnv": "NAME" }` so the password comes from the environment or `.env`, never from the committed file.
 2. Make sure `@playwright/test` is installed in the project that holds the toolkit (the engine resolves it from there).
 3. Set `SPEECH_RESOURCE_ID` and `SPEECH_REGION` in `.env`, and pick a voice in `episode.json`. Narration is keyless (an Entra token from the Azure CLI). HD voices such as `en-US-Andrew:DragonHDLatestNeural` work well.
 4. Restyle the cards in the overlay CSS (colors, fonts, end-card line).
@@ -224,5 +224,5 @@ Requirements: Node.js with Playwright and Chromium, Python 3 with NumPy and SciP
 | 9 | Share It | 2:22 | Customer deck, interactive web page, workflow animation, Draw.io and Visio |
 | 10 | AADB Everywhere (MCP) | 1:47 | A real GitHub Copilot CLI session designs, validates, hardens, prices and exports through the MCP server; the result opens in the web app |
 | 11 | Microsoft IQ and Fabric | 2:31 | An underwriting copilot with Work IQ (external, no Azure cost), Foundry IQ (priced as AI Search), Fabric IQ and an Operations Agent on an included Fabric capacity; Guided Chat adds a Graph Model at no extra cost |
-| 12 | One more | — | Planned |
+| 12 | Internal episode | 3:46 | Filmed with the same engine against a private build; kept outside this repo (`"internal": true`, basic auth read from an environment variable) |
 | 0 | Trailer: AADB in 90 Seconds | 1:17 | Eleven beats cut from Episodes 1–10 to the music, with an end card listing the series |
