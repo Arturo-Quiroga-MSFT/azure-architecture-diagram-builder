@@ -54,4 +54,22 @@ assert.equal(fix(multi), `properties: {\n  a: 1\n  b: { c: 2, d: 3 }\n}`);
 // Fix count is reported.
 assert.equal(repairBicep(`{ a: 1 b: 2 c: 3 }`).fixes, 2);
 
+// Role assignment names built from runtime values (BCP120) get a stable literal.
+assert.equal(
+  fix(`  name: guid(storageAccount.id, functions.outputs.principalId, 'Storage Blob Data Contributor')`),
+  `  name: guid(storageAccount.id, 'functions.principalId', 'Storage Blob Data Contributor')`
+);
+assert.equal(
+  fix(`  name: guid(kv.id, web.identity.principalId, roleId)`),
+  `  name: guid(kv.id, 'web.principalId', roleId)`
+);
+assert.equal(repairBicep(`  name: guid(kv.id, app.outputs.principalId, 'r')`).fixes, 1);
+// Deploy-time values are left alone.
+for (const v of [
+  `  name: guid(resourceGroup().id, principalIdParam, 'r')`,
+  `  name: guid(kv.id, principalId, 'r')`,
+  `  name: guid(kv.id, 'x', subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'abc'))`,
+  `  principalId: functions.outputs.principalId`,
+]) assert.equal(fix(v), v);
+
 console.log('Bicep repair tests passed');

@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.12` | 2026-10-22 | Role-assignment names built from module outputs (BCP120) fixed automatically; up to two model repair rounds | Deployed |
 | `v2.1.11` | 2026-10-22 | Deployment Guide Bicep is compile-checked with the real Bicep CLI and repaired from real compiler errors | Deployed |
 | `v2.1.10` | 2026-10-21 | Exports render the diagram itself at full resolution, not a shrunken screenshot of the canvas | Deployed |
 | `v2.1.9` | 2026-10-21 | Fabric Capacity always priced with Fabric items; Work IQ icon | Deployed |
@@ -31,6 +32,16 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.12: Stronger Bicep repair
+
+Found in the first production run of v2.1.11 on the clinic booking draft: the model fixed 8 compiler errors, but 2 remained, both `BCP120` on `roleAssignments` named `guid(scope.id, module.outputs.principalId, role)`. A resource name must be computable when the deployment starts, and the single model repair round did not change the pattern.
+
+- **Deterministic fix.** In `name: guid(...)`, runtime arguments (module outputs, `.properties.`, `.identity.`, `.principalId`, `reference()`, `list*()`) are replaced by a stable literal derived from the expression; the scope and role arguments keep the name unique. Bare parameters such as `principalId` are deploy-time values and are left alone.
+- **Prompts.** Generation and repair prompts state the rule and the correct role-assignment pattern.
+- **Up to two model repair rounds**, each kept only if it lowers the error count.
+- Verified on the failing templates: 2 errors → 0 with no model round; `az deployment group what-if` against an empty resource group succeeds (16 resources to create).
+- Tests: `test:bicep-repair` covers the rewrite and the cases it must not touch.
 
 ## v2.1.11: Compile-checked Bicep in the Deployment Guide
 

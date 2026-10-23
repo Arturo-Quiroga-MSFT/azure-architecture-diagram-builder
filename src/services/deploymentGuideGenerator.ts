@@ -179,6 +179,8 @@ export interface BicepCheck {
   diagnostics: BicepDiagnostic[];
 }
 
+const MAX_REPAIR_ROUNDS = 2;
+
 export type DeploymentGuideProgress = 'grounding' | 'writing' | 'compiling' | 'repairing' | 'recompiling';
 
 interface BuildResponse {
@@ -221,7 +223,7 @@ function normalizeTemplates(templates: BicepModule[]): { templates: BicepModule[
 
 const BICEP_REPAIR_PROMPT = `You fix Azure Bicep templates so they compile with the Bicep CLI.
 You receive every template file and the compiler's diagnostics. Fix every error with the smallest correct change; keep resources, names and intent.
-Rules: one property per line (or comma-separated on one line), never semicolons; scope: and parent: must be resource symbols declared in the same file (declare an 'existing' resource when only a name or ID is passed in), never function calls; module paths must match the given filenames exactly; use real resource types and API versions.
+Rules: one property per line (or comma-separated on one line), never semicolons; scope: and parent: must be resource symbols declared in the same file (declare an 'existing' resource when only a name or ID is passed in), never function calls; module paths must match the given filenames exactly; use real resource types and API versions; name, scope and parent must be computable at deployment start (BCP120/BCP177/BCP178), so never derive them from module outputs or runtime properties: for role assignments use guid() over parameters, resource IDs and the role definition ID, and move the assignment into the module that declares the target resource, passing the principal ID in as a parameter.
 Return ONLY valid JSON: {"files":[{"filename":"...","content":"full corrected file"}]} with the full content of each file you changed. Do not include unchanged files.`;
 
 async function repairWithModel(templates: BicepModule[], diagnostics: BicepDiagnostic[]): Promise<BicepModule[] | null> {
@@ -261,20 +263,19 @@ export async function checkAndRepairBicep(
   }
   const initialErrorCount = result.errorCount;
   let modelRepaired = false;
-  if (result.errorCount > 0) {
+  // Up to MAX_REPAIR_ROUNDS model rounds, each kept only if it lowers the error count.
+  for (let round = 0; round < MAX_REPAIR_ROUNDS && result.errorCount > 0; round++) {
     onProgress?.('repairing');
     const repaired = await repairWithModel(templates, result.diagnostics);
-    if (repaired) {
-      const second = normalizeTemplates(repaired);
-      onProgress?.('recompiling');
-      const retry = await compileBicep(second.templates);
-      if (retry && retry.errorCount < result.errorCount) {
-        templates = second.templates;
-        autoFixes += second.fixes;
-        result = retry;
-        modelRepaired = true;
-      }
-    }
+    if (!repaired) break;
+    const next = normalizeTemplates(repaired);
+    onProgress?.('recompiling');
+    const retry = await compileBicep(next.templates);
+    if (!retry || retry.errorCount >= result.errorCount) break;
+    templates = next.templates;
+    autoFixes += next.fixes;
+    result = retry;
+    modelRepaired = true;
   }
   return {
     templates,
@@ -356,6 +357,7 @@ Generate deployment documentation with:
 - Put each object property and each array item on its own line. If you write a single-line object or array, separate items with commas. Never use semicolons.
 - \`scope:\` and \`parent:\` must reference a resource symbol declared in the same file. When a module receives only a name or ID, declare an \`existing\` resource for it. Never use function calls such as resource(...) or resourceId(...) there.
 - Module paths in main.bicep must exactly match the filenames of the other templates.
+- \`name\`, \`scope\` and \`parent\` must be known when the deployment starts: never build them from module outputs or runtime properties (principalId, properties.*). For role assignments, use \`guid()\` over parameters, resource IDs and the role definition ID, and put the role assignment in the module that declares the target resource (pass the principal ID in as a parameter).
 - Use every declared parameter. Never return secrets in outputs (no @secure() values, no listKeys()).
 - Use only real resource types and API versions.
 

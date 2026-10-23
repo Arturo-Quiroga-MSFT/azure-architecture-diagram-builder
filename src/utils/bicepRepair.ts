@@ -187,5 +187,52 @@ export function repairBicep(src: string): BicepRepairResult {
     i++;
   }
 
-  return { content: out, fixes };
+  const stable = stabilizeGuidNames(out);
+  return { content: stable.content, fixes: fixes + stable.fixes };
+}
+
+function splitTopLevel(args: string): string[] {
+  const parts: string[] = [];
+  let depth = 0, inStr = false, cur = '';
+  for (const ch of args) {
+    if (ch === "'") inStr = !inStr;
+    if (!inStr) {
+      if ('([{'.includes(ch)) depth++;
+      else if (')]}'.includes(ch)) depth--;
+      else if (ch === ',' && depth === 0) { parts.push(cur); cur = ''; continue; }
+    }
+    cur += ch;
+  }
+  parts.push(cur);
+  return parts;
+}
+
+// Values only known after deployment starts: module outputs, runtime properties, identities.
+const RUNTIME_REF = /\.outputs\.|\.properties\.|\.identity\.|\.principalId\b|\breference\(|\blist[A-Z]\w*\(/;
+
+/**
+ * `name: guid(scope.id, mod.outputs.principalId, 'role')` fails with BCP120:
+ * a resource name must be computable when the deployment starts. Replace the
+ * runtime arguments with a stable literal derived from the expression; the
+ * remaining arguments (scope, role) keep the name unique and deterministic.
+ */
+export function stabilizeGuidNames(src: string): BicepRepairResult {
+  let fixes = 0;
+  const content = src.replace(/^(\s*name:\s*guid\()(.*)(\)\s*(?:\/\/.*)?)$/gm, (whole, head: string, args: string, tail: string) => {
+    if (!RUNTIME_REF.test(args) || args.includes("'''")) return whole;
+    const parts = splitTopLevel(args);
+    if (parts.length === 0 || parts.some((p) => p.trim() === '')) return whole;
+    let changed = false;
+    const next = parts.map((p) => {
+      const t = p.trim();
+      if (!RUNTIME_REF.test(t) || t.startsWith("'")) return p;
+      changed = true;
+      const literal = t.replace(/[^A-Za-z0-9.]+/g, '-').replace(/\.(outputs|properties|identity)\./g, '.').replace(/^-+|-+$/g, '');
+      return p.replace(t, `'${literal}'`);
+    });
+    if (!changed) return whole;
+    fixes++;
+    return head + next.join(',') + tail;
+  });
+  return { content, fixes };
 }
