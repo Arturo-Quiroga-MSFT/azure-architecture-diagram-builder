@@ -57,6 +57,8 @@ ARG VITE_AZURE_AD_AUTHORITY
 ARG VITE_ARM_SCOPE
 ARG VITE_ENABLE_ADOPTION_IMPACT=false
 ARG VITE_ENABLE_VOICE_LIVE=false
+# Video tour media (videos.json + episodes) published by demo-videos/engine/publish-web.sh; defaults to /media/videos.
+ARG VITE_VIDEO_BASE_URL
 ARG LOAD_ENV_BUILD=true
 # Set environment variables for build
 ENV VITE_AZURE_OPENAI_ENDPOINT=$VITE_AZURE_OPENAI_ENDPOINT
@@ -89,6 +91,7 @@ ENV VITE_AZURE_AD_AUTHORITY=$VITE_AZURE_AD_AUTHORITY
 ENV VITE_ARM_SCOPE=$VITE_ARM_SCOPE
 ENV VITE_ENABLE_ADOPTION_IMPACT=$VITE_ENABLE_ADOPTION_IMPACT
 ENV VITE_ENABLE_VOICE_LIVE=$VITE_ENABLE_VOICE_LIVE
+ENV VITE_VIDEO_BASE_URL=$VITE_VIDEO_BASE_URL
 
 # App Insights connection string workaround:
 # The connection string contains semicolons (e.g. "InstrumentationKey=...;IngestionEndpoint=...")

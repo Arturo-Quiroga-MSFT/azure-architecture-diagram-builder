@@ -268,6 +268,8 @@ export async function film(sceneUrl, scene) {
 
   try {
     await page.goto(EP.url || PROD_URL, { waitUntil: 'networkidle' });
+    timeline.filmed = new Date().toISOString().slice(0, 10);
+    timeline.appVersion = await page.evaluate(() => fetch('/version.json').then((r) => r.json()).then((j) => j.version).catch(() => null)).catch(() => null);
     await sleep(2500);
     t0 = Date.now();
     await scene(f);

@@ -1,0 +1,132 @@
+{
+  "title": "AADB video tour",
+  "playlists": [
+    { "id": "start", "label": "Get started", "episodes": ["00-trailer", "01-prompt-to-architecture", "03-refine-with-guided-chat"] },
+    { "id": "partners", "label": "Partners", "episodes": ["00-trailer", "01-prompt-to-architecture", "05-well-architected-review", "06-cost-and-regions", "08-deploy-it"] },
+    { "id": "architects", "label": "Architects", "episodes": ["02-whiteboard-and-import", "03-refine-with-guided-chat", "05-well-architected-review", "07-compare-models", "08-deploy-it"] }
+  ],
+  "episodes": [
+    {
+      "dir": "00-trailer", "filmed": "2026-10-23",
+      "summary": "The whole tool in under a minute and a half: describe, sketch or import, refine, validate, price, deploy, share and use it from an agent.",
+      "chapters": []
+    },
+    {
+      "dir": "01-prompt-to-architecture", "filmed": "2026-10-22",
+      "summary": "One plain-language brief becomes a grouped, connected and priced Azure architecture.",
+      "chapters": [
+        { "narr": "n03-dialog", "title": "Describe the workload", "key": "generate-diagram" },
+        { "narr": "n05-model", "title": "Choose the model and reasoning", "key": "model-choice" },
+        { "narr": "n07-tour", "title": "Tour the result" },
+        { "narr": "n07b-yours", "title": "Make the layout yours" },
+        { "narr": "n08-workflow", "title": "Workflow panel" },
+        { "narr": "n09-cost", "title": "The monthly run rate", "key": "cost-first" }
+      ]
+    },
+    {
+      "dir": "02-whiteboard-and-import", "filmed": "2026-10-22",
+      "summary": "Start from a whiteboard photo, or import Bicep, Terraform, ARM or a live resource group.",
+      "chapters": [
+        { "narr": "n04-upload", "title": "From a whiteboard photo", "key": "whiteboard" },
+        { "narr": "n07-ref", "title": "The sketch stays pinned" },
+        { "narr": "n08-import", "title": "Import what's already running", "key": "import-iac" },
+        { "narr": "n11-edges", "title": "Connections that explain themselves" }
+      ]
+    },
+    {
+      "dir": "03-refine-with-guided-chat", "filmed": "2026-10-22",
+      "summary": "Change a design in plain English, review every change, and roll back any version.",
+      "chapters": [
+        { "narr": "n04-chat", "title": "Open Guided Chat", "key": "guided-chat" },
+        { "narr": "n07-review", "title": "Every reply is a change review", "key": "change-review" },
+        { "narr": "n10-next", "title": "Suggested next steps" },
+        { "narr": "n11-yours", "title": "Edit on the canvas", "key": "edit-canvas" },
+        { "narr": "n12-history", "title": "Version history and restore", "key": "version-history" }
+      ]
+    },
+    {
+      "dir": "04-talk-to-your-architecture", "filmed": "2026-10-22",
+      "summary": "Talk the design through with Ava (Azure AI Voice Live), who asks questions and draws it.",
+      "chapters": [
+        { "narr": "n03-mic", "title": "Start a voice session", "key": "voice" },
+        { "narr": "n05-drawn", "title": "Ava draws the design" },
+        { "narr": "n06-changed", "title": "Voice changes are reviewed too" }
+      ]
+    },
+    {
+      "dir": "05-well-architected-review", "filmed": "2026-10-22",
+      "summary": "Validate against the Well-Architected Framework, apply fixes in one click, and compare before and after.",
+      "chapters": [
+        { "narr": "n04-validate", "title": "Run the review", "key": "waf-validate" },
+        { "narr": "n07-finding", "title": "Read a finding" },
+        { "narr": "n08-select", "title": "Apply the fixes", "key": "waf-apply" },
+        { "narr": ["n13-revalidate", "n14-compare"], "title": "Revalidate and compare" },
+        { "narr": "n15-report", "title": "Download the report", "key": "waf-report" }
+      ]
+    },
+    {
+      "dir": "06-cost-and-regions", "filmed": "2026-10-22",
+      "summary": "Price badges, fourteen regions, production sizing, cost exports and hiding prices for customer demos.",
+      "chapters": [
+        { "narr": "n04-badges", "title": "Price badges", "key": "price-badges" },
+        { "narr": "n05-regions", "title": "Compare regions", "key": "regions" },
+        { "narr": "n08-tier", "title": "Size for production", "key": "tier" },
+        { "narr": "n11-export", "title": "Export the costs", "key": "cost-export" },
+        { "narr": "n13-hide", "title": "Hide prices for a demo", "key": "hide-costs" }
+      ]
+    },
+    {
+      "dir": "07-compare-models", "filmed": "2026-10-22",
+      "summary": "One brief to several models side by side, a critic's ranking, and a multi-model Well-Architected consensus.",
+      "chapters": [
+        { "narr": "n03-compare", "title": "Compare designs", "key": "compare-models" },
+        { "narr": "n07-critique", "title": "Ask a critic to rank them" },
+        { "narr": "n11-validate", "title": "Compare validations", "key": "compare-validation" },
+        { "narr": "n13-consensus", "title": "Consensus findings" }
+      ]
+    },
+    {
+      "dir": "08-deploy-it", "filmed": "2026-10-22", "appVersion": "2.1.12",
+      "summary": "A Microsoft Learn-grounded deployment guide with Bicep that is compiled and checked before you see it.",
+      "chapters": [
+        { "narr": "n04-generate", "title": "Generate the deployment guide", "key": "deployment-guide" },
+        { "narr": "n06-steps", "title": "Steps and commands" },
+        { "narr": "n09-compiled", "title": "Compiled Bicep", "key": "bicep-compiled" },
+        { "narr": ["n12-terminal", "n12-build-only"], "title": "Build it on a laptop" }
+      ]
+    },
+    {
+      "dir": "09-share-it", "filmed": "2026-10-23", "appVersion": "2.1.14",
+      "summary": "One design in the format each audience uses: customer deck, interactive page, workflow animation, Draw.io and Visio.",
+      "chapters": [
+        { "narr": "n05-share", "title": "Share or Build", "key": "share" },
+        { "narr": "n06-background", "title": "Export background", "key": "export-background" },
+        { "narr": "n07-deck", "title": "Customer deck", "key": "customer-deck" },
+        { "narr": "n08-html", "title": "Interactive web page", "key": "html-export" },
+        { "narr": "n09-workflow", "title": "Workflow animation", "key": "workflow-animation" },
+        { "narr": "n10-editable", "title": "Draw.io and Visio", "key": "editable" }
+      ]
+    },
+    {
+      "dir": "10-aadb-everywhere-mcp", "filmed": "2026-10-23", "appVersion": "2.1.14",
+      "summary": "GitHub Copilot designs, validates, hardens, prices and exports an architecture through the AADB MCP server.",
+      "chapters": [
+        { "narr": ["n03-tools", "n03-tools-generic"], "title": "The MCP tools", "key": "mcp" },
+        { "narr": "n04-connect", "title": "Connect your agent", "key": "mcp-connect" },
+        { "narr": "n05-ask", "title": "One request in GitHub Copilot" },
+        { "narr": "n10-open", "title": "Open the result in the web app" }
+      ]
+    },
+    {
+      "dir": "11-microsoft-iq-and-fabric", "filmed": "2026-10-23", "appVersion": "2.1.14",
+      "summary": "Design with Work IQ, Foundry IQ and Fabric IQ, and see how Fabric items share one capacity.",
+      "chapters": [
+        { "narr": "n04-gen", "title": "Generate with Microsoft IQ", "key": "microsoft-iq" },
+        { "narr": "n05-workiq", "title": "Work IQ" },
+        { "narr": "n06-foundryiq", "title": "Foundry IQ" },
+        { "narr": "n07-fabriciq", "title": "Fabric IQ" },
+        { "narr": "n09-capacity", "title": "One Fabric capacity", "key": "fabric-capacity" }
+      ]
+    }
+  ]
+}

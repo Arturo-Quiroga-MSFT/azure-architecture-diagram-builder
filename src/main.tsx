@@ -18,10 +18,18 @@ function ErrorBoundarySmokeTrigger(): never {
 const showErrorBoundarySmoke = import.meta.env.VITE_ERROR_BOUNDARY_TEST === 'true'
   && new URLSearchParams(window.location.search).has('error-boundary-test')
 
+// The shareable video tour lives at /videos and renders without the editor.
+const VideoTourPage = React.lazy(() => import('./components/VideoTourPage.tsx'))
+const isVideoTourPage = /^\/videos\/?$/.test(window.location.pathname)
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AppErrorBoundary>
-      {showErrorBoundarySmoke ? <ErrorBoundarySmokeTrigger /> : <App />}
+      {showErrorBoundarySmoke
+        ? <ErrorBoundarySmokeTrigger />
+        : isVideoTourPage
+          ? <React.Suspense fallback={null}><VideoTourPage /></React.Suspense>
+          : <App />}
     </AppErrorBoundary>
   </React.StrictMode>,
 )

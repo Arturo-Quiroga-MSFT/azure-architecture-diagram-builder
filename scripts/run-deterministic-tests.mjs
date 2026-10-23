@@ -24,6 +24,7 @@ const tests = [
   'test:semantic-relationships',
   'test:private-connectivity',
   'test:bicep-repair',
+  'test:video-tour',
 ];
 
 for (const testName of tests) {

@@ -14,8 +14,9 @@ This guide explains how the Azure Architecture Diagram Builder (AADB) demo video
 5. [Making an episode, step by step](#making-an-episode-step-by-step)
 6. [Lessons learned](#lessons-learned)
 7. [The trailer](#the-trailer)
-8. [Reusing this for another project](#reusing-this-for-another-project)
-9. [Episode log](#episode-log)
+8. [Publishing to the app's video tour](#publishing-to-the-apps-video-tour)
+9. [Reusing this for another project](#reusing-this-for-another-project)
+10. [Episode log](#episode-log)
 
 ## The approach in one paragraph
 
@@ -195,6 +196,18 @@ The trailer (`episodes/00-trailer`) is not recorded. It is cut from the episodes
 - **Join segments with ffmpeg's concat filter**, not the concat demuxer or `-c copy`. The demuxer dropped frames at segment boundaries, which shifted every later cut off the music.
 - **Hide the overlay's card before rendering transparent overlay PNGs.** It starts visible, and the first PNG came out as an opaque card that blanked the cold open.
 - **Re-cut after re-filming.** When an episode is re-recorded, check its trailer windows against the new recording.
+
+## Publishing to the app's video tour
+
+The finished episodes also play inside the app: **Help → Video Tour**, a trailer card on **Start Here**, a **Watch** chip on each feature card that opens the right episode at the right moment, and a shareable page at `/videos?v=<episode>&t=<seconds>`.
+
+- **`demo-videos/web/catalog.json` is the source.** It lists the episodes, their one-line summaries and playlists, and the chapters. A chapter names the narration cue it starts on (`"narr": "n05-regions"`), not a time, so re-filming never breaks it; a `key` makes it a deep-link target for Help (`"key": "regions"`). Use a list of cues when a take may use either line.
+- **`engine/publish-web.sh` builds what the app reads.** For each public episode it makes a streaming encode (CRF 26, `+faststart`, about 18 MB per episode), WebVTT captions, a chapters track timed from the cues in the final cut, a poster, and `videos.json`. Internal episodes are never published. By default it writes to the app's `public/media/videos` (git-ignored and kept out of the Docker image), so `npm run dev` serves the tour at `/media/videos` for local testing.
+- **`--upload <storage-account>`** copies the same folder to a public-read blob container with `az storage blob upload-batch --auth-mode login`: media is cached for a day, `videos.json` for five minutes. Build the app with `VITE_VIDEO_BASE_URL` pointing at that container (or a Front Door in front of it). The container needs CORS `GET`/`HEAD` for the app's origin, because the player loads the caption tracks with `crossorigin`.
+- **Re-filming an episode only needs a re-publish**, not an app release: the app reads the manifest at runtime. Each video shows when it was filmed and, for takes recorded after this change, the app version (`film.mjs` stamps `filmed` and `appVersion` into `timeline.json`).
+- **Subtitles are burned in**, so the player's caption track is off by default; it is there for screen readers and viewers who want larger text.
+- **Telemetry:** the player sends `Video_Tour` events (`open`, `play`, `progress` at 25/50/75 %, `complete`, `chapter`, `share`) with the source (`help`, `help-topic`, `start-here`, `page`), so views and completions can be counted per episode.
+- `npm run test:video-tour` checks that every Help **Watch** key exists in the catalog.
 
 ## Reusing this for another project
 

@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string
   readonly VITE_ENABLE_ADOPTION_IMPACT?: string
   readonly VITE_ENABLE_VOICE_LIVE?: string
+  readonly VITE_VIDEO_BASE_URL?: string
   // add more env variables here
 }
 

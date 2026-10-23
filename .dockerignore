@@ -19,6 +19,8 @@
 
 # --- Static assets copied to the build output root by Vite ---
 !public/**
+# Video tour media is hosted in Blob Storage, never baked into the image
+public/media
 
 # --- Runtime assets served by nginx ---
 !nginx.conf

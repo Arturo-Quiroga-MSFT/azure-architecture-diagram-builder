@@ -390,6 +390,30 @@ export function trackHelpOpened(section?: string): void {
 }
 
 /**
+ * Track the in-app video tour: which episodes are opened, played and finished, and from where.
+ * Positions are seconds into the video; completion is the share watched when the event fired.
+ */
+export function trackVideoTour(params: {
+  action: 'open' | 'play' | 'progress' | 'complete' | 'chapter' | 'share';
+  video?: string;
+  source: 'help' | 'help-topic' | 'start-here' | 'page';
+  chapter?: string;
+  position?: number;
+  duration?: number;
+}): void {
+  const properties: Record<string, string> = { action: params.action, source: params.source };
+  if (params.video) properties.video = params.video;
+  if (params.chapter) properties.chapter = params.chapter;
+  const measurements: Record<string, number> = {};
+  if (typeof params.position === 'number') measurements.position = Math.round(params.position);
+  if (typeof params.duration === 'number' && params.duration > 0) {
+    measurements.duration = Math.round(params.duration);
+    if (typeof params.position === 'number') measurements.completion = Math.min(1, params.position / params.duration);
+  }
+  trackEvent('Video_Tour', properties, measurements);
+}
+
+/**
  * Track interaction with the in-product Create → Refine → Validate → Deliver
  * journey. Keep values categorical so onboarding funnels remain easy to query.
  */

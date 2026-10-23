@@ -5,10 +5,12 @@ import React, { useEffect, useState } from 'react';
 import {
   BookOpen, Check, CheckCircle2, CircleDollarSign, ClipboardCheck, Download,
   Copy, FileCode2, GitCompare, History, Image as ImageIcon, LayoutDashboard,
-  Lightbulb, Map, MessageSquare, MousePointer2, Presentation,
+  Lightbulb, Map, MessageSquare, MousePointer2, PlayCircle, Presentation,
   Rocket, Route, ShieldCheck, Sparkles, UploadCloud, Wrench, X,
 } from 'lucide-react';
 import { trackHelpOpened } from '../services/telemetryService';
+import VideoTour, { type VideoTourSelection } from './VideoTour';
+import { formatDuration, mediaUrl, TRAILER_ID, useVideoManifest, type VideoManifest } from '../services/videoTour';
 import './GuidedHelpPanel.css';
 import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
@@ -17,12 +19,13 @@ interface GuidedHelpPanelProps {
   onClose: () => void;
 }
 
-type SectionId = 'quick-start' | 'paths' | 'create' | 'assess' | 'deliver' | 'prompts' | 'faq';
+type SectionId = 'quick-start' | 'videos' | 'paths' | 'create' | 'assess' | 'deliver' | 'prompts' | 'faq';
 
 const CHECKLIST_STORAGE_KEY = 'help.onboarding.v3';
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: 'quick-start', label: 'Start Here', icon: <Rocket size={16} /> },
+  { id: 'videos', label: 'Video Tour', icon: <PlayCircle size={16} /> },
   { id: 'paths', label: 'Choose a Path', icon: <Route size={16} /> },
   { id: 'create', label: 'Create & Refine', icon: <Sparkles size={16} /> },
   { id: 'assess', label: 'Assess', icon: <ShieldCheck size={16} /> },
@@ -43,50 +46,56 @@ const PATHS = [
     icon: <MessageSquare size={20} />,
     title: 'Start from an idea',
     label: 'Recommended for first-time users',
+    video: 'guided-chat',
     steps: ['Open Guided Chat', 'Describe the outcome and constraints', 'Create and refine in one conversation'],
   },
   {
     icon: <ImageIcon size={20} />,
     title: 'Start from a brief or sketch',
     label: 'Detailed requirements or image',
+    video: 'whiteboard',
     steps: ['Open Generate Diagram', 'Choose Topology, Blueprint, or both', 'Review, then continue in Guided Chat or on canvas'],
   },
   {
     icon: <FileCode2 size={20} />,
     title: 'Start from current estate',
     label: 'IaC or live Azure',
+    video: 'import-iac',
     steps: ['Import Bicep, Terraform, or ARM', 'Or use Import from Azure', 'Correct inferred relationships on canvas'],
   },
   {
     icon: <Presentation size={20} />,
     title: 'Prepare a review or workshop',
     label: 'Customer-ready flow',
+    video: 'customer-deck',
     steps: ['Create and correct the concept', 'Validate and improve iteratively', 'Share a review artifact or build deployment guidance'],
   },
 ];
 
-const CREATE_FEATURES = [
-  { icon: <MessageSquare size={18} />, title: 'Guided Chat', body: 'Best for conversational creation and ongoing refinement. Build from empty or change the current canvas in one thread; existing manual positions are retained during modifications.' },
-  { icon: <Sparkles size={18} />, title: 'Generate Diagram', body: 'Best when you have detailed requirements, an existing sketch, or need explicit output controls. Choose Topology, Blueprint, or Both, then hand off to Guided Chat or canvas review.' },
-  { icon: <UploadCloud size={18} />, title: 'Import', body: 'Reconstruct a diagram image, parse Bicep/Terraform/ARM, or sign in to reverse-engineer a live Azure resource group.' },
-  { icon: <GitCompare size={18} />, title: 'Compare Models', body: 'Run one prompt across several models, inspect latency/tokens/topology differences, and apply the result you prefer.' },
-  { icon: <MousePointer2 size={18} />, title: 'Edit on canvas', body: 'Drag services, resize groups, edit labels, reconnect edges, align selections, and choose a layout preset or edge style.' },
-  { icon: <History size={18} />, title: 'Version History', body: 'A snapshot is saved before AI regeneration. Save named checkpoints and restore prior versions when an experiment does not work.' },
+type Feature = { icon: React.ReactNode; title: string; video?: string; body: string };
+
+const CREATE_FEATURES: Feature[] = [
+  { icon: <MessageSquare size={18} />, title: 'Guided Chat', video: 'guided-chat', body: 'Best for conversational creation and ongoing refinement. Build from empty or change the current canvas in one thread; existing manual positions are retained during modifications.' },
+  { icon: <Sparkles size={18} />, title: 'Generate Diagram', video: 'generate-diagram', body: 'Best when you have detailed requirements, an existing sketch, or need explicit output controls. Choose Topology, Blueprint, or Both, then hand off to Guided Chat or canvas review.' },
+  { icon: <UploadCloud size={18} />, title: 'Import', video: 'import-iac', body: 'Reconstruct a diagram image, parse Bicep/Terraform/ARM, or sign in to reverse-engineer a live Azure resource group.' },
+  { icon: <GitCompare size={18} />, title: 'Compare Models', video: 'compare-models', body: 'Run one prompt across several models, inspect latency/tokens/topology differences, and apply the result you prefer.' },
+  { icon: <MousePointer2 size={18} />, title: 'Edit on canvas', video: 'edit-canvas', body: 'Drag services, resize groups, edit labels, reconnect edges, align selections, and choose a layout preset or edge style.' },
+  { icon: <History size={18} />, title: 'Version History', video: 'version-history', body: 'A snapshot is saved before AI regeneration. Save named checkpoints and restore prior versions when an experiment does not work.' },
 ];
 
-const ASSESS_FEATURES = [
-  { icon: <ShieldCheck size={18} />, title: 'Well-Architected validation', body: 'Review Cost Optimization, Operational Excellence, Performance Efficiency, Reliability, and Security. Apply selected recommendations, review the resulting iteration, and revalidate after material changes.' },
-  { icon: <GitCompare size={18} />, title: 'Compare Validation', body: 'Ask multiple models to review the same architecture, compare findings, and use consensus to separate recurring gaps from model-specific opinions.' },
-  { icon: <CircleDollarSign size={18} />, title: 'Cost and region', body: 'Inspect PAYG monthly estimates across 14 regions. Tooltips and exports identify Retail API rates, static fallback estimates, usage assumptions, and custom prices.' },
+const ASSESS_FEATURES: Feature[] = [
+  { icon: <ShieldCheck size={18} />, title: 'Well-Architected validation', video: 'waf-validate', body: 'Review Cost Optimization, Operational Excellence, Performance Efficiency, Reliability, and Security. Apply selected recommendations, review the resulting iteration, and revalidate after material changes.' },
+  { icon: <GitCompare size={18} />, title: 'Compare Validation', video: 'compare-validation', body: 'Ask multiple models to review the same architecture, compare findings, and use consensus to separate recurring gaps from model-specific opinions.' },
+  { icon: <CircleDollarSign size={18} />, title: 'Cost and region', video: 'regions', body: 'Inspect PAYG monthly estimates across 14 regions. Tooltips and exports identify Retail API rates, static fallback estimates, usage assumptions, and custom prices.' },
   { icon: <ClipboardCheck size={18} />, title: 'Validation timing', body: 'Review and refine the generated concept first, then use the Validate & Improve journey stage before sharing or building. Revalidate after material changes.' },
 ];
 
-const DELIVER_FEATURES = [
-  { icon: <Download size={18} />, title: 'Editable formats', body: 'Use Visio (VSDX), Draw.io, JSON, or interactive HTML when another person needs to continue editing.' },
-  { icon: <Presentation size={18} />, title: 'Presentation formats', body: 'Export PNG, SVG, a PowerPoint slide, or a customer deck. Use Export background to choose Plain (recommended), Dots, or Grid without changing the editing canvas.' },
-  { icon: <Map size={18} />, title: 'Workflow outputs', body: 'Export a Markdown narrative or animated workflow, and use Narrate when the Speech presenter is available.' },
-  { icon: <FileCode2 size={18} />, title: 'Deployment Guide', body: 'Generate a Microsoft Learn-grounded runbook and Bicep starters. Review all commands, sizing, identities, and safeguards before deployment.' },
-  { icon: <CircleDollarSign size={18} />, title: 'Cost package', body: 'Download CSV or the all-formats ZIP with summaries, analysis, JSON, and multi-region comparison.' },
+const DELIVER_FEATURES: Feature[] = [
+  { icon: <Download size={18} />, title: 'Editable formats', video: 'editable', body: 'Use Visio (VSDX), Draw.io, JSON, or interactive HTML when another person needs to continue editing.' },
+  { icon: <Presentation size={18} />, title: 'Presentation formats', video: 'customer-deck', body: 'Export PNG, SVG, a PowerPoint slide, or a customer deck. Use Export background to choose Plain (recommended), Dots, or Grid without changing the editing canvas.' },
+  { icon: <Map size={18} />, title: 'Workflow outputs', video: 'workflow-animation', body: 'Export a Markdown narrative or animated workflow, and use Narrate when the Speech presenter is available.' },
+  { icon: <FileCode2 size={18} />, title: 'Deployment Guide', video: 'deployment-guide', body: 'Generate a Microsoft Learn-grounded runbook and Bicep starters. Review all commands, sizing, identities, and safeguards before deployment.' },
+  { icon: <CircleDollarSign size={18} />, title: 'Cost package', video: 'cost-export', body: 'Download CSV or the all-formats ZIP with summaries, analysis, JSON, and multi-region comparison.' },
   { icon: <LayoutDashboard size={18} />, title: 'Demo mode', body: 'Use Focus, Hide Toolbar, collapse groups, mini-map navigation, and Fit to view to present large diagrams clearly.' },
 ];
 
@@ -127,6 +136,9 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
   const [section, setSection] = useState<SectionId>('quick-start');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [completedTour, setCompletedTour] = useState<Set<string>>(readCompletedTour);
+  const [tourSelection, setTourSelection] = useState<VideoTourSelection | null>(null);
+  const [tourSource, setTourSource] = useState<'help' | 'help-topic' | 'start-here'>('help');
+  const manifest = useVideoManifest(isOpen);
 
   useEffect(() => {
     if (isOpen) trackHelpOpened('quick-start');
@@ -136,7 +148,20 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
 
   const goToSection = (id: SectionId) => {
     setSection(id);
+    if (id === 'videos') { setTourSelection(null); setTourSource('help'); }
     trackHelpOpened(id);
+  };
+
+  const openVideo = (video: string, at: number | undefined, source: 'help-topic' | 'start-here', label: string) => {
+    setTourSelection({ video, at, nonce: Date.now() });
+    setTourSource(source);
+    setSection('videos');
+    trackHelpOpened(`video-${label}`);
+  };
+
+  const watchTopic = (key: string) => {
+    const topic = manifest?.topics[key];
+    if (topic) openVideo(topic.video, topic.at, 'help-topic', key);
   };
 
   const toggleTourItem = (id: string) => {
@@ -204,6 +229,7 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
           <main className="guided-help-content">
             {section === 'quick-start' && (
               <section className="guided-help-section">
+                <TrailerCard manifest={manifest} onPlay={() => openVideo(TRAILER_ID, 0, 'start-here', 'trailer')} />
                 <p className="guided-help-eyebrow">Your first 10 minutes</p>
                 <h2>Build confidence by completing one full loop</h2>
                 <p className="guided-help-lead">Follow the same four stages shown in the header. They are recommendations, not gates—you can revisit any stage as the architecture evolves.</p>
@@ -228,13 +254,20 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
                 <div className="guided-help-paths">{PATHS.map((path) => <article key={path.title}>
                   <div className="guided-help-path-icon">{path.icon}</div><span>{path.label}</span><h3>{path.title}</h3>
                   <ol>{path.steps.map((step) => <li key={step}>{step}</li>)}</ol>
+                  <WatchLink manifest={manifest} topic={path.video} onWatch={watchTopic} />
                 </article>)}</div>
               </section>
             )}
 
-            {section === 'create' && <FeatureSection eyebrow="Create and refine" title="Move between AI and direct canvas editing" intro="Use AI for acceleration, then use the canvas for precision. Targeted follow-up requests preserve your existing manual layout." features={CREATE_FEATURES} />}
-            {section === 'assess' && <FeatureSection eyebrow="Assess" title="Turn a diagram into a review conversation" intro="Validation and cost are decision aids. They expose assumptions and tradeoffs; they do not replace sizing, security review, or architecture approval." features={ASSESS_FEATURES} />}
-            {section === 'deliver' && <FeatureSection eyebrow="Deliver" title="Choose an output for the next person" intro="Export based on what the recipient needs to do next: present, edit, review, estimate, or continue implementation planning." features={DELIVER_FEATURES} />}
+            {section === 'videos' && (
+              <section className="guided-help-section guided-help-videos">
+                <VideoTour manifest={manifest} selection={tourSelection} source={tourSource} />
+              </section>
+            )}
+
+            {section === 'create' && <FeatureSection eyebrow="Create and refine" title="Move between AI and direct canvas editing" intro="Use AI for acceleration, then use the canvas for precision. Targeted follow-up requests preserve your existing manual layout." features={CREATE_FEATURES} manifest={manifest} onWatch={watchTopic} />}
+            {section === 'assess' && <FeatureSection eyebrow="Assess" title="Turn a diagram into a review conversation" intro="Validation and cost are decision aids. They expose assumptions and tradeoffs; they do not replace sizing, security review, or architecture approval." features={ASSESS_FEATURES} manifest={manifest} onWatch={watchTopic} />}
+            {section === 'deliver' && <FeatureSection eyebrow="Deliver" title="Choose an output for the next person" intro="Export based on what the recipient needs to do next: present, edit, review, estimate, or continue implementation planning." features={DELIVER_FEATURES} manifest={manifest} onWatch={watchTopic} />}
 
             {section === 'prompts' && (
               <section className="guided-help-section">
@@ -277,8 +310,31 @@ const GuidedHelpPanel: React.FC<GuidedHelpPanelProps> = ({ isOpen, onClose }) =>
   );
 };
 
-function FeatureSection({ eyebrow, title, intro, features }: { eyebrow: string; title: string; intro: string; features: typeof CREATE_FEATURES }) {
-  return <section className="guided-help-section"><p className="guided-help-eyebrow">{eyebrow}</p><h2>{title}</h2><p className="guided-help-lead">{intro}</p><div className="guided-help-features">{features.map((feature) => <article key={feature.title}><div>{feature.icon}</div><span><strong>{feature.title}</strong><small>{feature.body}</small></span></article>)}</div></section>;
+function FeatureSection({ eyebrow, title, intro, features, manifest, onWatch }: { eyebrow: string; title: string; intro: string; features: Feature[]; manifest: VideoManifest | null | undefined; onWatch: (key: string) => void }) {
+  return <section className="guided-help-section"><p className="guided-help-eyebrow">{eyebrow}</p><h2>{title}</h2><p className="guided-help-lead">{intro}</p><div className="guided-help-features">{features.map((feature) => <article key={feature.title}><div>{feature.icon}</div><span><strong>{feature.title}</strong><small>{feature.body}</small><WatchLink manifest={manifest} topic={feature.video} onWatch={onWatch} /></span></article>)}</div></section>;
+}
+
+/** "Watch" chip that opens the video tour at the chapter for this topic; hidden when the tour has no such topic. */
+function WatchLink({ manifest, topic, onWatch }: { manifest: VideoManifest | null | undefined; topic?: string; onWatch: (key: string) => void }) {
+  const target = topic ? manifest?.topics[topic] : undefined;
+  if (!topic || !target) return null;
+  const video = manifest?.videos.find((v) => v.id === target.video);
+  return <button className="guided-help-watch" onClick={() => onWatch(topic)} title={video ? `${video.badge}: ${video.title}, at ${formatDuration(target.at)}` : undefined}>
+    <PlayCircle size={13} /> Watch{video ? ` · ${video.badge}` : ''}
+  </button>;
+}
+
+function TrailerCard({ manifest, onPlay }: { manifest: VideoManifest | null | undefined; onPlay: () => void }) {
+  const trailer = manifest?.videos.find((v) => v.id === TRAILER_ID);
+  if (!trailer) return null;
+  return <button className="guided-help-trailer" onClick={onPlay}>
+    <span className="video-tour-thumb">
+      {trailer.poster && <img src={mediaUrl(trailer.poster)} alt="" />}
+      <span className="video-tour-play"><PlayCircle size={18} /></span>
+      <span className="video-tour-duration">{formatDuration(trailer.duration)}</span>
+    </span>
+    <span><strong>New here? Watch the {formatDuration(trailer.duration)} tour first</strong><small>See the whole tool, from a first prompt to a deployable, priced design. Every feature has its own short video in the Video Tour.</small></span>
+  </button>;
 }
 
 function Faq({ q, a }: { q: string; a: string }) {
