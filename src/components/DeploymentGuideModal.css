@@ -766,3 +766,75 @@ body.dark-mode .deployment-modal .modal-loading p {
   text-decoration: none;
 }
 .grounding-list a:hover { text-decoration: underline; }
+
+/* Bicep compile check */
+.deployment-modal .guide-progress {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.bicep-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  margin: 0 0 12px 0;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bicep-check svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.bicep-check-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bicep-check--passed {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.bicep-check--failed {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.bicep-check-errors {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.bicep-check-errors code {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 11px;
+}
+
+body.dark-mode .deployment-modal .guide-progress {
+  color: #7dd3fc;
+}
+
+body.dark-mode .deployment-modal .bicep-check--passed {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #6ee7b7;
+}
+
+body.dark-mode .deployment-modal .bicep-check--failed {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fcd34d;
+}

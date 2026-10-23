@@ -23,6 +23,7 @@ const tests = [
   'test:azure-signin-errors',
   'test:semantic-relationships',
   'test:private-connectivity',
+  'test:bicep-repair',
 ];
 
 for (const testName of tests) {

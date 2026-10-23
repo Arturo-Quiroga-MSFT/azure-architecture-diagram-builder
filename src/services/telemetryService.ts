@@ -292,13 +292,17 @@ export function trackDeploymentGuide(params: {
   model?: string;
   serviceCount?: number;
   bicepFileCount?: number;
+  bicepCheck?: string;
+  bicepErrorCount?: number;
   elapsedTimeMs?: number;
 }): void {
   trackEvent('DeploymentGuide_Generated', {
     model: params.model || 'unknown',
+    bicepCheck: params.bicepCheck || 'none',
   }, {
     serviceCount: params.serviceCount ?? 0,
     bicepFileCount: params.bicepFileCount ?? 0,
+    bicepErrorCount: params.bicepErrorCount ?? 0,
     elapsedTimeMs: params.elapsedTimeMs ?? 0,
   });
 }

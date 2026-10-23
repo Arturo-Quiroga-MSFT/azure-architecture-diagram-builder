@@ -124,6 +124,16 @@ ENV ENABLE_ADOPTION_IMPACT=$ENABLE_ADOPTION_IMPACT
 # Install Node.js for the speech/OpenAI token server.
 RUN apk add --no-cache nodejs npm
 
+# Bicep CLI for the Deployment Guide compile check (/api/bicep/build).
+# Pinned release and checksum; self-contained musl build.
+ARG BICEP_VERSION=v0.48.1
+ARG BICEP_SHA256=fbea904a81e17267757c08909ad3bac82fa96d4d164d1bd07bf0fa8fd9b7b982
+RUN apk add --no-cache libstdc++ libgcc \
+    && wget -q -O /usr/local/bin/bicep "https://github.com/Azure/bicep/releases/download/${BICEP_VERSION}/bicep-linux-musl-x64" \
+    && echo "${BICEP_SHA256}  /usr/local/bin/bicep" | sha256sum -c - \
+    && chmod +x /usr/local/bin/bicep
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 BICEP_PATH=/usr/local/bin/bicep
+
 # Set up the speech token server
 WORKDIR /srv/token-server
 COPY server/package*.json ./
@@ -131,6 +141,7 @@ RUN npm ci --omit=dev
 COPY server/token-server.js ./
 COPY server/instrumentation.js ./
 COPY server/voice-live-relay.js ./
+COPY server/bicep-check.js ./
 COPY server/impact-routes.js server/impact-records.js ./
 RUN if [ "$ENABLE_ADOPTION_IMPACT" != "true" ]; then rm -f impact-routes.js impact-records.js; fi
 

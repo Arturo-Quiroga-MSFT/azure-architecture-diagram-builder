@@ -59,7 +59,7 @@ import { PRICING_DATA_AS_OF } from './data/azurePricing';
 import { costReportToHtml } from './utils/costReportHtml';
 import { validateArchitecture, ArchitectureValidation } from './services/architectureValidator';
 import { bandLabel } from './services/wafMaturity';
-import type { DeploymentGuide } from './services/deploymentGuideGenerator';
+import type { DeploymentGuide, DeploymentGuideProgress } from './services/deploymentGuideGenerator';
 import { generateArchitectureWithAI } from './services/azureOpenAI';
 import { MODEL_CONFIG, DEPLOYMENT_NAMES, type ModelType, type ReasoningEffort } from './stores/modelSettingsStore';
 import { usePricingDisplayPrefs } from './stores/pricingDisplayStore';
@@ -266,6 +266,7 @@ function App() {
   const [isValidating, setIsValidating] = useState(false);
   const [deploymentGuide, setDeploymentGuide] = useState<DeploymentGuide | null>(null);
   const [isDeploymentGuideModalOpen, setIsDeploymentGuideModalOpen] = useState(false);
+  const [guideProgress, setGuideProgress] = useState<DeploymentGuideProgress | null>(null);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
 
   // Version History State
@@ -3112,6 +3113,7 @@ function App() {
     }
 
     setIsGeneratingGuide(true);
+    setGuideProgress(null);
     setIsDeploymentGuideModalOpen(true);
 
     try {
@@ -3147,7 +3149,8 @@ function App() {
         connections,
         groups,
         architecturePrompt || titleBlockData.architectureName,
-        totalMonthlyCost
+        totalMonthlyCost,
+        setGuideProgress
       );
 
       setDeploymentGuide(guide);
@@ -3155,6 +3158,8 @@ function App() {
         model: guide.metrics?.model,
         serviceCount: services.length,
         bicepFileCount: guide.bicepTemplates?.length,
+        bicepCheck: guide.bicepCheck?.status,
+        bicepErrorCount: guide.bicepCheck?.errorCount,
         elapsedTimeMs: guide.metrics?.elapsedTimeMs,
       });
     } catch (error: any) {
@@ -3163,6 +3168,7 @@ function App() {
       setIsDeploymentGuideModalOpen(false);
     } finally {
       setIsGeneratingGuide(false);
+      setGuideProgress(null);
     }
   }, [nodes, edges, architecturePrompt, titleBlockData.architectureName, totalMonthlyCost]);
 
@@ -4583,6 +4589,7 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
         isOpen={isDeploymentGuideModalOpen}
         onClose={() => setIsDeploymentGuideModalOpen(false)}
         isLoading={isGeneratingGuide}
+        progress={guideProgress}
       />
       <SaveSnapshotModal
         isOpen={isSaveSnapshotModalOpen}

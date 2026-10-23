@@ -13,6 +13,7 @@ import { getModelSettingsForFeature, getDeploymentName, MODEL_CONFIG } from '../
 import { trackAIModelUsage } from './telemetryService';
 import { buildRequestBody, parseApiResponse, callAzureOpenAIProxy, describeApiFormat } from './apiHelper';
 import { searchMicrosoftDocs, renderGroundingBlock, DocSource } from './docsGroundingService';
+import { repairBicep } from '../utils/bicepRepair';
 
 // Non-secret flag indicating the AI backend is wired up. Credentials live
 // server-side; all calls go through the /api/openai proxy.
@@ -150,6 +151,144 @@ export interface DeploymentGuide {
   metrics?: AIMetrics;
   /** Official Microsoft Learn pages used to ground this guide (Phase 1). */
   groundingSources?: DocSource[];
+  /** Result of compiling the templates with the Bicep CLI. */
+  bicepCheck?: BicepCheck;
+}
+
+export interface BicepDiagnostic {
+  file: string;
+  line: number;
+  column: number;
+  level: 'error' | 'warning' | 'info';
+  code: string;
+  message: string;
+}
+
+export interface BicepCheck {
+  /** passed: 0 errors · failed: errors remain · unavailable: compiler not reachable. */
+  status: 'passed' | 'failed' | 'unavailable';
+  bicepVersion?: string;
+  errorCount: number;
+  warningCount: number;
+  /** Separators fixed deterministically before compiling. */
+  autoFixes: number;
+  /** True when compiler errors were sent back to the model and it repaired them. */
+  modelRepaired: boolean;
+  /** Errors found on the first compile, before the model repair round. */
+  initialErrorCount?: number;
+  diagnostics: BicepDiagnostic[];
+}
+
+export type DeploymentGuideProgress = 'grounding' | 'writing' | 'compiling' | 'repairing' | 'recompiling';
+
+interface BuildResponse {
+  ok: boolean;
+  version: string;
+  errorCount: number;
+  warningCount: number;
+  diagnostics: BicepDiagnostic[];
+}
+
+async function compileBicep(templates: BicepModule[]): Promise<BuildResponse | null> {
+  try {
+    const response = await fetch('/api/bicep/build', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: templates.map((t) => ({ filename: t.filename, content: t.content })) }),
+    });
+    if (!response.ok) {
+      console.warn(`⚠️ Bicep compile check unavailable (HTTP ${response.status})`);
+      return null;
+    }
+    return (await response.json()) as BuildResponse;
+  } catch (e) {
+    console.warn('⚠️ Bicep compile check unavailable:', e);
+    return null;
+  }
+}
+
+function normalizeTemplates(templates: BicepModule[]): { templates: BicepModule[]; fixes: number } {
+  let fixes = 0;
+  const out = templates
+    .filter((t) => t && typeof t.content === 'string' && typeof t.filename === 'string')
+    .map((t) => {
+      const repaired = repairBicep(t.content);
+      fixes += repaired.fixes;
+      return { ...t, filename: t.filename.trim().replace(/^\.\//, ''), content: repaired.content };
+    });
+  return { templates: out, fixes };
+}
+
+const BICEP_REPAIR_PROMPT = `You fix Azure Bicep templates so they compile with the Bicep CLI.
+You receive every template file and the compiler's diagnostics. Fix every error with the smallest correct change; keep resources, names and intent.
+Rules: one property per line (or comma-separated on one line), never semicolons; scope: and parent: must be resource symbols declared in the same file (declare an 'existing' resource when only a name or ID is passed in), never function calls; module paths must match the given filenames exactly; use real resource types and API versions.
+Return ONLY valid JSON: {"files":[{"filename":"...","content":"full corrected file"}]} with the full content of each file you changed. Do not include unchanged files.`;
+
+async function repairWithModel(templates: BicepModule[], diagnostics: BicepDiagnostic[]): Promise<BicepModule[] | null> {
+  const errors = diagnostics.filter((d) => d.level === 'error').slice(0, 80);
+  const files = templates.map((t) => `--- ${t.filename} ---\n${t.content}`).join('\n\n');
+  const diag = errors.map((d) => `${d.file}(${d.line},${d.column}) ${d.code}: ${d.message}`).join('\n');
+  try {
+    const { content } = await callAzureOpenAI([
+      { role: 'system', content: BICEP_REPAIR_PROMPT },
+      { role: 'user', content: `Compiler errors:\n${diag}\n\nTemplates:\n${files}` },
+    ], 32000);
+    const parsed = JSON.parse(content) as { files?: Array<{ filename: string; content: string }> };
+    if (!Array.isArray(parsed.files)) return null;
+    const byName = new Map(parsed.files.filter((f) => f && typeof f.content === 'string').map((f) => [f.filename.replace(/^\.\//, ''), f.content]));
+    return templates.map((t) => (byName.has(t.filename) ? { ...t, content: byName.get(t.filename)! } : t));
+  } catch (e) {
+    console.warn('⚠️ Bicep repair round failed:', e);
+    return null;
+  }
+}
+
+/**
+ * Repair, compile and (once) model-repair the guide's Bicep templates.
+ * Never throws: the guide is still useful when the compiler is unreachable.
+ */
+export async function checkAndRepairBicep(
+  input: BicepModule[],
+  onProgress?: (phase: DeploymentGuideProgress) => void
+): Promise<{ templates: BicepModule[]; check: BicepCheck }> {
+  const first = normalizeTemplates(input);
+  let templates = first.templates;
+  let autoFixes = first.fixes;
+  onProgress?.('compiling');
+  let result = await compileBicep(templates);
+  if (!result) {
+    return { templates, check: { status: 'unavailable', errorCount: 0, warningCount: 0, autoFixes, modelRepaired: false, diagnostics: [] } };
+  }
+  const initialErrorCount = result.errorCount;
+  let modelRepaired = false;
+  if (result.errorCount > 0) {
+    onProgress?.('repairing');
+    const repaired = await repairWithModel(templates, result.diagnostics);
+    if (repaired) {
+      const second = normalizeTemplates(repaired);
+      onProgress?.('recompiling');
+      const retry = await compileBicep(second.templates);
+      if (retry && retry.errorCount < result.errorCount) {
+        templates = second.templates;
+        autoFixes += second.fixes;
+        result = retry;
+        modelRepaired = true;
+      }
+    }
+  }
+  return {
+    templates,
+    check: {
+      status: result.errorCount === 0 ? 'passed' : 'failed',
+      bicepVersion: result.version,
+      errorCount: result.errorCount,
+      warningCount: result.warningCount,
+      autoFixes,
+      modelRepaired,
+      initialErrorCount,
+      diagnostics: result.diagnostics.filter((d) => d.level === 'error').slice(0, 20),
+    },
+  };
 }
 
 /**
@@ -160,7 +299,8 @@ export async function generateDeploymentGuide(
   connections: Array<{ from: string; to: string; label: string; type?: string }>,
   _groups?: Array<{ name: string; services?: string[] }>,
   architectureDescription?: string,
-  estimatedCost?: number
+  estimatedCost?: number,
+  onProgress?: (phase: DeploymentGuideProgress) => void
 ): Promise<DeploymentGuide> {
   
   if (!endpoint) {
@@ -178,6 +318,7 @@ export async function generateDeploymentGuide(
   const topServiceNames = services.slice(0, 6).map((s) => s.name).join(', ');
   const groundingQuery = `Deploy ${topServiceNames} to Azure using Bicep and Azure CLI`;
   let groundingSources: DocSource[] = [];
+  onProgress?.('grounding');
   try {
     groundingSources = await searchMicrosoftDocs(groundingQuery, 6);
     console.log(`📚 Grounding: ${groundingSources.length} Microsoft Learn source(s)`);
@@ -210,6 +351,13 @@ Generate deployment documentation with:
 - Use parameters for environment, location, naming
 - Include outputs for endpoints and connection strings
 - Add resource tags and comments
+
+**Bicep syntax (every template is compiled with the Bicep CLI before it is shown):**
+- Put each object property and each array item on its own line. If you write a single-line object or array, separate items with commas. Never use semicolons.
+- \`scope:\` and \`parent:\` must reference a resource symbol declared in the same file. When a module receives only a name or ID, declare an \`existing\` resource for it. Never use function calls such as resource(...) or resourceId(...) there.
+- Module paths in main.bicep must exactly match the filenames of the other templates.
+- Use every declared parameter. Never return secrets in outputs (no @secure() values, no listKeys()).
+- Use only real resource types and API versions.
 
 **Grounding:**
 - If GROUNDING SOURCES (Microsoft Learn) are provided in the request, prefer their guidance for API versions, CLI flags, and Bicep resource schemas.
@@ -247,6 +395,7 @@ ${groundingBlock ? `${groundingBlock}
 ` : ''}Generate a deployment guide with Azure CLI commands and Bicep templates for this architecture.`;
 
   try {
+    onProgress?.('writing');
     const { content, metrics } = await callAzureOpenAI([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
@@ -270,6 +419,13 @@ ${groundingBlock ? `${groundingBlock}
     guide.metrics = metrics;
     if (groundingSources.length > 0) {
       guide.groundingSources = groundingSources.map((s) => ({ title: s.title, url: s.url }));
+    }
+
+    if (Array.isArray(guide.bicepTemplates) && guide.bicepTemplates.length > 0) {
+      const { templates, check } = await checkAndRepairBicep(guide.bicepTemplates, onProgress);
+      guide.bicepTemplates = templates;
+      guide.bicepCheck = check;
+      console.log(`🧪 Bicep compile check: ${check.status} · ${check.errorCount} errors · ${check.autoFixes} auto-fixes${check.modelRepaired ? ' · model-repaired' : ''}`);
     }
 
     console.log('📋 Deployment guide generated');
@@ -352,6 +508,13 @@ export function formatDeploymentGuide(guide: DeploymentGuide): string {
     md += `**Solution:** ${item.solution}\n\n`;
   });
   
+  if (guide.bicepCheck && guide.bicepCheck.status !== 'unavailable') {
+    md += `## Bicep Compile Check\n\n`;
+    md += guide.bicepCheck.status === 'passed'
+      ? `All templates compiled with the Bicep CLI${guide.bicepCheck.bicepVersion ? ` ${guide.bicepCheck.bicepVersion}` : ''}: 0 errors, ${guide.bicepCheck.warningCount} linter warnings.\n\n`
+      : `The Bicep CLI reported ${guide.bicepCheck.errorCount} errors. Fix them before deploying.\n\n`;
+  }
+
   if (guide.groundingSources && guide.groundingSources.length > 0) {
     md += `## References (Microsoft Learn)\n\n`;
     guide.groundingSources.forEach(src => {
@@ -421,6 +584,13 @@ Generated: ${new Date(guide.timestamp).toLocaleString()}
    az group create --name <rg-name> --location <location>
    az deployment group create --resource-group <rg-name> --template-file main.bicep
    \`\`\`
+
+## Compile Check
+${guide.bicepCheck && guide.bicepCheck.status !== 'unavailable'
+  ? guide.bicepCheck.status === 'passed'
+    ? `Compiled with the Bicep CLI${guide.bicepCheck.bicepVersion ? ` ${guide.bicepCheck.bicepVersion}` : ''}: 0 errors, ${guide.bicepCheck.warningCount} linter warnings. Re-check locally with \`az bicep build --file main.bicep\`.`
+    : `The Bicep CLI reported ${guide.bicepCheck.errorCount} errors. Run \`az bicep build --file main.bicep\` and fix them before deploying.`
+  : 'Not compiled. Run `az bicep build --file main.bicep` before deploying.'}
 
 ## Files Included
 ${guide.bicepTemplates.map(t => `- ${t.filename}: ${t.description}`).join('\n')}

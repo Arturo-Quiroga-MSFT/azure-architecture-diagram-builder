@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 import React, { useState } from 'react';
-import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package, Clock, Zap } from 'lucide-react';
-import type { DeploymentGuide, BicepModule } from '../services/deploymentGuideGenerator';
+import { X, Download, Copy, Check, ChevronDown, ChevronUp, FileCode, Package, Clock, Zap, ShieldCheck, AlertTriangle } from 'lucide-react';
+import type { DeploymentGuide, BicepModule, DeploymentGuideProgress } from '../services/deploymentGuideGenerator';
 import './DeploymentGuideModal.css';
 import { useEscapeToClose } from '../hooks/useEscapeToClose';
 
@@ -12,9 +12,18 @@ interface DeploymentGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
   isLoading?: boolean;
+  progress?: DeploymentGuideProgress | null;
 }
 
-const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOpen, onClose, isLoading }) => {
+const PROGRESS_TEXT: Record<DeploymentGuideProgress, string> = {
+  grounding: 'Grounding with Microsoft Learn…',
+  writing: 'Writing the guide and Bicep templates…',
+  compiling: 'Compiling the Bicep with the Bicep CLI…',
+  repairing: 'Fixing compiler errors…',
+  recompiling: 'Recompiling the fixed templates…',
+};
+
+const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOpen, onClose, isLoading, progress }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
   const [expandedBicep, setExpandedBicep] = useState<Set<number>>(new Set([0]));
@@ -80,6 +89,7 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
           <div className="modal-loading">
             <div className="spinner"></div>
             <p>Generating comprehensive deployment guide...</p>
+            {progress && <p className="guide-progress">{PROGRESS_TEXT[progress]}</p>}
           </div>
         ) : guide ? (
           <>
@@ -254,8 +264,35 @@ const DeploymentGuideModal: React.FC<DeploymentGuideModalProps> = ({ guide, isOp
                     Download All Templates
                   </button>
                 </div>
+                {guide.bicepCheck && guide.bicepCheck.status !== 'unavailable' && (
+                  <div className={`bicep-check bicep-check--${guide.bicepCheck.status}`}>
+                    {guide.bicepCheck.status === 'passed' ? <ShieldCheck size={18} /> : <AlertTriangle size={18} />}
+                    <div className="bicep-check-text">
+                      <strong>
+                        {guide.bicepCheck.status === 'passed'
+                          ? 'Compiled with the Bicep CLI: 0 errors'
+                          : `Bicep CLI found ${guide.bicepCheck.errorCount} error${guide.bicepCheck.errorCount === 1 ? '' : 's'}; review before deploying`}
+                      </strong>
+                      <span>
+                        {[
+                          guide.bicepCheck.bicepVersion ? `Bicep ${guide.bicepCheck.bicepVersion}` : '',
+                          `${guide.bicepCheck.warningCount} linter warning${guide.bicepCheck.warningCount === 1 ? '' : 's'}`,
+                          guide.bicepCheck.autoFixes > 0 ? `${guide.bicepCheck.autoFixes} syntax fixes applied` : '',
+                          guide.bicepCheck.modelRepaired ? `${guide.bicepCheck.initialErrorCount} compiler errors fixed by the model` : '',
+                        ].filter(Boolean).join(' · ')}
+                      </span>
+                      {guide.bicepCheck.status === 'failed' && guide.bicepCheck.diagnostics.length > 0 && (
+                        <ul className="bicep-check-errors">
+                          {guide.bicepCheck.diagnostics.slice(0, 5).map((d, i) => (
+                            <li key={i}><code>{d.file}({d.line},{d.column})</code> {d.code}: {d.message}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <p className="bicep-description">
-                  Production-ready Bicep templates for automated infrastructure deployment. 
+                  Bicep templates for automated infrastructure deployment. Review parameters, SKUs and names before deploying. 
                   Deploy with: <code>az deployment group create --resource-group &lt;rg-name&gt; --template-file main.bicep</code>
                 </p>
                 <div className="bicep-templates-list">

@@ -24,6 +24,7 @@ app.set('trust proxy', 1);
 // it needs a larger body limit. This route-scoped parser runs before the small
 // global parser below; the global parser then skips bodies already parsed here.
 app.use('/api/openai', express.json({ limit: '12mb' }));
+app.use('/api/bicep', express.json({ limit: '1mb' }));
 app.use(express.json({ limit: '16kb' }));
 const credential = new DefaultAzureCredential();
 
@@ -407,6 +408,8 @@ app.post('/api/docs-search', async (req, res) => {
     res.json({ results: [], error: 'docs search failed' });
   }
 });
+
+require('./bicep-check').register(app);
 
 app.get('/api/ice-token', async (_req, res) => {
   if (!REGION || !RESOURCE_ID) {
