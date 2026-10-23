@@ -1,8 +1,8 @@
 #!/bin/bash
 # Shared settings for the shell steps. Sourced by run.sh, narrate.sh and encode.sh.
 # Values come from the environment, then demo-videos/.env (git-ignored; see .env.example).
-ENGINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VIDEOS_ROOT="$(cd "$ENGINE_DIR/.." && pwd)"
+ENGINE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+VIDEOS_ROOT="$(cd "$ENGINE_DIR/.." && pwd -P)"
 if [[ -f "$VIDEOS_ROOT/.env" ]]; then
   while IFS='=' read -r key value; do
     [[ -z "$key" || "$key" == \#* ]] && continue
