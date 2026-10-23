@@ -1,0 +1,7 @@
+[
+ ["01-opener", "Hi Ava. I'm working with a manufacturer that runs three plants in Ontario and Michigan. They want cameras on the production line to catch defects automatically. Can you help me design it on Azure?"],
+ ["02-workload", "It's real time. About forty cameras per plant, and a pass or fail decision in under two hundred milliseconds. So inference runs at the edge, in each plant, and the cloud trains the models and hosts the dashboards."],
+ ["03-data-and-security", "Around two million images a day. Defect images are kept for two years, for audits. Quality engineers want Power BI, and plant alerts go to Microsoft Teams. Security wants private networking and Entra ID, in Canada Central."],
+ ["04-draw", "That sounds right. Please draw it."],
+ ["05-change", "Nice. Can you add Azure Arc, so they can manage the edge clusters in all three plants from Azure?"]
+]

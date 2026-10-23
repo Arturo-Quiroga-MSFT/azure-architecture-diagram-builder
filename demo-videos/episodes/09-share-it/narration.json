@@ -1,0 +1,74 @@
+[
+ [
+  "n01-open",
+  "One design. <break time='200ms'/> Many audiences."
+ ],
+ [
+  "n02-title",
+  "In this episode: sharing the architecture in the format each audience actually uses."
+ ],
+ [
+  "n03-draft",
+  "Here's the clinic booking draft again."
+ ],
+ [
+  "n04-validate",
+  "First, a quick Well-Architected review, so the results can travel with the design."
+ ],
+ [
+  "n05-share",
+  "Share or Build, then Share. <break time='120ms'/> Everything this architecture can become, on one page: images, documents and decks, editable formats, and cost."
+ ],
+ [
+  "n06-background",
+  "Exports use a plain background by default, so they look clean on a slide."
+ ],
+ [
+  "n07-deck",
+  "For leadership: the customer deck, a PowerPoint built from the design."
+ ],
+ [
+  "n08-html",
+  "For reviewers without the app: an interactive web page, in a single file."
+ ],
+ [
+  "n09-workflow",
+  "For the walkthrough: an animation of the request flow."
+ ],
+ [
+  "n10-editable",
+  "And for architects who work in other tools: Draw.io and Visio."
+ ],
+ [
+  "n11-open",
+  "Now, open each one the way its audience would."
+ ],
+ [
+  "n12-deck-show",
+  "The deck: the design, its services, the Well-Architected review and the cost estimate, ready to present."
+ ],
+ [
+  "n12-deck-show-noreview",
+  "The deck: the design, its services and the cost estimate, ready to present."
+ ],
+ [
+  "n13-html-show",
+  "The web page: pan, zoom, and hover any service for details. <break time='120ms'/> No sign-in, nothing to install."
+ ],
+ [
+  "n14-workflow-show",
+  "The animation steps through the flow, with a caption for each step."
+ ],
+ [
+  "n15-drawio",
+  "And Draw.io: icons, groups, labels and costs are all there. <break time='120ms'/> Every shape is editable, and the connectors follow."
+ ],
+ [
+  "n16-history",
+  "Every export from this session is listed here: one design, a file for each audience."
+ ],
+ [
+  "n17-close",
+  "One design, in the format each audience uses. <break time='150ms'/> That's Share It."
+ ]
+]

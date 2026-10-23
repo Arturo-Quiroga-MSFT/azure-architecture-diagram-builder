@@ -1,0 +1,62 @@
+[
+ [
+  "n01-open",
+  "A diagram is a plan. <break time='200ms'/> Deployment is the proof."
+ ],
+ [
+  "n02-title",
+  "In this episode: turning the design into a deployment guide and infrastructure as code you can actually run."
+ ],
+ [
+  "n03-draft",
+  "Here's the clinic booking draft again."
+ ],
+ [
+  "n04-generate",
+  "One click on Generate Deployment Guide. <break time='120ms'/> The model grounds itself in Microsoft Learn, writes the guide and the Bicep, and then the Bicep goes through the real Bicep compiler."
+ ],
+ [
+  "n05-overview",
+  "The guide opens with an overview and the prerequisites: subscription permissions, tools, and the decisions to make before production."
+ ],
+ [
+  "n06-steps",
+  "Then the steps, in order. Each one has the Azure CLI commands to run, ready to copy."
+ ],
+ [
+  "n07-config",
+  "Configuration settings and a validation checklist, so you know what to set and how to check it worked."
+ ],
+ [
+  "n08-grounding",
+  "And the Microsoft Learn pages it was grounded on, so every recommendation can be traced."
+ ],
+ [
+  "n09-compiled",
+  "Now the part that matters most. <break time='120ms'/> Before you ever see it, the Bicep is compiled with the real Bicep CLI. <break time='120ms'/> If the compiler finds errors, the model gets the exact messages and fixes them, and the templates are compiled again."
+ ],
+ [
+  "n10-modules",
+  "A main template, plus one module per part of the design."
+ ],
+ [
+  "n11-download",
+  "Download every template, and the guide itself as Markdown."
+ ],
+ [
+  "n12-terminal",
+  "And the same files on a laptop. <break time='120ms'/> The build is clean, and a what-if shows exactly what Azure would create, before anything is deployed."
+ ],
+ [
+  "n12-build-only",
+  "And the same files on a laptop. <break time='120ms'/> The build is clean, ready for your own pipeline."
+ ],
+ [
+  "n13-troubleshoot",
+  "The guide ends with troubleshooting tips for the problems you're most likely to hit."
+ ],
+ [
+  "n14-close",
+  "From a diagram to infrastructure that compiles, in about a minute. <break time='150ms'/> That's Deploy It."
+ ]
+]

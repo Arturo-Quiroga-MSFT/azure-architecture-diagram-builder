@@ -1,0 +1,15 @@
+[
+ ["n01-open", "Not every architecture starts as a sentence. <break time='200ms'/> Some start on a whiteboard. <break time='200ms'/> Others are already running in Azure."],
+ ["n02-title", "This episode: from a sketch, or from what's already deployed, to an editable Azure diagram."],
+ ["n03-photo", "Here's a whiteboard from a design session: real-time messaging, drawn in generic terms. <break time='150ms'/> There isn't a single Azure service name on it."],
+ ["n04-upload", "Drop the photo into Generate Diagram. AADB reads the boxes, the arrows and the labels, <break time='100ms'/> even the messy handwriting."],
+ ["n05-gen", "Then it maps every box to the Azure service that does that job, and keeps the flows between them."],
+ ["n06-tour", "The WebSocket gateway, the message broker, the in-memory store, the push notifications: <break time='120ms'/> each one is now a real Azure service, grouped and connected."],
+ ["n07-ref", "And the original sketch stays pinned to the canvas, so anyone can check the translation."],
+ ["n08-import", "Already running in Azure? <break time='150ms'/> Import it instead."],
+ ["n09-options", "Bring a Bicep, Terraform or ARM template, <break time='120ms'/> or reverse-engineer a live resource group straight from Azure: read-only, with your own permissions."],
+ ["n10-arm", "Here's an exported resource group with fourteen resources. <break time='120ms'/> In under a second, they're on the canvas: grouped, priced and connected."],
+ ["n11-edges", "And every connection says what the reference actually means: <break time='100ms'/> runs in, pulls images from, reads secrets from, sends messages to. <break time='150ms'/> Nothing is guessed."],
+ ["n12-yours", "From there, it's your diagram. Drag services and groups into the layout that tells the story best."],
+ ["n13-close", "A whiteboard photo, a template, or a live resource group: <break time='150ms'/> every path leads to the same editable, priced Azure diagram."]
+]

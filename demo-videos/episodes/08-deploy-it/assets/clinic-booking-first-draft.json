@@ -1,0 +1,704 @@
+{
+ "nodes": [
+  {
+   "id": "application",
+   "type": "groupNode",
+   "position": {
+    "x": 80,
+    "y": 711.5
+   },
+   "data": {
+    "label": "Ingress and Application"
+   },
+   "style": {
+    "width": 920,
+    "height": 360
+   },
+   "width": 920,
+   "height": 360,
+   "positionAbsolute": {
+    "x": 80,
+    "y": 711.5
+   }
+  },
+  {
+   "id": "data-storage",
+   "type": "groupNode",
+   "position": {
+    "x": 1428,
+    "y": 1343
+   },
+   "data": {
+    "label": "Data and Storage"
+   },
+   "style": {
+    "width": 340,
+    "height": 595
+   },
+   "width": 340,
+   "height": 595,
+   "positionAbsolute": {
+    "x": 1428,
+    "y": 1343
+   }
+  },
+  {
+   "id": "identity-security",
+   "type": "groupNode",
+   "position": {
+    "x": 1428,
+    "y": 594
+   },
+   "data": {
+    "label": "Identity and Security"
+   },
+   "style": {
+    "width": 340,
+    "height": 595
+   },
+   "width": 340,
+   "height": 595,
+   "positionAbsolute": {
+    "x": 1428,
+    "y": 594
+   }
+  },
+  {
+   "id": "monitoring",
+   "type": "groupNode",
+   "position": {
+    "x": 1428,
+    "y": 80
+   },
+   "data": {
+    "label": "Monitoring and Observability"
+   },
+   "style": {
+    "width": 920,
+    "height": 360
+   },
+   "width": 920,
+   "height": 360,
+   "positionAbsolute": {
+    "x": 1428,
+    "y": 80
+   }
+  },
+  {
+   "id": "app-service",
+   "type": "azureNode",
+   "position": {
+    "x": 80,
+    "y": 144
+   },
+   "data": {
+    "label": "App Service",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/app services/app-service.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 69.35,
+     "tier": "S1",
+     "skuName": "S1",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "1 Hour",
+     "lastUpdated": "2026-10-22T16:46:57.979Z",
+     "isCustom": false,
+     "paygSource": "retail-api",
+     "isUsageBased": false,
+     "reservedIsSavingsPlan": false
+    }
+   },
+   "parentNode": "application",
+   "extent": "parent",
+   "width": 130,
+   "height": 113,
+   "positionAbsolute": {
+    "x": 160,
+    "y": 855.5
+   }
+  },
+  {
+   "id": "azure-functions",
+   "type": "azureNode",
+   "position": {
+    "x": 660,
+    "y": 144
+   },
+   "data": {
+    "label": "Azure Functions",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/compute/azure-functions.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 8.322000000000001,
+     "tier": "Premium",
+     "skuName": "Premium",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "1 GiB Hour",
+     "lastUpdated": "2026-10-22T16:46:58.168Z",
+     "isCustom": false,
+     "paygSource": "retail-api",
+     "isUsageBased": true,
+     "reserved1yrCost": 6.90726,
+     "reservedIsSavingsPlan": true
+    }
+   },
+   "parentNode": "application",
+   "extent": "parent",
+   "width": 160,
+   "height": 113,
+   "positionAbsolute": {
+    "x": 740,
+    "y": 855.5
+   }
+  },
+  {
+   "id": "sql-database",
+   "type": "azureNode",
+   "position": {
+    "x": 80,
+    "y": 144
+   },
+   "data": {
+    "label": "SQL Database",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/databases/sql-database.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 29.031,
+     "tier": "S1",
+     "skuName": "S1",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "1/Day",
+     "lastUpdated": "2026-10-22T16:46:57.979Z",
+     "isCustom": false,
+     "paygSource": "retail-api",
+     "isUsageBased": false,
+     "reservedIsSavingsPlan": false
+    }
+   },
+   "parentNode": "data-storage",
+   "extent": "parent",
+   "width": 145,
+   "height": 113,
+   "positionAbsolute": {
+    "x": 1508,
+    "y": 1487
+   }
+  },
+  {
+   "id": "storage-account",
+   "type": "azureNode",
+   "position": {
+    "x": 80,
+    "y": 379
+   },
+   "data": {
+    "label": "Storage Account",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/storage/storage-account.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 0.0263,
+     "tier": "Hot LRS",
+     "skuName": "Hot LRS",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "1 GB/Month",
+     "lastUpdated": "2026-10-22T16:46:57.979Z",
+     "isCustom": false,
+     "paygSource": "retail-api",
+     "isUsageBased": true,
+     "reservedIsSavingsPlan": false
+    }
+   },
+   "parentNode": "data-storage",
+   "extent": "parent",
+   "width": 164,
+   "height": 113,
+   "positionAbsolute": {
+    "x": 1508,
+    "y": 1722
+   }
+  },
+  {
+   "id": "key-vault",
+   "type": "azureNode",
+   "position": {
+    "x": 80,
+    "y": 144
+   },
+   "data": {
+    "label": "Key Vault",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/security/key-vault.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 1.5,
+     "tier": "Standard",
+     "skuName": "Standard",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "per instance/month",
+     "lastUpdated": "2026-10-22T16:46:57.979Z",
+     "isCustom": false,
+     "paygSource": "static-fallback",
+     "isUsageBased": false
+    }
+   },
+   "parentNode": "identity-security",
+   "extent": "parent",
+   "width": 120,
+   "height": 113,
+   "positionAbsolute": {
+    "x": 1508,
+    "y": 738
+   }
+  },
+  {
+   "id": "entra-id",
+   "type": "azureNode",
+   "position": {
+    "x": 80,
+    "y": 379
+   },
+   "data": {
+    "label": "Microsoft Entra ID",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/identity/10340-icon-service-Entra-Identity-Roles-and-Administrators.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 6,
+     "tier": "Standard",
+     "skuName": "Standard",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "per instance/month",
+     "lastUpdated": "2026-10-22T16:46:57.979Z",
+     "isCustom": false,
+     "paygSource": "static-fallback",
+     "isUsageBased": false
+    }
+   },
+   "parentNode": "identity-security",
+   "extent": "parent",
+   "width": 172,
+   "height": 134,
+   "positionAbsolute": {
+    "x": 1508,
+    "y": 973
+   }
+  },
+  {
+   "id": "application-insights",
+   "type": "azureNode",
+   "position": {
+    "x": 80,
+    "y": 144
+   },
+   "data": {
+    "label": "Application Insights",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/application-insights.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 2.3,
+     "tier": "Standard",
+     "skuName": "Standard",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "per instance/month",
+     "lastUpdated": "2026-10-22T16:46:58.168Z",
+     "isCustom": false,
+     "paygSource": "static-fallback",
+     "isUsageBased": false
+    }
+   },
+   "parentNode": "monitoring",
+   "extent": "parent",
+   "width": 172,
+   "height": 134,
+   "positionAbsolute": {
+    "x": 1508,
+    "y": 224
+   }
+  },
+  {
+   "id": "log-analytics",
+   "type": "azureNode",
+   "position": {
+    "x": 660,
+    "y": 144
+   },
+   "data": {
+    "label": "Log Analytics",
+    "iconPath": "/Azure_Public_Service_Icons/Icons/monitor/log-analytics.svg",
+    "privateConnectivity": null,
+    "pricing": {
+     "estimatedCost": 2.3,
+     "tier": "Standard",
+     "skuName": "Standard",
+     "quantity": 1,
+     "region": "eastus2",
+     "unit": "per instance/month",
+     "lastUpdated": "2026-10-22T16:46:57.979Z",
+     "isCustom": false,
+     "paygSource": "static-fallback",
+     "isUsageBased": false
+    }
+   },
+   "parentNode": "monitoring",
+   "extent": "parent",
+   "width": 140,
+   "height": 113,
+   "positionAbsolute": {
+    "x": 2088,
+    "y": 224
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "edge-0",
+   "source": "app-service",
+   "target": "azure-functions",
+   "sourceHandle": "right",
+   "targetHandle": "left",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Submit appointment booking and referral upload requests to the booking API",
+   "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#0078d4"
+   },
+   "labelStyle": {
+    "fontSize": 14,
+    "fill": "#333",
+    "fontWeight": "bold",
+    "fontStyle": "normal"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#000",
+    "strokeWidth": 1.5
+   },
+   "style": {},
+   "data": {
+    "connectionType": "sync",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": true,
+    "flowAnimated": true,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  },
+  {
+   "id": "edge-1",
+   "source": "azure-functions",
+   "target": "sql-database",
+   "sourceHandle": "right",
+   "targetHandle": "left",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Create, update, and retrieve patient appointment records",
+   "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#0078d4"
+   },
+   "labelStyle": {
+    "fontSize": 14,
+    "fill": "#333",
+    "fontWeight": "bold",
+    "fontStyle": "normal"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#000",
+    "strokeWidth": 1.5
+   },
+   "style": {},
+   "data": {
+    "connectionType": "sync",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": true,
+    "flowAnimated": true,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  },
+  {
+   "id": "edge-2",
+   "source": "azure-functions",
+   "target": "storage-account",
+   "sourceHandle": "bottom",
+   "targetHandle": "top",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Upload and retrieve referral letters and scan files",
+   "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#0078d4"
+   },
+   "labelStyle": {
+    "fontSize": 14,
+    "fill": "#333",
+    "fontWeight": "bold",
+    "fontStyle": "normal"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#000",
+    "strokeWidth": 1.5
+   },
+   "style": {},
+   "data": {
+    "connectionType": "sync",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": true,
+    "flowAnimated": true,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  },
+  {
+   "id": "edge-3",
+   "source": "azure-functions",
+   "target": "key-vault",
+   "sourceHandle": "right",
+   "targetHandle": "left",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Retrieve database and storage secrets using managed identity",
+   "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#0078d4"
+   },
+   "labelStyle": {
+    "fontSize": 14,
+    "fill": "#333",
+    "fontWeight": "bold",
+    "fontStyle": "normal"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#000",
+    "strokeWidth": 1.5
+   },
+   "style": {},
+   "data": {
+    "connectionType": "sync",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": true,
+    "flowAnimated": true,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  },
+  {
+   "id": "edge-4",
+   "source": "entra-id",
+   "target": "azure-functions",
+   "sourceHandle": "left-source",
+   "targetHandle": "right-target",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Assign and authorize the booking API managed identity",
+   "labelStyle": {
+    "fontSize": 12,
+    "fill": "#475569",
+    "fontWeight": 600,
+    "fontStyle": "italic"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#94a3b8",
+    "strokeWidth": 1
+   },
+   "style": {
+    "stroke": "#64748b",
+    "strokeDasharray": "3, 4",
+    "opacity": 0.8
+   },
+   "data": {
+    "connectionType": "association",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": false,
+    "flowAnimated": false,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  },
+  {
+   "id": "edge-5",
+   "source": "azure-functions",
+   "target": "application-insights",
+   "sourceHandle": "right",
+   "targetHandle": "left",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Send booking API requests, dependency, and exception telemetry",
+   "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#0078d4"
+   },
+   "labelStyle": {
+    "fontSize": 14,
+    "fill": "#333",
+    "fontWeight": "bold",
+    "fontStyle": "normal"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#000",
+    "strokeWidth": 1.5
+   },
+   "style": {},
+   "data": {
+    "connectionType": "sync",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": true,
+    "flowAnimated": true,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  },
+  {
+   "id": "edge-6",
+   "source": "application-insights",
+   "target": "log-analytics",
+   "sourceHandle": "right",
+   "targetHandle": "left",
+   "animated": false,
+   "type": "editableEdge",
+   "label": "Persist and query application telemetry and diagnostic logs",
+   "markerEnd": {
+    "type": "arrowclosed",
+    "color": "#0078d4"
+   },
+   "labelStyle": {
+    "fontSize": 14,
+    "fill": "#333",
+    "fontWeight": "bold",
+    "fontStyle": "normal"
+   },
+   "labelBgStyle": {
+    "fill": "white",
+    "fillOpacity": 0.9,
+    "stroke": "#000",
+    "strokeWidth": 1.5
+   },
+   "style": {},
+   "data": {
+    "connectionType": "sync",
+    "privateNetworkLink": false,
+    "direction": "forward",
+    "baseFlowAnimated": true,
+    "flowAnimated": true,
+    "flowMode": "directional",
+    "pathStyle": "orthogonal",
+    "labelOffsetX": 0,
+    "labelOffsetY": 0,
+    "pathOffset": 0,
+    "labelOffsetSource": "auto"
+   }
+  }
+ ],
+ "viewport": {
+  "x": 598.5,
+  "y": 90.2578125,
+  "zoom": 0.25
+ },
+ "metadata": {
+  "architectureName": "Clinic Booking \u00b7 first draft",
+  "author": "Azure Architect",
+  "version": "1.0",
+  "date": "10/22/2026",
+  "savedAt": "2026-10-22T16:47:06.003Z"
+ },
+ "workflow": [
+  {
+   "step": 1,
+   "description": "A patient opens the booking website hosted by App Service.",
+   "services": [
+    "app-service"
+   ]
+  },
+  {
+   "step": 2,
+   "description": "The web front end submits appointment details or referral files to the Azure Functions booking API.",
+   "services": [
+    "app-service",
+    "azure-functions"
+   ]
+  },
+  {
+   "step": 3,
+   "description": "The booking API uses its managed identity and retrieves required secrets from Key Vault.",
+   "services": [
+    "entra-id",
+    "azure-functions",
+    "key-vault"
+   ]
+  },
+  {
+   "step": 4,
+   "description": "The API validates the request and creates or updates the appointment in SQL Database.",
+   "services": [
+    "azure-functions",
+    "sql-database"
+   ]
+  },
+  {
+   "step": 5,
+   "description": "Referral letters and scans are uploaded to or retrieved from the Storage Account.",
+   "services": [
+    "azure-functions",
+    "storage-account"
+   ]
+  },
+  {
+   "step": 6,
+   "description": "The API emits request and dependency telemetry to Application Insights, which is retained in Log Analytics.",
+   "services": [
+    "azure-functions",
+    "application-insights",
+    "log-analytics"
+   ]
+  }
+ ],
+ "architecturePrompt": "Patient appointment booking for a regional clinic network: web front end, booking API, appointments database, referral documents, secrets and monitoring. First draft.",
+ "originalPrompt": "Patient appointment booking for a regional clinic network: web front end, booking API, appointments database, referral documents, secrets and monitoring. First draft."
+}

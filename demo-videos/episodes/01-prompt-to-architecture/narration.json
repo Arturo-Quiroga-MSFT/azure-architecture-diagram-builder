@@ -1,0 +1,46 @@
+[
+ [
+  "n01-open",
+  "Every Azure conversation starts the same way. Someone describes what they need, <break time='200ms'/> and someone else has to turn it into an architecture."
+ ],
+ [
+  "n02-promise",
+  "With the Azure Architecture Diagram Builder, that takes one prompt."
+ ],
+ [
+  "n03-dialog",
+  "Open Generate Diagram. Describe the workload in plain language, the way the customer would say it, <break time='150ms'/> or start from one of the ready-made examples."
+ ],
+ [
+  "n04-brief",
+  "Here, a retailer getting ready for its biggest sales weekend: a storefront that scales, product search with AI recommendations, an order pipeline that never loses an order, <break time='100ms'/> and fraud checks in real time."
+ ],
+ [
+  "n05-model",
+  "Choose the model, and how hard it should think: <break time='120ms'/> quick for a first draft, deeper reasoning for a production design."
+ ],
+ [
+  "n06-gen",
+  "One click. AADB picks the Azure services, connects them, groups them by tier, and lays out the diagram."
+ ],
+ [
+  "n07-tour",
+  "Every node is a real Azure service with its official icon. Zoom into any group: the edge, the application tier, data, integration, security and monitoring. <break time='150ms'/> Every connection says what flows across it."
+ ],
+ [
+  "n07b-yours",
+  "Then make it yours. <break time='120ms'/> Drag any service or group wherever you like, tidy the layout, change the style. <break time='120ms'/> The connections follow, and nothing gets lost."
+ ],
+ [
+  "n08-workflow",
+  "The workflow panel walks through the design step by step, in the order a request actually travels."
+ ],
+ [
+  "n09-cost",
+  "And the monthly run rate is already there, priced from Azure retail prices for the region you pick."
+ ],
+ [
+  "n10-close",
+  "One prompt. A grouped, connected, priced Azure architecture, <break time='150ms'/> ready to validate, refine and deploy."
+ ]
+]

@@ -1,0 +1,294 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2023-01-31",
+      "name": "id-contoso-orders",
+      "location": "[resourceGroup().location]"
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "name": "log-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "appi-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', 'log-contoso-orders')]"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2023-07-01",
+      "name": "crcontosoorders",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      }
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2024-03-01",
+      "name": "cae-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', 'log-contoso-orders')).customerId]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-05-15",
+      "name": "cosmos-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [
+          {
+            "locationName": "[resourceGroup().location]"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2022-10-01-preview",
+      "name": "sb-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2023-07-01",
+      "name": "kv-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "enableRbacAuthorization": true
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "stcontosoorders",
+      "location": "[resourceGroup().location]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_ZRS"
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2024-10-01",
+      "name": "aif-contoso-orders",
+      "location": "[resourceGroup().location]",
+      "kind": "AIServices",
+      "sku": {
+        "name": "S0"
+      }
+    },
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2024-06-01-preview",
+      "name": "srch-contoso-catalog",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "standard"
+      }
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "ca-contoso-web",
+      "location": "[resourceGroup().location]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'id-contoso-orders')]": {}
+        }
+      },
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', 'cae-contoso-orders')]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 8080
+          },
+          "registries": [
+            {
+              "server": "[reference(resourceId('Microsoft.ContainerRegistry/registries', 'crcontosoorders')).loginServer]",
+              "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'id-contoso-orders')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "ca-contoso-web",
+              "image": "crcontosoorders.azurecr.io/web:1.4.2",
+              "env": [
+                {
+                  "name": "ORDERS_API_URL",
+                  "value": "[reference(resourceId('Microsoft.App/containerApps', 'ca-contoso-orders-api')).configuration.ingress.fqdn]"
+                },
+                {
+                  "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                  "value": "[reference(resourceId('Microsoft.Insights/components', 'appi-contoso-orders')).ConnectionString]"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', 'cae-contoso-orders')]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "ca-contoso-orders-api",
+      "location": "[resourceGroup().location]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'id-contoso-orders')]": {}
+        }
+      },
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', 'cae-contoso-orders')]",
+        "configuration": {
+          "ingress": {
+            "external": true,
+            "targetPort": 8080
+          },
+          "registries": [
+            {
+              "server": "[reference(resourceId('Microsoft.ContainerRegistry/registries', 'crcontosoorders')).loginServer]",
+              "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'id-contoso-orders')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "ca-contoso-orders-api",
+              "image": "crcontosoorders.azurecr.io/orders-api:1.4.2",
+              "env": [
+                {
+                  "name": "COSMOS_ENDPOINT",
+                  "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', 'cosmos-contoso-orders')).documentEndpoint]"
+                },
+                {
+                  "name": "SERVICEBUS_NAMESPACE",
+                  "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces', 'sb-contoso-orders')).serviceBusEndpoint]"
+                },
+                {
+                  "name": "KEYVAULT_URI",
+                  "value": "[reference(resourceId('Microsoft.KeyVault/vaults', 'kv-contoso-orders')).vaultUri]"
+                },
+                {
+                  "name": "AI_ENDPOINT",
+                  "value": "[reference(resourceId('Microsoft.CognitiveServices/accounts', 'aif-contoso-orders')).endpoint]"
+                },
+                {
+                  "name": "SEARCH_ENDPOINT",
+                  "value": "[concat('https://', 'srch-contoso-catalog', '.search.windows.net')]"
+                },
+                {
+                  "name": "SEARCH_ID",
+                  "value": "[resourceId('Microsoft.Search/searchServices', 'srch-contoso-catalog')]"
+                },
+                {
+                  "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                  "value": "[reference(resourceId('Microsoft.Insights/components', 'appi-contoso-orders')).ConnectionString]"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', 'cae-contoso-orders')]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "ca-contoso-fulfillment",
+      "location": "[resourceGroup().location]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'id-contoso-orders')]": {}
+        }
+      },
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', 'cae-contoso-orders')]",
+        "configuration": {
+          "registries": [
+            {
+              "server": "[reference(resourceId('Microsoft.ContainerRegistry/registries', 'crcontosoorders')).loginServer]",
+              "identity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'id-contoso-orders')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "ca-contoso-fulfillment",
+              "image": "crcontosoorders.azurecr.io/fulfillment-worker:1.4.2",
+              "env": [
+                {
+                  "name": "SERVICEBUS_NAMESPACE",
+                  "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces', 'sb-contoso-orders')).serviceBusEndpoint]"
+                },
+                {
+                  "name": "COSMOS_ENDPOINT",
+                  "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', 'cosmos-contoso-orders')).documentEndpoint]"
+                },
+                {
+                  "name": "BLOB_ENDPOINT",
+                  "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', 'stcontosoorders')).primaryEndpoints.blob]"
+                },
+                {
+                  "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                  "value": "[reference(resourceId('Microsoft.Insights/components', 'appi-contoso-orders')).ConnectionString]"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', 'cae-contoso-orders')]"
+      ]
+    }
+  ]
+}

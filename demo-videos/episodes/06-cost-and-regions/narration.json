@@ -1,0 +1,58 @@
+[
+ [
+  "n01-open",
+  "Every architecture conversation ends with the same two questions. <break time='200ms'/> What will it cost? <break time='150ms'/> And where should it run?"
+ ],
+ [
+  "n02-title",
+  "In this episode: pricing a design, sizing it for production, and comparing regions."
+ ],
+ [
+  "n03-draft",
+  "Here's the clinic booking draft again. The total in the toolbar is the monthly run rate, at Azure retail prices for the selected region."
+ ],
+ [
+  "n04-badges",
+  "Every service carries its own price badge, so you see at a glance where the money goes. <break time='120ms'/> Here, the App Service plan is more than half the bill."
+ ],
+ [
+  "n05-regions",
+  "Change the region, and the whole design reprices. Fourteen regions, from Virginia to Sydney, each priced from its own catalog snapshot."
+ ],
+ [
+  "n06-canada",
+  "Customer in Toronto? Canada Central comes in just under East US 2."
+ ],
+ [
+  "n07-brazil",
+  "São Paulo runs about a fifth more for the exact same design. <break time='120ms'/> Better to know that before the proposal, not after."
+ ],
+ [
+  "n08-tier",
+  "Now size it for production. Click any price badge to change the tier and the instance count: <break time='100ms'/> Premium v3, two instances."
+ ],
+ [
+  "n09-tier-cost",
+  "You see the new figure before you apply it, and the total follows. Have a negotiated price? Override the estimate with your own."
+ ],
+ [
+  "n10-yours",
+  "And the layout is yours, too. Drag anything to where it reads best."
+ ],
+ [
+  "n11-export",
+  "When it's time to share the numbers, export the costs. One click gives you a spreadsheet, JSON, and a full Cost Intelligence report."
+ ],
+ [
+  "n12-report",
+  "Top cost drivers. Flags worth a second look. <break time='120ms'/> And all fourteen regions ranked for this exact design, so you know where you stand, and what a move would save."
+ ],
+ [
+  "n13-hide",
+  "Showing the design to a customer with their own pricing? One click hides every estimate on the canvas."
+ ],
+ [
+  "n14-close",
+  "Price it, size it, place it. <break time='150ms'/> Before anyone has to ask."
+ ]
+]

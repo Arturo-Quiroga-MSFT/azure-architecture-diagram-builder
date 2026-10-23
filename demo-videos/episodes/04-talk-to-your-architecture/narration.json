@@ -1,0 +1,38 @@
+[
+ [
+  "n01-open",
+  "The best design sessions are conversations. <break time='150ms'/> Someone asks the right questions, someone sketches, and the design takes shape while you talk."
+ ],
+ [
+  "n02-title",
+  "In this episode: talking to your architecture, with Ava."
+ ],
+ [
+  "n03-mic",
+  "Open Guided Chat and tap the microphone. Ava runs on Azure AI Voice Live. She listens, asks what an architect would ask, <break time='100ms'/> and draws on the canvas herself."
+ ],
+ [
+  "n04-scenario",
+  "The scenario: a manufacturer wants computer vision on its production lines. <break time='120ms'/> The seller's lines are pre-recorded. Every reply from Ava, and every drawing, is live."
+ ],
+ [
+  "n05-drawn",
+  "That's Ava's own tool call: the requirements from the conversation, turned into a grouped, connected Azure diagram. <break time='150ms'/> Now a change, by voice."
+ ],
+ [
+  "n06-changed",
+  "Voice changes go through the same minimal-change review as typed ones: <break time='100ms'/> what was asked for, and nothing else."
+ ],
+ [
+  "n07-yours",
+  "And it's still your diagram. <break time='120ms'/> Move anything into the layout that tells the story best."
+ ],
+ [
+  "n08-tour",
+  "Edge inference in every plant, training and storage in the cloud, dashboards and Teams alerts, <break time='100ms'/> and Arc to manage it all. One conversation."
+ ],
+ [
+  "n09-close",
+  "Talk it through, and watch it take shape. <break time='150ms'/> The design keeps up with the conversation."
+ ]
+]

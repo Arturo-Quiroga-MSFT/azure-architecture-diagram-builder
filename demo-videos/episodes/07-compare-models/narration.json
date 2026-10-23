@@ -1,0 +1,17 @@
+[
+ ["n01-open", "Every model has its own instincts. Some go lean, some go thorough, some think about security first. <break time='200ms'/> So which one should design your architecture? <break time='150ms'/> Don't guess. Ask them all."],
+ ["n02-title", "In this episode: comparing AI models side by side, on the same brief and on the same design."],
+ ["n03-compare", "Open Compare. One brief goes to several models at once, and the answers come back side by side."],
+ ["n04-models", "Pick from fourteen models across providers. Here: GPT-6.1 Sol, Claude Opus 5.5, Mistral Large 3, and Kimi K2.6."],
+ ["n05-run", "Same clinic booking brief for all four. <break time='100ms'/> Run."],
+ ["n06-results", "Each result shows its services, connections, groups and workflow steps, with time and tokens. The fastest, the cheapest, and the most thorough are flagged for you."],
+ ["n07-critique", "But numbers aren't judgment. Ask a critic model to rank the designs, and explain why."],
+ ["n08-present", "Or let an AI presenter walk the room through it."],
+ ["n09-use", "Like the winner? One click puts it on the canvas."],
+ ["n10-yours", "And from there, it's your diagram. Move things around until it tells your story."],
+ ["n11-validate", "Now flip it around: one design, reviewed by several models. The same four, each working independently."],
+ ["n12-vresults", "Each model scores the five pillars its own way. They don't always agree, <break time='100ms'/> and that's the point."],
+ ["n13-consensus", "Consensus findings merge them all. Confidence is the share of models that flagged the same issue on their own. <break time='120ms'/> Four out of four? Fix that one first."],
+ ["n14-usevalidation", "Keep the review you trust most, and take it back to the canvas."],
+ ["n15-close", "Four models. One brief. One design. <break time='150ms'/> See where they agree, and decide with evidence."]
+]

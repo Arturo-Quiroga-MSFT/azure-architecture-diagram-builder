@@ -1,0 +1,74 @@
+[
+ [
+  "n01-open",
+  "A design can look right on the whiteboard and still fail the review board. <break time='200ms'/> Reliability. Security. Cost. Operations. Performance. <break time='150ms'/> You want to find the gaps before the customer does."
+ ],
+ [
+  "n02-title",
+  "In this episode: a Well-Architected review of your design, and fixing what it finds in one click."
+ ],
+ [
+  "n03-draft",
+  "Here's the clinic booking first draft from episode three. Eight services, about a hundred and nineteen dollars a month. <break time='120ms'/> Would it pass a design review?"
+ ],
+ [
+  "n04-validate",
+  "Click Validate Architecture. AADB checks the diagram against the Azure Well-Architected Framework, with deterministic rules plus an AI review of the whole design."
+ ],
+ [
+  "n05-score",
+  "You get an overall assessment and a score for each of the five pillars, so the weakest areas stand out right away."
+ ],
+ [
+  "n06-scope",
+  "And it's clear about its scope: a design-time signal for new Azure designs, not an audit of a deployed environment."
+ ],
+ [
+  "n07-finding",
+  "Every finding spells out the issue, the recommendation, and the services it affects. <break time='120ms'/> Click Locate, and those services light up on the canvas."
+ ],
+ [
+  "n08-select",
+  "Now pick the high-priority findings you want fixed, and apply them, all in one click."
+ ],
+ [
+  "n09-applying",
+  "AADB regenerates the architecture with those recommendations built in."
+ ],
+ [
+  "n10-result",
+  "Front Door with a web application firewall now guards the way in, and a secondary region stands by for failover."
+ ],
+ [
+  "n10-result-b",
+  "The new services land on the canvas, wired in and grouped, with a note of exactly what was added."
+ ],
+ [
+  "n11-cost",
+  "Resilience has a price, and you see it right away. The run rate is updated for the new design."
+ ],
+ [
+  "n12-yours",
+  "The AI drew the layout, but it's your diagram, and AADB says so right on the canvas. <break time='100ms'/> Drag groups and services wherever they tell the story best."
+ ],
+ [
+  "n12-yours-b",
+  "The AI drew the layout, but it's your diagram. <break time='100ms'/> Drag groups and services wherever they tell the story best."
+ ],
+ [
+  "n13-revalidate",
+  "Now revalidate, and see what moved."
+ ],
+ [
+  "n14-compare",
+  "Before and after, side by side. <break time='150ms'/> Whatever gaps remain are topics to raise on purpose, not surprises in the review."
+ ],
+ [
+  "n15-report",
+  "Download the full report as Markdown to share with the team or bring into the design review."
+ ],
+ [
+  "n16-close",
+  "Find the gaps before the review board does. <break time='150ms'/> Then close them in one click."
+ ]
+]

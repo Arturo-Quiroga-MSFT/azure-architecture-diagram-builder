@@ -3,7 +3,7 @@
 This guide explains how the Azure Architecture Diagram Builder (AADB) demo videos are produced, and records the lessons learned from the first nine episodes. It is written to be reused: the same approach works for any web app that you want to demo with repeatable, narrated, captioned videos.
 
 - **Status:** episodes 1–9 recorded on the production app (October 2026); episodes 10–12 planned.
-- **Toolkit:** a small film engine (Playwright + Azure AI Speech + Python + ffmpeg), kept next to the videos rather than in this repository. The code patterns below are the parts worth copying.
+- **Toolkit:** [`demo-videos/`](../demo-videos/README.md) in this repository: the film engine (Playwright + Azure AI Speech + Python + ffmpeg), all nine episode scripts, and a short example episode to start from.
 
 ## Contents
 
@@ -50,7 +50,7 @@ episodes/08-deploy-it/
 ├── storyboard.md     # shot list: what's on screen and which cue plays
 ├── scene.mjs         # the Playwright script
 ├── assets/           # fixed inputs (saved diagram, ARM template, seller voice clips, ...)
-├── narr/             # synthesized cues (generated)
+├── narr/             # synthesized cues (generated, git-ignored)
 ├── out/              # screen.webm, timeline.json, downloads/ (generated)
 └── review/contact-sheet.png
 ```
@@ -182,11 +182,11 @@ Known gap: the Visio export still places icons as separate shapes, so Episode 9 
 
 ## Reusing this for another project
 
-To point the engine at a different web app:
+Copy [`demo-videos/`](../demo-videos/README.md) (the engine plus `episodes/00-example` as a template), then:
 
-1. Set the app URL (`PROD_URL` or `episode.json` `url`), plus `basicAuth` if needed.
-2. Point the Playwright import at a project that has `@playwright/test` installed.
-3. Set your Azure AI Speech resource and voice in `narrate.sh` (keyless with `az account get-access-token --resource https://cognitiveservices.azure.com`). HD voices such as `en-US-Andrew:DragonHDLatestNeural` work well for narration.
+1. Set `AADB_APP_URL` in `demo-videos/.env` (or `"url"` in `episode.json`), plus `basicAuth` in `episode.json` if the app needs it.
+2. Make sure `@playwright/test` is installed in the project that holds the toolkit (the engine resolves it from there).
+3. Set `SPEECH_RESOURCE_ID` and `SPEECH_REGION` in `.env`, and pick a voice in `episode.json`. Narration is keyless (an Entra token from the Azure CLI). HD voices such as `en-US-Andrew:DragonHDLatestNeural` work well.
 4. Restyle the cards in the overlay CSS (colors, fonts, end-card line).
 5. Hide app chrome that distracts on camera (hints, toasts, minimaps) with the overlay's CSS.
 6. Keep the rest: timeline, `ff` speed-ups, ducking, captions, loudness, contact sheet.

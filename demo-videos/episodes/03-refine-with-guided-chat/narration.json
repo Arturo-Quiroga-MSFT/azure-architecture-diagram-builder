@@ -1,0 +1,62 @@
+[
+ [
+  "n01-open",
+  "The first draft is never the last. <break time='200ms'/> The customer wants a cache. Then tighter security. Then yesterday's version back. <break time='150ms'/> Every round used to mean redrawing."
+ ],
+ [
+  "n02-title",
+  "In this episode: refining a design in plain English, with Guided Chat."
+ ],
+ [
+  "n03-draft",
+  "Here's a first draft: patient appointment booking for a regional clinic network. A web front end, a booking API, the database, documents, secrets and monitoring. <break time='120ms'/> About a hundred and nineteen dollars a month."
+ ],
+ [
+  "n04-chat",
+  "Open Guided Chat. It already knows what's on the canvas, and it suggests next steps, each tagged with the Well-Architected pillar it improves."
+ ],
+ [
+  "n05-ask",
+  "Or just say what you want, the way the customer said it: <break time='120ms'/> add a Redis cache between the booking API and the database."
+ ],
+ [
+  "n06-apply",
+  "AADB sends the current design along with the request, and changes only what was asked."
+ ],
+ [
+  "n07-review",
+  "Every reply is a change review: what was added, what was removed, and why. <break time='150ms'/> If the AI proposes anything you didn't ask for, it stops and asks before the diagram changes."
+ ],
+ [
+  "n08-canvas",
+  "On the canvas, the cache slots in between the API and the database. Everything else stays exactly where it was."
+ ],
+ [
+  "n09-cost",
+  "And the run rate follows every change."
+ ],
+ [
+  "n10-next",
+  "The suggested next steps update after every change. <break time='120ms'/> Pick one, and the same thing happens: just that change, reviewed and priced."
+ ],
+ [
+  "n10b-guard",
+  "Here the AI wanted more than the request, so it asks. Apply only what was requested, or take its suggestions."
+ ],
+ [
+  "n11-yours",
+  "It's still your diagram. <break time='120ms'/> Drag anything into the layout that tells the story best."
+ ],
+ [
+  "n12-history",
+  "And nothing is ever lost. Every change saves the version before it to the Library, with the request that changed it."
+ ],
+ [
+  "n13-restore",
+  "Try an idea with the customer. If it doesn't land, <break time='120ms'/> restore any version in one click."
+ ],
+ [
+  "n14-close",
+  "Describe it, refine it, roll it back. <break time='150ms'/> The design moves as fast as the conversation."
+ ]
+]

@@ -1,0 +1,5 @@
+[
+ ["n01-open", "This is a short example episode. <break time='150ms'/> Copy it to start your own."],
+ ["n02-app", "The scene drives the live app, and the engine records it, with narration, music and captions."],
+ ["n03-close", "Every video in the series is made the same way."]
+]
