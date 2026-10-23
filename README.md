@@ -946,6 +946,7 @@ azure-diagrams/
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
 - **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
 - **[Release Notes](DOCS/RELEASE-NOTES.md)** - Recent features, fixes, operations, and verification
+- **[Demo Video Production](DOCS/DEMO-VIDEO-PRODUCTION.md)** - How the demo video series is recorded live with Playwright, narrated and mixed, plus lessons learned
 - **[Authoritative Server Telemetry](DOCS/SERVER-TELEMETRY.md)** - Server event schema, privacy boundary, KQL, and cost allocation
 - **Server Usage & Guardrails Workbook** - Deploy the authoritative operational dashboard with `./scripts/deploy-server-workbook.sh`
 
