@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.14` | 2026-10-23 | Interactive HTML export: zoom-out button shows − instead of `\u2212` | Deployed |
 | `v2.1.13` | 2026-10-23 | Draw.io export: each service icon moves with its card | Deployed |
 | `v2.1.12` | 2026-10-22 | Role-assignment names built from module outputs (BCP120) fixed automatically; up to two model repair rounds | Deployed |
 | `v2.1.11` | 2026-10-22 | Deployment Guide Bicep is compile-checked with the real Bicep CLI and repaired from real compiler errors | Deployed |
@@ -34,13 +35,20 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
 
+## v2.1.14: Interactive HTML zoom-out button
+
+Found while filming Share It: the exported interactive page labelled its zoom-out button `\u2212`, a JavaScript escape written into HTML, where it isn't decoded.
+
+- The button now uses `&minus;` and has an accessible label.
+- Tests: `test:share-exports` (formerly `test:drawio-export`) also checks the HTML toolbar.
+
 ## v2.1.13: Draw.io icons move with their cards
 
 Found while preparing the Share It demo: in a `.drawio` export opened in diagrams.net, dragging a service by its icon pulled the icon off the card, because each icon was a separate shape that sat on top of the card.
 
 - Each icon is now a child of its service card, at a position relative to the card. Clicking anywhere on the card, including the icon, selects the card, and moving it moves the icon and reroutes its connectors. Icons are not connectable, so connectors still join the cards.
 - Verified in diagrams.net with the clinic booking draft.
-- Tests: new `test:drawio-export`.
+- Tests: new `test:drawio-export` (renamed `test:share-exports` in v2.1.14).
 - Known gap: the Visio (VSDX) export still places icons as separate shapes on top of their cards.
 
 ## v2.1.12: Stronger Bicep repair

@@ -392,7 +392,7 @@ function generateHtml(layout: LayoutResult, title: string): string {
   <h1>${esc(title)}</h1>
   <div class="controls">
     <button onclick="zoomIn()">+</button>
-    <button onclick="zoomOut()">\\u2212</button>
+    <button onclick="zoomOut()" aria-label="Zoom out">&minus;</button>
     <button onclick="resetView()">Reset</button>
     <button onclick="fitView()">Fit</button>
   </div>
