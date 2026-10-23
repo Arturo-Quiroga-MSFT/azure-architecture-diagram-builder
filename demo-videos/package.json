@@ -1,0 +1,14 @@
+{
+  "name": "aadb-demo-videos",
+  "private": true,
+  "description": "Extra tools for the demo video episodes (Playwright comes from the repository root).",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('node_modules','node-pty','prebuilds');if(fs.existsSync(d))for(const x of fs.readdirSync(d)){const f=p.join(d,x,'spawn-helper');if(fs.existsSync(f))fs.chmodSync(f,0o755)}\""
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "node-pty": "^1.0.0"
+  }
+}

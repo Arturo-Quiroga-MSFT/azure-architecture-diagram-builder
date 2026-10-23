@@ -1,0 +1,15 @@
+[
+ ["n01-open", "The Diagram Builder isn't only a web app. <break time='150ms'/> Its tools work inside your AI agent."],
+ ["n02-title", "In this episode: GitHub Copilot designs, validates, hardens, prices and exports an architecture, through the Diagram Builder's MCP server."],
+ ["n03-tools", "The MCP server gives an agent thirteen tools: validation and hardening, cost estimates, Bicep and Terraform, diagrams, and import and export."],
+ ["n03-tools-generic", "The MCP server gives an agent the Diagram Builder's tools: validation and hardening, cost estimates, infrastructure as code, diagrams, and import and export."],
+ ["n04-connect", "Connecting takes one entry in your MCP settings and a personal key. <break time='120ms'/> It works in VS Code, in the Copilot CLI, and in any client that supports MCP."],
+ ["n05-ask", "Here's GitHub Copilot in the terminal, with one request: design a clinic booking app, validate it, harden it with a second region, price it, and export it."],
+ ["n06-validate", "Copilot drafts the design and calls the validation tool. It gets back a design score and the gaps to fix."],
+ ["n07-harden", "Then it hardens the design with Central US as the second region, and validates again."],
+ ["n08-cost", "It prices the result with Azure retail prices, and exports the design for the web app."],
+ ["n09-summary", "The summary: the score before and after, the cost, and the settings that are still left for deployment."],
+ ["n10-open", "And the agent's design opens in the web app."],
+ ["n11-tour", "The regions, the services and the connections, with prices and the request flow, ready to refine, review and share."],
+ ["n12-close", "Your architecture tools, wherever you work. <break time='150ms'/> That's AADB Everywhere."]
+]

@@ -14,7 +14,7 @@ demo-videos/
 
 ## Setup
 
-Requirements: Node.js 20+, Python 3.10+, ffmpeg, Azure CLI, and an Azure AI Speech resource. Episode 9 also uses Microsoft PowerPoint (macOS) or LibreOffice, plus poppler (`pdftoppm`).
+Requirements: Node.js 20+, Python 3.10+, ffmpeg, Azure CLI, and an Azure AI Speech resource. Episode 9 also uses Microsoft PowerPoint (macOS) or LibreOffice, plus poppler (`pdftoppm`). Episode 10 uses GitHub Copilot CLI and the packages in `demo-videos/package.json` (node-pty, xterm.js).
 
 ```bash
 # From the repository root
@@ -22,6 +22,7 @@ npm install                                   # provides @playwright/test
 npx playwright install chromium
 
 cd demo-videos
+npm install                                   # node-pty and xterm.js (Episode 10)
 python3 -m venv engine/.venv && engine/.venv/bin/pip install -r engine/requirements.txt
 cp .env.example .env                          # set SPEECH_RESOURCE_ID and SPEECH_REGION
 az login                                      # narration uses your Entra identity (no keys)
@@ -59,6 +60,7 @@ Output: `videos/<output>.mp4` (1080p30, −16 LUFS), `videos/captions/<output>.s
 | `07-compare-models` | Compare Models | Captures the avatar's WebRTC audio (`media_tap`) |
 | `08-deploy-it` | Deploy It | Set `WHATIF_RESOURCE_GROUP` (an empty resource group) to show a real `what-if` |
 | `09-share-it` | Share It | Renders the deck with PowerPoint (or LibreOffice) and records a diagrams.net session |
+| `10-aadb-everywhere-mcp` | AADB Everywhere (MCP) | A real GitHub Copilot CLI session in a pseudo-terminal; needs `AADB_MCP_URL`, `AADB_MCP_KEY`, the `copilot` CLI signed in, and `npm install` in `demo-videos/` |
 
 Model output varies between takes, so narration never quotes AI-generated values: scenes read them from the page and show them in callouts.
 

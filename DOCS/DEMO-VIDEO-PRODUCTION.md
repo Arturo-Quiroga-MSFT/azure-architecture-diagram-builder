@@ -144,6 +144,8 @@ f.reveal();
   - live pages (the exported HTML, an SVG animation) as an `iframe` with `srcdoc`;
   - other apps as a recorded `.webm` played in a `<video>`. diagrams.net refuses to load inside an iframe, so it is recorded in its own context and played back.
 - **For images inside cards, use `display: block`.** Don't use a flex child that stretches.
+- **Record terminal agents for real.** Run the CLI (here GitHub Copilot CLI) in a pseudo-terminal with `node-pty` and stream its output into an `xterm.js` terminal inside the recorded page. Gaps in the output become sped-up segments. Restrict the agent to the tools the episode is about (`--excluded-tools`, custom instructions off), so takes stay short and on topic. Show live results somewhere that other labels can't overwrite (here, chips in the terminal's title bar).
+- **Catch files an agent writes and deletes.** Copilot CLI saves large tool results to temp files that disappear when the session ends; watch the temp folder during the session and copy the one you need.
 - **Put the slow work off camera, in parallel.** Start the PowerPoint render, the diagrams.net session or `az bicep build` + `what-if` as soon as the file downloads, and collect the result when the scene reaches that beat.
 
 ### Voice and audio
@@ -170,6 +172,7 @@ Making the videos found real bugs. Each was fixed in the product with a regressi
 | Episode 8 | Role-assignment names built from module outputs (`BCP120`) survived the model repair. | v2.1.12: deterministic rewrite plus up to two repair rounds. |
 | Episode 9 | In Draw.io exports, dragging a service by its icon pulled the icon off its card. | v2.1.13: icons are children of their cards. |
 | Episode 9 | The interactive HTML export's zoom-out button read `\u2212`. | v2.1.14: `&minus;` and an accessible label. |
+| Episode 10 | Through MCP, `validate_architecture` deducted every per-service configuration setting, so any realistic design scored 10/100, before and after hardening. | v2.1.15: a design score; configuration settings listed separately. |
 
 Known gap: the Visio export still places icons as separate shapes, so Episode 9 shows Visio as a download only.
 
@@ -206,4 +209,5 @@ Requirements: Node.js with Playwright and Chromium, Python 3 with NumPy and SciP
 | 7 | Compare Models | 3:17 | One brief to four models, AI critique, consensus validation |
 | 8 | Deploy It | 2:02 | Deployment guide, Bicep compiled with the Bicep CLI, real `build` and `what-if` |
 | 9 | Share It | 2:22 | Customer deck, interactive web page, workflow animation, Draw.io and Visio |
-| 10–12 | AADB Everywhere (MCP), Microsoft IQ and Fabric, and one more | — | Planned |
+| 10 | AADB Everywhere (MCP) | 1:47 | A real GitHub Copilot CLI session designs, validates, hardens, prices and exports through the MCP server; the result opens in the web app |
+| 11–12 | Microsoft IQ and Fabric, and one more | — | Planned |
