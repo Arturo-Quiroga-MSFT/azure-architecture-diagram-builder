@@ -21,7 +21,7 @@ else
   [[ -n "$ENV_NAME" ]] || { echo "Container App $APP does not exist: pass the environment name to create it" >&2; exit 1; }
   az containerapp create -n "$APP" -g "$RG" --environment "$ENV_NAME" --image "$IMAGE" \
     --registry-server "$ACR.azurecr.io" --registry-identity system \
-    --ingress external --target-port 80 --transport auto \
+    --ingress external --target-port 80 --transport auto --revisions-mode single \
     --cpu 0.25 --memory 0.5Gi --min-replicas 0 --max-replicas 3 -o none
 fi
 URL="https://$(az containerapp show -n "$APP" -g "$RG" --query properties.configuration.ingress.fqdn -o tsv)"

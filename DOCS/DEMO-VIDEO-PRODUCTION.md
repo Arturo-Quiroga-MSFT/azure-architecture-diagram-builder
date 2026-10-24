@@ -199,6 +199,8 @@ The trailer (`episodes/00-trailer`) is not recorded. It is cut from the episodes
 
 ## Publishing to the app's video tour
 
+This section is the short version; the full design, schemas, telemetry queries, runbooks and troubleshooting are in **[Video Tour](VIDEO-TOUR.md)**.
+
 The finished episodes also play inside the app: **Help → Video Tour**, a trailer card on **Start Here**, a **Watch** chip on each feature card that opens the right episode at the right moment, and a shareable page at `/videos?v=<episode>&t=<seconds>`.
 
 - **`demo-videos/web/catalog.json` is the source.** It lists the episodes, their one-line summaries and playlists, and the chapters. A chapter names the narration cue it starts on (`"narr": "n05-regions"`), not a time, so re-filming never breaks it; a `key` makes it a deep-link target for Help (`"key": "regions"`). Use a list of cues when a take may use either line.

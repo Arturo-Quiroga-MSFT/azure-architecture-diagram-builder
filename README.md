@@ -191,6 +191,9 @@ Design **Microsoft Fabric** data platforms alongside core Azure services:
 ### ❓ Help & Learn Panel
 An in-app **Help** button opens a centered guide so new users can get productive fast — Quick Start, a feature tour, example prompts, tips & FAQ, and resource links. (Opening it fires a `Help_Opened` telemetry event.)
 
+### 🎬 Video Tour
+Twelve short narrated videos (a trailer and Episodes 1–11, filmed on the live app) play inside **Help → Video Tour**, with chapters, playlists and shareable links. **Start Here** opens with the trailer, **Watch** chips on feature cards jump to the exact moment a feature is shown, and `/videos?v=<episode>&t=<seconds>` is a shareable page. How it works: **[Video Tour](DOCS/VIDEO-TOUR.md)**.
+
 ### 💬 User Feedback
 A built-in feedback widget captures a rating, category, and free-text comment. Submissions persist to **Azure Cosmos DB** (keyless, managed-identity auth). If Cosmos is temporarily unreachable, the comment text is captured in telemetry as a fallback so feedback is never silently lost.
 
@@ -946,6 +949,7 @@ azure-diagrams/
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
 - **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
 - **[Release Notes](DOCS/RELEASE-NOTES.md)** - Recent features, fixes, operations, and verification
+- **[Video Tour](DOCS/VIDEO-TOUR.md)** - How the in-app video tour works: catalog, publishing, media hosting, player, deep links, telemetry and runbooks
 - **[Demo Video Production](DOCS/DEMO-VIDEO-PRODUCTION.md)** - How the demo video series is recorded live with Playwright, narrated and mixed, plus lessons learned
 - **[Authoritative Server Telemetry](DOCS/SERVER-TELEMETRY.md)** - Server event schema, privacy boundary, KQL, and cost allocation
 - **Server Usage & Guardrails Workbook** - Deploy the authoritative operational dashboard with `./scripts/deploy-server-workbook.sh`

@@ -44,7 +44,7 @@ Output: `videos/<output>.mp4` (1080p30, −16 LUFS), `videos/captions/<output>.s
 
 - Change the words: edit `narration.json`; only changed cues are re-synthesized.
 - Change the music: set `"music"` in `episode.json` to `drive`, `lift`, `pulse` or `ambient`, then run `STEP=mix`.
-- Publish to the app's video tour: `engine/publish-web.sh` (writes `public/media/videos` for `npm run dev`), then `web/media/deploy-media.sh <acr> <app> <resource-group> [<environment>]` to host it on a Container App. Chapters and Help deep links come from `web/catalog.json`. See [Publishing to the app's video tour](../DOCS/DEMO-VIDEO-PRODUCTION.md#publishing-to-the-apps-video-tour).
+- Publish to the app's video tour: `engine/publish-web.sh` (writes `public/media/videos` for `npm run dev`), then `web/media/deploy-media.sh <acr> <app> <resource-group> [<environment>]` to host it on a Container App. Chapters and Help deep links come from `web/catalog.json`. How it works end to end: [Video Tour](../DOCS/VIDEO-TOUR.md).
 - Preview the music presets with narration on top: `engine/.venv/bin/python engine/sample_music.py /tmp/music episodes/08-deploy-it/narr n04-generate n14-close drive lift pulse ambient`.
 
 ## Episodes
