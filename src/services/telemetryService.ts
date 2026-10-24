@@ -3,6 +3,7 @@
 
 import { ApplicationInsights, ICustomProperties } from '@microsoft/applicationinsights-web';
 import { APP_VERSION } from '../appVersion';
+import { VIDEO_BASE_URL } from './videoTour';
 
 /**
  * Application Insights Telemetry Service
@@ -50,6 +51,16 @@ function rotateWorkflowId(): void {
  * Initialize Application Insights. Call once at app startup.
  * No-ops gracefully if connection string is not configured.
  */
+/** Cross-origin hosts that serve static media, excluded from correlation headers. */
+function mediaHosts(): string[] {
+  try {
+    const url = new URL(VIDEO_BASE_URL, window.location.href);
+    return url.origin === window.location.origin ? [] : [url.host];
+  } catch {
+    return [];
+  }
+}
+
 export function initTelemetry(): void {
   const connectionString = import.meta.env.VITE_APPINSIGHTS_CONNECTION_STRING;
 
@@ -65,6 +76,8 @@ export function initTelemetry(): void {
         enableAutoRouteTracking: true,       // Track SPA page views
         disableFetchTracking: false,         // Track fetch/XHR requests
         enableCorsCorrelation: true,         // Correlate cross-origin requests
+        // Static media (video tour) must not get Request-Id/traceparent: they force a CORS preflight.
+        correlationHeaderExcludedDomains: mediaHosts(),
         enableRequestHeaderTracking: true,
         enableResponseHeaderTracking: true,
         autoTrackPageVisitTime: true,        // Track how long users spend on page

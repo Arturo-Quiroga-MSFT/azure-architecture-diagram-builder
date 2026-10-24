@@ -9,7 +9,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SRC="${MEDIA_DIR:-$(cd "$HERE/../../.." && pwd)/public/media/videos}"
 [[ -f "$SRC/videos.json" ]] || { echo "No $SRC/videos.json: run demo-videos/engine/publish-web.sh first" >&2; exit 1; }
 STAGE="$(mktemp -d)"; trap 'rm -rf "$STAGE"' EXIT
-cp "$HERE/Dockerfile" "$HERE/nginx.conf" "$STAGE/"
+cp "$HERE/Dockerfile" "$HERE/nginx.conf" "$HERE/cors.conf" "$STAGE/"
 mkdir "$STAGE/videos" && cp "$SRC"/*.mp4 "$SRC"/*.vtt "$SRC"/*.jpg "$SRC/videos.json" "$STAGE/videos/"
 TAG="$(date -u +%Y%m%d-%H%M)-$(shasum "$SRC/videos.json" | cut -c1-8)"
 IMAGE="$ACR.azurecr.io/$APP:$TAG"
