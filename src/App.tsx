@@ -50,7 +50,8 @@ import ComparePane from './components/ComparePane';
 import { loadIconsFromCategory } from './utils/iconLoader';
 import { getServiceIconMapping } from './data/serviceIconMapping';
 import { layoutArchitecture } from './utils/layoutEngine';
-import { initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing } from './services/costEstimationService';
+import { pricingToCarryForward, readPricingRequest, type PricingChange } from './services/chatPricing';
+import { applyPricingRequest, initializeNodePricing, calculateCostBreakdown, exportCostBreakdownCSV, exportCostBreakdownJSON, getCostSummaryMarkdown, refreshAllNodePricing } from './services/costEstimationService';
 import { usePricingMode } from './stores/pricingModeStore';
 import { prefetchCommonServices } from './services/azurePricingService';
 import { preloadCommonServices, getActiveRegion, AzureRegion, AVAILABLE_REGIONS, RegionInfo } from './services/regionalPricingService';
@@ -2697,18 +2698,28 @@ function App() {
       }
     }
 
-    // Initialize pricing for all service nodes asynchronously (uses active region)
+    // Price the service nodes (uses the active region). A refinement keeps the
+    // pricing of every service that is still there, so tiers, instance counts
+    // and custom prices set with the price badge survive a Guided Chat change;
+    // only new services get catalog defaults. A tier or instance count the
+    // model returned for a service (services[].pricing) is then applied.
     const currentRegion = getActiveRegion();
-    console.log(`💰 Initializing pricing for ${services.length} services in region: ${currentRegion}`);
-    
+    const carriedPricing = isRefinement ? pricingToCarryForward(nodes, services) : new Map();
+    console.log(`💰 Pricing ${services.length} services in ${currentRegion} (${carriedPricing.size} kept from the current design)`);
+    const pricingChanges: PricingChange[] = [];
+
     const pricingPromises = services.map(async (service: any) => {
-      console.log(`  → Fetching pricing for: ${service.name} (type: ${service.type}, ID: ${service.id})`);
-      const pricing = await initializeNodePricing(service.name, currentRegion);
-      console.log(`  ${pricing ? '✅' : '❌'} Pricing result for ${service.name}:`, pricing ? 'Found' : 'Not found');
+      let pricing = carriedPricing.get(service.id) ?? await initializeNodePricing(service.name, currentRegion);
+      const requested = readPricingRequest(service.pricing);
+      if (pricing && requested) {
+        const applied = await applyPricingRequest(service.id, service.name, pricing, requested, currentRegion);
+        pricing = applied.pricing;
+        pricingChanges.push(applied.change);
+      }
       return { id: service.id, pricing };
     });
     
-    Promise.all(pricingPromises)
+    const pricingDone = Promise.all(pricingPromises)
       .then(pricingResults => {
         console.log(`📊 Pricing results ready, updating ${pricingResults.length} nodes`);
         const resultsWithPricing = pricingResults.filter(r => r.pricing);
@@ -2725,8 +2736,12 @@ function App() {
           })
         );
         console.log(`✅ Pricing initialization complete`);
+        return pricingChanges;
       })
-      .catch(err => console.error('❌ Failed to initialize pricing for AI nodes:', err));
+      .catch(err => {
+        console.error('❌ Failed to initialize pricing for AI nodes:', err);
+        return pricingChanges;
+      });
 
     // Collapse all panels to maximize diagram view
     setPanelsCollapsedSignal(prev => prev + 1);
@@ -2773,9 +2788,12 @@ function App() {
         fitViewClearOfChrome(reactFlowInstance, reactFlowWrapper.current, { padding: 0.2 });
       }, 100);
     }
+    // Callers that report the change (Guided Chat) get the pricing changes.
+    return await pricingDone;
     } catch (error) {
       console.error('Error in handleAIGenerate:', error);
       notify('Failed to generate diagram. Check console for details.', 'error');
+      return [];
     }
   }, [setNodes, setEdges, reactFlowInstance, nodes, edges, titleBlockData, architecturePrompt, originalPrompt, validationResult, workflow, isFeedbackModalOpen, layoutEdgeStyle, presentLayoutHint]);
 

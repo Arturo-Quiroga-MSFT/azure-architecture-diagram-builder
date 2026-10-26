@@ -15,6 +15,7 @@ import {
   summarizeRefinementReview,
   type RefinementReview,
 } from '../services/refinementGuard';
+import { describePricingChange, type PricingChange } from '../services/chatPricing';
 import './ArchitectureChatPanel.css';
 import { useEscapeToClose } from '../hooks/useEscapeToClose';
 import { VoiceLiveSession, isVoiceLiveEnabled, type VoiceLiveStatus } from '../services/voiceLiveClient';
@@ -59,7 +60,8 @@ interface ArchitectureChatPanelProps {
   /** Bump to discard the conversation; the panel stays mounted when closed. */
   resetSignal?: number;
   /** Applies a generated architecture to the canvas (App's handleAIGenerate). */
-  onApply: (architecture: any, prompt: string, autoSnapshot?: boolean) => void | Promise<void>;
+  /** Applies the result; may resolve to the pricing changes it made, for the change review. */
+  onApply: (architecture: any, prompt: string, autoSnapshot?: boolean) => void | Promise<PricingChange[] | void | undefined>;
 }
 
 // Cold start: when the canvas is empty, offer complete starter architectures
@@ -254,10 +256,13 @@ const ArchitectureChatPanel: React.FC<ArchitectureChatPanelProps> = ({
     recentRequests: string[],
     approvedProposals: boolean,
   ) => {
-    await onApply(result, request, true);
+    const pricingChanges = await onApply(result, request, true);
 
     const review = reviewRefinement(before, result, request);
-    const summary = summarizeRefinementReview(review, approvedProposals);
+    const summary = [
+      summarizeRefinementReview(review, approvedProposals),
+      ...(Array.isArray(pricingChanges) ? pricingChanges.map(describePricingChange) : []),
+    ].join('\n');
     const asstId = uid();
     setMessages((prev) => [
       ...prev,

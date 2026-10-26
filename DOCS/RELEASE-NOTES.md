@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.17` | 2026-10-26 | Guided Chat changes pricing tiers and instance counts; tiers you set are no longer reset by chat changes | Deployed |
 | `v2.1.16` | 2026-10-23 | Video tour: Help → Video Tour, trailer on Start Here, Watch links on features, shareable /videos page | Deployed |
 | `v2.1.15` | 2026-10-23 | MCP: Well-Architected design score; configuration settings listed separately | Deployed (MCP only) |
 | `v2.1.14` | 2026-10-23 | Interactive HTML export: zoom-out button shows − instead of `\u2212` | Deployed |
@@ -36,6 +37,17 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.17: Pricing tiers in Guided Chat
+
+From in-app feedback ([#32](https://github.com/Arturo-Quiroga-MSFT/azure-architecture-diagram-builder/issues/32)): Guided Chat could not change a service's tier, such as the API Management tier, and the cost did not follow.
+
+- **Fixed: chat changes no longer reset pricing.** Every refinement re-priced every node at its catalog default, so a tier, instance count or custom price set with the price badge was silently undone by the next chat change (verified on production: App Service I6v4 ×2 returned to S1 after a label rename, and the total fell from $19,886 to $118 per month). A refinement now keeps the pricing of every service that is still there, matched by id or, when the AI regenerated ids, by name; only new services get catalog defaults.
+- **New: tiers and instance counts in chat.** "Make API Management Standard v2" or "run the App Service on 3 instances" updates the node through the same catalog and code as the price badge, and the change review shows it with the monthly difference ("API Management: Developer → Standard v2 · +$651.96/mo"). Naming a tier when adding a service works too ("add API Management on the Developer tier"), and so does Ava (voice), which uses the same path.
+- Safeguards: a tier that isn't in the catalog is rejected with the valid choices; a custom price is kept (only its instance count can change); usage-based services have no tier to change. Tier matching is exact, so "Standard" and "Standard v2" stay different tiers.
+- How: the generation contract has an optional `services[].pricing { tier, quantity }`, returned only when the request names a tier or a count, and the refinement prompt lists each service's current tier on a separate line so service names stay clean.
+- Also ships the v2.1.16 follow-up: the video tour's media host is excluded from Application Insights correlation headers.
+- Tests: `test:chat-pricing` (in the deterministic suite) covers request validation, tier matching (Standard vs Standard v2), pricing carry-forward (manual tier, regenerated ids, replaced services, second instances, custom prices), change-review wording and the prompt contract. Verified end to end with a real model before release: manual tier kept, API Management added at Developer and changed to Standard v2, App Service 2 → 3 instances, and "Gold" rejected (6/6).
 
 ## v2.1.16: Video tour
 

@@ -35,6 +35,7 @@ import {
   calculateNodeMonthlyCost,
   getPricingEstimateSourceLabel,
 } from './pricingModeCalculator';
+import { matchTier, monthlyCost, tierChoices, type PricingChange, type PricingRequest } from './chatPricing';
 import type { PricingMode } from './pricingModeCalculator';
 
 export {
@@ -311,6 +312,52 @@ export async function getAvailableTiers(
     console.error(`Error loading tiers for ${serviceType}:`, error);
     return [];
   }
+}
+
+/**
+ * Apply a tier and/or instance count asked for in Guided Chat (or a first
+ * generation) to a node's pricing, through the same catalog the price badge
+ * uses. Returns the new pricing (unchanged when the request can't be honoured)
+ * and a change record for the change review. A custom price is kept: only the
+ * instance count may change it. Usage-based services have no tier to change.
+ */
+export async function applyPricingRequest(
+  serviceId: string,
+  serviceType: string,
+  current: NodePricingConfig,
+  request: PricingRequest,
+  region?: string,
+): Promise<{ pricing: NodePricingConfig; change: PricingChange }> {
+  const base = { serviceId, serviceName: serviceType, fromTier: current.tier, fromQuantity: current.quantity };
+  const quantity = request.quantity ?? current.quantity;
+  if (request.tier && current.isCustom) {
+    const pricing = quantity !== current.quantity ? { ...current, quantity, lastUpdated: new Date().toISOString() } : current;
+    return { pricing, change: { ...base, status: 'custom-price-kept', toQuantity: quantity } };
+  }
+  const tiers = request.tier ? await getAvailableTiers(serviceType, region || current.region) : [];
+  if (request.tier && (current.isUsageBased || tiers.length === 0)) {
+    return { pricing: current, change: { ...base, status: 'not-tiered' } };
+  }
+  const matched = request.tier ? matchTier(tiers, request.tier) : undefined;
+  if (request.tier && !matched) {
+    return {
+      pricing: current,
+      change: { ...base, status: 'unknown-tier', requestedTier: request.tier, validTiers: tierChoices(tiers) },
+    };
+  }
+  const pricing = current.isCustom
+    ? { ...current, quantity, lastUpdated: new Date().toISOString() }
+    : await updateNodePricing(serviceType, current, matched?.name ?? current.tier, quantity, region || current.region);
+  return {
+    pricing,
+    change: {
+      ...base,
+      status: 'applied',
+      toTier: pricing.tier,
+      toQuantity: pricing.quantity,
+      monthlyDelta: monthlyCost(pricing) - monthlyCost(current),
+    },
+  };
 }
 
 /**

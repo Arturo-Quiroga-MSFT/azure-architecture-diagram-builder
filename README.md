@@ -76,6 +76,7 @@ Refine your diagram through a natural back-and-forth conversation instead of one
 - Type changes like *"add Azure Front Door with WAF"* → *"now make it zone-redundant"* → *"add a Redis cache between the API and the database"*
 - Each turn reads the **live canvas** as the source of truth, so follow-up requests naturally build on previous ones
 - The assistant replies with a concise summary of what changed (services added/removed)
+- Change a service's **pricing tier or instance count** in chat (*"make API Management Standard v2"*, *"run the App Service on 3 instances"*): the node's price and the total update, and the reply shows the change and its monthly cost (*"API Management: Developer → Standard v2 · +$651.96/mo"*). Unknown tiers are rejected with the valid choices, and tiers, instance counts and custom prices you set with a price badge are kept across every chat change
 - Every change is **auto-saved to version history**, so you can step back at any time
 - Suggestion chips help you get started, and the panel shows which model is active
 
@@ -169,7 +170,7 @@ Features include:
 - **“Prices as of” stamp** — every cost export records the pricing-data refresh date and the selected billing term.
 - **True per-region meters** — pricing is pre-fetched per region from the Azure Retail Prices API (refresh anytime with `npm run pricing:refresh`), including per-region **Microsoft Fabric** capacity (CU) and OneLake storage rates.
 - Color-coded legend (green/yellow/red based on cost thresholds)
-- SKU and tier information for each service
+- SKU and tier information for each service, editable per node from its **price badge** (tier, instance count or a negotiated custom price) or in Guided Chat
 - **Export Costs (CSV)** — per-service cost breakdown spreadsheet for the active region
 - **Export Costs (All Formats)** — downloads a ZIP containing:
   - `README.md` — manifest explaining every file in the bundle
