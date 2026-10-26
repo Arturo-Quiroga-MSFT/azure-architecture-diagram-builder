@@ -302,8 +302,18 @@ else
   echo "  ✓ Cosmos Data Contributor on $COSMOS_ACCOUNT"
 fi
 
-PREVIOUS_REVISION="$(az containerapp show -n "$NEW_APP" -g "$RG" --query properties.latestReadyRevisionName -o tsv)"
-[[ -n "$PREVIOUS_REVISION" ]] || { echo "❌ No healthy revision is available for rollback." >&2; exit 1; }
+CANDIDATE_REVISION="$NEW_APP--$REV_SUFFIX"
+# The rollback target is the revision serving production traffic, never this
+# release's own candidate. latestReadyRevisionName alone is wrong on a re-run:
+# after an interrupted deploy the healthy candidate is the newest ready revision,
+# and pinning traffic to it would ship it without the checks below.
+PREVIOUS_REVISION="$(az containerapp show -n "$NEW_APP" -g "$RG" \
+  --query "properties.configuration.ingress.traffic[?weight > \`0\` && revisionName != '$CANDIDATE_REVISION'] | [0].revisionName" -o tsv)"
+if [[ -z "$PREVIOUS_REVISION" ]]; then
+  PREVIOUS_REVISION="$(az containerapp show -n "$NEW_APP" -g "$RG" --query properties.latestReadyRevisionName -o tsv)"
+  [[ "$PREVIOUS_REVISION" == "$CANDIDATE_REVISION" ]] && PREVIOUS_REVISION=""
+fi
+[[ -n "$PREVIOUS_REVISION" ]] || { echo "❌ No healthy revision other than $CANDIDATE_REVISION is available for rollback." >&2; exit 1; }
 
 az containerapp revision set-mode -n "$NEW_APP" -g "$RG" --mode multiple -o none
 az containerapp ingress traffic set -n "$NEW_APP" -g "$RG" \
@@ -319,7 +329,6 @@ az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$PREVIOUS_REVIS
   > "$CANDIDATE_FILE"
 
 echo "🚀 Creating candidate revision $REV_SUFFIX with production traffic pinned to $PREVIOUS_REVISION ..."
-CANDIDATE_REVISION="$NEW_APP--$REV_SUFFIX"
 if az containerapp revision show -n "$NEW_APP" -g "$RG" --revision "$CANDIDATE_REVISION" -o none 2>/dev/null; then
   echo "✓ Reusing existing candidate revision $CANDIDATE_REVISION"
 else
