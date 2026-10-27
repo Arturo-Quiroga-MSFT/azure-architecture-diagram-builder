@@ -21,7 +21,7 @@ import type { ExportBackground } from './utils/captureCanvas';
 import { animateEdgeFlow } from './utils/animateEdges';
 import { sequenceWorkflowSvg } from './utils/sequenceWorkflow';
 import { buildWorkflowMarkdown } from './services/workflowNarrativeExporter';
-import { Download, Save, Upload, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3, RotateCcw } from 'lucide-react';
+import { Download, Save, Upload, Share2, DollarSign, Shield, FileText, FileCode, ChevronDown, Loader, RefreshCw, PanelLeftClose, Minimize2, Maximize2, Presentation, MessageSquare, MessagesSquare, HelpCircle, Hand, Move, ZoomIn, Frame, X, PanelTopClose, PanelTopOpen, DownloadCloud, Eye, EyeOff, BarChart3, RotateCcw } from 'lucide-react';
 import IconPalette from './components/IconPalette';
 import NavRail from './components/NavRail';
 import ReportsPane from './components/ReportsPane';
@@ -88,7 +88,7 @@ import { generateModelFilename, setSourceModel, clearSourceModel } from './utils
 import { fitAllGroupsToContent } from './utils/groupUtils';
 import { preserveManualLayout } from './utils/preserveManualLayout';
 import { resolveValidationFreshness } from './utils/validationFreshness';
-import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh, trackValidationFindings, trackGuidedJourney } from './services/telemetryService';
+import { trackArchitectureGeneration, trackValidation, trackDeploymentGuide, trackExport, trackTemplateImport, trackModelComparison, trackRecommendationsApplied, trackVersionOperation, trackStartFresh, trackValidationFindings, trackGuidedJourney, trackShare } from './services/telemetryService';
 import { classifyValidationTopics } from './services/validationConsensus';
 import type { IaCFormat } from './services/azureOpenAI';
 import FeedbackModal from './components/FeedbackModal';
@@ -102,6 +102,8 @@ import { useGenerationSession } from './hooks/useGenerationSession';
 import microsoftLogoWhite from './assets/microsoft-logo-white.avif';
 import './App.css';
 import { notify } from './services/notificationService';
+import ShareDialog from './components/ShareDialog';
+import { takeCopyForEditor } from './services/shareService';
 
 const ImpactModal = __ENABLE_ADOPTION_IMPACT__
   ? React.lazy(() => import('./components/ImpactModal'))
@@ -284,6 +286,7 @@ function App() {
   const [generatorOpenSignal, setGeneratorOpenSignal] = useState(0);
   const generatorOpenSourceRef = useRef<'first-start' | 'journey-strip' | 'toolbar'>('toolbar');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   // First-run nudge: pulse the Help button until it has been opened once.
   const [helpSeen, setHelpSeen] = useState<boolean>(() => localStorage.getItem('help.seen') === '1');
   // Canvas navigation hint: teaches scroll-to-zoom / drag-to-pan / fit-view.
@@ -1596,6 +1599,32 @@ function App() {
     trackExport('json', nodes.filter(n => n.type === 'azureNode').length);
   }, [reactFlowInstance, recordExport, titleBlockData, workflow, architecturePrompt, originalPrompt, nodes]);
 
+  // Snapshot of the current design for a share link: the same JSON as Save,
+  // plus a summary the read-only view shows without recomputing anything.
+  const buildSharePayload = useCallback(() => {
+    const serviceCount = nodes.filter(n => n.type === 'azureNode').length;
+    if (serviceCount === 0) return null;
+    const flow = reactFlowInstance?.toObject() ?? { nodes, edges };
+    const brief = originalPrompt || architecturePrompt || '';
+    const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
+    return {
+      title: titleBlockData.architectureName || 'Azure architecture',
+      design: {
+        ...flow,
+        metadata: { ...titleBlockData, savedAt: new Date().toISOString() },
+        workflow: workflow.length > 0 ? workflow : undefined,
+        originalPrompt: brief || undefined,
+      },
+      summary: {
+        services: serviceCount,
+        ...(breakdown.totalMonthlyCost > 0 ? { monthlyCost: breakdown.totalMonthlyCost } : {}),
+        region: getActiveRegion(),
+        ...(validationResult && !validationNeedsRefresh ? { wafBand: bandLabel(validationResult.overallScore) } : {}),
+      },
+      hasBrief: Boolean(brief),
+    };
+  }, [nodes, edges, reactFlowInstance, titleBlockData, workflow, originalPrompt, architecturePrompt, pricingMode, validationResult, validationNeedsRefresh]);
+
   const exportCostBreakdown = useCallback(() => {
     // Calculate the cost breakdown
     const breakdown = calculateCostBreakdown(nodes, undefined, pricingMode);
@@ -2008,6 +2037,34 @@ function App() {
   }, [applyFlowObject]);
 
 
+
+  // "Open a copy" from a shared link (/d/<id>). The user's own autosaved work is
+  // kept in Version History first, because loading the copy replaces the canvas
+  // and the autosave would otherwise overwrite that draft.
+  useEffect(() => {
+    const copy = takeCopyForEditor();
+    if (!copy) return;
+    (async () => {
+      try {
+        const draft = await loadDraft();
+        if (draft?.nodes?.length) {
+          await createSnapshot(draft.nodes, draft.edges, draft.diagramName || 'Untitled Architecture', {
+            architecturePrompt: draft.architecturePrompt,
+            originalPrompt: draft.originalPrompt,
+            workflow: draft.workflow,
+            titleBlockData: draft.titleBlockData,
+            notes: 'Kept automatically before opening a shared design',
+          });
+        }
+      } catch (err) {
+        console.warn('Could not keep the previous draft before opening a shared design:', err);
+      }
+      setRestorableDraft(null);
+      applyFlowObject(copy.design);
+      trackShare({ action: 'opened-copy', services: (copy.design.nodes || []).filter((n: any) => n?.type === 'azureNode').length });
+      notify(`Opened a copy of "${copy.title}". Your previous diagram is in Version History.`, 'success');
+    })();
+  }, [applyFlowObject]);
 
   const loadDiagram = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -3724,6 +3781,10 @@ function App() {
                     style={{ display: 'none' }}
                   />
                 </label>
+                <button onClick={() => setIsShareOpen(true)} className="btn btn-secondary" title="Share a read-only link to this design">
+                  <Share2 size={18} />
+                  Share
+                </button>
               </div>
 
               <div className="toolbar-group">
@@ -4653,6 +4714,11 @@ Return the IMPROVED architecture in the same JSON format as before with proper g
       <HelpLearnPanel
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
+      />
+      <ShareDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        buildPayload={buildSharePayload}
       />
       <FeedbackToast
         isOpen={isFeedbackToastOpen}

@@ -21,6 +21,9 @@ const showErrorBoundarySmoke = import.meta.env.VITE_ERROR_BOUNDARY_TEST === 'tru
 // The shareable video tour lives at /videos and renders without the editor.
 const VideoTourPage = React.lazy(() => import('./components/VideoTourPage.tsx'))
 const isVideoTourPage = /^\/videos\/?$/.test(window.location.pathname)
+// A shared design link (/d/<id>) opens a read-only view, also without the editor.
+const SharedDesignPage = React.lazy(() => import('./components/SharedDesignPage.tsx'))
+const sharedDesignId = window.location.pathname.match(/^\/d\/([A-Za-z0-9_-]{22})\/?$/)?.[1]
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -29,7 +32,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         ? <ErrorBoundarySmokeTrigger />
         : isVideoTourPage
           ? <React.Suspense fallback={null}><VideoTourPage /></React.Suspense>
-          : <App />}
+          : sharedDesignId
+            ? <React.Suspense fallback={null}><SharedDesignPage id={sharedDesignId} /></React.Suspense>
+            : <App />}
     </AppErrorBoundary>
   </React.StrictMode>,
 )

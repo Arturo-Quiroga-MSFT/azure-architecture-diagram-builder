@@ -6,6 +6,7 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 
 | Release | Date | Focus | Production status |
 | --- | --- | --- | --- |
+| `v2.1.18` | 2026-10-26 | Share a link: read-only view of a design for anyone with the link, Open a copy; security headers restored on the app page | Deployed |
 | `v2.1.17` | 2026-10-26 | Guided Chat changes pricing tiers and instance counts; tiers you set are no longer reset by chat changes | Deployed |
 | `v2.1.16` | 2026-10-23 | Video tour: Help → Video Tour, trailer on Start Here, Watch links on features, shareable /videos page | Deployed |
 | `v2.1.15` | 2026-10-23 | MCP: Well-Architected design score; configuration settings listed separately | Deployed (MCP only) |
@@ -37,6 +38,18 @@ This document summarizes the user-facing enhancements, reliability fixes, operat
 | `v1.3.0` | 2026-08-24 | Measured startup performance and bundle controls | Deployed |
 | `v1.2.0` | 2026-08-23 | Runtime health and reversible Container Apps releases | Deployed |
 | `v1.1.0` | 2026-08-23 | Product versioning, self-deployment, avatar synchronization | Deployed |
+
+## v2.1.18: Share a link
+
+Until now a design lived only in its creator's browser, and handing it over meant exporting a file; JSON was the most-used export because people emailed design files to each other. **Share** turns the current design into a link.
+
+- **Share** (toolbar): title, expiry (7, 30 or 90 days), and the brief only if you tick it. The link is copied.
+- **`/d/<id>`**: a read-only view for anyone with the link, no sign-in: the diagram (pan and zoom only), services, monthly run rate, Well-Architected band, request flow, and the brief when included. **Open a copy in the editor** loads it into the viewer's own editor, keeping their previous work in Version History first.
+- **Manage your links** in the Share dialog: views and expiry, copy, update with the current design (same link and expiry), or remove.
+- Access model: links can't be guessed (128-bit ids) and aren't listed; an owner key kept in the creator's browser (only its hash is stored) is required to update or remove. No user accounts, so no token validation to add to the server. Stored in the existing Cosmos `diagrams` container behind its private endpoint, with per-item TTL; limits on size (256 KB) and rate (per client address); `noindex` and `no-referrer` on shared links.
+- **Fixed (pre-existing): the app's own page was served without its security headers.** nginx drops server-level `add_header` directives in any location that sets one, and the `index.html` location sets `Cache-Control`, so `X-Frame-Options`, `X-Content-Type-Options` and `Cross-Origin-Opener-Policy` were missing from `/` and every app route. They now come from `nginx-security-headers.conf`, included everywhere.
+- Tests: `test:shares` (API, in the deterministic suite) and a release smoke test for the read-only view that measures whether connections are drawn across the diagram (proven to fail on a broken build). Validated end to end with separate owner and viewer browsers (19/19).
+- Docs: [Shared Designs](SHARED-DESIGNS.md).
 
 ## v2.1.17: Pricing tiers in Guided Chat
 

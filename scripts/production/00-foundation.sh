@@ -124,6 +124,11 @@ for container in "$COSMOS_CONTAINER_ID" "$COSMOS_FEEDBACK_CONTAINER_ID"; do
   fi
   echo "  ✓ $COSMOS_DATABASE_ID/$container"
 done
+# Shared designs (DOCS/SHARED-DESIGNS.md) carry a per-item `ttl`; Cosmos only
+# honours it when the container has TTL turned on (-1 = on, no default expiry).
+az cosmosdb sql container update -g "$COSMOS_RG" -a "$COSMOS_ACCOUNT" -d "$COSMOS_DATABASE_ID" \
+  -n "$COSMOS_CONTAINER_ID" --ttl -1 -o none
+echo "  ✓ $COSMOS_DATABASE_ID/$COSMOS_CONTAINER_ID: per-item TTL enabled"
 
 echo ""
 echo "✅ Foundation ready for target $AADB_TARGET."

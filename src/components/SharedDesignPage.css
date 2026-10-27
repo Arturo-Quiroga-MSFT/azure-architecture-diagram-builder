@@ -1,0 +1,43 @@
+/* Copyright (c) Microsoft Corporation. Licensed under the MIT License. */
+
+.sdv-shell { height: 100vh; display: flex; flex-direction: column; color: #0f172a; background: #f8fafc; }
+.sdv-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+.sdv-heading { min-width: 0; }
+.sdv-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #0078d4; }
+.sdv-heading h1 { margin: 2px 0 0; font-size: 1.2rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sdv-actions { flex: 0 0 auto; }
+.sdv-primary { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; color: #fff; background: #0078d4; border: 0; border-radius: 6px; font-size: 0.86rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+.sdv-primary:hover { background: #106ebe; }
+.sdv-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+.sdv-canvas { position: relative; min-height: 0; }
+/* Read-only: no label editing, no price-badge editor, no resize handles. Pan and zoom stay. */
+.sdv-canvas .react-flow__node,
+.sdv-canvas .react-flow__edge,
+.sdv-canvas .react-flow__edgelabel-renderer { pointer-events: none !important; }
+/* Handles stay in the layout (edges are drawn from their measured positions), just invisible. */
+.sdv-canvas .react-flow__handle { opacity: 0; }
+.sdv-canvas .react-flow__resize-control,
+.sdv-canvas .color-picker-button,
+.sdv-canvas .fit-to-content-button,
+.sdv-canvas .ungroup-button { display: none; }
+.sdv-side { overflow-y: auto; padding: 16px 18px; background: #fff; border-left: 1px solid #e2e8f0; display: grid; align-content: start; gap: 16px; }
+.sdv-facts { margin: 0; display: grid; gap: 12px; }
+.sdv-facts dt { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: #64748b; }
+.sdv-facts dd { margin: 2px 0 0; font-size: 0.98rem; font-weight: 600; }
+.sdv-facts dd small { font-size: 0.74rem; font-weight: 400; color: #64748b; }
+.sdv-section h2 { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; font-size: 0.82rem; color: #334155; }
+.sdv-brief { margin: 0; padding: 10px 12px; font-size: 0.8rem; line-height: 1.5; color: #334155; background: #f8fafc; border-left: 3px solid #0078d4; border-radius: 4px; white-space: pre-wrap; }
+.sdv-workflow { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.8rem; line-height: 1.45; color: #334155; }
+.sdv-note { margin: 0; font-size: 0.72rem; line-height: 1.45; color: #64748b; }
+.sdv-link { display: inline-flex; align-items: center; gap: 4px; font-size: 0.82rem; color: #0078d4; text-decoration: none; }
+.sdv-link:hover { text-decoration: underline; }
+.sdv-state { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; text-align: center; color: #334155; background: #f8fafc; }
+.sdv-state svg { color: #94a3b8; }
+.sdv-state h1 { margin: 0; font-size: 1.2rem; color: #0f172a; }
+.sdv-state p { margin: 0; font-size: 0.9rem; }
+
+@media (max-width: 860px) {
+  .sdv-body { grid-template-columns: 1fr; grid-template-rows: 60vh auto; }
+  .sdv-side { border-left: 0; border-top: 1px solid #e2e8f0; }
+  .sdv-header { flex-wrap: wrap; }
+}

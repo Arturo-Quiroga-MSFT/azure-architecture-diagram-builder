@@ -348,6 +348,52 @@ test('release-critical workflow renders a deterministic architecture', async ({ 
   expect(pageErrors).toEqual([]);
 });
 
+test('a shared design link opens a read-only view with its connections drawn', async ({ page }) => {
+  const design = JSON.parse(readFileSync('demo-videos/episodes/06-cost-and-regions/assets/clinic-booking-first-draft.json', 'utf8'));
+  const id = 'SmokeTestShareId000000';
+  await page.route(`**/api/shares/${id}`, (route) => route.fulfill({
+    contentType: 'application/json',
+    body: JSON.stringify({
+      id,
+      title: 'Smoke shared design',
+      design,
+      summary: { services: 8, monthlyCost: 118.83, region: 'eastus2', wafBand: 'Adequate, with gaps' },
+      createdAt: '2026-10-26T00:00:00Z',
+      updatedAt: '2026-10-26T00:00:00Z',
+      expiresAt: '2099-01-01T00:00:00Z',
+    }),
+  }));
+  await page.route('**/api/shares/MissingShareId00000000', (route) => route.fulfill({
+    status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'This link has expired or was removed' }),
+  }));
+
+  await page.goto(`/d/${id}`, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'Smoke shared design' })).toBeVisible();
+  await expect(page.locator('.react-flow__node-azureNode')).toHaveCount(8);
+  await expect(page.locator('.react-flow__edge-path')).toHaveCount(design.edges.length);
+  // Edges are drawn from measured handle positions. With handles hidden by
+  // display:none every edge collapses near the origin (spanning ~10% of the
+  // diagram); drawn correctly they span ~90% of the services' extent.
+  const span = await page.evaluate(() => {
+    const box = (els: Element[]) => els.reduce((a, el) => {
+      const r = el.getBoundingClientRect();
+      return { l: Math.min(a.l, r.left), t: Math.min(a.t, r.top), r: Math.max(a.r, r.right), b: Math.max(a.b, r.bottom) };
+    }, { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity });
+    const n = box([...document.querySelectorAll('.react-flow__node-azureNode')]);
+    const e = box([...document.querySelectorAll('.react-flow__edge-path')]);
+    return Math.min((e.r - e.l) / (n.r - n.l), (e.b - e.t) / (n.b - n.t));
+  });
+  expect(span).toBeGreaterThan(0.5);
+  await expect(page.getByText('$118.83')).toBeVisible();
+  await expect(page.getByText('Adequate, with gaps')).toBeVisible();
+  await page.locator('.react-flow__node-azureNode').first().dblclick({ force: true });
+  await expect(page.locator('.react-flow__node input')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Open a copy in the editor/ })).toBeVisible();
+
+  await page.goto('/d/MissingShareId00000000', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'This link has expired or was removed' })).toBeVisible();
+});
+
 test('root error boundary contains render failures', async ({ page }) => {
   await page.goto('/?error-boundary-test', { waitUntil: 'domcontentloaded' });
 

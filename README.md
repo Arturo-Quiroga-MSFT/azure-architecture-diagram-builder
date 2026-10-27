@@ -195,6 +195,9 @@ An in-app **Help** button opens a centered guide so new users can get productive
 ### 🎬 Video Tour
 Twelve short narrated videos (a trailer and Episodes 1–11, filmed on the live app) play inside **Help → Video Tour**, with chapters, playlists and shareable links. **Start Here** opens with the trailer, **Watch** chips on feature cards jump to the exact moment a feature is shown, and `/videos?v=<episode>&t=<seconds>` is a shareable page. How it works: **[Video Tour](DOCS/VIDEO-TOUR.md)**.
 
+### 🔗 Share a Link
+Click **Share** to create a link to a read-only copy of your design: the diagram, services, monthly cost, Well-Architected result and request flow, with no sign-in needed to view it. Viewers can **open a copy** to edit in their own browser. Links expire (7, 30 or 90 days), can be updated with your latest design or removed at any time, and the brief is included only if you choose. How it works: **[Shared Designs](DOCS/SHARED-DESIGNS.md)**.
+
 ### 💬 User Feedback
 A built-in feedback widget captures a rating, category, and free-text comment. Submissions persist to **Azure Cosmos DB** (keyless, managed-identity auth). If Cosmos is temporarily unreachable, the comment text is captured in telemetry as a fallback so feedback is never silently lost.
 
@@ -950,6 +953,7 @@ azure-diagrams/
 - **[Services Pricing](DOCS/services_pricing.md)** - Supported services and tiers
 - **[Icon & Pricing Reference](DOCS/AI_SERVICE_REFERENCE.md)** - Service names, aliases, icons, and pricing support
 - **[Release Notes](DOCS/RELEASE-NOTES.md)** - Recent features, fixes, operations, and verification
+- **[Shared Designs](DOCS/SHARED-DESIGNS.md)** - Share links: access model, privacy defaults, API, storage, validation
 - **[Video Tour](DOCS/VIDEO-TOUR.md)** - How the in-app video tour works: catalog, publishing, media hosting, player, deep links, telemetry and runbooks
 - **[Demo Video Production](DOCS/DEMO-VIDEO-PRODUCTION.md)** - How the demo video series is recorded live with Playwright, narrated and mixed, plus lessons learned
 - **[Authoritative Server Telemetry](DOCS/SERVER-TELEMETRY.md)** - Server event schema, privacy boundary, KQL, and cost allocation

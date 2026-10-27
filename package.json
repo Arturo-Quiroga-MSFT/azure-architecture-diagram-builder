@@ -1,6 +1,6 @@
 {
   "name": "azure-architecture-diagram-builder",
-  "version": "2.1.17",
+  "version": "2.1.18",
   "description": "Azure architecture diagram builder with official icon library",
   "type": "module",
   "scripts": {
@@ -40,6 +40,7 @@
     "test:bicep-repair": "tsx scripts/test-bicep-repair.ts",
     "test:video-tour": "tsx scripts/test-video-tour.ts",
     "test:chat-pricing": "tsx scripts/test-chat-pricing.ts",
+    "test:shares": "node scripts/test-shares.cjs",
     "test:private-connectivity": "tsx scripts/test-private-connectivity.ts",
     "test:deterministic": "node scripts/run-deterministic-tests.mjs",
     "test:bundle-budget": "node scripts/test-bundle-budget.mjs",

@@ -1,0 +1,56 @@
+/* Copyright (c) Microsoft Corporation. Licensed under the MIT License. */
+
+.share-overlay { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 16px; background: rgba(15, 23, 42, 0.55); }
+.share-modal { width: min(560px, 100%); max-height: 90vh; overflow-y: auto; background: #fff; color: #1e293b; border-radius: 10px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); }
+.share-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e2e8f0; }
+.share-title { display: flex; align-items: center; gap: 8px; font-size: 1rem; }
+.share-title svg { color: #0078d4; }
+.share-close { display: grid; place-items: center; padding: 4px; color: #64748b; background: none; border: 0; border-radius: 6px; cursor: pointer; }
+.share-close:hover { background: #f1f5f9; color: #0f172a; }
+.share-body { padding: 16px 18px 18px; display: grid; gap: 14px; }
+.share-lead { margin: 0; font-size: 0.86rem; line-height: 1.5; color: #334155; display: flex; gap: 6px; align-items: flex-start; }
+.share-lead svg { flex: 0 0 auto; margin-top: 2px; color: #16a34a; }
+.share-empty { margin: 0; color: #64748b; font-size: 0.88rem; }
+.share-form { display: grid; gap: 12px; }
+.share-row { display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: end; }
+.share-field { display: grid; gap: 4px; font-size: 0.8rem; color: #475569; }
+.share-field input, .share-field select { padding: 8px 10px; font-size: 0.88rem; color: #0f172a; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; }
+.share-field input:focus, .share-field select:focus { outline: 2px solid #0078d4; outline-offset: 0; }
+.share-check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.8rem; color: #334155; padding-bottom: 8px; cursor: pointer; }
+.share-check.disabled { color: #94a3b8; cursor: default; }
+.share-note { margin: 0; font-size: 0.76rem; color: #64748b; line-height: 1.45; }
+.share-primary { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; color: #fff; background: #0078d4; border: 0; border-radius: 6px; font-weight: 600; font-size: 0.86rem; cursor: pointer; }
+.share-primary:hover:not(:disabled) { background: #106ebe; }
+.share-primary:disabled { opacity: 0.6; cursor: default; }
+.share-url { display: flex; gap: 6px; align-items: center; }
+.share-url input { flex: 1; min-width: 0; padding: 8px 10px; font-size: 0.84rem; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color: #0f172a; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; }
+.share-url button, .share-url a { display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; font-size: 0.82rem; color: #0f172a; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; text-decoration: none; }
+.share-url button:hover, .share-url a:hover { background: #e2e8f0; }
+.share-error { margin: 0; padding: 8px 10px; font-size: 0.82rem; color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; }
+.share-owned { border-top: 1px solid #e2e8f0; padding-top: 12px; display: grid; gap: 8px; }
+.share-owned h3 { margin: 0; font-size: 0.82rem; color: #334155; }
+.share-owned ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.share-owned li { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
+.share-owned li.gone { opacity: 0.55; }
+.share-owned-text { min-width: 0; display: grid; }
+.share-owned-text strong { font-size: 0.84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.share-owned-text small { font-size: 0.74rem; color: #64748b; }
+.share-owned-actions { display: flex; gap: 4px; flex: 0 0 auto; }
+.share-owned-actions button { display: grid; place-items: center; width: 30px; height: 30px; color: #334155; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; }
+.share-owned-actions button:hover:not(:disabled) { background: #eff6ff; border-color: #0078d4; color: #0078d4; }
+.share-owned-actions button.danger:hover:not(:disabled) { background: #fef2f2; border-color: #dc2626; color: #dc2626; }
+.share-owned-actions button:disabled { opacity: 0.5; cursor: default; }
+.share-modal .spin { animation: share-spin 0.9s linear infinite; }
+@keyframes share-spin { to { transform: rotate(360deg); } }
+
+body.dark-mode .share-modal { background: #1e293b; color: #e2e8f0; }
+body.dark-mode .share-header, body.dark-mode .share-owned { border-color: #334155; }
+body.dark-mode .share-lead, body.dark-mode .share-check, body.dark-mode .share-owned h3 { color: #cbd5e1; }
+body.dark-mode .share-field { color: #94a3b8; }
+body.dark-mode .share-field input, body.dark-mode .share-field select, body.dark-mode .share-url input { color: #e2e8f0; background: #0f172a; border-color: #475569; }
+body.dark-mode .share-url button, body.dark-mode .share-url a { color: #e2e8f0; background: #334155; border-color: #475569; }
+body.dark-mode .share-owned li { background: #0f172a; border-color: #334155; }
+body.dark-mode .share-owned-actions button { color: #cbd5e1; background: #1e293b; border-color: #475569; }
+body.dark-mode .share-close:hover { background: #334155; color: #fff; }
+
+@media (max-width: 560px) { .share-row { grid-template-columns: 1fr; } }

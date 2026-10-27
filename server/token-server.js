@@ -25,6 +25,7 @@ app.set('trust proxy', 1);
 // global parser below; the global parser then skips bodies already parsed here.
 app.use('/api/openai', express.json({ limit: '12mb' }));
 app.use('/api/bicep', express.json({ limit: '1mb' }));
+app.use('/api/shares', express.json({ limit: '300kb' })); // shared designs (server/shares.js)
 app.use(express.json({ limit: '16kb' }));
 const credential = new DefaultAzureCredential();
 
@@ -606,6 +607,28 @@ app.post('/api/feedback', async (req, res) => {
     res.status(500).json({ error: 'Failed to store feedback' });
   }
 });
+
+// ── Shared designs (capability links; see DOCS/SHARED-DESIGNS.md) ─────────────
+// Stored in the Cosmos `diagrams` container over the private endpoint.
+// SHARES_STORE=memory keeps them in process memory (local development only).
+const COSMOS_DIAGRAMS_CONTAINER_ID = process.env.COSMOS_CONTAINER_ID || 'diagrams';
+let diagramsContainer = null;
+function getDiagramsContainer() {
+  if (!COSMOS_ENDPOINT) return null;
+  if (!diagramsContainer) {
+    const client = new CosmosClient({ endpoint: COSMOS_ENDPOINT, aadCredentials: credential });
+    diagramsContainer = client.database(COSMOS_DATABASE_ID).container(COSMOS_DIAGRAMS_CONTAINER_ID);
+  }
+  return diagramsContainer;
+}
+{
+  const shares = require('./shares');
+  const store = process.env.SHARES_STORE === 'memory'
+    ? shares.createMemoryStore()
+    : (COSMOS_ENDPOINT ? shares.createCosmosStore(getDiagramsContainer) : null);
+  if (store && store.kind === 'memory') console.warn('[shares] SHARES_STORE=memory: shared links live in process memory (local development only).');
+  shares.registerShareRoutes(app, express, store);
+}
 
 if (process.env.ENABLE_ADOPTION_IMPACT === 'true') {
   require('./impact-routes')(app, getFeedbackContainer);

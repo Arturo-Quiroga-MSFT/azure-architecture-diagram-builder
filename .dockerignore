@@ -24,6 +24,7 @@ public/media
 
 # --- Runtime assets served by nginx ---
 !nginx.conf
+!nginx-security-headers.conf
 !start.sh
 !Azure_Public_Service_Icons/**
 

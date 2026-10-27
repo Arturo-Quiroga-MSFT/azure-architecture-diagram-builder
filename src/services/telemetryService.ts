@@ -403,6 +403,26 @@ export function trackHelpOpened(section?: string): void {
 }
 
 /**
+ * Track shared design links (DOCS/SHARED-DESIGNS.md). No ids or titles: only
+ * what happened, how big the design was, and the chosen expiry.
+ */
+export function trackShare(params: {
+  action: 'created' | 'updated' | 'revoked' | 'copied-link' | 'opened' | 'open-failed' | 'opened-copy';
+  services?: number;
+  expiresInDays?: number;
+  includeBrief?: boolean;
+  status?: number;
+}): void {
+  const properties: Record<string, string> = { action: params.action };
+  if (params.includeBrief !== undefined) properties.includeBrief = String(params.includeBrief);
+  const measurements: Record<string, number> = {};
+  if (typeof params.services === 'number') measurements.services = params.services;
+  if (typeof params.expiresInDays === 'number') measurements.expiresInDays = params.expiresInDays;
+  if (typeof params.status === 'number') measurements.status = params.status;
+  trackEvent('Share_Link', properties, measurements);
+}
+
+/**
  * Track the in-app video tour: which episodes are opened, played and finished, and from where.
  * Positions are seconds into the video; completion is the share watched when the event fired.
  */

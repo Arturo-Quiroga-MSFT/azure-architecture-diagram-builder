@@ -152,6 +152,7 @@ RUN if [ "$ENABLE_ADOPTION_IMPACT" != "true" ]; then rm -f impact-routes.js impa
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY --from=build /app/Azure_Public_Service_Icons /usr/share/nginx/html/Azure_Public_Service_Icons
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-security-headers.conf /etc/nginx/aadb-security-headers.conf
 
 # Startup: token server in background, nginx in foreground.
 COPY start.sh /start.sh

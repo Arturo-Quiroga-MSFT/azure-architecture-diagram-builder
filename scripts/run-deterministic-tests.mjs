@@ -26,6 +26,7 @@ const tests = [
   'test:bicep-repair',
   'test:video-tour',
   'test:chat-pricing',
+  'test:shares',
 ];
 
 for (const testName of tests) {
