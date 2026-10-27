@@ -27,6 +27,7 @@ const tests = [
   'test:video-tour',
   'test:chat-pricing',
   'test:shares',
+  'test:server-image-files',
 ];
 
 for (const testName of tests) {

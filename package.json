@@ -41,6 +41,7 @@
     "test:video-tour": "tsx scripts/test-video-tour.ts",
     "test:chat-pricing": "tsx scripts/test-chat-pricing.ts",
     "test:shares": "node scripts/test-shares.cjs",
+    "test:server-image-files": "node scripts/test-server-image-files.mjs",
     "test:private-connectivity": "tsx scripts/test-private-connectivity.ts",
     "test:deterministic": "node scripts/run-deterministic-tests.mjs",
     "test:bundle-budget": "node scripts/test-bundle-budget.mjs",

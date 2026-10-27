@@ -145,6 +145,7 @@ COPY server/token-server.js ./
 COPY server/instrumentation.js ./
 COPY server/voice-live-relay.js ./
 COPY server/bicep-check.js ./
+COPY server/shares.js ./
 COPY server/impact-routes.js server/impact-records.js ./
 RUN if [ "$ENABLE_ADOPTION_IMPACT" != "true" ]; then rm -f impact-routes.js impact-records.js; fi
 

@@ -122,6 +122,8 @@ sequenceDiagram
 
 ### Found and fixed while building
 
+- **Container crashed at startup on the first deploy.** The Dockerfile copies server modules one by one and did not list `server/shares.js`, so the token server stopped with `Cannot find module './shares'`. The deploy kept traffic on v2.1.17 because the candidate was unhealthy. Fixed, and `test:server-image-files` now checks every module `token-server.js` requires is copied into the image. Verified by building and running the real image locally: token server up, shares created and read, security headers present.
+
 - **Connections missing in the read-only view.** Hiding the node handles with `display: none` removed the anchor points React Flow measures to draw edges, so every connection collapsed near the origin. Handles are now invisible (`opacity: 0`) instead. Caught by reviewing screenshots; the smoke test now measures how far the edges span relative to the services (0.09 when broken, 0.88 when correct; it requires more than 0.5) and was confirmed to fail on the broken build.
 - **One visit counted as two views.** The view page could fetch the share twice (React StrictMode runs effects twice in development, and re-renders could too). It now fetches once per page load.
 - **Security headers missing on the app's own page (pre-existing).** nginx drops server-level `add_header` directives in any location that sets its own, and `location = /index.html` sets `Cache-Control`, so `/` and every SPA route were served without `X-Frame-Options`, `X-Content-Type-Options` or `Cross-Origin-Opener-Policy` in production. The headers now live in `nginx-security-headers.conf`, included at server level and in each location that adds a header.
